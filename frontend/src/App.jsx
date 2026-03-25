@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { api, setAuthToken } from './api'
+import { api, getSitePreviewUrl, setAuthToken } from './api'
 import { clearAuth, getStoredToken, getStoredUser, storeAuth } from './auth'
 import './index.css'
 import AdminDashboardPage from './pages/AdminDashboardPage'
@@ -24,7 +25,15 @@ function App() {
 
   const refreshPreview = useCallback(async () => {
     try {
-      const { data } = await api.get('/site-preview')
+      const t = getStoredToken()
+      const headers = {}
+      if (t) {
+        headers.Authorization = `Bearer ${t}`
+      }
+      const { data } = await axios.get(getSitePreviewUrl(), {
+        withCredentials: true,
+        headers,
+      })
       setPreviewUnlocked(!!data.preview_unlocked)
     } catch {
       setPreviewUnlocked(false)

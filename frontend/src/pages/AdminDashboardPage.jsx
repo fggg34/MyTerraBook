@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 
 function filamentPanelUrl() {
+  const explicit = import.meta.env.VITE_FILAMENT_URL
+  if (explicit) {
+    return explicit
+  }
   const base = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'
   return base.replace(/\/api\/?$/, '') + '/admin'
 }
