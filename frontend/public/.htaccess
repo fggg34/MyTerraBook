@@ -1,0 +1,20 @@
+# MIME: module scripts require a JS MIME type; empty/wrong type breaks <script type="module">
+<IfModule mod_mime.c>
+  AddType application/javascript js mjs
+  AddType text/css css
+  AddType application/json json
+  AddType image/svg+xml svg svgz
+</IfModule>
+
+# SPA: serve index.html for client routes; do not rewrite Laravel API under /backend
+Options -Indexes
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  # Do not rewrite real files/dirs (assets, vite.svg, etc.)
+  RewriteCond %{REQUEST_URI} !^/backend
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>

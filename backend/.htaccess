@@ -1,0 +1,10 @@
+# Laravel must be served from the `public/` directory only. If the whole project
+# lives under public_html/backend/, this file routes requests into public/ so
+# index.php runs instead of directory listings ("Index of /backend").
+#
+# If routes return 404, set RewriteBase to match your URL prefix, e.g. RewriteBase /backend
+<IfModule mod_rewrite.c>
+    Options -Indexes +FollowSymLinks
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

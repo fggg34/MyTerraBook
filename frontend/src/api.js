@@ -1,6 +1,22 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'
+/**
+ * Dev: local Laravel. Prod (no env): same-origin `/backend/api` so the bundle never
+ * calls 127.0.0.1 on visitors’ devices (avoids Chrome “local network” permission prompts).
+ * Set VITE_API_URL when the API is on another host or path.
+ */
+function resolveApiBaseUrl() {
+  const fromEnv = import.meta.env.VITE_API_URL
+  if (fromEnv) {
+    return fromEnv.replace(/\/$/, '')
+  }
+  if (import.meta.env.PROD) {
+    return '/backend/api'
+  }
+  return 'http://127.0.0.1:8000/api'
+}
+
+const API_BASE_URL = resolveApiBaseUrl()
 
 /**
  * Session-based preview check; defaults to same base as the API (`…/api` + `/site-preview`).
@@ -11,8 +27,7 @@ export function getSitePreviewUrl() {
   if (explicit) {
     return explicit
   }
-  const base = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'
-  return `${base.replace(/\/$/, '')}/site-preview`
+  return `${resolveApiBaseUrl()}/site-preview`
 }
 
 export const api = axios.create({
