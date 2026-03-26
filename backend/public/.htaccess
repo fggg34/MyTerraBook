@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # URL path is /backend/… (the /public folder is not in the URL). If Laravel is at the
+    # domain root with docroot = public/, remove this line.
+    RewriteBase /backend
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -13,10 +17,11 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    # Trailing slashes: default Laravel redirect breaks under /backend (wrong relative Location).
+    # Optional: enable only if you need strict canonical URLs (use /backend/… in the pattern).
+    # RewriteCond %{REQUEST_FILENAME} !-d
+    # RewriteCond %{REQUEST_URI} ^/backend/(.+)/$
+    # RewriteRule ^ %1 [L,R=301]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d

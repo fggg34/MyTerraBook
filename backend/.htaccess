@@ -2,9 +2,10 @@
 # lives under public_html/backend/, this file routes requests into public/ so
 # index.php runs instead of directory listings ("Index of /backend").
 #
-# If routes return 404, set RewriteBase to match your URL prefix, e.g. RewriteBase /backend
+# RewriteBase must match the URL path to this folder (no trailing slash).
 <IfModule mod_rewrite.c>
     Options -Indexes +FollowSymLinks
     RewriteEngine On
+    RewriteBase /backend
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
