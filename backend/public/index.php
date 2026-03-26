@@ -81,7 +81,8 @@ if (PHP_SAPI !== 'cli') {
         $pathPart = parse_url($requestUri, PHP_URL_PATH) ?: '/';
         if ($pathPart === '/'.$prefix || str_starts_with($pathPart, '/'.$prefix.'/')) {
             $trimmed = substr($pathPart, strlen($prefix) + 1);
-            $newPath = ($trimmed === '' || $trimmed === false) ? '/' : '/'.$trimmed;
+            // Remainder is often "/admin/…" (leading slash); avoid "//admin/…".
+            $newPath = ($trimmed === '' || $trimmed === false) ? '/' : '/'.ltrim((string) $trimmed, '/');
             $query = parse_url($requestUri, PHP_URL_QUERY);
             $_SERVER['REQUEST_URI'] = $newPath.($query !== null && $query !== '' ? '?'.$query : '');
         }

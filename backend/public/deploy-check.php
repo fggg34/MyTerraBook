@@ -19,7 +19,7 @@ if ($prefixFromFs !== null && $prefixFromFs !== '') {
     $p = parse_url($examplePath, PHP_URL_PATH) ?: '/';
     if ($p === '/'.$prefixFromFs || str_starts_with($p, '/'.$prefixFromFs.'/')) {
         $trimmed = substr($p, strlen($prefixFromFs) + 1);
-        $simulatedInternalPath = ($trimmed === '' || $trimmed === false) ? '/' : '/'.$trimmed;
+        $simulatedInternalPath = ($trimmed === '' || $trimmed === false) ? '/' : '/'.ltrim((string) $trimmed, '/');
     }
 }
 
