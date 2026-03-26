@@ -30,6 +30,14 @@ if (PHP_SAPI !== 'cli') {
         $prefix = trim($explicit, '/');
     }
 
+    // Filesystem path works when SCRIPT_NAME is wrong (some proxies / PHP handlers).
+    if ($prefix === null || $prefix === '') {
+        $sf = str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME'] ?? '');
+        if (preg_match('#/([^/]+)/public/index\.php$#', $sf, $m)) {
+            $prefix = $m[1];
+        }
+    }
+
     if ($prefix === null || $prefix === '') {
         $script = $_SERVER['SCRIPT_NAME'] ?? '';
         foreach (['#^/(.+?)/public/index\.php$#', '#^(.+?)/public/index\.php$#'] as $pattern) {

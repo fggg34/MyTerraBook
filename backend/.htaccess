@@ -2,10 +2,17 @@
 # lives under public_html/backend/, this file routes requests into public/ so
 # index.php runs instead of directory listings ("Index of /backend").
 #
-# RewriteBase must match the URL path to this folder (no trailing slash).
+# If you still get 404: (1) ensure mod_rewrite is on, (2) try commenting RewriteBase,
+# (3) best fix: cPanel → set this folder's document root to …/backend/public only.
+
+Options -Indexes +FollowSymLinks
+DirectoryIndex index.php index.html
+
 <IfModule mod_rewrite.c>
-    Options -Indexes +FollowSymLinks
     RewriteEngine On
-    # If rewrites fail, try adding: RewriteBase /backend
+    RewriteBase /backend
+    RewriteRule ^index\.php$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
