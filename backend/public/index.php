@@ -73,6 +73,9 @@ if (PHP_SAPI !== 'cli') {
         $pathProbe = parse_url($requestUriProbe, PHP_URL_PATH) ?: '/';
         if (preg_match('#^/([^/]+)/(admin|api|up|livewire|sanctum)(/|$)#i', $pathProbe, $m)) {
             $prefix = $m[1];
+        } elseif (preg_match('#^/([^/]+)/livewire-[a-z0-9]+(/|$)#i', $pathProbe, $m)) {
+            // Livewire 4: /livewire-{hash}/update, /upload-file, etc.
+            $prefix = $m[1];
         }
     }
 
