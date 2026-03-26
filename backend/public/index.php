@@ -14,17 +14,51 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 // Register the Composer autoloader...
 require __DIR__.'/../vendor/autoload.php';
 
-// When Laravel is deployed under a URL prefix (e.g. APP_URL=https://domain.com/backend),
-// strip that prefix from REQUEST_URI before routing. Otherwise paths look like
-// /backend/admin and no route matches (/admin is registered), causing 404.
-if (is_file(__DIR__.'/../.env')) {
+/**
+ * Strip URL prefix (e.g. /backend) from REQUEST_URI so routes match (/admin, /api/…).
+ * Live servers often omit the path in APP_URL or cache a wrong .env — prefer SCRIPT_NAME.
+ */
+if (PHP_SAPI !== 'cli' && is_file(__DIR__.'/../.env')) {
     Dotenv::createImmutable(__DIR__.'/..')->safeLoad();
 }
-$appUrl = $_ENV['APP_URL'] ?? getenv('APP_URL');
-if (is_string($appUrl) && $appUrl !== '') {
-    $urlPath = parse_url($appUrl, PHP_URL_PATH);
-    $prefix = $urlPath ? trim($urlPath, '/') : '';
-    if ($prefix !== '') {
+
+if (PHP_SAPI !== 'cli') {
+    $prefix = null;
+
+    $explicit = $_ENV['LARAVEL_URL_PREFIX'] ?? getenv('LARAVEL_URL_PREFIX');
+    if (is_string($explicit) && trim($explicit) !== '') {
+        $prefix = trim($explicit, '/');
+    }
+
+    if ($prefix === null || $prefix === '') {
+        $script = $_SERVER['SCRIPT_NAME'] ?? '';
+        foreach (['#^/(.+?)/public/index\.php$#', '#^(.+?)/public/index\.php$#'] as $pattern) {
+            if (preg_match($pattern, $script, $m)) {
+                $prefix = $m[1];
+                break;
+            }
+        }
+    }
+
+    if ($prefix === null || $prefix === '') {
+        $self = $_SERVER['PHP_SELF'] ?? '';
+        foreach (['#^/(.+?)/public/index\.php$#', '#^(.+?)/public/index\.php$#'] as $pattern) {
+            if (preg_match($pattern, $self, $m)) {
+                $prefix = $m[1];
+                break;
+            }
+        }
+    }
+
+    if ($prefix === null || $prefix === '') {
+        $appUrl = $_ENV['APP_URL'] ?? getenv('APP_URL');
+        if (is_string($appUrl) && $appUrl !== '') {
+            $urlPath = parse_url($appUrl, PHP_URL_PATH);
+            $prefix = $urlPath ? trim($urlPath, '/') : '';
+        }
+    }
+
+    if (is_string($prefix) && $prefix !== '') {
         $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
         $pathPart = parse_url($requestUri, PHP_URL_PATH) ?: '/';
         if ($pathPart === '/'.$prefix || str_starts_with($pathPart, '/'.$prefix.'/')) {

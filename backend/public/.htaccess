@@ -5,9 +5,8 @@
 
     RewriteEngine On
 
-    # URL path is /backend/… (the /public folder is not in the URL). If Laravel is at the
-    # domain root with docroot = public/, remove this line.
-    RewriteBase /backend
+    # Do not set RewriteBase here when the parent …/backend/.htaccess already rewrites into
+    # public/ — a wrong base breaks the front controller on some hosts (404).
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
