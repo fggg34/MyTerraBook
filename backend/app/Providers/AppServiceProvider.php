@@ -49,8 +49,27 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
+        $effectiveRoot = rtrim($appUrl, '/');
+        $urlPathOnly = parse_url($effectiveRoot, PHP_URL_PATH);
+        $appPathSegment = is_string($urlPathOnly) ? trim($urlPathOnly, '/') : '';
+
+        // Livewire passes paths like /backend/livewire-…/update into url() while forceRootUrl already
+        // ends with /backend → /backend/backend/… without this strip.
+        if ($appPathSegment !== '') {
+            URL::formatPathUsing(function (string $path) use ($appPathSegment): string {
+                $prefix = '/'.$appPathSegment;
+                if ($path === $prefix || str_starts_with($path, $prefix.'/')) {
+                    $rest = substr($path, strlen($prefix));
+
+                    return '/'.ltrim($rest, '/');
+                }
+
+                return $path;
+            });
+        }
+
         // Always set root URL for web (not only when Host matches APP_URL): behind proxies or
         // mismatched www, request()->root() can omit /backend and url()/redirects 404 at the domain root.
-        URL::forceRootUrl(rtrim($appUrl, '/'));
+        URL::forceRootUrl($effectiveRoot);
     }
 }
