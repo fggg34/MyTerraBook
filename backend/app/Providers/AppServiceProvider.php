@@ -31,8 +31,9 @@ class AppServiceProvider extends ServiceProvider
 
         $host = request()->getHost();
         $urlHost = parse_url($appUrl, PHP_URL_HOST);
+        $stripWww = static fn (string $h): string => (string) preg_replace('/^www\./i', '', $h);
 
-        if ($urlHost && ($host === $urlHost || $host === 'www.'.$urlHost)) {
+        if ($urlHost && $stripWww($host) === $stripWww($urlHost)) {
             URL::forceRootUrl(rtrim($appUrl, '/'));
         }
     }

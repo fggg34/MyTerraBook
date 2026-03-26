@@ -85,6 +85,8 @@ if (PHP_SAPI !== 'cli') {
             $newPath = ($trimmed === '' || $trimmed === false) ? '/' : '/'.ltrim((string) $trimmed, '/');
             $query = parse_url($requestUri, PHP_URL_QUERY);
             $_SERVER['REQUEST_URI'] = $newPath.($query !== null && $query !== '' ? '?'.$query : '');
+            // Some Apache/CGI setups still pass the old path here; Symfony may read it.
+            unset($_SERVER['PATH_INFO'], $_SERVER['ORIG_PATH_INFO']);
         }
     }
 }
