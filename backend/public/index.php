@@ -66,6 +66,16 @@ if (PHP_SAPI !== 'cli') {
         }
     }
 
+    // Last resort: some hosts/proxies break SCRIPT_NAME / SCRIPT_FILENAME; infer the folder
+    // from the URL (e.g. /backend/admin/login → strip "backend" so Filament matches /admin/…).
+    if ($prefix === null || $prefix === '') {
+        $requestUriProbe = $_SERVER['REQUEST_URI'] ?? '/';
+        $pathProbe = parse_url($requestUriProbe, PHP_URL_PATH) ?: '/';
+        if (preg_match('#^/([^/]+)/(admin|api|up|livewire|sanctum)(/|$)#i', $pathProbe, $m)) {
+            $prefix = $m[1];
+        }
+    }
+
     if (is_string($prefix) && $prefix !== '') {
         $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
         $pathPart = parse_url($requestUri, PHP_URL_PATH) ?: '/';
