@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Http\Responses\FilamentLoginResponse;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse as FilamentLoginResponseContract;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->app->bind(FilamentLoginResponseContract::class, FilamentLoginResponse::class);
+
         if ($this->app->runningInConsole()) {
             return;
         }
@@ -45,12 +49,8 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        $host = request()->getHost();
-        $urlHost = parse_url($appUrl, PHP_URL_HOST);
-        $stripWww = static fn (string $h): string => (string) preg_replace('/^www\./i', '', $h);
-
-        if ($urlHost && $stripWww($host) === $stripWww($urlHost)) {
-            URL::forceRootUrl(rtrim($appUrl, '/'));
-        }
+        // Always set root URL for web (not only when Host matches APP_URL): behind proxies or
+        // mismatched www, request()->root() can omit /backend and url()/redirects 404 at the domain root.
+        URL::forceRootUrl(rtrim($appUrl, '/'));
     }
 }
