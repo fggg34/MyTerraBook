@@ -16,6 +16,10 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 Route::middleware('web')->group(function () {
     Route::get('/site-preview', function (Request $request) {
+        if (config('app.site_preview_open')) {
+            return response()->json(['preview_unlocked' => true]);
+        }
+
         $webUser = auth()->guard('web')->user();
         if ($webUser && $webUser->role === UserRole::Admin) {
             return response()->json(['preview_unlocked' => true]);

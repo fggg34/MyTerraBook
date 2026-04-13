@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Characteristics;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\Characteristics\Pages\CreateCharacteristic;
 use App\Filament\Resources\Characteristics\Pages\EditCharacteristic;
 use App\Filament\Resources\Characteristics\Pages\ListCharacteristics;
@@ -19,9 +20,13 @@ class CharacteristicResource extends Resource
 {
     protected static ?string $model = Characteristic::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Cars';
+    protected static string|UnitEnum|null $navigationGroup = 'Catalog';
+
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {

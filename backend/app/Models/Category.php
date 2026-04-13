@@ -34,19 +34,31 @@ class Category extends Model
                 $category->slug = static::uniqueSlugFromName($category->name);
             }
         });
+
+        static::updating(function (Category $category): void {
+            if ($category->slug === null || $category->slug === '') {
+                $category->slug = static::uniqueSlugFromName($category->name, $category->getKey());
+            }
+        });
     }
 
-    public static function uniqueSlugFromName(string $name): string
+    public static function uniqueSlugFromName(string $name, ?int $exceptId = null): string
     {
         $base = Str::slug($name);
         $slug = $base;
         $i = 0;
-        while (static::query()->where('slug', $slug)->exists()) {
+
+        while (true) {
+            $query = static::query()->where('slug', $slug);
+            if ($exceptId !== null) {
+                $query->whereKeyNot($exceptId);
+            }
+            if (! $query->exists()) {
+                return $slug;
+            }
             $i++;
             $slug = $base.'-'.$i;
         }
-
-        return $slug;
     }
 
     public function cars(): HasMany

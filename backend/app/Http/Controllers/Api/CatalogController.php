@@ -66,6 +66,8 @@ class CatalogController extends Controller
             'name' => $car->name,
             'slug' => $car->slug,
             'category_id' => $car->category_id,
+            'transmission' => $car->transmission,
+            'fuel_type' => $car->fuel_type,
             'units_available' => $car->units_available,
             'main_image_path' => $car->main_image_path,
             'min_daily_price_cents' => (int) ($car->min_daily_price_cents ?? 0),

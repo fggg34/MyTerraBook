@@ -34,6 +34,7 @@ class LocationFeeForm
                 Toggle::make('is_one_way_fee')
                     ->required(),
                 Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
             ]);
     }

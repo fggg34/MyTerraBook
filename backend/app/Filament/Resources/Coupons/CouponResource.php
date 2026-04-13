@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Coupons;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\Coupons\Pages\CreateCoupon;
 use App\Filament\Resources\Coupons\Pages\EditCoupon;
 use App\Filament\Resources\Coupons\Pages\ListCoupons;
@@ -19,9 +20,13 @@ class CouponResource extends Resource
 {
     protected static ?string $model = Coupon::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Orders';
+    protected static string|UnitEnum|null $navigationGroup = 'Pricing';
+
+    protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema
     {

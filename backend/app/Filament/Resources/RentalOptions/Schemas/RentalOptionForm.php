@@ -37,6 +37,7 @@ class RentalOptionForm
                 Toggle::make('is_mandatory')
                     ->required(),
                 Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
             ]);
     }

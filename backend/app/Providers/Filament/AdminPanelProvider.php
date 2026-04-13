@@ -10,6 +10,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -28,9 +29,11 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName(config('app.name', 'MyTerraBook'))
+            ->sidebarFullyCollapsibleOnDesktop()
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -53,6 +56,18 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => view('filament.panel.head-sidebar-migration')->render(),
+            )
+            ->renderHook(
+                PanelsRenderHook::STYLES_AFTER,
+                fn (): string => view('filament.panel.sidebar-hover-peek')->render(),
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => view('filament.panel.body-end-scripts')->render(),
+            );
     }
 }

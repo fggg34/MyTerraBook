@@ -37,6 +37,7 @@ class CouponForm
                 TextInput::make('min_order_total_cents')
                     ->numeric(),
                 Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
             ]);
     }

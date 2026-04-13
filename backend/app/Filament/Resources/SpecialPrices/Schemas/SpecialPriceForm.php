@@ -45,6 +45,7 @@ class SpecialPriceForm
                 TextInput::make('year')
                     ->numeric(),
                 Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
             ]);
     }

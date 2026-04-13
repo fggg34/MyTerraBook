@@ -32,6 +32,7 @@ class BookingRestrictionForm
                 TextInput::make('min_length_multiplier')
                     ->numeric(),
                 Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
             ]);
     }

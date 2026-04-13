@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TrackingCampaigns;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\TrackingCampaigns\Pages\CreateTrackingCampaign;
 use App\Filament\Resources\TrackingCampaigns\Pages\EditTrackingCampaign;
 use App\Filament\Resources\TrackingCampaigns\Pages\ListTrackingCampaigns;
@@ -19,9 +20,13 @@ class TrackingCampaignResource extends Resource
 {
     protected static ?string $model = TrackingCampaign::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Reports & tracking';
+    protected static string|UnitEnum|null $navigationGroup = 'Marketing';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {

@@ -32,6 +32,7 @@ class OutOfHoursFeeForm
                 Textarea::make('weekday_filter')
                     ->columnSpanFull(),
                 Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
             ]);
     }

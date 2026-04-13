@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cars;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\Cars\Pages\CreateCar;
 use App\Filament\Resources\Cars\Pages\EditCar;
 use App\Filament\Resources\Cars\Pages\ListCars;
@@ -19,9 +20,13 @@ class CarResource extends Resource
 {
     protected static ?string $model = Car::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Cars';
+    protected static string|UnitEnum|null $navigationGroup = 'Catalog';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -35,9 +40,7 @@ class CarResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

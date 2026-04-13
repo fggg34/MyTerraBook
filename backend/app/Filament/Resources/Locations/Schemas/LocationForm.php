@@ -25,6 +25,7 @@ class LocationForm
                 TimePicker::make('default_opening_time'),
                 TimePicker::make('suggested_preselected_time'),
                 Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
             ]);
     }

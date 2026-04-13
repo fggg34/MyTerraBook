@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Backups;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\Backups\Pages\CreateBackup;
 use App\Filament\Resources\Backups\Pages\EditBackup;
 use App\Filament\Resources\Backups\Pages\ListBackups;
@@ -19,9 +20,13 @@ class BackupResource extends Resource
 {
     protected static ?string $model = Backup::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Global settings';
+    protected static string|UnitEnum|null $navigationGroup = 'Platform';
+
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SpecialPrices;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\SpecialPrices\Pages\CreateSpecialPrice;
 use App\Filament\Resources\SpecialPrices\Pages\EditSpecialPrice;
 use App\Filament\Resources\SpecialPrices\Pages\ListSpecialPrices;
@@ -19,9 +20,13 @@ class SpecialPriceResource extends Resource
 {
     protected static ?string $model = SpecialPrice::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Pricing';
+
+    protected static ?int $navigationSort = 6;
 
     public static function form(Schema $schema): Schema
     {

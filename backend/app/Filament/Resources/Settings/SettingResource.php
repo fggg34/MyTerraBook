@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Settings;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\Settings\Pages\CreateSetting;
 use App\Filament\Resources\Settings\Pages\EditSetting;
 use App\Filament\Resources\Settings\Pages\ListSettings;
@@ -19,9 +20,13 @@ class SettingResource extends Resource
 {
     protected static ?string $model = Setting::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Global settings';
+    protected static string|UnitEnum|null $navigationGroup = 'Platform';
+
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {

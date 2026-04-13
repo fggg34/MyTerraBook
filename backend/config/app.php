@@ -56,6 +56,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Storefront (Vite SPA) URL
+    |--------------------------------------------------------------------------
+    |
+    | Used by the admin (e.g. “Preview” on a car) to open the public rental UI.
+    | Matches FRONTEND_URL in .env (CORS / Sanctum).
+    |
+    */
+
+    'frontend_url' => rtrim(env('FRONTEND_URL', 'http://127.0.0.1:5173'), '/'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Storefront “coming soon” gate (/api/site-preview)
+    |--------------------------------------------------------------------------
+    |
+    | When true, the Vite app skips the under-construction screen without admin auth.
+    | Defaults to true when APP_ENV is local so Filament “Preview” (new tab) works.
+    | Set SITE_PREVIEW_OPEN=false to test the closed storefront locally.
+    |
+    */
+
+    'site_preview_open' => env('SITE_PREVIEW_OPEN') !== null
+        ? filter_var(env('SITE_PREVIEW_OPEN'), FILTER_VALIDATE_BOOLEAN)
+        : env('APP_ENV', 'production') === 'local',
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

@@ -36,7 +36,8 @@ function App() {
       })
       setPreviewUnlocked(!!data.preview_unlocked)
     } catch {
-      setPreviewUnlocked(false)
+      // Local Vite: if the preview check fails (API down / CORS), still show the app for testing.
+      setPreviewUnlocked(!!import.meta.env.DEV)
     }
   }, [])
 

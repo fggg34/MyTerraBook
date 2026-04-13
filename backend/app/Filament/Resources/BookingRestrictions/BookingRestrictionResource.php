@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BookingRestrictions;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\BookingRestrictions\Pages\CreateBookingRestriction;
 use App\Filament\Resources\BookingRestrictions\Pages\EditBookingRestriction;
 use App\Filament\Resources\BookingRestrictions\Pages\ListBookingRestrictions;
@@ -19,9 +20,13 @@ class BookingRestrictionResource extends Resource
 {
     protected static ?string $model = BookingRestriction::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Rental settings';
+    protected static string|UnitEnum|null $navigationGroup = 'Pricing';
+
+    protected static ?int $navigationSort = 9;
 
     public static function form(Schema $schema): Schema
     {

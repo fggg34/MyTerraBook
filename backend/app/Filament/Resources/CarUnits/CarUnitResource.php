@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CarUnits;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\CarUnits\Pages\CreateCarUnit;
 use App\Filament\Resources\CarUnits\Pages\EditCarUnit;
 use App\Filament\Resources\CarUnits\Pages\ListCarUnits;
@@ -19,9 +20,15 @@ class CarUnitResource extends Resource
 {
     protected static ?string $model = CarUnit::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
+    protected static ?string $navigationLabel = 'Fleet units';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Cars';
+    protected static string|UnitEnum|null $navigationGroup = 'Catalog';
+
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {

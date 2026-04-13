@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\RentalOptions;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\RentalOptions\Pages\CreateRentalOption;
 use App\Filament\Resources\RentalOptions\Pages\EditRentalOption;
 use App\Filament\Resources\RentalOptions\Pages\ListRentalOptions;
@@ -19,9 +20,13 @@ class RentalOptionResource extends Resource
 {
     protected static ?string $model = RentalOption::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Cars';
+    protected static string|UnitEnum|null $navigationGroup = 'Catalog';
+
+    protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
     {

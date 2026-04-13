@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ConditionalTexts;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\ConditionalTexts\Pages\CreateConditionalText;
 use App\Filament\Resources\ConditionalTexts\Pages\EditConditionalText;
 use App\Filament\Resources\ConditionalTexts\Pages\ListConditionalTexts;
@@ -19,9 +20,13 @@ class ConditionalTextResource extends Resource
 {
     protected static ?string $model = ConditionalText::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Management';
+    protected static string|UnitEnum|null $navigationGroup = 'Platform';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

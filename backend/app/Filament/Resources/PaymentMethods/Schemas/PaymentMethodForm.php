@@ -18,8 +18,10 @@ class PaymentMethodForm
                 TextInput::make('name')
                     ->required(),
                 Toggle::make('is_enabled')
+                    ->default(true)
                     ->required(),
                 Toggle::make('auto_confirm_order')
+                    ->default(false)
                     ->required(),
                 TextInput::make('charge_or_discount')
                     ->required()

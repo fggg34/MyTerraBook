@@ -30,6 +30,7 @@ class ConditionalTextForm
                     ->required()
                     ->default('body'),
                 Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
             ]);
     }

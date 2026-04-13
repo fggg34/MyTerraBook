@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DailyFares;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\DailyFares\Pages\CreateDailyFare;
 use App\Filament\Resources\DailyFares\Pages\EditDailyFare;
 use App\Filament\Resources\DailyFares\Pages\ListDailyFares;
@@ -19,9 +20,13 @@ class DailyFareResource extends Resource
 {
     protected static ?string $model = DailyFare::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Pricing';
+
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {

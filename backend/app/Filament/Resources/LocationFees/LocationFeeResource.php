@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LocationFees;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\LocationFees\Pages\CreateLocationFee;
 use App\Filament\Resources\LocationFees\Pages\EditLocationFee;
 use App\Filament\Resources\LocationFees\Pages\ListLocationFees;
@@ -19,9 +20,13 @@ class LocationFeeResource extends Resource
 {
     protected static ?string $model = LocationFee::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Pricing';
+
+    protected static ?int $navigationSort = 7;
 
     public static function form(Schema $schema): Schema
     {

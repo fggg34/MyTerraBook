@@ -15,6 +15,8 @@ class Car extends Model
         'name',
         'slug',
         'description',
+        'transmission',
+        'fuel_type',
         'main_image_path',
         'units_available',
         'ical_import_url',
@@ -36,19 +38,31 @@ class Car extends Model
                 $car->slug = static::uniqueSlugFromName($car->name);
             }
         });
+
+        static::updating(function (Car $car): void {
+            if ($car->slug === null || $car->slug === '') {
+                $car->slug = static::uniqueSlugFromName($car->name, $car->getKey());
+            }
+        });
     }
 
-    public static function uniqueSlugFromName(string $name): string
+    public static function uniqueSlugFromName(string $name, ?int $exceptId = null): string
     {
         $base = Str::slug($name);
         $slug = $base;
         $i = 0;
-        while (static::query()->where('slug', $slug)->exists()) {
+
+        while (true) {
+            $query = static::query()->where('slug', $slug);
+            if ($exceptId !== null) {
+                $query->whereKeyNot($exceptId);
+            }
+            if (! $query->exists()) {
+                return $slug;
+            }
             $i++;
             $slug = $base.'-'.$i;
         }
-
-        return $slug;
     }
 
     public function category(): BelongsTo

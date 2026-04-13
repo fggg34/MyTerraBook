@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ExtraHourFares;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\ExtraHourFares\Pages\CreateExtraHourFare;
 use App\Filament\Resources\ExtraHourFares\Pages\EditExtraHourFare;
 use App\Filament\Resources\ExtraHourFares\Pages\ListExtraHourFares;
@@ -19,9 +20,13 @@ class ExtraHourFareResource extends Resource
 {
     protected static ?string $model = ExtraHourFare::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Pricing';
+
+    protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
     {

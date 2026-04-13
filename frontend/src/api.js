@@ -19,6 +19,19 @@ function resolveApiBaseUrl() {
 const API_BASE_URL = resolveApiBaseUrl()
 
 /**
+ * Build a public URL for a path stored via Filament disk (e.g. `cars/photo.jpg`).
+ * Absolute URLs are returned unchanged.
+ */
+export function resolveStorageUrl(path) {
+  if (path == null || path === '') return ''
+  const p = String(path).trim()
+  if (!p) return ''
+  if (/^https?:\/\//i.test(p)) return p
+  const appBase = resolveApiBaseUrl().replace(/\/api\/?$/i, '')
+  return `${appBase}/storage/${p.replace(/^\/+/, '')}`
+}
+
+/**
  * Session-based preview check; defaults to same base as the API (`…/api` + `/site-preview`).
  * Override with VITE_SITE_PREVIEW_URL only if you must point somewhere else.
  */

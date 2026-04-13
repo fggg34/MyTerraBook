@@ -28,8 +28,8 @@ class CarDetailResource extends JsonResource
             'slug' => $car->slug,
             'description' => $car->description,
             'category' => CategoryResource::make($car->category),
-            'transmission' => '—',
-            'fuel_type' => '—',
+            'transmission' => filled($car->transmission) ? $car->transmission : '—',
+            'fuel_type' => filled($car->fuel_type) ? $car->fuel_type : '—',
             'units_available' => $car->units_available,
             'main_image_path' => $car->main_image_path,
             'price_types' => collect($this->priceTypes)->map(fn (array $row) => [

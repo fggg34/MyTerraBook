@@ -32,19 +32,31 @@ class PriceType extends Model
                 $priceType->slug = static::uniqueSlugFromName($priceType->name);
             }
         });
+
+        static::updating(function (PriceType $priceType): void {
+            if ($priceType->slug === null || $priceType->slug === '') {
+                $priceType->slug = static::uniqueSlugFromName($priceType->name, $priceType->getKey());
+            }
+        });
     }
 
-    public static function uniqueSlugFromName(string $name): string
+    public static function uniqueSlugFromName(string $name, ?int $exceptId = null): string
     {
         $base = Str::slug($name);
         $slug = $base;
         $i = 0;
-        while (static::query()->where('slug', $slug)->exists()) {
+
+        while (true) {
+            $query = static::query()->where('slug', $slug);
+            if ($exceptId !== null) {
+                $query->whereKeyNot($exceptId);
+            }
+            if (! $query->exists()) {
+                return $slug;
+            }
             $i++;
             $slug = $base.'-'.$i;
         }
-
-        return $slug;
     }
 
     public function taxRate(): BelongsTo

@@ -20,6 +20,7 @@ class TrackingCampaignForm
                 TextInput::make('utm_medium'),
                 TextInput::make('utm_campaign'),
                 Toggle::make('is_active')
+                    ->default(true)
                     ->required(),
             ]);
     }

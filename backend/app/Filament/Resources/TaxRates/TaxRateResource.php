@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TaxRates;
 
+use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\TaxRates\Pages\CreateTaxRate;
 use App\Filament\Resources\TaxRates\Pages\EditTaxRate;
 use App\Filament\Resources\TaxRates\Pages\ListTaxRates;
@@ -19,9 +20,13 @@ class TaxRateResource extends Resource
 {
     protected static ?string $model = TaxRate::class;
 
+    protected static ?string $cluster = ImpactRentCluster::class;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Rental settings';
+    protected static string|UnitEnum|null $navigationGroup = 'Pricing';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
