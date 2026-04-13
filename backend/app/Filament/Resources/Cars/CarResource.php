@@ -19,11 +19,9 @@ class CarResource extends Resource
 {
     protected static ?string $model = Car::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Catalog';
-
-    protected static ?int $navigationSort = 20;
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Cars';
 
     public static function form(Schema $schema): Schema
     {

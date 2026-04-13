@@ -2,71 +2,106 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Car extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'category_id',
         'name',
         'slug',
         'description',
-        'transmission',
-        'fuel_type',
-        'seats',
-        'bags',
-        'features',
-        'availability_status',
-        'base_daily_price',
-        'base_hourly_price',
-        'min_rental_hours',
-        'min_rental_days',
-        'thumbnail_path',
+        'main_image_path',
+        'units_available',
+        'ical_import_url',
         'is_active',
     ];
 
-    protected $casts = [
-        'features' => 'array',
-        'base_daily_price' => 'decimal:2',
-        'base_hourly_price' => 'decimal:2',
-        'is_active' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'units_available' => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Car $car): void {
+            if ($car->slug === null || $car->slug === '') {
+                $car->slug = static::uniqueSlugFromName($car->name);
+            }
+        });
+    }
+
+    public static function uniqueSlugFromName(string $name): string
+    {
+        $base = Str::slug($name);
+        $slug = $base;
+        $i = 0;
+        while (static::query()->where('slug', $slug)->exists()) {
+            $i++;
+            $slug = $base.'-'.$i;
+        }
+
+        return $slug;
+    }
 
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function images(): HasMany
+    public function locations(): BelongsToMany
     {
-        return $this->hasMany(CarImage::class);
+        return $this->belongsToMany(Location::class, 'car_location')
+            ->withPivot(['allows_pickup', 'allows_dropoff'])
+            ->withTimestamps();
     }
 
-    public function bookings(): HasMany
+    public function characteristics(): BelongsToMany
     {
-        return $this->hasMany(Booking::class);
+        return $this->belongsToMany(Characteristic::class, 'car_characteristic')
+            ->withTimestamps();
     }
 
-    public function pricingRules(): HasMany
+    public function rentalOptions(): BelongsToMany
     {
-        return $this->hasMany(PricingRule::class);
+        return $this->belongsToMany(RentalOption::class, 'car_rental_option')
+            ->withTimestamps();
     }
 
-    public function unavailabilities(): HasMany
+    public function distinctiveFeatureDefinitions(): HasMany
     {
-        return $this->hasMany(CarUnavailability::class);
+        return $this->hasMany(CarDistinctiveFeatureDefinition::class);
     }
 
-    #[Scope]
-    protected function active(Builder $query): void
+    public function carUnits(): HasMany
     {
-        $query->where('is_active', true);
+        return $this->hasMany(CarUnit::class);
+    }
+
+    public function dailyFares(): HasMany
+    {
+        return $this->hasMany(DailyFare::class);
+    }
+
+    public function hourlyFares(): HasMany
+    {
+        return $this->hasMany(HourlyFare::class);
+    }
+
+    public function extraHourFares(): HasMany
+    {
+        return $this->hasMany(ExtraHourFare::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 }

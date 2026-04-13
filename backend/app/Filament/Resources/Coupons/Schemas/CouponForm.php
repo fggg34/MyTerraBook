@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Coupons\Schemas;
 
-use Filament\Forms\Components\DateTimePicker;
+use App\Models\Car;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -15,19 +17,24 @@ class CouponForm
             ->components([
                 TextInput::make('code')
                     ->required(),
+                TextInput::make('type')
+                    ->required(),
                 TextInput::make('discount_type')
                     ->required(),
-                TextInput::make('discount_value')
-                    ->required()
+                TextInput::make('discount_fixed_cents')
                     ->numeric(),
-                DateTimePicker::make('expires_at'),
-                TextInput::make('usage_limit')
+                TextInput::make('discount_percent_bips')
                     ->numeric(),
-                TextInput::make('times_used')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                TextInput::make('min_order_amount')
+                Select::make('vehicle_ids')
+                    ->label('Limit to vehicles')
+                    ->multiple()
+                    ->options(fn () => Car::query()->orderBy('name')->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->columnSpanFull(),
+                DatePicker::make('valid_from'),
+                DatePicker::make('valid_to'),
+                TextInput::make('min_order_total_cents')
                     ->numeric(),
                 Toggle::make('is_active')
                     ->required(),

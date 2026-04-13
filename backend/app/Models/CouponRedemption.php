@@ -2,32 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CouponRedemption extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'coupon_id',
-        'booking_id',
-        'user_id',
+        'order_id',
+        'redeemed_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'redeemed_at' => 'datetime',
+        ];
+    }
 
     public function coupon(): BelongsTo
     {
         return $this->belongsTo(Coupon::class);
     }
 
-    public function booking(): BelongsTo
+    public function order(): BelongsTo
     {
-        return $this->belongsTo(Booking::class);
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Order::class);
     }
 }

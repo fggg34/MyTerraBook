@@ -19,11 +19,7 @@ class LocationsTable
                     ->searchable(),
                 TextColumn::make('slug')
                     ->searchable(),
-                TextColumn::make('city')
-                    ->searchable(),
-                TextColumn::make('country')
-                    ->searchable(),
-                TextColumn::make('phone')
+                TextColumn::make('address')
                     ->searchable(),
                 TextColumn::make('latitude')
                     ->numeric()
@@ -31,12 +27,11 @@ class LocationsTable
                 TextColumn::make('longitude')
                     ->numeric()
                     ->sortable(),
-                IconColumn::make('allows_pickup')
-                    ->boolean(),
-                IconColumn::make('allows_dropoff')
-                    ->boolean(),
-                TextColumn::make('sort_order')
-                    ->numeric()
+                TextColumn::make('default_opening_time')
+                    ->time()
+                    ->sortable(),
+                TextColumn::make('suggested_preselected_time')
+                    ->time()
                     ->sortable(),
                 IconColumn::make('is_active')
                     ->boolean(),

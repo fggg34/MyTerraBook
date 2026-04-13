@@ -1,19 +1,15 @@
 <?php
 
 use App\Enums\UserRole;
-use App\Http\Controllers\Api\Admin\BookingController as AdminBookingController;
-use App\Http\Controllers\Api\Admin\CarController as AdminCarController;
-use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
-use App\Http\Controllers\Api\Admin\CouponController as AdminCouponController;
-use App\Http\Controllers\Api\Admin\DashboardController;
-use App\Http\Controllers\Api\Admin\ExtraController as AdminExtraController;
-use App\Http\Controllers\Api\Admin\LocationController as AdminLocationController;
-use App\Http\Controllers\Api\Admin\PricingRuleController as AdminPricingRuleController;
+use App\Http\Controllers\Api\Admin\AdminOrdersCsvExportController;
+use App\Http\Controllers\Api\Admin\AdminStatsController;
+use App\Http\Controllers\Api\Admin\CategoryApiController;
+use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\CatalogController;
-use App\Http\Controllers\Api\MeBookingController;
-use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\MeOrderController;
+use App\Http\Controllers\Api\MeOrderIcalController;
+use App\Http\Controllers\Api\PublicOrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -56,28 +52,26 @@ Route::get('/locations', [CatalogController::class, 'locations']);
 Route::get('/cars', [CatalogController::class, 'cars']);
 Route::get('/cars/{car}', [CatalogController::class, 'car']);
 Route::get('/cars/{car}/availability-calendar', [CatalogController::class, 'availabilityCalendar']);
-Route::post('/bookings/quote', [BookingController::class, 'quote']);
-Route::post('/bookings', [BookingController::class, 'store']);
+
+Route::post('/orders/quote', [PublicOrderController::class, 'quote']);
+Route::post('/orders', [PublicOrderController::class, 'store']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn (Request $request) => $request->user());
-    Route::get('/me/bookings', [MeBookingController::class, 'index']);
-    Route::post('/bookings/{booking}/payments', [PaymentController::class, 'store']);
+    Route::get('/me/orders', [MeOrderController::class, 'index']);
+    Route::get('/me/orders/{order}/calendar.ics', [MeOrderIcalController::class, 'show'])
+        ->name('api.me.orders.ical');
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/stats', [DashboardController::class, 'index']);
-    Route::apiResource('categories', AdminCategoryController::class);
-    Route::apiResource('locations', AdminLocationController::class);
-    Route::apiResource('cars', AdminCarController::class);
-    Route::apiResource('extras', AdminExtraController::class);
-    Route::apiResource('pricing', AdminPricingRuleController::class);
-    Route::apiResource('coupons', AdminCouponController::class);
-    Route::apiResource('bookings', AdminBookingController::class)->except(['update'])->names([
-        'index' => 'admin.bookings.index',
-        'store' => 'admin.bookings.store',
-        'show' => 'admin.bookings.show',
-        'destroy' => 'admin.bookings.destroy',
+    Route::get('stats', AdminStatsController::class)->name('api.admin.stats');
+    Route::get('orders/export.csv', AdminOrdersCsvExportController::class)->name('api.admin.orders.export-csv');
+    Route::get('orders/{order}/contract.pdf', [OrderContractPdfController::class, 'show'])->name('api.admin.orders.contract-pdf');
+    Route::apiResource('categories', CategoryApiController::class)->names([
+        'index' => 'api.admin.categories.index',
+        'store' => 'api.admin.categories.store',
+        'show' => 'api.admin.categories.show',
+        'update' => 'api.admin.categories.update',
+        'destroy' => 'api.admin.categories.destroy',
     ]);
-    Route::patch('/bookings/{booking}', [AdminBookingController::class, 'update']);
 });

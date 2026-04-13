@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Cars\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -24,40 +24,14 @@ class CarForm
                     ->required(),
                 Textarea::make('description')
                     ->columnSpanFull(),
-                TextInput::make('transmission')
-                    ->required()
-                    ->default('automatic'),
-                TextInput::make('fuel_type')
-                    ->required()
-                    ->default('petrol'),
-                TextInput::make('seats')
-                    ->required()
-                    ->numeric()
-                    ->default(5),
-                TextInput::make('bags')
-                    ->required()
-                    ->numeric()
-                    ->default(2),
-                TagsInput::make('features')
-                    ->placeholder('Add feature (e.g. ac, bluetooth)')
-                    ->columnSpanFull(),
-                TextInput::make('availability_status')
-                    ->required()
-                    ->default('available'),
-                TextInput::make('base_daily_price')
-                    ->required()
-                    ->numeric()
-                    ->prefix('$'),
-                TextInput::make('base_hourly_price')
-                    ->numeric()
-                    ->prefix('$'),
-                TextInput::make('min_rental_hours')
-                    ->numeric(),
-                TextInput::make('min_rental_days')
+                FileUpload::make('main_image_path')
+                    ->image(),
+                TextInput::make('units_available')
                     ->required()
                     ->numeric()
                     ->default(1),
-                TextInput::make('thumbnail_path'),
+                TextInput::make('ical_import_url')
+                    ->url(),
                 Toggle::make('is_active')
                     ->required(),
             ]);

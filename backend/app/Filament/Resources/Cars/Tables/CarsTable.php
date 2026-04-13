@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -21,31 +22,11 @@ class CarsTable
                     ->searchable(),
                 TextColumn::make('slug')
                     ->searchable(),
-                TextColumn::make('transmission')
-                    ->searchable(),
-                TextColumn::make('fuel_type')
-                    ->searchable(),
-                TextColumn::make('seats')
+                ImageColumn::make('main_image_path'),
+                TextColumn::make('units_available')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('bags')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('availability_status')
-                    ->searchable(),
-                TextColumn::make('base_daily_price')
-                    ->money()
-                    ->sortable(),
-                TextColumn::make('base_hourly_price')
-                    ->money()
-                    ->sortable(),
-                TextColumn::make('min_rental_hours')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('min_rental_days')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('thumbnail_path')
+                TextColumn::make('ical_import_url')
                     ->searchable(),
                 IconColumn::make('is_active')
                     ->boolean(),

@@ -2,88 +2,129 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CarResource;
-use App\Http\Resources\CategoryResource;
-use App\Http\Resources\LocationResource;
-use App\Models\Booking;
+use App\Http\Resources\Api\CarDetailResource;
+use App\Http\Resources\Api\CarListResource;
+use App\Http\Resources\Api\CategoryResource;
+use App\Http\Resources\Api\LocationResource;
 use App\Models\Car;
-use App\Models\CarUnavailability;
 use App\Models\Category;
+use App\Models\DailyFare;
 use App\Models\Location;
-use Carbon\Carbon;
+use App\Models\Order;
+use App\Models\PriceType;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CatalogController extends Controller
 {
-    public function categories()
+    public function categories(): JsonResponse
     {
-        return CategoryResource::collection(Category::query()->active()->orderBy('sort_order')->get());
+        $rows = Category::query()->where('is_active', true)->orderBy('sort_order')->get();
+
+        return response()->json(['data' => CategoryResource::collection($rows)]);
     }
 
-    public function locations()
+    public function locations(): JsonResponse
     {
-        return LocationResource::collection(Location::query()->active()->orderBy('sort_order')->get());
+        $rows = Location::query()->where('is_active', true)->orderBy('name')->get();
+
+        return response()->json(['data' => LocationResource::collection($rows)]);
     }
 
-    public function cars(Request $request)
+    public function cars(Request $request): JsonResponse
     {
-        $query = Car::query()->active()->with(['category', 'images']);
+        $pickupId = $request->query('pickup_location_id');
+        $dropoffId = $request->query('dropoff_location_id');
 
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->integer('category_id'));
+        $query = Car::query()
+            ->where('is_active', true)
+            ->with('category');
+
+        if ($pickupId) {
+            $query->whereHas('locations', fn ($q) => $q->where('locations.id', $pickupId)->where('car_location.allows_pickup', true));
+        }
+        if ($dropoffId) {
+            $query->whereHas('locations', fn ($q) => $q->where('locations.id', $dropoffId)->where('car_location.allows_dropoff', true));
         }
 
-        return CarResource::collection($query->paginate(12));
-    }
+        $minPrices = DailyFare::query()
+            ->select('car_id', DB::raw('MIN(price_per_day_cents) as min_daily_price_cents'))
+            ->groupBy('car_id');
 
-    public function car(Car $car)
-    {
-        return CarResource::make($car->load(['category', 'images']));
-    }
+        $cars = $query
+            ->leftJoinSub($minPrices, 'min_fares', 'min_fares.car_id', '=', 'cars.id')
+            ->select('cars.*')
+            ->addSelect('min_fares.min_daily_price_cents')
+            ->orderBy('cars.name')
+            ->get();
 
-    public function availabilityCalendar(Car $car, Request $request)
-    {
-        $from = Carbon::parse($request->input('from', now()->toDateString()))->startOfDay();
-        $to = Carbon::parse($request->input('to', now()->addDays(60)->toDateString()))->endOfDay();
-
-        $bookedRanges = Booking::query()
-            ->where('car_id', $car->id)
-            ->where('status', '!=', 'cancelled')
-            ->where(function ($query) use ($from, $to) {
-                $query
-                    ->whereBetween('pickup_at', [$from, $to])
-                    ->orWhereBetween('dropoff_at', [$from, $to])
-                    ->orWhere(function ($nested) use ($from, $to) {
-                        $nested
-                            ->where('pickup_at', '<=', $from)
-                            ->where('dropoff_at', '>=', $to);
-                    });
-            })
-            ->orderBy('pickup_at')
-            ->get(['id', 'pickup_at as start', 'dropoff_at as end', 'status']);
-
-        $blockedRanges = CarUnavailability::query()
-            ->where('car_id', $car->id)
-            ->where(function ($query) use ($from, $to) {
-                $query
-                    ->whereBetween('starts_at', [$from, $to])
-                    ->orWhereBetween('ends_at', [$from, $to])
-                    ->orWhere(function ($nested) use ($from, $to) {
-                        $nested
-                            ->where('starts_at', '<=', $from)
-                            ->where('ends_at', '>=', $to);
-                    });
-            })
-            ->orderBy('starts_at')
-            ->get(['id', 'starts_at as start', 'ends_at as end', 'reason']);
+        $rows = $cars->map(fn (Car $car) => [
+            'id' => $car->id,
+            'name' => $car->name,
+            'slug' => $car->slug,
+            'category_id' => $car->category_id,
+            'units_available' => $car->units_available,
+            'main_image_path' => $car->main_image_path,
+            'min_daily_price_cents' => (int) ($car->min_daily_price_cents ?? 0),
+        ]);
 
         return response()->json([
-            'car_id' => $car->id,
-            'from' => $from->toDateTimeString(),
-            'to' => $to->toDateTimeString(),
-            'booked' => $bookedRanges,
-            'blocked' => $blockedRanges,
+            'data' => CarListResource::collection($rows),
+        ]);
+    }
+
+    public function car(Car $car): JsonResponse
+    {
+        $car->load(['category', 'characteristics', 'rentalOptions']);
+
+        $fareMins = DailyFare::query()
+            ->where('car_id', $car->id)
+            ->selectRaw('price_type_id, MIN(price_per_day_cents) as min_cents')
+            ->groupBy('price_type_id')
+            ->pluck('min_cents', 'price_type_id');
+
+        $priceTypes = PriceType::query()
+            ->whereIn('id', $fareMins->keys())
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(fn (PriceType $pt) => [
+                'id' => $pt->id,
+                'name' => $pt->name,
+                'slug' => $pt->slug,
+                'attribute_label' => $pt->attribute_label,
+                'attribute_value_per_day' => $pt->attribute_value_per_day,
+                'from_price_per_day_cents' => (int) $fareMins->get($pt->id, 0),
+            ])
+            ->values()
+            ->all();
+
+        return response()->json([
+            'data' => new CarDetailResource($car, $priceTypes),
+        ]);
+    }
+
+    public function availabilityCalendar(Car $car): JsonResponse
+    {
+        $orders = Order::query()
+            ->where('car_id', $car->id)
+            ->where('order_status', OrderStatus::Confirmed)
+            ->select(['id', 'pickup_at', 'dropoff_at'])
+            ->orderBy('pickup_at')
+            ->get();
+
+        $booked = $orders->map(fn (Order $o) => [
+            'id' => $o->id,
+            'start' => $o->pickup_at->toIso8601String(),
+            'end' => $o->dropoff_at->toIso8601String(),
+        ]);
+
+        return response()->json([
+            'booked' => $booked,
+            'blocked' => [],
         ]);
     }
 }

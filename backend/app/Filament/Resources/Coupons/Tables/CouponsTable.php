@@ -17,21 +17,23 @@ class CouponsTable
             ->columns([
                 TextColumn::make('code')
                     ->searchable(),
+                TextColumn::make('type')
+                    ->searchable(),
                 TextColumn::make('discount_type')
                     ->searchable(),
-                TextColumn::make('discount_value')
+                TextColumn::make('discount_fixed_cents')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('expires_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('usage_limit')
+                TextColumn::make('discount_percent_bips')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('times_used')
-                    ->numeric()
+                TextColumn::make('valid_from')
+                    ->date()
                     ->sortable(),
-                TextColumn::make('min_order_amount')
+                TextColumn::make('valid_to')
+                    ->date()
+                    ->sortable(),
+                TextColumn::make('min_order_total_cents')
                     ->numeric()
                     ->sortable(),
                 IconColumn::make('is_active')

@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Locations\Schemas;
 
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
@@ -17,28 +17,13 @@ class LocationForm
                     ->required(),
                 TextInput::make('slug')
                     ->required(),
-                Textarea::make('address')
-                    ->columnSpanFull(),
-                TextInput::make('city'),
-                TextInput::make('country'),
-                TextInput::make('phone')
-                    ->tel(),
+                TextInput::make('address'),
                 TextInput::make('latitude')
                     ->numeric(),
                 TextInput::make('longitude')
                     ->numeric(),
-                Toggle::make('allows_pickup')
-                    ->required(),
-                Toggle::make('allows_dropoff')
-                    ->required(),
-                Textarea::make('opening_hours')
-                    ->columnSpanFull(),
-                Textarea::make('closed_days')
-                    ->columnSpanFull(),
-                TextInput::make('sort_order')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
+                TimePicker::make('default_opening_time'),
+                TimePicker::make('suggested_preselected_time'),
                 Toggle::make('is_active')
                     ->required(),
             ]);

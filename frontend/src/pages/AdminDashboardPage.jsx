@@ -57,19 +57,20 @@ export default function AdminDashboardPage() {
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <h2>Admin overview</h2>
         <p className="muted">
-          Full CRUD for cars, locations, extras, pricing, coupons, and bookings is in the{' '}
+          Full CRUD for cars, locations, add-ons, pricing, coupons, and orders is in the{' '}
           <strong>Filament</strong> panel (same database):{' '}
           <a href={filamentPanelUrl()} target="_blank" rel="noreferrer">
             {filamentPanelUrl()}
           </a>{' '}
           — log in with your admin user (session login, not the API token). This page only shows API summary
-          stats; you can still use <code>/api/admin/…</code> with a Bearer token from Postman if needed.
+          stats; with a Sanctum Bearer token you can also call <code>/api/admin/orders/export.csv</code> and other{' '}
+          <code>/api/admin/…</code> endpoints.
         </p>
       </div>
       <div className="grid">
         <article className="card">
-          <h3>Total bookings</h3>
-          <p>{stats.total_bookings}</p>
+          <h3>Total orders</h3>
+          <p>{stats.total_orders ?? stats.total_bookings}</p>
         </article>
         <article className="card">
           <h3>Revenue</h3>

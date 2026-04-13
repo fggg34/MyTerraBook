@@ -2,47 +2,39 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coupon extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'code',
+        'type',
         'discount_type',
-        'discount_value',
-        'expires_at',
-        'usage_limit',
-        'times_used',
-        'min_order_amount',
+        'discount_fixed_cents',
+        'discount_percent_bips',
+        'vehicle_ids',
+        'valid_from',
+        'valid_to',
+        'min_order_total_cents',
         'is_active',
     ];
 
-    protected $casts = [
-        'discount_value' => 'decimal:2',
-        'expires_at' => 'datetime',
-        'min_order_amount' => 'decimal:2',
-        'is_active' => 'boolean',
-    ];
-
-    public function bookings(): HasMany
+    protected function casts(): array
     {
-        return $this->hasMany(Booking::class);
+        return [
+            'vehicle_ids' => 'array',
+            'valid_from' => 'date',
+            'valid_to' => 'date',
+            'discount_fixed_cents' => 'integer',
+            'discount_percent_bips' => 'integer',
+            'min_order_total_cents' => 'integer',
+            'is_active' => 'boolean',
+        ];
     }
 
     public function redemptions(): HasMany
     {
         return $this->hasMany(CouponRedemption::class);
-    }
-
-    #[Scope]
-    protected function active(Builder $query): void
-    {
-        $query->where('is_active', true);
     }
 }

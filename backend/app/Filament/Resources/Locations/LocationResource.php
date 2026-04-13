@@ -19,11 +19,9 @@ class LocationResource extends Resource
 {
     protected static ?string $model = Location::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Locations';
-
-    protected static ?int $navigationSort = 10;
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Rental settings';
 
     public static function form(Schema $schema): Schema
     {

@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Category extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -20,18 +19,38 @@ class Category extends Model
         'is_active',
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'sort_order' => 'integer',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Category $category): void {
+            if ($category->slug === null || $category->slug === '') {
+                $category->slug = static::uniqueSlugFromName($category->name);
+            }
+        });
+    }
+
+    public static function uniqueSlugFromName(string $name): string
+    {
+        $base = Str::slug($name);
+        $slug = $base;
+        $i = 0;
+        while (static::query()->where('slug', $slug)->exists()) {
+            $i++;
+            $slug = $base.'-'.$i;
+        }
+
+        return $slug;
+    }
 
     public function cars(): HasMany
     {
         return $this->hasMany(Car::class);
-    }
-
-    #[Scope]
-    protected function active(Builder $query): void
-    {
-        $query->where('is_active', true);
     }
 }
