@@ -11,8 +11,11 @@ return new class extends Migration
         Schema::create('car_unit_distinctive_values', function (Blueprint $table) {
             $table->id();
             $table->foreignId('car_unit_id')->constrained('car_units')->cascadeOnDelete();
-            $table->foreignId('car_distinctive_feature_definition_id')
-                ->constrained('car_distinctive_feature_definitions')
+            // Short FK name: default Laravel name exceeds MySQL's 64-char identifier limit.
+            $table->unsignedBigInteger('car_distinctive_feature_definition_id');
+            $table->foreign('car_distinctive_feature_definition_id', 'cudv_feat_def_fk')
+                ->references('id')
+                ->on('car_distinctive_feature_definitions')
                 ->cascadeOnDelete();
             $table->text('value');
             $table->timestamps();
