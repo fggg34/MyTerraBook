@@ -5,7 +5,6 @@ namespace App\Filament\Resources\PriceTypes\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -16,17 +15,17 @@ class PriceTypesTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('slug')
-                    ->searchable(),
+                    ->label('Price Name')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('attribute_label')
-                    ->searchable(),
-                TextColumn::make('attribute_value_per_day')
-                    ->searchable(),
+                    ->label('Price Attributes')
+                    ->searchable()
+                    ->placeholder('—'),
                 TextColumn::make('taxRate.name')
-                    ->searchable(),
-                IconColumn::make('is_active')
-                    ->boolean(),
+                    ->label('Tax Rate')
+                    ->searchable()
+                    ->placeholder('—'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

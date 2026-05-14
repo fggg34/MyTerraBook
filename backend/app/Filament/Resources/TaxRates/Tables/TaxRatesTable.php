@@ -15,9 +15,11 @@ class TaxRatesTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Tax Rate Name')
                     ->searchable(),
                 TextColumn::make('basis_points')
-                    ->numeric()
+                    ->label('Tax Rate')
+                    ->formatStateUsing(static fn ($state): string => number_format(((int) $state) / 100, 2).'%')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

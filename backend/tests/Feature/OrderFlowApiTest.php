@@ -77,7 +77,7 @@ class OrderFlowApiTest extends TestCase
         ]);
 
         $create->assertCreated()
-            ->assertJsonPath('data.order_status', OrderStatus::Pending->value);
+            ->assertJsonPath('data.order_status', OrderStatus::StandBy->value);
 
         $this->assertDatabaseCount('orders', 1);
     }

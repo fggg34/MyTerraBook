@@ -4,9 +4,9 @@ namespace App\Filament\Resources\Categories\Schemas;
 
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Str;
+use Illuminate\Support\HtmlString;
 
 class CategoryForm
 {
@@ -14,26 +14,17 @@ class CategoryForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required()
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(function ($state, callable $set, callable $get): void {
-                        if (filled($state) && blank($get('slug'))) {
-                            $set('slug', Str::slug($state));
-                        }
-                    }),
-                TextInput::make('slug')
-                    ->helperText('Leave blank to auto-generate from the name when you save.')
-                    ->maxLength(255),
-                Textarea::make('description')
-                    ->columnSpanFull(),
-                TextInput::make('sort_order')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Toggle::make('is_active')
-                    ->default(true)
-                    ->required(),
+                Section::make('Details')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Category Name')
+                            ->required()
+                            ->maxLength(255),
+                        Textarea::make('description')
+                            ->label('Description')
+                            ->rows(6)
+                            ->helperText(new HtmlString('<span style="border-top:1px solid #e5e7eb;display:block;padding-top:8px">Use a concise summary for category listing screens.</span>')),
+                    ]),
             ]);
     }
 }

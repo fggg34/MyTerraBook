@@ -4,6 +4,10 @@ namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
 use App\Models\Car;
+use App\Models\CarDamageMarker;
+use App\Models\CarDistinctiveFeatureDefinition;
+use App\Models\CarUnit;
+use App\Models\CarUnitDistinctiveValue;
 use App\Models\Category;
 use App\Models\Location;
 use App\Models\Order;
@@ -86,5 +90,44 @@ class OrderPdfAndIcalExportTest extends TestCase
         $this->assertStringContainsString('text/calendar', (string) $response->headers->get('Content-Type'));
         $this->assertStringContainsString('BEGIN:VCALENDAR', $response->getContent());
         $this->assertStringContainsString('VEVENT', $response->getContent());
+    }
+
+    public function test_admin_can_download_checkin_pdf_with_unit_and_damages(): void
+    {
+        $this->seed();
+        $admin = User::query()->where('email', 'admin@terrabook.test')->firstOrFail();
+        $customer = User::query()->where('email', 'customer@terrabook.test')->firstOrFail();
+        $order = $this->seedOrderFor($customer, OrderStatus::Confirmed);
+
+        $carUnit = CarUnit::query()->create([
+            'car_id' => $order->car_id,
+            'is_active' => true,
+            'sort_order' => 0,
+        ]);
+        $feature = CarDistinctiveFeatureDefinition::query()->create([
+            'car_id' => $order->car_id,
+            'name' => 'License Plate',
+            'sort_order' => 0,
+        ]);
+        CarUnitDistinctiveValue::query()->create([
+            'car_unit_id' => $carUnit->id,
+            'car_distinctive_feature_definition_id' => $feature->id,
+            'value' => 'EN826SH',
+        ]);
+        CarDamageMarker::query()->create([
+            'car_unit_id' => $carUnit->id,
+            'position_x' => 40.5,
+            'position_y' => 52.5,
+            'description' => 'Rear door scratch',
+            'marked_at' => now(),
+        ]);
+
+        $order->update(['car_unit_id' => $carUnit->id]);
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->get('/api/admin/orders/'.$order->id.'/checkin.pdf');
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', (string) $response->headers->get('Content-Type'));
     }
 }

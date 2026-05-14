@@ -12,10 +12,21 @@ class TaxRateForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->required(),
-                TextInput::make('basis_points')
+                    ->label('Tax Rate Name')
                     ->required()
-                    ->numeric(),
+                    ->maxLength(255),
+                TextInput::make('basis_points')
+                    ->label('Tax Rate')
+                    ->suffix('%')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(100)
+                    ->step(0.01)
+                    ->formatStateUsing(static fn ($state): ?string => $state === null
+                        ? null
+                        : number_format(((int) $state) / 100, 2, '.', ''))
+                    ->dehydrateStateUsing(static fn ($state): int => (int) round(((float) $state) * 100)),
             ]);
     }
 }

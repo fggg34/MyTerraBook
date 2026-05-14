@@ -6,11 +6,15 @@ use App\Models\BookingRestriction;
 use App\Models\Car;
 use App\Models\Coupon;
 use App\Models\DailyFare;
+use App\Models\ExtraHourFare;
+use App\Models\HourlyFare;
 use App\Models\LocationFee;
 use App\Models\OutOfHoursFee;
+use App\Models\PriceType;
 use App\Models\RentalOption;
 use App\Models\Setting;
 use App\Models\SpecialPrice;
+use App\Models\TaxRate;
 use Carbon\CarbonInterface;
 use InvalidArgumentException;
 
@@ -30,31 +34,37 @@ class RentalQuoteService
             throw new InvalidArgumentException('Drop-off must be after pick-up.');
         }
 
-        $rentalDays = max(1, (int) ceil($pickupAt->diffInMinutes($dropoffAt) / 1440));
+        $durationMinutes = max(1, (int) $pickupAt->diffInMinutes($dropoffAt));
+        $rentalDays = max(1, (int) ceil($durationMinutes / 1440));
+        $defaultTaxBips = $this->defaultTaxBips();
 
         $this->assertRestrictions($pickupAt, $dropoffAt, $rentalDays);
 
-        $dailyFare = DailyFare::query()
-            ->where('car_id', $car->id)
-            ->where('price_type_id', $priceTypeId)
-            ->where('from_days', '<=', $rentalDays)
-            ->where('to_days', '>=', $rentalDays)
-            ->first();
-
-        if ($dailyFare === null) {
-            throw new InvalidArgumentException('No daily fare configured for this vehicle, rate plan, and rental length.');
+        $priceType = PriceType::query()->find($priceTypeId);
+        if ($priceType === null || ! $priceType->is_active) {
+            throw new InvalidArgumentException('Selected rate plan is not available.');
         }
 
-        $baseRentalCents = $rentalDays * $dailyFare->price_per_day_cents;
+        $pricing = $this->resolveBaseRentalCharge(
+            $car->id,
+            $priceTypeId,
+            $pickupAt,
+            $dropoffAt,
+            $durationMinutes,
+        );
+
+        $baseRentalCents = $pricing['base_rental_cents'];
         $baseRentalCents = $this->applySpecialPrices(
             $baseRentalCents,
             $car->id,
+            $priceTypeId,
             $pickupLocationId,
             $dropoffLocationId,
             $pickupAt,
             $dropoffAt,
-            $rentalDays,
+            $pricing['billable_days'],
         );
+        $baseTaxBips = $this->taxBipsForTaxRateId($priceType->tax_rate_id, $defaultTaxBips);
 
         $extrasCents = 0;
         $extrasLines = [];
@@ -88,14 +98,15 @@ class RentalQuoteService
                 }
 
                 $extrasCents += $line;
-                $unitPriceCents = $option->is_daily_cost ? $option->cost_cents : $option->cost_cents;
+                $taxBips = $this->taxBipsForTaxRateId($option->tax_rate_id, $defaultTaxBips);
 
                 $extrasLines[] = [
                     'rental_option_id' => $option->id,
                     'name' => $option->name,
                     'quantity' => $quantity,
-                    'unit_price_cents' => (int) $unitPriceCents,
+                    'unit_price_cents' => (int) $option->cost_cents,
                     'total_cents' => $line,
+                    'tax_bips' => $taxBips,
                 ];
             }
         }
@@ -106,7 +117,8 @@ class RentalQuoteService
             $dropoffLocationId,
             $pickupAt,
             $dropoffAt,
-            $rentalDays,
+            $pricing['billable_days'],
+            $defaultTaxBips,
         );
 
         $subtotalBeforeDiscount = $baseRentalCents + $extrasCents;
@@ -146,14 +158,23 @@ class RentalQuoteService
         $afterDiscount = max(0, $subtotalBeforeDiscount - $discountCents);
         $totalBeforeTax = $afterDiscount + $feesCents;
 
-        $taxBips = (int) (Setting::getValue('shop.default_tax', ['basis_points' => 0])['basis_points'] ?? 0);
-        $taxCents = (int) floor($totalBeforeTax * $taxBips / 10000);
+        $taxCents = $this->computeTaxCents(
+            $baseRentalCents,
+            $baseTaxBips,
+            $extrasLines,
+            $feesLines,
+            $discountCents,
+            $subtotalBeforeDiscount,
+        );
         $totalCents = $totalBeforeTax + $taxCents;
 
         $currency = (string) (Setting::getValue('shop.currency', ['code' => 'EUR'])['code'] ?? 'EUR');
 
         return [
             'rental_days' => $rentalDays,
+            'billable_days' => $pricing['billable_days'],
+            'pricing_mode' => $pricing['pricing_mode'],
+            'extra_hours_charged' => $pricing['extra_hours_charged'],
             'price_type_id' => $priceTypeId,
             'base_rental_cents' => $baseRentalCents,
             'extras_cents' => $extrasCents,
@@ -166,6 +187,103 @@ class RentalQuoteService
             'currency' => $currency,
             'coupon_id' => $couponId,
         ];
+    }
+
+    private function resolveBaseRentalCharge(
+        int $carId,
+        int $priceTypeId,
+        CarbonInterface $pickupAt,
+        CarbonInterface $dropoffAt,
+        int $durationMinutes,
+    ): array {
+        if ($durationMinutes < 1440) {
+            $hourlyFare = HourlyFare::query()
+                ->where('car_id', $carId)
+                ->where('price_type_id', $priceTypeId)
+                ->where('min_minutes', '<=', $durationMinutes)
+                ->where('max_minutes', '>=', $durationMinutes)
+                ->orderBy('min_minutes', 'desc')
+                ->first();
+
+            if ($hourlyFare !== null) {
+                return [
+                    'base_rental_cents' => (int) $hourlyFare->total_price_cents,
+                    'billable_days' => 1,
+                    'pricing_mode' => 'hourly',
+                    'extra_hours_charged' => 0,
+                ];
+            }
+
+            $dailyFare = $this->resolveDailyFare($carId, $priceTypeId, 1);
+            if ($dailyFare === null) {
+                throw new InvalidArgumentException('No hourly fare found and 1-day fallback fare is missing.');
+            }
+
+            return [
+                'base_rental_cents' => (int) $dailyFare->price_per_day_cents,
+                'billable_days' => 1,
+                'pricing_mode' => 'hourly_fallback_to_daily',
+                'extra_hours_charged' => 0,
+            ];
+        }
+
+        $fullDays = max(1, (int) floor($durationMinutes / 1440));
+        $extraMinutes = max(0, $durationMinutes - ($fullDays * 1440));
+        $baseFare = $this->resolveDailyFare($carId, $priceTypeId, $fullDays);
+        if ($baseFare === null) {
+            throw new InvalidArgumentException('No daily fare configured for this vehicle, rate plan, and rental length.');
+        }
+
+        $baseRentalCents = $fullDays * (int) $baseFare->price_per_day_cents;
+        $gratuityHours = max(0, (int) data_get(Setting::getValue('shop.extended_gratuity_period', ['hours' => 0]), 'hours', 0));
+        $chargeableMinutes = max(0, $extraMinutes - ($gratuityHours * 60));
+
+        if ($chargeableMinutes === 0) {
+            return [
+                'base_rental_cents' => $baseRentalCents,
+                'billable_days' => $fullDays,
+                'pricing_mode' => 'daily',
+                'extra_hours_charged' => 0,
+            ];
+        }
+
+        $extraHours = (int) ceil($chargeableMinutes / 60);
+        $extraFare = ExtraHourFare::query()
+            ->where('car_id', $carId)
+            ->where('price_type_id', $priceTypeId)
+            ->first();
+
+        if ($extraFare !== null) {
+            return [
+                'base_rental_cents' => $baseRentalCents + ($extraHours * (int) $extraFare->charge_per_extra_hour_cents),
+                'billable_days' => $fullDays,
+                'pricing_mode' => 'daily_plus_extra_hours',
+                'extra_hours_charged' => $extraHours,
+            ];
+        }
+
+        $nextDayFare = $this->resolveDailyFare($carId, $priceTypeId, $fullDays + 1);
+        if ($nextDayFare === null) {
+            throw new InvalidArgumentException('No extra-hour fare defined and next-day fallback fare is missing.');
+        }
+
+        return [
+            'base_rental_cents' => ($fullDays + 1) * (int) $nextDayFare->price_per_day_cents,
+            'billable_days' => $fullDays + 1,
+            'pricing_mode' => 'daily_fallback_next_day',
+            'extra_hours_charged' => $extraHours,
+        ];
+    }
+
+    private function resolveDailyFare(int $carId, int $priceTypeId, int $days): ?DailyFare
+    {
+        return DailyFare::query()
+            ->where('car_id', $carId)
+            ->where('price_type_id', $priceTypeId)
+            ->where('from_days', '<=', $days)
+            ->where('to_days', '>=', $days)
+            ->orderBy('from_days', 'desc')
+            ->first();
     }
 
     private function assertRestrictions(CarbonInterface $pickupAt, CarbonInterface $dropoffAt, int $rentalDays): void
@@ -206,6 +324,7 @@ class RentalQuoteService
     private function applySpecialPrices(
         int $baseRentalCents,
         int $carId,
+        int $priceTypeId,
         int $pickupLocationId,
         int $dropoffLocationId,
         CarbonInterface $pickupAt,
@@ -220,7 +339,7 @@ class RentalQuoteService
             ->get();
 
         foreach ($specials as $sp) {
-            if (! $this->specialMatches($sp, $carId, $pickupLocationId, $dropoffLocationId, $pickupAt, $dropoffAt)) {
+            if (! $this->specialMatches($sp, $carId, $priceTypeId, $pickupLocationId, $dropoffLocationId, $pickupAt, $dropoffAt)) {
                 continue;
             }
 
@@ -248,6 +367,7 @@ class RentalQuoteService
     private function specialMatches(
         SpecialPrice $sp,
         int $carId,
+        int $priceTypeId,
         int $pickupLocationId,
         int $dropoffLocationId,
         CarbonInterface $pickupAt,
@@ -268,6 +388,10 @@ class RentalQuoteService
         }
 
         if ($sp->vehicle_ids !== null && $sp->vehicle_ids !== [] && ! in_array($carId, $sp->vehicle_ids, true)) {
+            return false;
+        }
+        if ($sp->price_type_ids !== null && $sp->price_type_ids !== []
+            && ! in_array($priceTypeId, $sp->price_type_ids, true)) {
             return false;
         }
         if ($sp->pickup_location_ids !== null && $sp->pickup_location_ids !== []
@@ -299,24 +423,47 @@ class RentalQuoteService
         CarbonInterface $pickupAt,
         CarbonInterface $dropoffAt,
         int $rentalDays,
+        int $defaultTaxBips,
     ): array {
         $feesCents = 0;
         $feesLines = [];
 
         $locationFees = LocationFee::query()
             ->where('is_active', true)
-            ->where('pickup_location_id', $pickupLocationId)
-            ->where('dropoff_location_id', $dropoffLocationId)
+            ->where(function ($query) use ($pickupLocationId, $dropoffLocationId): void {
+                $query->where(function ($q) use ($pickupLocationId, $dropoffLocationId): void {
+                    $q->where('pickup_location_id', $pickupLocationId)
+                        ->where('dropoff_location_id', $dropoffLocationId);
+                })->orWhere(function ($q) use ($pickupLocationId, $dropoffLocationId): void {
+                    $q->where('apply_inverted', true)
+                        ->where('pickup_location_id', $dropoffLocationId)
+                        ->where('dropoff_location_id', $pickupLocationId);
+                });
+            })
+            ->orderBy('id')
             ->get();
+
+        if ($pickupLocationId !== $dropoffLocationId && $locationFees->where('is_one_way_fee', true)->isEmpty()) {
+            $globalOneWay = LocationFee::query()
+                ->where('is_active', true)
+                ->where('is_one_way_fee', true)
+                ->orderBy('id')
+                ->first();
+
+            if ($globalOneWay !== null && ! $locationFees->contains('id', $globalOneWay->id)) {
+                $locationFees->push($globalOneWay);
+            }
+        }
 
         foreach ($locationFees as $fee) {
             if ($fee->is_one_way_fee && $pickupLocationId === $dropoffLocationId) {
                 continue;
             }
 
+            $baseCost = $this->resolveLocationFeeCostForRentalDays($fee, $rentalDays);
             $amount = $fee->multiply_by_days
-                ? (int) $fee->cost_cents * $rentalDays
-                : (int) $fee->cost_cents;
+                ? $baseCost * $rentalDays
+                : $baseCost;
 
             if ($amount <= 0) {
                 continue;
@@ -327,6 +474,7 @@ class RentalQuoteService
             $feesLines[] = [
                 'label' => $label,
                 'amount_cents' => $amount,
+                'tax_bips' => $this->taxBipsForTaxRateId($fee->tax_rate_id, $defaultTaxBips),
             ];
         }
 
@@ -336,12 +484,14 @@ class RentalQuoteService
             }
 
             $sumForRule = 0;
+            $pickupCharge = (int) ($ooh->pickup_cost_cents ?? $ooh->cost_cents ?? 0);
+            $dropoffCharge = (int) ($ooh->dropoff_cost_cents ?? $ooh->cost_cents ?? 0);
 
             if (in_array($ooh->applies_to, ['pickup', 'both'], true) && $this->oohMatchesEndpoint($ooh, $pickupAt, $pickupLocationId)) {
-                $sumForRule += (int) $ooh->cost_cents;
+                $sumForRule += $pickupCharge;
             }
             if (in_array($ooh->applies_to, ['dropoff', 'both'], true) && $this->oohMatchesEndpoint($ooh, $dropoffAt, $dropoffLocationId)) {
-                $sumForRule += (int) $ooh->cost_cents;
+                $sumForRule += $dropoffCharge;
             }
 
             if ($ooh->max_combined_charge_cents !== null) {
@@ -351,8 +501,11 @@ class RentalQuoteService
             if ($sumForRule > 0) {
                 $feesCents += $sumForRule;
                 $feesLines[] = [
-                    'label' => 'Out-of-hours fee #'.$ooh->id,
+                    'label' => ($ooh->name !== null && $ooh->name !== '')
+                        ? 'Out-of-hours: '.$ooh->name
+                        : 'Out-of-hours fee #'.$ooh->id,
                     'amount_cents' => $sumForRule,
+                    'tax_bips' => $this->taxBipsForTaxRateId($ooh->tax_rate_id, $defaultTaxBips),
                 ];
             }
         }
@@ -403,5 +556,110 @@ class RentalQuoteService
         }
 
         return $minutes >= $fromMin || $minutes < $toMin;
+    }
+
+    private function resolveLocationFeeCostForRentalDays(LocationFee $fee, int $rentalDays): int
+    {
+        $overrides = $fee->day_overrides;
+        if (is_array($overrides) && array_key_exists((string) $rentalDays, $overrides)) {
+            return max(0, (int) $overrides[(string) $rentalDays]);
+        }
+
+        return (int) $fee->cost_cents;
+    }
+
+    private function computeTaxCents(
+        int $baseRentalCents,
+        int $baseTaxBips,
+        array $extrasLines,
+        array $feesLines,
+        int $discountCents,
+        int $subtotalBeforeDiscount,
+    ): int {
+        $lines = [];
+        $lines[] = ['amount_cents' => $baseRentalCents, 'tax_bips' => $baseTaxBips, 'discountable' => true];
+
+        foreach ($extrasLines as $line) {
+            $lines[] = [
+                'amount_cents' => (int) $line['total_cents'],
+                'tax_bips' => (int) ($line['tax_bips'] ?? 0),
+                'discountable' => true,
+            ];
+        }
+        foreach ($feesLines as $line) {
+            $lines[] = [
+                'amount_cents' => (int) $line['amount_cents'],
+                'tax_bips' => (int) ($line['tax_bips'] ?? 0),
+                'discountable' => false,
+            ];
+        }
+
+        $discountableIndexes = [];
+        foreach ($lines as $idx => $line) {
+            if ($line['discountable']) {
+                $discountableIndexes[] = $idx;
+            }
+        }
+
+        $remainingDiscount = min(max(0, $discountCents), max(0, $subtotalBeforeDiscount));
+        $lastDiscountableIdx = end($discountableIndexes);
+
+        foreach ($discountableIndexes as $idx) {
+            $amount = max(0, (int) $lines[$idx]['amount_cents']);
+            if ($remainingDiscount <= 0 || $amount <= 0) {
+                $lines[$idx]['discount_share'] = 0;
+                continue;
+            }
+
+            if ($idx === $lastDiscountableIdx) {
+                $share = min($remainingDiscount, $amount);
+            } else {
+                $share = min($amount, (int) floor($discountCents * ($amount / max(1, $subtotalBeforeDiscount))));
+            }
+
+            $lines[$idx]['discount_share'] = $share;
+            $remainingDiscount -= $share;
+        }
+
+        if ($remainingDiscount > 0 && $lastDiscountableIdx !== false) {
+            $lines[$lastDiscountableIdx]['discount_share'] = min(
+                (int) $lines[$lastDiscountableIdx]['amount_cents'],
+                (int) (($lines[$lastDiscountableIdx]['discount_share'] ?? 0) + $remainingDiscount)
+            );
+        }
+
+        $taxTotal = 0;
+
+        foreach ($lines as $line) {
+            $amount = (int) $line['amount_cents'];
+            if ($amount <= 0) {
+                continue;
+            }
+
+            $discountShare = (int) ($line['discount_share'] ?? 0);
+            $taxableAmount = max(0, $amount - $discountShare);
+            $taxTotal += (int) floor($taxableAmount * (int) $line['tax_bips'] / 10000);
+        }
+
+        return $taxTotal;
+    }
+
+    private function defaultTaxBips(): int
+    {
+        return (int) data_get(Setting::getValue('shop.default_tax', ['basis_points' => 0]), 'basis_points', 0);
+    }
+
+    private function taxBipsForTaxRateId(?int $taxRateId, int $defaultTaxBips): int
+    {
+        if ($taxRateId === null) {
+            return $defaultTaxBips;
+        }
+
+        $rate = TaxRate::query()->find($taxRateId);
+        if ($rate === null) {
+            return $defaultTaxBips;
+        }
+
+        return max(0, (int) $rate->basis_points);
     }
 }

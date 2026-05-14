@@ -15,17 +15,18 @@ class DailyFaresTable
         return $table
             ->columns([
                 TextColumn::make('car.name')
+                    ->label('Vehicle')
                     ->searchable(),
                 TextColumn::make('priceType.name')
+                    ->label('Price type')
                     ->searchable(),
                 TextColumn::make('from_days')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('to_days')
-                    ->numeric()
+                    ->label('Fare for days')
+                    ->formatStateUsing(fn ($record): string => (string) $record->from_days.'–'.(string) $record->to_days)
                     ->sortable(),
                 TextColumn::make('price_per_day_cents')
-                    ->numeric()
+                    ->label('Price (ISK / day)')
+                    ->formatStateUsing(fn ($state): string => number_format(((int) $state) / 100, 2, ',', '.').' ISK')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

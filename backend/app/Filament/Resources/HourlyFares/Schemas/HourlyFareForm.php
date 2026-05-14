@@ -14,19 +14,28 @@ class HourlyFareForm
             ->components([
                 Select::make('car_id')
                     ->relationship('car', 'name')
-                    ->required(),
+                    ->required()
+                    ->searchable(),
                 Select::make('price_type_id')
                     ->relationship('priceType', 'name')
-                    ->required(),
+                    ->required()
+                    ->searchable(),
                 TextInput::make('min_minutes')
+                    ->label('Min minutes')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(1),
                 TextInput::make('max_minutes')
+                    ->label('Max minutes')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(1)
+                    ->rule('gte:min_minutes'),
                 TextInput::make('total_price_cents')
+                    ->label('Total price (cents)')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(0),
             ]);
     }
 }

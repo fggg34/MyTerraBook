@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Locations\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -16,25 +15,26 @@ class LocationsTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('slug')
-                    ->searchable(),
+                    ->label('Location Name')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('address')
-                    ->searchable(),
-                TextColumn::make('latitude')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('longitude')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Location Address')
+                    ->searchable()
+                    ->placeholder('—'),
+                TextColumn::make('taxRate.name')
+                    ->label('Override Tax Rate')
+                    ->placeholder('—'),
                 TextColumn::make('default_opening_time')
-                    ->time()
-                    ->sortable(),
-                TextColumn::make('suggested_preselected_time')
-                    ->time()
-                    ->sortable(),
-                IconColumn::make('is_active')
-                    ->boolean(),
+                    ->label('Opens')
+                    ->time('H:i')
+                    ->sortable()
+                    ->placeholder('—'),
+                TextColumn::make('default_closing_time')
+                    ->label('Closes')
+                    ->time('H:i')
+                    ->sortable()
+                    ->placeholder('—'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

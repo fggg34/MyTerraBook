@@ -10,6 +10,15 @@ class ListRentalOptions extends ListRecords
 {
     protected static string $resource = RentalOptionResource::class;
 
+    public function getPageClasses(): array
+    {
+        return [
+            ...parent::getPageClasses(),
+            'ir-rental-options-page',
+            'ir-rental-options-page--list',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

@@ -2,8 +2,10 @@
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Api\Admin\AdminOrdersCsvExportController;
+use App\Http\Controllers\Api\Admin\AdminReportsController;
 use App\Http\Controllers\Api\Admin\AdminStatsController;
 use App\Http\Controllers\Api\Admin\CategoryApiController;
+use App\Http\Controllers\Api\Admin\OrderCheckinPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
@@ -69,8 +71,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::get('stats', AdminStatsController::class)->name('api.admin.stats');
+    Route::get('reports', AdminReportsController::class)->name('api.admin.reports');
     Route::get('orders/export.csv', AdminOrdersCsvExportController::class)->name('api.admin.orders.export-csv');
     Route::get('orders/{order}/contract.pdf', [OrderContractPdfController::class, 'show'])->name('api.admin.orders.contract-pdf');
+    Route::get('orders/{order}/checkin.pdf', [OrderCheckinPdfController::class, 'show'])->name('api.admin.orders.checkin-pdf');
     Route::apiResource('categories', CategoryApiController::class)->names([
         'index' => 'api.admin.categories.index',
         'store' => 'api.admin.categories.store',

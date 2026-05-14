@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -15,7 +16,10 @@ class Location extends Model
         'address',
         'latitude',
         'longitude',
+        'tax_rate_id',
+        'description',
         'default_opening_time',
+        'default_closing_time',
         'suggested_preselected_time',
         'is_active',
     ];
@@ -51,6 +55,11 @@ class Location extends Model
         return $slug;
     }
 
+    public function taxRate(): BelongsTo
+    {
+        return $this->belongsTo(TaxRate::class);
+    }
+
     public function schedules(): HasMany
     {
         return $this->hasMany(LocationSchedule::class);
@@ -66,5 +75,15 @@ class Location extends Model
         return $this->belongsToMany(Car::class, 'car_location')
             ->withPivot(['allows_pickup', 'allows_dropoff'])
             ->withTimestamps();
+    }
+
+    public function dropoffCombinations(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Location::class,
+            'location_dropoff_combinations',
+            'pickup_location_id',
+            'dropoff_location_id',
+        );
     }
 }

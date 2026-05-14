@@ -10,6 +10,15 @@ class ListCategories extends ListRecords
 {
     protected static string $resource = CategoryResource::class;
 
+    public function getPageClasses(): array
+    {
+        return [
+            ...parent::getPageClasses(),
+            'ir-categories-page',
+            'ir-categories-page--list',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

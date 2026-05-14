@@ -13,12 +13,14 @@ class Characteristic extends Model
         'slug',
         'icon_path',
         'display_text',
+        'sort_order',
         'is_search_filter',
     ];
 
     protected function casts(): array
     {
         return [
+            'sort_order' => 'integer',
             'is_search_filter' => 'boolean',
         ];
     }

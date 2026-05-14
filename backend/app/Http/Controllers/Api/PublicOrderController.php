@@ -13,6 +13,7 @@ use App\Models\CouponRedemption;
 use App\Models\Order;
 use App\Models\OrderLineItem;
 use App\Models\OrderRentalOption;
+use App\Models\Setting;
 use App\Services\OrderAvailabilityService;
 use App\Services\RentalQuoteService;
 use App\Support\Money;
@@ -100,6 +101,8 @@ class PublicOrderController extends Controller
         }
 
         $order = DB::transaction(function () use ($request, $car, $pickup, $dropoff, $quote) {
+            $lockMinutes = max(1, (int) data_get(Setting::getValue('shop.payment_lock_minutes', ['minutes' => 20]), 'minutes', 20));
+
             $order = Order::query()->create([
                 'user_id' => $request->user()?->id,
                 'car_id' => $car->id,
@@ -108,7 +111,7 @@ class PublicOrderController extends Controller
                 'dropoff_location_id' => $request->integer('dropoff_location_id'),
                 'pickup_at' => $pickup,
                 'dropoff_at' => $dropoff,
-                'order_status' => OrderStatus::Pending,
+                'order_status' => OrderStatus::StandBy,
                 'rental_status' => null,
                 'customer_name' => $request->string('customer_name'),
                 'customer_email' => $request->string('customer_email'),
@@ -123,6 +126,7 @@ class PublicOrderController extends Controller
                 'currency' => $quote['currency'],
                 'coupon_id' => $quote['coupon_id'],
                 'pricing_snapshot' => $quote,
+                'payment_lock_expires_at' => now()->addMinutes($lockMinutes),
             ]);
 
             OrderLineItem::query()->create([

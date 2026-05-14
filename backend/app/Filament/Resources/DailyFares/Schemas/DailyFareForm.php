@@ -14,19 +14,28 @@ class DailyFareForm
             ->components([
                 Select::make('car_id')
                     ->relationship('car', 'name')
-                    ->required(),
+                    ->required()
+                    ->searchable(),
                 Select::make('price_type_id')
                     ->relationship('priceType', 'name')
-                    ->required(),
+                    ->required()
+                    ->searchable(),
                 TextInput::make('from_days')
+                    ->label('From days')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(1),
                 TextInput::make('to_days')
+                    ->label('To days')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(1)
+                    ->rule('gte:from_days'),
                 TextInput::make('price_per_day_cents')
+                    ->label('Price per day (cents)')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->minValue(0),
             ]);
     }
 }

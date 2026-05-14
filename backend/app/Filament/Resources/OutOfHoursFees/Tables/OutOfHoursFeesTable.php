@@ -15,6 +15,8 @@ class OutOfHoursFeesTable
     {
         return $table
             ->columns([
+                TextColumn::make('name')
+                    ->searchable(),
                 TextColumn::make('time_from')
                     ->time()
                     ->sortable(),
@@ -23,12 +25,21 @@ class OutOfHoursFeesTable
                     ->sortable(),
                 TextColumn::make('applies_to')
                     ->searchable(),
-                TextColumn::make('cost_cents')
+                TextColumn::make('pickup_cost_cents')
+                    ->label('Pick Up Charge')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('dropoff_cost_cents')
+                    ->label('Drop Off Charge')
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('max_combined_charge_cents')
+                    ->label('Max Charge')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('taxRate.name')
+                    ->label('Tax Rate')
+                    ->toggleable(),
                 IconColumn::make('is_active')
                     ->boolean(),
                 TextColumn::make('created_at')

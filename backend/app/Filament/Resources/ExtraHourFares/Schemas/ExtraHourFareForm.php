@@ -14,13 +14,17 @@ class ExtraHourFareForm
             ->components([
                 Select::make('car_id')
                     ->relationship('car', 'name')
-                    ->required(),
+                    ->required()
+                    ->searchable(),
                 Select::make('price_type_id')
                     ->relationship('priceType', 'name')
-                    ->required(),
-                TextInput::make('charge_per_extra_hour_cents')
                     ->required()
-                    ->numeric(),
+                    ->searchable(),
+                TextInput::make('charge_per_extra_hour_cents')
+                    ->label('Charge per extra hour (cents)')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0),
             ]);
     }
 }

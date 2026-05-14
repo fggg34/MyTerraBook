@@ -67,7 +67,31 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
-                fn (): string => view('filament.panel.body-end-scripts')->render(),
+                function (): string {
+                    // #region agent log
+                    @file_put_contents(
+                        '/Users/anxhelo/Desktop/MyTerraRental/.cursor/debug-89c176.log',
+                        json_encode([
+                            'sessionId' => '89c176',
+                            'runId' => 'initial',
+                            'hypothesisId' => 'H2',
+                            'location' => 'AdminPanelProvider.php:BODY_END',
+                            'message' => 'Filament BODY_END hook executed',
+                            'data' => [
+                                'path' => request()->path(),
+                            ],
+                            'timestamp' => (int) round(microtime(true) * 1000),
+                        ], JSON_UNESCAPED_SLASHES) . PHP_EOL,
+                        FILE_APPEND
+                    );
+                    // #endregion
+
+                    return view('filament.panel.body-end-scripts')->render();
+                },
+            )
+            ->renderHook(
+                PanelsRenderHook::PAGE_START,
+                fn (): string => view('filament.panel.impact-rent-editor-quick-access')->render(),
             );
     }
 }

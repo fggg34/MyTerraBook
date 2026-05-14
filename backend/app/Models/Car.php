@@ -18,6 +18,7 @@ class Car extends Model
         'transmission',
         'fuel_type',
         'main_image_path',
+        'details_image_paths',
         'units_available',
         'ical_import_url',
         'is_active',
@@ -27,6 +28,7 @@ class Car extends Model
     {
         return [
             'units_available' => 'integer',
+            'details_image_paths' => 'array',
             'is_active' => 'boolean',
         ];
     }
@@ -117,5 +119,10 @@ class Car extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function availabilityBlocks(): HasMany
+    {
+        return $this->hasMany(AvailabilityBlock::class);
     }
 }

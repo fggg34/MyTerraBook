@@ -10,6 +10,15 @@ class ListCharacteristics extends ListRecords
 {
     protected static string $resource = CharacteristicResource::class;
 
+    public function getPageClasses(): array
+    {
+        return [
+            ...parent::getPageClasses(),
+            'ir-characteristics-page',
+            'ir-characteristics-page--list',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

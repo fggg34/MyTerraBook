@@ -32,6 +32,7 @@ class CarDetailResource extends JsonResource
             'fuel_type' => filled($car->fuel_type) ? $car->fuel_type : '—',
             'units_available' => $car->units_available,
             'main_image_path' => $car->main_image_path,
+            'details_image_paths' => $car->details_image_paths ?? [],
             'price_types' => collect($this->priceTypes)->map(fn (array $row) => [
                 'id' => $row['id'],
                 'name' => $row['name'],

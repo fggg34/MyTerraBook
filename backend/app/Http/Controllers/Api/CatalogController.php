@@ -14,12 +14,17 @@ use App\Models\DailyFare;
 use App\Models\Location;
 use App\Models\Order;
 use App\Models\PriceType;
+use App\Services\OrderAvailabilityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CatalogController extends Controller
 {
+    public function __construct(
+        private readonly OrderAvailabilityService $availabilityService,
+    ) {}
+
     public function categories(): JsonResponse
     {
         $rows = Category::query()->where('is_active', true)->orderBy('sort_order')->get();
@@ -124,9 +129,31 @@ class CatalogController extends Controller
             'end' => $o->dropoff_at->toIso8601String(),
         ]);
 
+        $blocked = $this->availabilityService->blockedWindowsForCar($car->id)
+            ->map(fn ($block) => [
+                'id' => $block->id,
+                'source' => $block->source,
+                'start' => $block->starts_at->toIso8601String(),
+                'end' => $block->ends_at->toIso8601String(),
+                'units_blocked' => $block->units_blocked,
+                'notes' => $block->notes,
+            ])
+            ->values();
+
+        $locks = $this->availabilityService->standbyLockWindowsForCar($car->id)
+            ->map(fn (Order $order) => [
+                'id' => $order->id,
+                'source' => 'standby_lock',
+                'start' => $order->pickup_at->toIso8601String(),
+                'end' => $order->dropoff_at->toIso8601String(),
+                'units_blocked' => 1,
+                'expires_at' => $order->payment_lock_expires_at?->toIso8601String(),
+            ])
+            ->values();
+
         return response()->json([
             'booked' => $booked,
-            'blocked' => [],
+            'blocked' => $blocked->merge($locks)->values(),
         ]);
     }
 }

@@ -45,5 +45,13 @@ class DatabaseSeeder extends Seeder
             ['key' => 'shop.default_tax'],
             ['value' => ['basis_points' => 0]]
         );
+        Setting::query()->firstOrCreate(
+            ['key' => 'shop.extended_gratuity_period'],
+            ['value' => ['hours' => 0]]
+        );
+        Setting::query()->firstOrCreate(
+            ['key' => 'shop.payment_lock_minutes'],
+            ['value' => ['minutes' => 20]]
+        );
     }
 }
