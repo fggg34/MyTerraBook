@@ -1,12 +1,18 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-function GlobeIcon() {
+function NavLink({ href, children, onClick }) {
+  if (href?.startsWith('/') && !href.startsWith('//')) {
+    return (
+      <Link to={href} onClick={onClick}>
+        {children}
+      </Link>
+    )
+  }
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M3 12h18M12 3c2.5 2.8 4 6 4 9s-1.5 6.2-4 9M12 3c-2.5 2.8-4 6-4 9s1.5 6.2 4 9" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
+    <a href={href || '#'} onClick={onClick}>
+      {children}
+    </a>
   )
 }
 
@@ -21,79 +27,78 @@ export default function Header({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const renderLink = (link) => {
-    const isExternal = link.href?.startsWith('http') || link.href?.startsWith('#')
-    if (isExternal) {
-      return (
-        <a key={link.label} href={link.href}>
-          {link.label}
-        </a>
-      )
-    }
-    return (
-      <Link key={link.label} to={link.href || '/'}>
-        {link.label}
-      </Link>
-    )
-  }
+  const closeMobile = () => setMobileOpen(false)
 
   return (
-    <header className="hp-header">
-      <div className="homepage-wrap hp-header-inner">
-        <Link to="/" className="hp-logo">
-          <span className="hp-logo-icon">
-            <GlobeIcon />
+    <header className="nav">
+      <div className="wrap">
+        <Link to="/" className="logo">
+          <span className="mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
+              <path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
+            </svg>
           </span>
           <span>
-            My<span className="green">Terra</span>Book
+            My<span className="terra">Terra</span>Book
           </span>
         </Link>
 
-        <nav className="hp-nav" aria-label="Main">
-          {navLinks.map(renderLink)}
+        <nav className="main" aria-label="Main">
+          {navLinks.map((link) => (
+            <NavLink key={link.label} href={link.href}>
+              {link.label}
+            </NavLink>
+          ))}
         </nav>
 
-        <div className="hp-header-actions">
-          <button type="button" className="hp-lang-btn" aria-label="Language and currency">
-            <GlobeIcon />
+        <div className="nav-right">
+          <button className="lang-cur" type="button" aria-label="Language and currency">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
+            </svg>
             <span>{langLabel}</span>
-            <span className="hp-lang-divider" />
+            <span className="lc-div" />
             <span>{currencyLabel}</span>
           </button>
           {ctaLabel && (
-            <a href={ctaHref || '#'} className="hp-btn-host">
+            <button className="host" type="button" onClick={() => (window.location.href = ctaHref || '#host')}>
               {ctaLabel}
-            </a>
+            </button>
           )}
-          {signInLabel && (
-            signInHref?.startsWith('/') ? (
-              <Link to={signInHref} className="hp-btn-signin">
+          {signInLabel &&
+            (signInHref?.startsWith('/') ? (
+              <Link className="signin" to={signInHref}>
                 {signInLabel}
               </Link>
             ) : (
-              <a href={signInHref || '/login'} className="hp-btn-signin">
+              <button className="signin" type="button" onClick={() => (window.location.href = signInHref || '/login')}>
                 {signInLabel}
-              </a>
-            )
-          )}
+              </button>
+            ))}
           <button
+            className="hamburger"
             type="button"
-            className="hp-hamburger"
-            aria-label="Open menu"
+            aria-label="Menu"
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen((v) => !v)}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
           </button>
         </div>
       </div>
 
-      <div className={`hp-mobile-menu ${mobileOpen ? 'open' : ''}`}>
-        {navLinks.map(renderLink)}
+      <div className={`mobile-menu ${mobileOpen ? 'open' : ''}`} id="mobileMenu">
+        {navLinks.map((link) => (
+          <NavLink key={link.label} href={link.href} onClick={closeMobile}>
+            {link.label}
+          </NavLink>
+        ))}
         {ctaLabel && (
-          <a href={ctaHref || '#'} className="hp-btn-host" style={{ width: 'fit-content' }}>
+          <a href={ctaHref || '#host'} onClick={closeMobile}>
             {ctaLabel}
           </a>
         )}

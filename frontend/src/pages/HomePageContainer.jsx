@@ -1,35 +1,52 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
-import { PageLoader } from '../components/ui/LoadingSpinner'
+import { defaultHomepageData } from '../data/defaultHomepageData'
+import { mapCarsToPickCards } from '../utils/mapCarsToPickCards'
+import { mergeHomepageData } from '../utils/mergeHomepageData'
 import HomePage from './HomePage'
+
+function withBackendCars(pageData, cars = []) {
+  if (!cars.length) return pageData
+
+  const pickCards = mapCarsToPickCards(cars).slice(0, 8)
+  return {
+    ...pageData,
+    picksSection: {
+      ...pageData.picksSection,
+      items: {
+        ...pageData.picksSection.items,
+        car: pickCards,
+      },
+    },
+  }
+}
 
 export default function HomePageContainer() {
   const [pageData, setPageData] = useState(null)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
-    api
-      .get('/homepage')
-      .then((res) => setPageData(res.data))
-      .catch((err) => {
-        setError(err.response?.data?.message || 'Could not load homepage content.')
+    document.body.classList.add('homepage-active')
+    document.documentElement.style.scrollBehavior = 'smooth'
+
+    Promise.all([
+      api.get('/homepage').catch(() => ({ data: {} })),
+      api.get('/cars').catch(() => ({ data: { data: [] } })),
+    ])
+      .then(([homeRes, carsRes]) => {
+        const merged = mergeHomepageData(homeRes.data)
+        const cars = carsRes.data?.data ?? []
+        setPageData(withBackendCars(merged, cars))
       })
+      .catch(() => setPageData(defaultHomepageData))
+
+    return () => {
+      document.body.classList.remove('homepage-active')
+      document.documentElement.style.scrollBehavior = ''
+    }
   }, [])
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-brand-950 px-6 text-center text-white">
-        <p>{error}</p>
-      </div>
-    )
-  }
-
   if (!pageData) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-brand-950">
-        <PageLoader />
-      </div>
-    )
+    return <HomePage pageData={defaultHomepageData} />
   }
 
   return <HomePage pageData={pageData} />
