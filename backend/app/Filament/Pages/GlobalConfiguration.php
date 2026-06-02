@@ -12,6 +12,8 @@ use UnitEnum;
 
 class GlobalConfiguration extends Page
 {
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $cluster = ImpactRentCluster::class;
 
     protected string $view = 'filament.pages.global-configuration';

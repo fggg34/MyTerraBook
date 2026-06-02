@@ -14,6 +14,8 @@ use UnitEnum;
 
 class OrdersCalendar extends Page
 {
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $cluster = ImpactRentCluster::class;
 
     protected string $view = 'filament.pages.orders-calendar';
