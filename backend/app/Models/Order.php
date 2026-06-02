@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Enums\OrderStatus;
 use App\Enums\RentalStatus;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,8 @@ use Illuminate\Support\Str;
 
 class Order extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'reference',
         'user_id',

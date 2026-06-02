@@ -1,336 +1,158 @@
-* {
-  box-sizing: border-box;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
-  background: #f0f0f0;
-  color: #1a1a1a;
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 
-a {
-  color: #333;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.app {
-  min-height: 100vh;
-}
-
-.nav {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
-}
-
-.nav nav {
-  display: flex;
-  gap: 1rem;
-}
-
-.nav a {
-  text-decoration: none;
-}
-
-.nav a:hover {
-  text-decoration: underline;
-}
-
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.card {
-  background: #fff;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.actions {
-  display: flex;
-  gap: 1rem;
-}
-
-input,
-select,
-button {
-  width: 100%;
-  padding: 0.625rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.inline-form {
-  display: flex;
-  gap: 0.5rem;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.muted {
-  color: #666;
-  line-height: 1.5;
-}
-
-/* Car detail (rental product) — minimal grey / white */
-.car-detail-page {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1.25rem 0 2.5rem;
-}
-
-.car-detail-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.car-detail-breadcrumb {
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-}
-
-.car-detail-layout {
-  display: grid;
-  gap: 1.5rem;
-}
-
-@media (min-width: 720px) {
-  .car-detail-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    align-items: start;
+  body {
+    @apply bg-slate-50 text-brand-900 antialiased;
   }
 }
 
-.car-detail-media {
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
-}
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-accent-hover hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
 
-@media (min-width: 720px) {
-  .car-detail-media {
-    border-bottom: none;
-    border-right: 1px solid #eee;
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-brand-200 bg-white px-5 py-2.5 text-sm font-semibold text-brand-800 transition-all duration-200 hover:border-brand-300 hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-700 focus:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-900;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-brand-900 shadow-sm transition-colors placeholder:text-slate-400 focus:border-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-700/20;
+  }
+
+  .input-field-error {
+    @apply border-red-400 focus:border-red-500 focus:ring-red-500/20;
+  }
+
+  .label-field {
+    @apply mb-1.5 block text-sm font-medium text-brand-800;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold tracking-tight text-brand-950 sm:text-3xl;
+  }
+
+  .section-subtitle {
+    @apply mt-2 max-w-2xl text-slate-600;
   }
 }
 
-.car-detail-image {
-  display: block;
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* react-datepicker — match MyTerraBook brand */
+.tb-datepicker-input {
   width: 100%;
-  height: auto;
-  vertical-align: middle;
 }
 
-.car-detail-placeholder {
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #888;
-  font-size: 0.875rem;
+.react-datepicker-popper,
+.tb-datepicker-popper {
+  z-index: 100 !important;
 }
 
-.car-detail-body {
-  padding: 1.25rem 1.25rem 1.5rem;
+/* Fallback: if portal mode is ever enabled, don't dim the whole page */
+.react-datepicker__portal {
+  background-color: transparent !important;
+  pointer-events: none;
 }
 
-.car-detail-title {
-  margin: 0 0 0.35rem;
-  font-size: 1.5rem;
+.react-datepicker__portal .react-datepicker {
+  pointer-events: auto;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.35);
+}
+
+.tb-datepicker-calendar.react-datepicker {
+  font-family: Inter, system-ui, sans-serif;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgb(16 42 67 / 0.12), 0 8px 10px -6px rgb(16 42 67 / 0.08);
+  overflow: hidden;
+}
+
+.tb-datepicker-calendar .react-datepicker__header {
+  background: #0a1929;
+  border-bottom: none;
+  padding-top: 0.75rem;
+}
+
+.tb-datepicker-calendar .react-datepicker__current-month,
+.tb-datepicker-calendar .react-datepicker-time__header,
+.tb-datepicker-calendar .react-datepicker__day-name {
+  color: #f8fafc;
+}
+
+.tb-datepicker-calendar .react-datepicker__day-name {
   font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.car-detail-muted {
-  color: #666;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.car-detail-error {
-  color: #333;
-  margin: 0 0 0.75rem;
-}
-
-.car-detail-facts {
-  display: grid;
-  gap: 0.75rem;
-  margin: 1.25rem 0 0;
-  padding: 0;
-}
-
-.car-detail-facts dt {
-  margin: 0;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #888;
 }
 
-.car-detail-facts dd {
-  margin: 0.2rem 0 0;
-  font-size: 0.95rem;
+.tb-datepicker-calendar .react-datepicker__navigation-icon::before {
+  border-color: #f8fafc;
 }
 
-.car-detail-block {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid #eee;
+.tb-datepicker-calendar .react-datepicker__day {
+  border-radius: 0.375rem;
+  color: #102a43;
+  transition: background-color 0.15s, color 0.15s;
 }
 
-.car-detail-heading {
-  margin: 0 0 0.65rem;
-  font-size: 0.8rem;
+.tb-datepicker-calendar .react-datepicker__day:hover {
+  background: #f0f4f8;
+}
+
+.tb-datepicker-calendar .react-datepicker__day--selected,
+.tb-datepicker-calendar .react-datepicker__day--keyboard-selected {
+  background: #ea580c !important;
+  color: #fff !important;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #555;
 }
 
-.car-detail-text {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.55;
-  white-space: pre-wrap;
+.tb-datepicker-calendar .react-datepicker__day--disabled {
+  color: #cbd5e1;
 }
 
-.car-detail-list {
-  margin: 0;
-  padding-left: 1.15rem;
-  font-size: 0.95rem;
-  line-height: 1.5;
+.tb-datepicker-calendar .react-datepicker__day--outside-month {
+  color: #94a3b8;
 }
 
-.car-detail-list--choice {
-  list-style: none;
-  padding-left: 0;
+.tb-datepicker-calendar .react-datepicker__time-container {
+  border-left: 1px solid #e2e8f0;
 }
 
-.car-detail-list li {
-  margin-bottom: 0.65rem;
+.tb-datepicker-calendar .react-datepicker__time-container .react-datepicker__time {
+  background: #fff;
 }
 
-.car-detail-list-main {
-  display: block;
-  font-weight: 500;
+.tb-datepicker-calendar .react-datepicker__time-list-item--selected {
+  background: #ea580c !important;
+  color: #fff !important;
+  font-weight: 600;
 }
 
-.car-detail-sub {
-  margin: 0.25rem 0 0;
-  font-size: 0.85rem;
+.tb-datepicker-calendar .react-datepicker__time-list-item:hover {
+  background: #ffedd5 !important;
 }
 
-.car-detail-radio {
-  display: flex;
-  gap: 0.5rem;
-  align-items: flex-start;
-  cursor: pointer;
-}
-
-.car-detail-radio input {
-  width: auto;
-  margin-top: 0.2rem;
-}
-
-.car-detail-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.car-detail-tags li {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 3px;
-  font-size: 0.85rem;
-  background: #fafafa;
-}
-
-.car-detail-actions {
-  margin-top: 1.75rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid #eee;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.car-detail-button {
-  display: inline-block;
-  padding: 0.55rem 1rem;
-  background: #1a1a1a;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  border: 1px solid #1a1a1a;
-}
-
-.car-detail-button:hover {
-  background: #333;
-  border-color: #333;
-  color: #fff;
-}
-
-.car-detail-link {
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.car-detail-link--secondary {
-  text-decoration: none;
-  border-bottom: 1px solid #999;
-}
-
-.error-text {
-  color: #b42318;
-}
-
-.app-preview-loading {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #0a0d12;
-}
-
-.app-preview-loading-inner {
-  width: 2rem;
-  height: 2rem;
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  border-top-color: #e8a317;
-  border-radius: 50%;
-  animation: app-spin 0.7s linear infinite;
-}
-
-@keyframes app-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}

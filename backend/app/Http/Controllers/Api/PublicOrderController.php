@@ -17,6 +17,7 @@ use App\Models\Setting;
 use App\Services\OrderAvailabilityService;
 use App\Services\RentalQuoteService;
 use App\Support\Money;
+use App\Support\QuotePresentation;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -52,7 +53,21 @@ class PublicOrderController extends Controller
 
         return response()->json([
             'rental_subtotal' => Money::formatDecimalFromCents($quote['base_rental_cents']),
+            'rental_before_specials' => Money::formatDecimalFromCents($quote['rental_before_specials_cents']),
+            'special_discount_amount' => Money::formatDecimalFromCents($quote['special_discount_cents']),
+            'special_surcharge_amount' => Money::formatDecimalFromCents($quote['special_surcharge_cents']),
+            'special_prices_applied' => array_map(
+                fn (array $line) => [
+                    'name' => $line['name'],
+                    'type' => $line['type'],
+                    'direction' => $line['direction'],
+                    'is_promotion' => $line['is_promotion'],
+                    'amount' => Money::formatDecimalFromCents($line['amount_cents']),
+                ],
+                $quote['special_prices_applied'],
+            ),
             'fees_subtotal' => Money::formatDecimalFromCents($quote['fees_cents']),
+            'fees_lines' => QuotePresentation::feesLines($quote['fees_lines']),
             'extras_subtotal' => Money::formatDecimalFromCents($quote['extras_cents']),
             'discount_amount' => Money::formatDecimalFromCents($quote['discount_cents']),
             'tax_amount' => Money::formatDecimalFromCents($quote['tax_cents']),

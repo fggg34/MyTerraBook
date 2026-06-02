@@ -55,6 +55,7 @@ Route::prefix('auth')->group(function () {
 
 Route::get('/categories', [CatalogController::class, 'categories']);
 Route::get('/locations', [CatalogController::class, 'locations']);
+Route::get('/booking-restrictions', [CatalogController::class, 'bookingRestrictions']);
 Route::get('/cars', [CatalogController::class, 'cars']);
 Route::get('/cars/{car}', [CatalogController::class, 'car']);
 Route::get('/cars/{car}/availability-calendar', [CatalogController::class, 'availabilityCalendar']);

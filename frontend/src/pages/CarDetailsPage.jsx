@@ -1,71 +1,91 @@
+import { Check, ChevronRight, Gauge } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api, resolveStorageUrl } from '../api'
-
-function buildCheckoutQuery(carId, searchParams) {
-  const next = new URLSearchParams()
-  next.set('car_id', String(carId))
-  for (const [key, value] of searchParams.entries()) {
-    if (key === 'car_id') continue
-    if (value) next.set(key, value)
-  }
-  return next.toString()
-}
+import BookingForm, { buildCheckoutParams } from '../components/cars/BookingForm'
+import CarCard from '../components/cars/CarCard'
+import { PageLoader } from '../components/ui/LoadingSpinner'
+import EmptyState from '../components/ui/EmptyState'
+import { toApiDateTime } from '../utils/format'
 
 export default function CarDetailsPage() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const queryDefaults = Object.fromEntries(searchParams.entries())
+
   const [car, setCar] = useState(null)
+  const [relatedCars, setRelatedCars] = useState([])
   const [loadState, setLoadState] = useState('loading')
   const [selectedPriceTypeId, setSelectedPriceTypeId] = useState('')
+  const [quote, setQuote] = useState(null)
+  const [quoteLoading, setQuoteLoading] = useState(false)
+  const [bookingForm, setBookingForm] = useState(null)
 
   useEffect(() => {
     setLoadState('loading')
-    setCar(null)
     api
       .get(`/cars/${id}`)
       .then((res) => {
         setCar(res.data.data)
         setLoadState('ok')
+        const pts = res.data.data?.price_types || []
+        if (pts.length) setSelectedPriceTypeId(String(pts[0].id))
       })
-      .catch(() => {
-        setCar(null)
-        setLoadState('error')
-      })
+      .catch(() => setLoadState('error'))
   }, [id])
 
-  const checkoutHref = useMemo(() => {
-    if (!car) return '#'
-    const base = buildCheckoutQuery(car.id, searchParams)
-    const qs = new URLSearchParams(base)
-    if (selectedPriceTypeId) qs.set('price_type_id', selectedPriceTypeId)
-    return `/checkout?${qs.toString()}`
-  }, [car, searchParams, selectedPriceTypeId])
-
   useEffect(() => {
-    if (!car?.price_types?.length) {
-      setSelectedPriceTypeId('')
-      return
-    }
-    setSelectedPriceTypeId(String(car.price_types[0].id))
+    if (!car?.category?.id) return
+    api.get('/cars').then((res) => {
+      const all = res.data.data || []
+      setRelatedCars(all.filter((c) => c.id !== car.id && c.category_id === car.category.id).slice(0, 3))
+    })
   }, [car])
 
-  if (loadState === 'loading') {
-    return (
-      <main className="car-detail-page">
-        <p className="car-detail-muted">Loading…</p>
-      </main>
-    )
-  }
+  useEffect(() => {
+    if (!bookingForm || !car) {
+      setQuote(null)
+      return
+    }
+    const { pickup_at, dropoff_at, pickup_location_id, dropoff_location_id, price_type_id } = bookingForm
+    if (!pickup_at || !dropoff_at || !pickup_location_id || !dropoff_location_id || !price_type_id) {
+      setQuote(null)
+      return
+    }
+
+    setQuoteLoading(true)
+    api
+      .post('/orders/quote', {
+        car_id: car.id,
+        price_type_id: Number(price_type_id),
+        pickup_location_id: Number(pickup_location_id),
+        dropoff_location_id: Number(dropoff_location_id),
+        pickup_at: toApiDateTime(pickup_at),
+        dropoff_at: toApiDateTime(dropoff_at),
+      })
+      .then((res) => setQuote(res.data))
+      .catch(() => setQuote(null))
+      .finally(() => setQuoteLoading(false))
+  }, [bookingForm, car])
+
+  const searchQuery = useMemo(() => searchParams.toString(), [searchParams])
+
+  if (loadState === 'loading') return <PageLoader message="Loading vehicle details…" />
 
   if (loadState === 'error' || !car) {
     return (
-      <main className="car-detail-page">
-        <p className="car-detail-error">Could not load this vehicle.</p>
-        <Link to="/cars" className="car-detail-link">
-          Back to list
-        </Link>
-      </main>
+      <div className="mx-auto max-w-7xl px-4 py-16">
+        <EmptyState
+          title="Vehicle not found"
+          description="This car may no longer be available."
+          action={
+            <Link to="/cars" className="btn-primary">
+              Browse all cars
+            </Link>
+          }
+        />
+      </div>
     )
   }
 
@@ -74,144 +94,125 @@ export default function CarDetailsPage() {
   const rentalOptions = car.rental_options ?? []
   const priceTypes = car.price_types ?? []
 
+  const handleBook = (form) => {
+    const params = buildCheckoutParams({ ...form, car_id: car.id })
+    navigate(`/checkout?${params}`)
+  }
+
   return (
-    <main className="car-detail-page">
-      <nav className="car-detail-breadcrumb" aria-label="Breadcrumb">
-        <Link to="/cars" className="car-detail-link">
-          Cars
-        </Link>
-        <span className="car-detail-muted" aria-hidden="true">
-          {' / '}
-        </span>
-        <span>{car.name}</span>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <nav className="mb-6 flex items-center gap-1 text-sm text-slate-500" aria-label="Breadcrumb">
+        <Link to="/" className="hover:text-accent">Home</Link>
+        <ChevronRight className="h-4 w-4" aria-hidden />
+        <Link to="/cars" className="hover:text-accent">Cars</Link>
+        <ChevronRight className="h-4 w-4" aria-hidden />
+        <span className="font-medium text-brand-950">{car.name}</span>
       </nav>
 
-      <article className="car-detail-card">
-        <div className="car-detail-layout">
-          <div className="car-detail-media">
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <div className="overflow-hidden rounded-xl bg-white shadow-card">
             {imageSrc ? (
-              <img src={imageSrc} alt={car.name} className="car-detail-image" />
+              <img src={imageSrc} alt={car.name} className="aspect-[16/9] w-full object-cover" />
             ) : (
-              <div className="car-detail-placeholder" aria-hidden="true">
-                No photo
+              <div className="flex aspect-[16/9] items-center justify-center bg-gradient-to-br from-brand-800 to-brand-950">
+                <Gauge className="h-24 w-24 text-white/20" aria-hidden />
               </div>
             )}
-          </div>
 
-          <div className="car-detail-body">
-            <h1 className="car-detail-title">{car.name}</h1>
-            {car.category?.name && (
-              <p className="car-detail-muted">{car.category.name}</p>
-            )}
+            <div className="p-6 sm:p-8">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  {car.category?.name && (
+                    <span className="text-sm font-semibold uppercase tracking-wide text-accent">
+                      {car.category.name}
+                    </span>
+                  )}
+                  <h1 className="mt-1 text-2xl font-bold text-brand-950 sm:text-3xl">{car.name}</h1>
+                </div>
+              </div>
 
-            <dl className="car-detail-facts">
-              <div>
-                <dt>Capacity (bookable units)</dt>
-                <dd>{car.units_available ?? '—'}</dd>
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                {[
+                  ['Transmission', car.transmission],
+                  ['Fuel', car.fuel_type],
+                  ['Available units', car.units_available],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-lg bg-slate-50 p-4">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</dt>
+                    <dd className="mt-1 font-semibold capitalize text-brand-950">{value ?? '—'}</dd>
+                  </div>
+                ))}
               </div>
-              <div>
-                <dt>Transmission</dt>
-                <dd>{car.transmission || '—'}</dd>
-              </div>
-              <div>
-                <dt>Fuel</dt>
-                <dd>{car.fuel_type || '—'}</dd>
-              </div>
-            </dl>
 
-            {car.description ? (
-              <div className="car-detail-block">
-                <h2 className="car-detail-heading">Description</h2>
-                <p className="car-detail-text">{car.description}</p>
-              </div>
-            ) : null}
-
-            <div className="car-detail-block">
-              <h2 className="car-detail-heading">Price type</h2>
-              {priceTypes.length === 0 ? (
-                <p className="car-detail-muted">No prices configured for this vehicle.</p>
-              ) : (
-                <ul className="car-detail-list car-detail-list--choice">
-                  {priceTypes.map((pt) => (
-                    <li key={pt.id}>
-                      <label className="car-detail-radio">
-                        <input
-                          type="radio"
-                          name="price_type"
-                          value={String(pt.id)}
-                          checked={selectedPriceTypeId === String(pt.id)}
-                          onChange={() => setSelectedPriceTypeId(String(pt.id))}
-                        />
-                        <span>
-                          {pt.name}
-                          <span className="car-detail-muted">
-                            {' '}
-                            — from {pt.from_price_per_day} / day
-                          </span>
-                        </span>
-                      </label>
-                      {pt.attribute_label ? (
-                        <p className="car-detail-muted car-detail-sub">
-                          {pt.attribute_label}
-                          {pt.attribute_value_per_day != null &&
-                          pt.attribute_value_per_day !== ''
-                            ? `: ${pt.attribute_value_per_day}`
-                            : ''}
-                        </p>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
+              {car.description && (
+                <div className="mt-8">
+                  <h2 className="text-lg font-bold text-brand-950">Description</h2>
+                  <p className="mt-2 whitespace-pre-wrap text-slate-600 leading-relaxed">{car.description}</p>
+                </div>
               )}
-            </div>
 
-            {characteristics.length > 0 && (
-              <div className="car-detail-block">
-                <h2 className="car-detail-heading">Characteristics</h2>
-                <ul className="car-detail-tags">
-                  {characteristics.map((c) => (
-                    <li key={c.id}>{c.display_text || c.name}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+              {characteristics.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="text-lg font-bold text-brand-950">Features &amp; Specs</h2>
+                  <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {characteristics.map((c) => (
+                      <li key={c.id} className="flex items-center gap-2 text-sm text-slate-700">
+                        <Check className="h-4 w-4 shrink-0 text-emerald-500" aria-hidden />
+                        {c.display_text || c.name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-            {rentalOptions.length > 0 && (
-              <div className="car-detail-block">
-                <h2 className="car-detail-heading">Add-ons</h2>
-                <ul className="car-detail-list">
-                  {rentalOptions.map((opt) => (
-                    <li key={opt.id}>
-                      <span className="car-detail-list-main">{opt.name}</span>
-                      <span className="car-detail-muted">
-                        {opt.cost}
-                        {opt.is_daily_cost ? ' / day' : ' (once)'}
-                        {opt.has_quantity ? ' · quantity' : ''}
-                        {opt.is_mandatory ? ' · required' : ''}
-                      </span>
-                      {opt.description ? (
-                        <p className="car-detail-muted car-detail-sub">{opt.description}</p>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="car-detail-actions">
-              <Link
-                to={checkoutHref}
-                className="car-detail-button"
-              >
-                Continue to booking
-              </Link>
-              <Link to="/cars" className="car-detail-link car-detail-link--secondary">
-                Cancel
-              </Link>
+              {rentalOptions.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="text-lg font-bold text-brand-950">Available Add-ons</h2>
+                  <ul className="mt-4 divide-y divide-slate-100 rounded-lg border border-slate-200">
+                    {rentalOptions.map((opt) => (
+                      <li key={opt.id} className="flex items-center justify-between px-4 py-3 text-sm">
+                        <span className="font-medium text-brand-900">{opt.name}</span>
+                        <span className="text-slate-600">
+                          {opt.cost}{opt.is_daily_cost ? '/day' : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </article>
-    </main>
+
+        <div className="lg:col-span-1">
+          <div className="sticky top-24">
+            <BookingForm
+              carId={car.id}
+              priceTypes={priceTypes}
+              initialValues={queryDefaults}
+              selectedPriceTypeId={selectedPriceTypeId}
+              onPriceTypeChange={setSelectedPriceTypeId}
+              quote={quote}
+              quoteLoading={quoteLoading}
+              onFormChange={setBookingForm}
+              onSubmit={handleBook}
+              submitLabel="Continue to Checkout"
+            />
+          </div>
+        </div>
+      </div>
+
+      {relatedCars.length > 0 && (
+        <section className="mt-16">
+          <h2 className="section-title">Similar Cars</h2>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {relatedCars.map((c) => (
+              <CarCard key={c.id} car={c} searchQuery={searchQuery} categoryName={car.category?.name} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   )
 }

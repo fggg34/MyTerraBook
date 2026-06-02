@@ -54,7 +54,7 @@ class RentalQuoteService
         );
 
         $baseRentalCents = $pricing['base_rental_cents'];
-        $baseRentalCents = $this->applySpecialPrices(
+        $specialPricing = $this->applySpecialPrices(
             $baseRentalCents,
             $car->id,
             $priceTypeId,
@@ -64,6 +64,7 @@ class RentalQuoteService
             $dropoffAt,
             $pricing['billable_days'],
         );
+        $baseRentalCents = $specialPricing['amount_cents'];
         $baseTaxBips = $this->taxBipsForTaxRateId($priceType->tax_rate_id, $defaultTaxBips);
 
         $extrasCents = 0;
@@ -177,6 +178,10 @@ class RentalQuoteService
             'extra_hours_charged' => $pricing['extra_hours_charged'],
             'price_type_id' => $priceTypeId,
             'base_rental_cents' => $baseRentalCents,
+            'rental_before_specials_cents' => $specialPricing['before_cents'],
+            'special_discount_cents' => $specialPricing['discount_cents'],
+            'special_surcharge_cents' => $specialPricing['surcharge_cents'],
+            'special_prices_applied' => $specialPricing['applied'],
             'extras_cents' => $extrasCents,
             'extras_lines' => $extrasLines,
             'fees_cents' => $feesCents,
@@ -330,8 +335,10 @@ class RentalQuoteService
         CarbonInterface $pickupAt,
         CarbonInterface $dropoffAt,
         int $rentalDays,
-    ): int {
+    ): array {
+        $beforeCents = $baseRentalCents;
         $adjusted = $baseRentalCents;
+        $applied = [];
 
         $specials = SpecialPrice::query()
             ->where('is_active', true)
@@ -342,6 +349,8 @@ class RentalQuoteService
             if (! $this->specialMatches($sp, $carId, $priceTypeId, $pickupLocationId, $dropoffLocationId, $pickupAt, $dropoffAt)) {
                 continue;
             }
+
+            $previous = $adjusted;
 
             if ($sp->type === 'discount' && $sp->value_mode === 'percentage' && $sp->value_percent_bips !== null) {
                 $adjusted -= (int) floor($adjusted * (int) $sp->value_percent_bips / 10000);
@@ -359,9 +368,28 @@ class RentalQuoteService
             if ($sp->round_to_integer) {
                 $adjusted = (int) round($adjusted);
             }
+
+            $delta = $adjusted - $previous;
+            if ($delta !== 0) {
+                $applied[] = [
+                    'name' => $sp->name,
+                    'type' => $sp->type,
+                    'is_promotion' => (bool) $sp->is_promotion,
+                    'amount_cents' => abs($delta),
+                    'direction' => $delta < 0 ? 'discount' : 'charge',
+                ];
+            }
         }
 
-        return max(0, $adjusted);
+        $amountCents = max(0, $adjusted);
+
+        return [
+            'amount_cents' => $amountCents,
+            'before_cents' => $beforeCents,
+            'discount_cents' => max(0, $beforeCents - $amountCents),
+            'surcharge_cents' => max(0, $amountCents - $beforeCents),
+            'applied' => $applied,
+        ];
     }
 
     private function specialMatches(
@@ -429,6 +457,7 @@ class RentalQuoteService
         $feesLines = [];
 
         $locationFees = LocationFee::query()
+            ->with(['pickupLocation', 'dropoffLocation'])
             ->where('is_active', true)
             ->where(function ($query) use ($pickupLocationId, $dropoffLocationId): void {
                 $query->where(function ($q) use ($pickupLocationId, $dropoffLocationId): void {
@@ -470,9 +499,14 @@ class RentalQuoteService
             }
 
             $feesCents += $amount;
-            $label = $fee->is_one_way_fee ? 'One-way fee' : 'Location fee';
+            $pickupName = $fee->pickupLocation?->name ?? 'Pick-up';
+            $dropoffName = $fee->dropoffLocation?->name ?? 'Drop-off';
+            $label = $fee->is_one_way_fee
+                ? "One-way fee ({$pickupName} → {$dropoffName})"
+                : "Location fee ({$pickupName} → {$dropoffName})";
             $feesLines[] = [
                 'label' => $label,
+                'kind' => $fee->is_one_way_fee ? 'one_way_fee' : 'location_fee',
                 'amount_cents' => $amount,
                 'tax_bips' => $this->taxBipsForTaxRateId($fee->tax_rate_id, $defaultTaxBips),
             ];
@@ -483,29 +517,49 @@ class RentalQuoteService
                 continue;
             }
 
-            $sumForRule = 0;
             $pickupCharge = (int) ($ooh->pickup_cost_cents ?? $ooh->cost_cents ?? 0);
             $dropoffCharge = (int) ($ooh->dropoff_cost_cents ?? $ooh->cost_cents ?? 0);
+            $pickupAmount = 0;
+            $dropoffAmount = 0;
 
             if (in_array($ooh->applies_to, ['pickup', 'both'], true) && $this->oohMatchesEndpoint($ooh, $pickupAt, $pickupLocationId)) {
-                $sumForRule += $pickupCharge;
+                $pickupAmount = $pickupCharge;
             }
             if (in_array($ooh->applies_to, ['dropoff', 'both'], true) && $this->oohMatchesEndpoint($ooh, $dropoffAt, $dropoffLocationId)) {
-                $sumForRule += $dropoffCharge;
+                $dropoffAmount = $dropoffCharge;
             }
 
-            if ($ooh->max_combined_charge_cents !== null) {
-                $sumForRule = min($sumForRule, (int) $ooh->max_combined_charge_cents);
+            $combined = $pickupAmount + $dropoffAmount;
+            if ($combined <= 0) {
+                continue;
             }
 
-            if ($sumForRule > 0) {
-                $feesCents += $sumForRule;
+            if ($ooh->max_combined_charge_cents !== null && $combined > (int) $ooh->max_combined_charge_cents) {
+                $cap = (int) $ooh->max_combined_charge_cents;
+                $pickupAmount = (int) round($cap * ($pickupAmount / $combined));
+                $dropoffAmount = $cap - $pickupAmount;
+            }
+
+            $oohName = ($ooh->name !== null && $ooh->name !== '') ? $ooh->name : 'Out-of-hours';
+            $taxBips = $this->taxBipsForTaxRateId($ooh->tax_rate_id, $defaultTaxBips);
+
+            if ($pickupAmount > 0) {
+                $feesCents += $pickupAmount;
                 $feesLines[] = [
-                    'label' => ($ooh->name !== null && $ooh->name !== '')
-                        ? 'Out-of-hours: '.$ooh->name
-                        : 'Out-of-hours fee #'.$ooh->id,
-                    'amount_cents' => $sumForRule,
-                    'tax_bips' => $this->taxBipsForTaxRateId($ooh->tax_rate_id, $defaultTaxBips),
+                    'label' => "Out-of-hours pick-up: {$oohName}",
+                    'kind' => 'out_of_hours_pickup',
+                    'amount_cents' => $pickupAmount,
+                    'tax_bips' => $taxBips,
+                ];
+            }
+
+            if ($dropoffAmount > 0) {
+                $feesCents += $dropoffAmount;
+                $feesLines[] = [
+                    'label' => "Out-of-hours drop-off: {$oohName}",
+                    'kind' => 'out_of_hours_dropoff',
+                    'amount_cents' => $dropoffAmount,
+                    'tax_bips' => $taxBips,
                 ];
             }
         }

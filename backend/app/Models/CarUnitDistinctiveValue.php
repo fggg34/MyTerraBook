@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CarUnitDistinctiveValue extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'car_unit_id',
         'car_distinctive_feature_definition_id',

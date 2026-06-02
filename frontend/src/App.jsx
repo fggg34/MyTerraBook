@@ -1,139 +1,106 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import axios from 'axios'
-import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { api, getSitePreviewUrl, setAuthToken } from './api'
-import { clearAuth, getStoredToken, getStoredUser, storeAuth } from './auth'
-import './index.css'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { getSitePreviewUrl, setAuthToken } from './api'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
+import { getStoredToken } from './auth'
+import Layout from './components/layout/Layout'
+import LoadingSpinner from './components/ui/LoadingSpinner'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import CarDetailsPage from './pages/CarDetailsPage'
 import CarListingPage from './pages/CarListingPage'
 import CheckoutPage from './pages/CheckoutPage'
 import HomeSearchPage from './pages/HomeSearchPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 import UnderConstructionPage from './pages/UnderConstructionPage'
 import UserDashboardPage from './pages/UserDashboardPage'
 
-function App() {
-  const { t } = useTranslation()
-  const [user, setUser] = useState(getStoredUser())
+function ProtectedRoute({ children, role }) {
+  const { user } = useAuth()
+  if (!user) return <Navigate to="/login" replace />
+  if (role && user.role !== role) return <Navigate to="/" replace />
+  return children
+}
+
+function AppRoutes() {
   const [previewUnlocked, setPreviewUnlocked] = useState(null)
-
-  const [form, setForm] = useState({ email: '', password: '' })
-
   const token = getStoredToken()
   setAuthToken(token)
 
   const refreshPreview = useCallback(async () => {
     try {
-      const t = getStoredToken()
       const headers = {}
-      if (t) {
-        headers.Authorization = `Bearer ${t}`
-      }
+      if (token) headers.Authorization = `Bearer ${token}`
       const { data } = await axios.get(getSitePreviewUrl(), {
         withCredentials: true,
         headers,
       })
       setPreviewUnlocked(!!data.preview_unlocked)
     } catch {
-      // Local Vite: if the preview check fails (API down / CORS), still show the app for testing.
       setPreviewUnlocked(!!import.meta.env.DEV)
     }
-  }, [])
+  }, [token])
 
   useEffect(() => {
     refreshPreview()
-  }, [refreshPreview, token])
-
-  useEffect(() => {
-    if (previewUnlocked !== false) {
-      return undefined
-    }
-    const onFocus = () => refreshPreview()
-    window.addEventListener('focus', onFocus)
-    return () => window.removeEventListener('focus', onFocus)
-  }, [previewUnlocked, refreshPreview])
-
-  const login = async (event) => {
-    event.preventDefault()
-    const response = await api.post('/auth/login', form)
-    storeAuth(response.data.token, response.data.user)
-    setUser(response.data.user)
-    setAuthToken(response.data.token)
-    await refreshPreview()
-  }
-
-  const logout = async () => {
-    if (token) {
-      await api.post('/auth/logout')
-    }
-    clearAuth()
-    setUser(null)
-    setAuthToken(null)
-    await refreshPreview()
-  }
+  }, [refreshPreview])
 
   if (previewUnlocked === null) {
     return (
-      <div className="app app-preview-loading" aria-busy="true">
-        <div className="app-preview-loading-inner" />
+      <div className="flex min-h-screen items-center justify-center bg-brand-950">
+        <LoadingSpinner size="lg" />
       </div>
     )
   }
 
   if (!previewUnlocked) {
     return (
-      <div className="app">
-        <Routes>
-          <Route path="*" element={<UnderConstructionPage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="*" element={<UnderConstructionPage />} />
+      </Routes>
     )
   }
 
   return (
-    <div className="app">
-      <header className="nav">
-        <h2>{t('appTitle')}</h2>
-        <nav>
-          <Link to="/">{t('home')}</Link>
-          <Link to="/cars">{t('cars')}</Link>
-          <Link to="/dashboard">{t('dashboard')}</Link>
-          {user?.role === 'admin' && <Link to="/admin">{t('admin')}</Link>}
-        </nav>
-        {user ? (
-          <button type="button" onClick={logout}>{t('logout')}</button>
-        ) : (
-          <form onSubmit={login} className="inline-form">
-            <input
-              placeholder="email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
-            <input
-              placeholder="password"
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-            />
-            <button type="submit">{t('login')}</button>
-          </form>
-        )}
-      </header>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<HomeSearchPage />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
+        <Route path="/cars" element={<CarListingPage />} />
+        <Route path="/cars/:id" element={<CarDetailsPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <UserDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+    </Routes>
+  )
+}
 
-      <div className="container">
-        <Routes>
-          <Route path="/" element={<HomeSearchPage />} />
-          <Route path="/home" element={<Navigate to="/" replace />} />
-          <Route path="/cars" element={<CarListingPage />} />
-          <Route path="/cars/:id" element={<CarDetailsPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/dashboard" element={user ? <UserDashboardPage /> : <Navigate to="/" />} />
-          <Route path="/admin" element={user?.role === 'admin' ? <AdminDashboardPage /> : <Navigate to="/" />} />
-        </Routes>
-      </div>
-    </div>
+function App() {
+  return (
+    <ToastProvider>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ToastProvider>
   )
 }
 

@@ -8,6 +8,7 @@ use App\Http\Resources\Api\CarDetailResource;
 use App\Http\Resources\Api\CarListResource;
 use App\Http\Resources\Api\CategoryResource;
 use App\Http\Resources\Api\LocationResource;
+use App\Models\BookingRestriction;
 use App\Models\Car;
 use App\Models\Category;
 use App\Models\DailyFare;
@@ -15,14 +16,20 @@ use App\Models\Location;
 use App\Models\Order;
 use App\Models\PriceType;
 use App\Services\OrderAvailabilityService;
+use App\Services\RentalQuoteService;
+use App\Support\Money;
+use App\Support\QuotePresentation;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class CatalogController extends Controller
 {
     public function __construct(
         private readonly OrderAvailabilityService $availabilityService,
+        private readonly RentalQuoteService $quoteService,
     ) {}
 
     public function categories(): JsonResponse
@@ -37,6 +44,37 @@ class CatalogController extends Controller
         $rows = Location::query()->where('is_active', true)->orderBy('name')->get();
 
         return response()->json(['data' => LocationResource::collection($rows)]);
+    }
+
+    public function bookingRestrictions(Request $request): JsonResponse
+    {
+        $pickupDate = $request->query('pickup_date', now()->toDateString());
+        $dropoffDate = $request->query('dropoff_date', $pickupDate);
+
+        $restrictions = BookingRestriction::query()
+            ->where('is_active', true)
+            ->where('date_from', '<=', $dropoffDate)
+            ->where('date_to', '>=', $pickupDate)
+            ->get();
+
+        $minRentalDays = 1;
+        $maxRentalDays = null;
+
+        foreach ($restrictions as $restriction) {
+            if ($restriction->min_rental_days !== null && $restriction->min_rental_days > $minRentalDays) {
+                $minRentalDays = $restriction->min_rental_days;
+            }
+            if ($restriction->max_rental_days !== null) {
+                $maxRentalDays = $maxRentalDays === null
+                    ? $restriction->max_rental_days
+                    : min($maxRentalDays, $restriction->max_rental_days);
+            }
+        }
+
+        return response()->json([
+            'min_rental_days' => $minRentalDays,
+            'max_rental_days' => $maxRentalDays,
+        ]);
     }
 
     public function cars(Request $request): JsonResponse
@@ -66,17 +104,26 @@ class CatalogController extends Controller
             ->orderBy('cars.name')
             ->get();
 
-        $rows = $cars->map(fn (Car $car) => [
-            'id' => $car->id,
-            'name' => $car->name,
-            'slug' => $car->slug,
-            'category_id' => $car->category_id,
-            'transmission' => $car->transmission,
-            'fuel_type' => $car->fuel_type,
-            'units_available' => $car->units_available,
-            'main_image_path' => $car->main_image_path,
-            'min_daily_price_cents' => (int) ($car->min_daily_price_cents ?? 0),
-        ]);
+        $rows = $cars->map(function (Car $car) use ($request) {
+            $row = [
+                'id' => $car->id,
+                'name' => $car->name,
+                'slug' => $car->slug,
+                'category_id' => $car->category_id,
+                'transmission' => $car->transmission,
+                'fuel_type' => $car->fuel_type,
+                'units_available' => $car->units_available,
+                'main_image_path' => $car->main_image_path,
+                'min_daily_price_cents' => (int) ($car->min_daily_price_cents ?? 0),
+            ];
+
+            $searchPricing = $this->resolveSearchPricing($car, $request);
+            if ($searchPricing !== null) {
+                $row['search_pricing'] = $searchPricing;
+            }
+
+            return $row;
+        });
 
         return response()->json([
             'data' => CarListResource::collection($rows),
@@ -155,5 +202,64 @@ class CatalogController extends Controller
             'booked' => $booked,
             'blocked' => $blocked->merge($locks)->values(),
         ]);
+    }
+
+    private function resolveSearchPricing(Car $car, Request $request): ?array
+    {
+        $pickupAtRaw = $request->query('pickup_at');
+        $dropoffAtRaw = $request->query('dropoff_at');
+        $pickupLocationId = $request->query('pickup_location_id');
+        $dropoffLocationId = $request->query('dropoff_location_id');
+
+        if (! $pickupAtRaw || ! $dropoffAtRaw || ! $pickupLocationId || ! $dropoffLocationId) {
+            return null;
+        }
+
+        $priceTypeId = DailyFare::query()
+            ->where('car_id', $car->id)
+            ->orderBy('price_per_day_cents')
+            ->value('price_type_id');
+
+        if ($priceTypeId === null) {
+            return null;
+        }
+
+        try {
+            $quote = $this->quoteService->quote(
+                $car,
+                (int) $priceTypeId,
+                Carbon::parse($pickupAtRaw),
+                Carbon::parse($dropoffAtRaw),
+                (int) $pickupLocationId,
+                (int) $dropoffLocationId,
+                [],
+                null,
+            );
+        } catch (InvalidArgumentException) {
+            return null;
+        }
+
+        return [
+            'rental_days' => $quote['rental_days'],
+            'total' => Money::formatDecimalFromCents($quote['total_cents']),
+            'rental_subtotal' => Money::formatDecimalFromCents($quote['base_rental_cents']),
+            'rental_before_specials' => Money::formatDecimalFromCents($quote['rental_before_specials_cents']),
+            'special_discount_amount' => Money::formatDecimalFromCents($quote['special_discount_cents']),
+            'special_surcharge_amount' => Money::formatDecimalFromCents($quote['special_surcharge_cents']),
+            'fees_subtotal' => Money::formatDecimalFromCents($quote['fees_cents']),
+            'fees_lines' => QuotePresentation::feesLines($quote['fees_lines']),
+            'special_prices_applied' => array_map(
+                fn (array $line) => [
+                    'name' => $line['name'],
+                    'type' => $line['type'],
+                    'direction' => $line['direction'],
+                    'is_promotion' => $line['is_promotion'],
+                    'amount' => Money::formatDecimalFromCents($line['amount_cents']),
+                ],
+                $quote['special_prices_applied'],
+            ),
+            'has_special_discount' => $quote['special_discount_cents'] > 0,
+            'currency' => $quote['currency'],
+        ];
     }
 }
