@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             ShopSettingsSeeder::class,
             TaxRateSeeder::class,
             UserSeeder::class,
+            HomepageSectionSeeder::class,
         ]);
 
         if (! app()->environment('testing')) {

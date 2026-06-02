@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\OrderCheckinPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\HomepageController;
 use App\Http\Controllers\Api\MeOrderController;
 use App\Http\Controllers\Api\MeOrderIcalController;
 use App\Http\Controllers\Api\PublicOrderController;
@@ -46,6 +47,8 @@ Route::get('/health', function () {
         'app' => config('app.name'),
     ]);
 });
+
+Route::get('/homepage', [HomepageController::class, 'show']);
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);

@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\HomepageSection;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+
+class HomepageController extends Controller
+{
+    public function show(): JsonResponse
+    {
+        $sections = HomepageSection::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->keyBy('section_key');
+
+        $hero = $this->resolveImages($sections->get('hero')?->content ?? [], ['backgroundImage']);
+        $rent = $sections->get('rent')?->content ?? [];
+        if (isset($rent['cards']) && is_array($rent['cards'])) {
+            $rent['cards'] = array_map(function (array $card): array {
+                if (! empty($card['image']) && ! str_starts_with((string) $card['image'], 'http')) {
+                    $card['image'] = Storage::disk('public')->url($card['image']);
+                }
+
+                return $card;
+            }, $rent['cards']);
+        }
+
+        $why = $this->resolveImages($sections->get('why')?->content ?? [], ['photo']);
+
+        return response()->json([
+            'topbar' => $sections->get('topbar')?->content ?? [],
+            'header' => $sections->get('header')?->content ?? [],
+            'hero' => $hero,
+            'trustItems' => $sections->get('trust')?->content['items'] ?? [],
+            'rentSection' => $rent,
+            'whySection' => $why,
+            'footer' => $sections->get('footer')?->content ?? [],
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @param  list<string>  $imageKeys
+     * @return array<string, mixed>
+     */
+    private function resolveImages(array $content, array $imageKeys): array
+    {
+        foreach ($imageKeys as $key) {
+            if (empty($content[$key]) || str_starts_with((string) $content[$key], 'http')) {
+                continue;
+            }
+            $content[$key] = Storage::disk('public')->url($content[$key]);
+        }
+
+        return $content;
+    }
+}
