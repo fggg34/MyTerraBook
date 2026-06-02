@@ -21,7 +21,11 @@ class HomepageController extends Controller
         $rent = $sections->get('rent')?->content ?? [];
         if (isset($rent['cards']) && is_array($rent['cards'])) {
             $rent['cards'] = array_map(function (array $card): array {
-                if (! empty($card['image']) && ! str_starts_with((string) $card['image'], 'http')) {
+                if (
+                    ! empty($card['image'])
+                    && ! str_starts_with((string) $card['image'], 'http')
+                    && ! str_starts_with((string) $card['image'], '/')
+                ) {
                     $card['image'] = Storage::disk('public')->url($card['image']);
                 }
 
@@ -50,7 +54,11 @@ class HomepageController extends Controller
     private function resolveImages(array $content, array $imageKeys): array
     {
         foreach ($imageKeys as $key) {
-            if (empty($content[$key]) || str_starts_with((string) $content[$key], 'http')) {
+            if (
+                empty($content[$key])
+                || str_starts_with((string) $content[$key], 'http')
+                || str_starts_with((string) $content[$key], '/')
+            ) {
                 continue;
             }
             $content[$key] = Storage::disk('public')->url($content[$key]);

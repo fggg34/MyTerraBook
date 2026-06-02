@@ -45,7 +45,7 @@ class HomepageSectionSeeder extends Seeder
                 'content' => [
                     'heading' => "Book with the world's leading roadtrip provider!",
                     'subtitle' => 'Campervans, 4×4s and warm guesthouses — everything you need for the Ring Road, in one booking.',
-                    'backgroundImage' => null,
+                    'backgroundImage' => '/images/homepage/hero.jpg',
                     'tabs' => [
                         ['id' => 'campervan', 'label' => 'Campervan'],
                         ['id' => 'cars', 'label' => 'Cars'],
@@ -102,7 +102,7 @@ class HomepageSectionSeeder extends Seeder
                     'subtitle' => 'From a two-berth van for the Ring Road to a warm bed at the end of it.',
                     'cards' => [
                         [
-                            'image' => null,
+                            'image' => '/images/homepage/cardcamper.jpg',
                             'alt' => 'Campervan on Icelandic road',
                             'listingCount' => '184 listings · from €89/night',
                             'name' => 'Campervans',
@@ -110,7 +110,7 @@ class HomepageSectionSeeder extends Seeder
                             'href' => '#campervan',
                         ],
                         [
-                            'image' => null,
+                            'image' => '/images/homepage/cardcar.jpg',
                             'alt' => '4x4 car in Iceland',
                             'listingCount' => '96 listings · from €42/night',
                             'name' => 'Cars & 4×4',
@@ -118,7 +118,7 @@ class HomepageSectionSeeder extends Seeder
                             'href' => '/cars',
                         ],
                         [
-                            'image' => null,
+                            'image' => '/images/homepage/cardhouse.jpg',
                             'alt' => 'Guesthouse in Iceland',
                             'listingCount' => '73 listings · from €110/night',
                             'name' => 'Guesthouses',
@@ -134,10 +134,11 @@ class HomepageSectionSeeder extends Seeder
                 'content' => [
                     'heading' => 'One local platform for every way to explore Iceland.',
                     'subheading' => "Campervans, cars, guesthouses — even a way to earn from your own. All checked by a team that actually drives these roads.",
-                    'photo' => null,
+                    'photo' => '/images/homepage/why-photo.jpg',
                     'badge' => [
                         'rating' => '4.9',
-                        'reviewCount' => '12,400+ travellers who booked with us',
+                        'reviewBold' => '12,400+ travellers',
+                        'reviewRest' => 'who booked with us',
                     ],
                     'featuresLeft' => [
                         [
