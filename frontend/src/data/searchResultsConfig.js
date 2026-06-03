@@ -34,7 +34,7 @@ export const VEHICLE_TYPES = {
     id: 'car',
     route: '/cars',
     hcatMode: 'vehicle',
-    categoryNames: ['Economy', 'Compact', 'Mid-size', 'Luxury', 'Electric'],
+    categoryNames: ['Economy', 'Compact', 'Mid-size', 'Luxury', 'Electric', 'SUV'],
     breadcrumb: 'Cars',
     unitSingular: 'car',
     unitPlural: 'cars',

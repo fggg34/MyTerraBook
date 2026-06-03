@@ -17,6 +17,7 @@ class CarListResource extends JsonResource
             'name' => $this->resource['name'],
             'slug' => $this->resource['slug'],
             'category_id' => $this->resource['category_id'],
+            'category_name' => $this->resource['category_name'] ?? null,
             'transmission' => $this->resource['transmission'] ?? '—',
             'fuel_type' => $this->resource['fuel_type'] ?? '—',
             'base_daily_price' => Money::formatDecimalFromCents((int) $minCents),

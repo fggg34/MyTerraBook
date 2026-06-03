@@ -110,6 +110,7 @@ class CatalogController extends Controller
                 'name' => $car->name,
                 'slug' => $car->slug,
                 'category_id' => $car->category_id,
+                'category_name' => $car->category?->name,
                 'transmission' => $car->transmission,
                 'fuel_type' => $car->fuel_type,
                 'units_available' => $car->units_available,

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { PAGE_SIZE, QUICK_FILTERS, SORT_OPTIONS, VEHICLE_TYPES } from '../data/searchResultsConfig'
 import { mapCarToResultCard } from '../utils/mapCarToResultCard'
+import { categoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 import { toApiDateTime } from '../utils/format'
 
 function matchesTransmission(car, value) {
@@ -71,16 +72,16 @@ export default function useSearchResultsPage(vehicleType) {
   const cards = useMemo(() => {
     let list = cars
       .filter((car) => {
-        const name = categoryMap[car.category_id]
-        if (!config.categoryNames?.length) return true
-        return config.categoryNames.includes(name)
+        const name = car.category_name || categoryMap[car.category_id]
+        return categoryMatchesVehicleType(name, config.categoryNames)
       })
-      .map((car) =>
-        mapCarToResultCard(
-          { ...car, categoryName: categoryMap[car.category_id] },
-          { searchQuery, config, categoryName: categoryMap[car.category_id] },
-        ),
-      )
+      .map((car) => {
+        const categoryName = car.category_name || categoryMap[car.category_id]
+        return mapCarToResultCard(
+          { ...car, categoryName },
+          { searchQuery, config, categoryName },
+        )
+      })
 
     list = list.filter((car) => matchesTransmission(car, filters.transmission))
     list = list.filter((car) => matchesPrice(car, filters.maxPrice))
