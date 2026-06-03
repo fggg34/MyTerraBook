@@ -1107,6 +1107,7 @@ body.homepage-active { margin: 0; }
     display:flex;justify-content:center;align-items:flex-start;
     padding:30px 0 14px;overflow:visible;
   }
+  .reviews .r-panel{position:relative;}
   .r-card{
     --rot:0deg;--ty:0px;--fill:#e9edf2;
     position:relative;flex:0 0 272px;width:272px;min-height:374px;
@@ -1145,11 +1146,13 @@ body.homepage-active { margin: 0; }
   }
   .r-name{font-family:var(--serif);font-weight:700;font-size:16.5px;color:var(--navy);letter-spacing:-0.01em;}
 
-  /* ---- spotlight: lift the hovered card, dim the rest ---- */
-  .r-deck:has(.r-card:hover) .r-card:not(:hover){
+  /* ---- spotlight: lift the hovered / active card, dim the rest ---- */
+  .r-deck:has(.r-card:hover) .r-card:not(:hover),
+  .r-deck:has(.r-card.r-spotlight) .r-card:not(.r-spotlight):not(:hover){
     opacity:.46;filter:saturate(.6) brightness(.99);
   }
-  .r-card:hover{
+  .r-card:hover,
+  .r-card.r-spotlight{
     transform:translateY(-34px) rotate(0deg) scale(1.055);
     z-index:30;
     box-shadow:0 46px 88px -34px rgba(15,32,54,.62);
@@ -1184,13 +1187,31 @@ body.homepage-active { margin: 0; }
     .reviews{padding:84px 0 92px;}
     .r-head{margin-bottom:44px;}
     .r-head h2{font-size:36px;}
-    .r-deck{flex-direction:column;align-items:center;padding:0;}
-    .r-card{
-      flex:0 0 auto;width:min(90vw,400px);margin-left:0;margin-bottom:20px;min-height:0;
-      transform:none !important;
+    .reviews .r-panel{padding:0 8px;}
+    .reviews .carousel-nav{display:grid;}
+    .r-deck{
+      flex-direction:row;justify-content:flex-start;align-items:stretch;
+      overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
+      -webkit-overflow-scrolling:touch;padding:20px 4px 14px;
+      scrollbar-width:none;
     }
-    .r-deck:has(.r-card:hover) .r-card:not(:hover){opacity:1;filter:none;}
+    .r-deck::-webkit-scrollbar{display:none;}
+    .r-card{
+      flex:0 0 min(85vw,340px);width:min(85vw,340px);
+      margin-left:0;margin-right:16px;min-height:340px;
+      scroll-snap-align:center;transform:none !important;
+    }
+    .r-card:last-child{margin-right:0;}
+    .r-deck:has(.r-card:hover) .r-card:not(:hover),
+    .r-deck:has(.r-card.r-spotlight) .r-card:not(.r-spotlight):not(:hover){opacity:1;filter:none;}
+    .r-card:hover,.r-card.r-spotlight{
+      transform:translateY(-8px) scale(1.02) !important;
+      box-shadow:0 28px 56px -28px rgba(15,32,54,.55);
+    }
     .reviews:not(.revealed) .r-card{opacity:0;transform:translateY(40px) !important;}
+  }
+  @media(min-width:901px){
+    .reviews .carousel-nav{display:grid;}
   }
 
   /* ---------- FAQ (Good to know) ---------- */
@@ -1530,12 +1551,15 @@ body.homepage-active .hostcta .host-btn{
 body.homepage-active .hostcta .host-btn.primary{background:var(--green);color:#fff;}
 
 /* Reviews fan deck */
+body.homepage-active .reviews .r-panel{position:relative;}
 body.homepage-active .reviews .r-deck{display:flex;justify-content:center;align-items:flex-start;padding:30px 0 14px;overflow:visible;}
 body.homepage-active .reviews .r-card{
   position:relative;flex:0 0 272px;width:272px;min-height:374px;margin-left:-58px;
   background:var(--fill);border-radius:24px;padding:32px 30px 26px;display:flex;flex-direction:column;
   transform:translateY(var(--ty)) rotate(var(--rot));transform-origin:bottom center;
   box-shadow:0 18px 40px -24px rgba(15,32,54,.5);
+  transition:transform .8s cubic-bezier(.33,1,.68,1),opacity .6s ease,box-shadow .35s ease,filter .35s ease;
+  will-change:transform;
 }
 body.homepage-active .reviews .r-card:first-child{margin-left:0;}
 body.homepage-active .reviews .r-quote{margin:0;font-family:var(--serif);font-weight:500;font-size:20px;line-height:1.42;color:var(--navy);}
@@ -1549,8 +1573,18 @@ body.homepage-active .reviews .r-card:nth-child(3){z-index:3;}
 body.homepage-active .reviews .r-card:nth-child(4){z-index:4;}
 body.homepage-active .reviews .r-card:nth-child(5){z-index:5;}
 body.homepage-active .reviews .r-card:nth-child(6){z-index:6;}
-body.homepage-active .reviews.revealed .r-card,
-body.homepage-active .reviews.reveal-done .r-card{
+body.homepage-active .reviews .r-deck:has(.r-card:hover) .r-card:not(:hover),
+body.homepage-active .reviews .r-deck:has(.r-card.r-spotlight) .r-card:not(.r-spotlight):not(:hover){
+  opacity:.46 !important;filter:saturate(.6) brightness(.99);
+}
+body.homepage-active .reviews .r-card:hover,
+body.homepage-active .reviews .r-card.r-spotlight{
+  transform:translateY(-34px) rotate(0deg) scale(1.055) !important;
+  z-index:30 !important;
+  box-shadow:0 46px 88px -34px rgba(15,32,54,.62) !important;
+}
+body.homepage-active .reviews.revealed .r-card:not(:hover):not(.r-spotlight),
+body.homepage-active .reviews.reveal-done .r-card:not(:hover):not(.r-spotlight){
   opacity:1 !important;
   transform:translateY(var(--ty)) rotate(var(--rot)) !important;
 }

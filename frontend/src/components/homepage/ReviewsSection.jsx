@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import useReviewsDeckEffects from '../../hooks/useReviewsDeckEffects'
 import useSectionReveal from '../../hooks/useSectionReveal'
 
 function ReviewAvatar({ name, fill }) {
@@ -25,7 +26,35 @@ function ReviewAvatar({ name, fill }) {
 
 export default function ReviewsSection({ eyebrow, heading, rating, ratingCount, reviews = [] }) {
   const sectionRef = useRef(null)
-  useSectionReveal(sectionRef, { revealDoneMs: 1700 })
+  const deckRef = useRef(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [hoveredIndex, setHoveredIndex] = useState(null)
+  const [revealed, setRevealed] = useState(false)
+
+  useSectionReveal(sectionRef, {
+    revealDoneMs: 1700,
+    onReveal: () => setRevealed(true),
+  })
+
+  useReviewsDeckEffects({
+    deckRef,
+    reviewCount: reviews.length,
+    activeIndex,
+    setActiveIndex,
+    paused: paused || hoveredIndex !== null,
+    setPaused,
+    revealed,
+  })
+
+  const shift = useCallback(
+    (direction) => {
+      setHoveredIndex(null)
+      setPaused(false)
+      setActiveIndex((current) => (current + direction + reviews.length) % reviews.length)
+    },
+    [reviews.length],
+  )
 
   return (
     <section className="reviews" ref={sectionRef}>
@@ -49,24 +78,42 @@ export default function ReviewsSection({ eyebrow, heading, rating, ratingCount, 
           )}
         </div>
 
-        <div className="r-deck">
-          {reviews.map((review) => (
-            <figure
-              key={review.name}
-              className="r-card"
-              style={{
-                '--rot': review.rot,
-                '--ty': review.ty,
-                '--fill': review.fill,
-              }}
-            >
-              <blockquote className="r-quote">{review.quote}</blockquote>
-              <figcaption className="r-by">
-                <ReviewAvatar name={review.name} fill={review.fill} />
-                <span className="r-name">{review.name}</span>
-              </figcaption>
-            </figure>
-          ))}
+        <div className="r-panel">
+          <button className="carousel-nav prev" type="button" aria-label="Previous review" onClick={() => shift(-1)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
+          </button>
+
+          <div className="r-deck" ref={deckRef}>
+            {reviews.map((review, index) => (
+              <figure
+                key={review.name}
+                className={`r-card ${!hoveredIndex && activeIndex === index ? 'r-spotlight' : ''}`}
+                style={{
+                  '--rot': review.rot,
+                  '--ty': review.ty,
+                  '--fill': review.fill,
+                }}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                onFocus={() => setHoveredIndex(index)}
+                onBlur={() => setHoveredIndex(null)}
+              >
+                <blockquote className="r-quote">{review.quote}</blockquote>
+                <figcaption className="r-by">
+                  <ReviewAvatar name={review.name} fill={review.fill} />
+                  <span className="r-name">{review.name}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+
+          <button className="carousel-nav next" type="button" aria-label="Next review" onClick={() => shift(1)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
         </div>
       </div>
     </section>

@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect } from 'react'
 
-export default function useSectionReveal(sectionRef, { revealDoneMs = 1700, threshold = 0.12 } = {}) {
+export default function useSectionReveal(sectionRef, { revealDoneMs = 1700, threshold = 0.12, onReveal } = {}) {
   const runReveal = (sec) => {
     if (sec.classList.contains('revealed')) return
     sec.classList.add('revealed')
+    onReveal?.()
     window.setTimeout(() => sec.classList.add('reveal-done'), revealDoneMs)
   }
 
@@ -28,7 +29,7 @@ export default function useSectionReveal(sectionRef, { revealDoneMs = 1700, thre
     })
 
     return () => window.cancelAnimationFrame(raf)
-  }, [sectionRef, revealDoneMs])
+  }, [sectionRef, revealDoneMs, onReveal])
 
   useEffect(() => {
     const sec = sectionRef.current
@@ -65,5 +66,5 @@ export default function useSectionReveal(sectionRef, { revealDoneMs = 1700, thre
       window.clearTimeout(t1)
       window.clearTimeout(t2)
     }
-  }, [sectionRef, revealDoneMs, threshold])
+  }, [sectionRef, revealDoneMs, threshold, onReveal])
 }
