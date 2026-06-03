@@ -13,11 +13,7 @@ function ProofPair({ pair, duplicate = false }) {
   return (
     <>
       <div className="pcol-tall" aria-hidden={duplicate || undefined}>
-        <HostPhoto
-          src={pair.tall.image}
-          alt={pair.tall.name}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-        />
+        <HostPhoto src={pair.tall.image} alt={pair.tall.name} />
         <div className="pmeta">
           <div className="nm">{pair.tall.name}</div>
           <div className="rl">{pair.tall.role}</div>
@@ -32,11 +28,7 @@ function ProofPair({ pair, duplicate = false }) {
             </div>
           ) : (
             <div key={`${item.name}-${duplicate}`} className="psq photo">
-              <HostPhoto
-                src={item.image}
-                alt={item.name}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+              <HostPhoto src={item.image} alt={item.name} />
               <div className="pmeta">
                 <div className="nm">{item.name}</div>
                 <div className="rl">{item.role}</div>
@@ -53,7 +45,7 @@ function ReviewCard({ review, duplicate = false }) {
   return (
     <div className="rev" aria-hidden={duplicate || undefined}>
       <div className="ravatar">
-        <HostPhoto src="" alt={review.name} style={{ width: '100%', height: '100%', borderRadius: '50%', background: review.fill }} />
+        <HostPhoto src="" alt={review.name} style={{ background: review.fill }} />
       </div>
       <div className="nm">{review.name}</div>
       <div className="rl">{review.role}</div>
@@ -309,7 +301,7 @@ export default function BecomeHostPageContent() {
               </div>
             </div>
             <div className="fcard espresso v-textbottom phone-card">
-              <HostPhoto src={becomeHostImages.whyPhoto} alt="Phone in hand" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+              <HostPhoto src={becomeHostImages.whyPhoto} alt="Phone in hand" />
               <div className="fc-top">
                 <h3>Showcase your quality</h3>
                 <p>Join a curated marketplace where every supplier is verified and only top activities are approved.</p>
@@ -341,9 +333,9 @@ export default function BecomeHostPageContent() {
             <p className="reveal-desc">Thousands of Icelanders are already turning idle vehicles and spare rooms into income. Here&apos;s what they say.</p>
             <div className="revs-agg">
               <div className="cluster">
-                <HostPhoto src="" alt="Host" style={{ width: 44, height: 44, borderRadius: '50%', background: '#a9d4e6' }} />
-                <HostPhoto src="" alt="Host" style={{ width: 44, height: 44, borderRadius: '50%', background: '#bcdcab' }} />
-                <HostPhoto src="" alt="Host" style={{ width: 44, height: 44, borderRadius: '50%', background: '#f1d79a' }} />
+                <HostPhoto src="" alt="Host" style={{ background: '#a9d4e6' }} />
+                <HostPhoto src="" alt="Host" style={{ background: '#bcdcab' }} />
+                <HostPhoto src="" alt="Host" style={{ background: '#f1d79a' }} />
               </div>
               <div>
                 <div className="av-v">
@@ -538,7 +530,17 @@ export default function BecomeHostPageContent() {
           </div>
         </div>
         <div className="ftr-word" aria-hidden="true">
-          <HostPhoto src="" alt="" style={{ width: '100%', height: '100%', opacity: 0.08 }} />
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="xMidYMid meet" role="img" aria-label="MyTerraBook">
+            <text
+              x="50%"
+              y="78%"
+              textAnchor="middle"
+              fill="currentColor"
+              style={{ fontFamily: 'Quicksand, sans-serif', fontWeight: 700, fontSize: 110, letterSpacing: '-0.03em' }}
+            >
+              MyTerraBook
+            </text>
+          </svg>
         </div>
       </footer>
     </>

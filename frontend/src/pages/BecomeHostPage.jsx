@@ -8,8 +8,10 @@ export default function BecomeHostPage() {
 
   useEffect(() => {
     document.body.classList.remove('homepage-active')
+    document.body.classList.add('become-host-active')
     document.documentElement.style.scrollBehavior = 'smooth'
     return () => {
+      document.body.classList.remove('become-host-active')
       document.documentElement.style.scrollBehavior = ''
     }
   }, [])
