@@ -1650,8 +1650,9 @@ body.homepage-active .news-form input{
   font-family:var(--sans);color:#fff;font-size:15px;font-weight:500;padding:11px 6px;
   box-shadow:none;
 }
-body.homepage-active .pcard-open,
-body.homepage-active .pcard-book{text-decoration:none;color:inherit;}
+body.homepage-active .pcard-open{text-decoration:none;color:inherit;}
+body.homepage-active .pcard-book{text-decoration:none;color:#fff;}
+body.homepage-active .pcard-book svg{color:#fff;}
 
 /* Why MyTerra columns */
 body.homepage-active .why .why-split{
