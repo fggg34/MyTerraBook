@@ -8,7 +8,7 @@ import { ToastProvider } from './context/ToastContext'
 import { getStoredToken } from './auth'
 import SiteLayout from './components/layout/SiteLayout'
 import LoadingSpinner from './components/ui/LoadingSpinner'
-import AdminDashboardPage from './pages/AdminDashboardPage'
+import BecomeHostPage from './pages/BecomeHostPage'
 import CarDetailsPage from './pages/CarDetailsPage'
 import CarListingPage from './pages/CarListingPage'
 import CheckoutPage from './pages/CheckoutPage'
@@ -66,36 +66,41 @@ function AppRoutes() {
   }
 
   return (
-    <SiteLayoutProvider>
-      <Routes>
-        <Route element={<SiteLayout />}>
-          <Route path="/" element={<HomePageContainer />} />
-          <Route path="/search" element={<HomeSearchPage />} />
-          <Route path="/home" element={<Navigate to="/" replace />} />
-          <Route path="/cars" element={<CarListingPage />} />
-          <Route path="/cars/:id" element={<CarDetailsPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <UserDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute role="admin">
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-        </Route>
-      </Routes>
-    </SiteLayoutProvider>
+    <Routes>
+      <Route path="/become-a-host" element={<BecomeHostPage />} />
+      <Route
+        element={
+          <SiteLayoutProvider>
+            <SiteLayout />
+          </SiteLayoutProvider>
+        }
+      >
+        <Route path="/" element={<HomePageContainer />} />
+        <Route path="/search" element={<HomeSearchPage />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
+        <Route path="/cars" element={<CarListingPage />} />
+        <Route path="/cars/:id" element={<CarDetailsPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <UserDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
+    </Routes>
   )
 }
 

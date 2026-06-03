@@ -62,11 +62,16 @@ export default function Header({
             <span className="lc-div" />
             <span>{currencyLabel}</span>
           </button>
-          {ctaLabel && (
-            <button className="host" type="button" onClick={() => (window.location.href = ctaHref || '#host')}>
-              {ctaLabel}
-            </button>
-          )}
+          {ctaLabel &&
+            (ctaHref?.startsWith('/') ? (
+              <Link className="host" to={ctaHref}>
+                {ctaLabel}
+              </Link>
+            ) : (
+              <button className="host" type="button" onClick={() => (window.location.href = ctaHref || '#host')}>
+                {ctaLabel}
+              </button>
+            ))}
           {signInLabel &&
             (signInHref?.startsWith('/') ? (
               <Link className="signin" to={signInHref}>
@@ -97,11 +102,16 @@ export default function Header({
             {link.label}
           </NavLink>
         ))}
-        {ctaLabel && (
-          <a href={ctaHref || '#host'} onClick={closeMobile}>
-            {ctaLabel}
-          </a>
-        )}
+        {ctaLabel &&
+          (ctaHref?.startsWith('/') ? (
+            <Link to={ctaHref} onClick={closeMobile}>
+              {ctaLabel}
+            </Link>
+          ) : (
+            <a href={ctaHref || '#host'} onClick={closeMobile}>
+              {ctaLabel}
+            </a>
+          ))}
       </div>
     </header>
   )

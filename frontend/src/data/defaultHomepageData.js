@@ -26,7 +26,7 @@ export const defaultHomepageData = {
   topbar: {
     text: 'Become a Host and start earning money!',
     linkLabel: 'List your van or guesthouse',
-    linkHref: '#host',
+    linkHref: '/become-a-host',
   },
   header: {
     navLinks: [
@@ -37,7 +37,7 @@ export const defaultHomepageData = {
       { label: 'Good to Know', href: '#faq' },
     ],
     ctaLabel: 'Become a host',
-    ctaHref: '#host',
+    ctaHref: '/become-a-host',
     langLabel: 'EN',
     currencyLabel: '€ EUR',
     signInLabel: 'Sign in',
@@ -391,7 +391,7 @@ export const defaultHomepageData = {
     points: ['Free to list', 'You set the calendar', 'Insurance included'],
     primaryLabel: 'Become a host',
     secondaryLabel: 'See how hosting works',
-    secondaryHref: '#host',
+    secondaryHref: '/become-a-host',
     houseImage: IMG.hostVan,
     vanImage: IMG.whyPhoto,
     chipAmount: '€2.4M+',
@@ -532,7 +532,7 @@ export const defaultHomepageData = {
       {
         title: 'Host',
         links: [
-          { label: 'Become a host', href: '#host' },
+          { label: 'Become a host', href: '/become-a-host' },
           { label: 'Host hub', href: '#' },
           { label: 'Hosting fees', href: '#' },
           { label: 'Insurance', href: '#' },

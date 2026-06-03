@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Become a Host — MyTerraBook</title>
+<script>document.documentElement.classList.add('reveal-on');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* earthy orange system */
+    --espresso:#2a1810;       /* deepest brown — topbar / footer / dark cards */
+    --espresso-2:#3a2417;
+    --bark:#2e2015;           /* primary text */
+    --stone:#82705c;          /* muted text */
+    --stone-light:#9d8c79;
+    --clay:#d9602e;           /* primary terracotta-orange */
+    --clay-dark:#bc4d20;
+    --clay-soft:#f6d9c6;
+    --ochre:#e0a23c;          /* warm amber accent */
+    --moss:#7c894c;           /* earthy olive accent */
+    --moss-dark:#6a7641;
+    --sand:#faf3e8;           /* page background */
+    --cream:#f1e5d3;          /* card surface */
+    --cream-2:#ead9c0;
+    --line:#e6d8c2;
+    --card-radius:24px;
+    --maxw:1280px;
+    --serif:'Quicksand',sans-serif;
+    --sans:'Open Sans',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--sans);
+    color:var(--bark);
+    background:var(--sand);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  h1,h2,h3{font-family:var(--serif);margin:0;color:var(--espresso);font-weight:700;letter-spacing:-0.015em;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px;}
+  .eyebrow{
+    font-size:13px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--clay);
+    display:inline-flex;align-items:center;gap:10px;font-family:var(--sans);
+  }
+  .eyebrow .rule{width:30px;height:2px;background:var(--clay);border-radius:2px;}
+
+  /* ---------- Topbar ---------- */
+  .topbar{background:var(--espresso);color:#e8d8c4;font-size:14px;}
+  .topbar .wrap{display:flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding-top:7px;padding-bottom:7px;text-align:center;flex-wrap:wrap;}
+  .topbar strong{color:#fff;font-weight:700;}
+  .topbar a{display:inline-flex;align-items:center;gap:6px;color:var(--ochre);font-weight:700;}
+  .topbar a svg{width:14px;height:14px;}
+
+  /* ---------- Header / nav ---------- */
+  header.nav{background:var(--sand);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:60;}
+  header.nav .wrap{display:flex;align-items:center;height:74px;gap:34px;position:relative;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:700;font-size:23px;color:var(--espresso);letter-spacing:-0.02em;}
+  .logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(150deg,var(--clay),var(--ochre));display:grid;place-items:center;color:#fff;flex:0 0 auto;}
+  .logo .mark svg{width:auto;height:21px;}
+  .logo .terra{color:var(--clay);}
+  nav.main{display:flex;align-items:center;gap:26px;position:absolute;left:50%;transform:translateX(-50%);}
+  .nav-item{position:relative;}
+  nav.main a.nav-link,nav.main button.nav-link{
+    font-family:var(--sans);font-size:15px;color:var(--bark);font-weight:600;white-space:nowrap;
+    background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:6px 0;
+    transition:color .15s;
+  }
+  nav.main .nav-link svg{width:15px;height:15px;color:var(--stone);transition:transform .25s,color .15s;}
+  nav.main .nav-link:hover{color:var(--clay);}
+  nav.main .nav-link:hover svg{color:var(--clay);}
+  .nav-item.open .nav-link svg{transform:rotate(180deg);color:var(--clay);}
+
+  /* mega menu */
+  .mega{
+    position:absolute;top:calc(100% + 14px);left:-20px;z-index:70;
+    width:560px;background:#fff;border:1px solid var(--line);border-radius:20px;
+    box-shadow:0 30px 60px -28px rgba(42,24,16,.45);
+    padding:14px;
+    display:grid;grid-template-columns:1fr 1fr;gap:6px;
+    opacity:0;visibility:hidden;transform:translateY(8px);
+    transition:opacity .2s ease,transform .2s ease,visibility .2s;
+  }
+  .nav-item.open .mega{opacity:1;visibility:visible;transform:translateY(0);}
+  .mega-card{display:flex;align-items:flex-start;gap:14px;padding:16px;border-radius:14px;transition:background .15s;}
+  .mega-card:hover{background:var(--sand);}
+  .mega-ic{width:42px;height:42px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;background:var(--clay-soft);color:var(--clay-dark);}
+  .mega-ic svg{width:21px;height:21px;}
+  .mega-card.moss .mega-ic{background:#e7ead4;color:var(--moss-dark);}
+  .mega-card.ochre .mega-ic{background:#f8e8c8;color:#b87d1f;}
+  .mega-tx h4{font-family:var(--serif);font-size:15.5px;font-weight:700;color:var(--espresso);margin:0 0 3px;}
+  .mega-tx p{font-size:13px;color:var(--stone);line-height:1.45;margin:0;}
+
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:18px;}
+  .signin{background:none;border:none;cursor:pointer;font-family:var(--sans);font-size:15px;font-weight:600;color:var(--bark);transition:color .15s;}
+  .signin:hover{color:var(--clay);}
+  .btn-host{
+    border:none;border-radius:999px;padding:11px 24px;font-size:15px;font-weight:700;color:#fff;
+    background:var(--clay);cursor:pointer;font-family:var(--sans);white-space:nowrap;
+    transition:background .15s,transform .12s;
+  }
+  .btn-host:hover{background:var(--clay-dark);transform:translateY(-1px);}
+  .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--espresso);padding:6px;}
+  .hamburger svg{width:26px;height:26px;display:block;}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;overflow:hidden;background:var(--sand);}
+  .hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;padding-top:30px;padding-bottom:32px;}
+  .hero-copy .eyebrow{margin-bottom:14px;}
+  .hero-copy h1{font-size:42px;line-height:1.04;letter-spacing:-0.025em;text-wrap:balance;max-width:560px;}
+  .hero-copy h1 .em{color:var(--clay);}
+  .hero-copy p.lead{font-size:16px;color:var(--stone);line-height:1.55;margin:14px 0 0;max-width:460px;}
+  .hero-stats{display:flex;gap:32px;margin-top:20px;flex-wrap:wrap;}
+  .hero-stat .num{font-family:var(--serif);font-weight:700;font-size:26px;color:var(--espresso);line-height:1;letter-spacing:-0.02em;}
+  .hero-stat .lbl{font-size:12.5px;color:var(--stone);margin-top:5px;font-weight:600;}
+
+  /* sign-up card */
+  .signup{
+    background:var(--clay);border-radius:22px;padding:22px 24px 20px;color:#fff;position:relative;overflow:hidden;
+    box-shadow:0 24px 44px -28px rgba(188,77,32,.7);
+  }
+  .signup::after{content:"";position:absolute;right:-60px;top:-60px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08);}
+  .signup h3{color:#fff;font-size:20px;line-height:1.15;letter-spacing:-0.01em;position:relative;}
+  .signup p.su-sub{color:rgba(255,255,255,.85);font-size:13px;margin:4px 0 14px;position:relative;}
+  .su-field{position:relative;margin-bottom:9px;}
+  .su-field label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;color:rgba(255,255,255,.85);margin-bottom:4px;}
+  .su-field input{
+    width:100%;border:none;border-radius:10px;background:rgba(255,255,255,.96);
+    padding:10px 13px;font-family:var(--sans);font-size:14px;color:var(--bark);outline:none;
+    box-shadow:inset 0 0 0 1.5px transparent;transition:box-shadow .15s;
+  }
+  .su-field input::placeholder{color:#a99883;}
+  .su-field input:focus{box-shadow:inset 0 0 0 2px var(--espresso);}
+  .su-btn{
+    width:100%;border:none;cursor:pointer;border-radius:10px;background:var(--espresso);color:#fff;
+    font-family:var(--sans);font-weight:700;font-size:15px;padding:11px;margin-top:6px;
+    display:flex;align-items:center;justify-content:center;gap:9px;transition:background .15s,transform .12s;
+  }
+  .su-btn:hover{background:#1c0f08;transform:translateY(-1px);}
+  .su-btn svg{width:17px;height:17px;}
+  .su-foot{position:relative;text-align:center;font-size:12.5px;color:rgba(255,255,255,.82);margin-top:10px;}
+  .su-foot a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:3px;}
+  .su-or{display:flex;align-items:center;gap:12px;margin:10px 0;color:rgba(255,255,255,.7);font-size:11px;font-weight:700;letter-spacing:.08em;}
+  .su-or::before,.su-or::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.25);}
+  .su-google{
+    width:100%;border:none;cursor:pointer;border-radius:10px;background:#fff;color:var(--bark);
+    font-family:var(--sans);font-weight:700;font-size:13.5px;padding:10px;display:flex;align-items:center;justify-content:center;gap:10px;
+    transition:transform .12s;
+  }
+  .su-google:hover{transform:translateY(-1px);}
+  .su-google svg{width:18px;height:18px;}
+
+  /* ---------- Social proof marquee ---------- */
+  .proof{padding:60px 0;overflow:hidden;background:var(--sand);}
+  .proof-marquee{overflow:hidden;mask-image:linear-gradient(90deg,transparent 0,#000 6%,#000 94%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 6%,#000 94%,transparent 100%);}
+  .proof-track{display:flex;gap:24px;width:max-content;animation:proofScroll 60s linear infinite;padding:30px 0;align-items:center;}
+  .proof:hover .proof-track{animation-play-state:paused;}
+  @keyframes proofScroll{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
+  /* tall portrait column — wider, vertically centered */
+  .pcol-tall{flex:0 0 300px;height:500px;border-radius:22px;overflow:hidden;position:relative;background:var(--cream-2);}
+  .pcol-tall image-slot{position:absolute;inset:0;width:100%;height:100%;}
+  .pcol-tall .pmeta{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:22px 24px;color:#fff;
+    background:linear-gradient(to top,rgba(20,12,7,.9),rgba(20,12,7,0));}
+  .pcol-tall .pmeta .nm{font-family:var(--serif);font-weight:700;font-size:22px;letter-spacing:-0.01em;}
+  .pcol-tall .pmeta .rl{font-size:13.5px;color:rgba(255,255,255,.85);margin-top:3px;}
+  /* stacked column: two squares — narrower, but taller overall than the portrait */
+  .pcol-stack{flex:0 0 300px;display:flex;flex-direction:column;gap:24px;}
+  .psq{width:300px;height:300px;border-radius:22px;overflow:hidden;position:relative;display:flex;}
+  .psq.stat{flex-direction:column;justify-content:space-between;color:#fff;padding:24px;}
+  .psq.stat .big{font-family:var(--serif);font-weight:700;font-size:38px;line-height:1.02;letter-spacing:-0.03em;}
+  .psq.stat .desc{font-size:14px;line-height:1.45;opacity:.95;}
+  .psq.stat.clay{background:var(--clay);}
+  .psq.stat.moss{background:var(--moss);}
+  .psq.stat.ochre{background:var(--ochre);color:var(--espresso);}
+  .psq.stat.espresso{background:var(--espresso);}
+  .psq.photo{background:var(--cream-2);}
+  .psq.photo image-slot{position:absolute;inset:0;width:100%;height:100%;}
+  .psq.photo .pmeta{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:18px 20px;color:#fff;
+    background:linear-gradient(to top,rgba(20,12,7,.92),rgba(20,12,7,0));}
+  .psq.photo .pmeta .nm{font-family:var(--serif);font-weight:700;font-size:18px;letter-spacing:-0.01em;}
+  .psq.photo .pmeta .rl{font-size:12.5px;color:rgba(255,255,255,.85);margin-top:2px;}
+  /* stat tiles */
+  .ptile.stat{padding:28px 26px;flex-direction:column;justify-content:space-between;color:#fff;}
+  .ptile.stat.clay{background:var(--clay);}
+  .ptile.stat.moss{background:var(--moss);}
+  .ptile.stat.ochre{background:var(--ochre);color:var(--espresso);}
+  .ptile.stat.espresso{background:var(--espresso);}
+  .ptile.stat .big{font-family:var(--serif);font-weight:700;font-size:52px;line-height:1;letter-spacing:-0.03em;}
+  .ptile.stat .desc{font-size:15.5px;line-height:1.45;opacity:.95;max-width:90%;}
+  .ptile.stat.ochre .desc{opacity:.85;}
+  /* photo tiles */
+  .ptile.photo{position:relative;background:var(--cream-2);}
+  .ptile.photo image-slot{position:absolute;inset:0;width:100%;height:100%;}
+  .ptile.photo .pmeta{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:22px 24px;color:#fff;
+    background:linear-gradient(to top,rgba(20,12,7,.9),rgba(20,12,7,0));}
+  .ptile.photo .pmeta .nm{font-family:var(--serif);font-weight:700;font-size:21px;letter-spacing:-0.01em;}
+  .ptile.photo .pmeta .rl{font-size:13.5px;color:rgba(255,255,255,.85);margin-top:3px;}
+  .ptile.photo .quote{position:absolute;top:22px;left:24px;right:24px;z-index:2;color:#fff;font-family:var(--serif);
+    font-weight:600;font-size:18px;line-height:1.34;text-shadow:0 2px 12px rgba(20,12,7,.5);}
+  .proof-foot{display:none;}
+
+  /* ---------- How it works ---------- */
+  .how{padding:96px 0 104px;background:var(--cream);}
+  .how-head{max-width:780px;margin:0 auto 38px;text-align:center;}
+  .how-head .eyebrow{margin-bottom:16px;justify-content:center;}
+  .how-head h2{font-size:46px;line-height:1.08;letter-spacing:-0.02em;text-wrap:balance;}
+  .how-head h2 .em{color:var(--clay);}
+  .how-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:26px;}
+  .how-tab{
+    background:none;border:none;cursor:pointer;text-align:left;font-family:var(--sans);font-weight:700;
+    font-size:17px;color:var(--stone-light);padding:0 0 15px;position:relative;transition:color .2s;
+    display:flex;align-items:baseline;gap:8px;
+  }
+  .how-tab .tn{font-size:17px;color:var(--stone-light);font-weight:700;transition:color .2s;}
+  .how-tab:hover{color:var(--bark);}
+  .how-tab.active,.how-tab.active .tn{color:var(--espresso);}
+  .how-tab::before{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--line);}
+  .how-tab .bar{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--clay);transform:scaleX(0);transform-origin:left;z-index:1;}
+  .how-tab.active .bar{animation:howFill 6s linear forwards;}
+  @keyframes howFill{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+  @media (prefers-reduced-motion: reduce){.how-tab.active .bar{animation:none;transform:scaleX(1);}}
+  .how-stage{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:16/8.2;background:var(--espresso);box-shadow:0 34px 66px -38px rgba(42,24,16,.55);}
+  .how-slide{position:absolute;inset:0;opacity:0;transition:opacity .6s ease;pointer-events:none;}
+  .how-slide.active{opacity:1;pointer-events:auto;}
+  .how-slide img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.04);}
+  .how-slide.active img{animation:howZoom 6.4s ease-out forwards;}
+  @keyframes howZoom{from{transform:scale(1.04);}to{transform:scale(1.12);}}
+  @media (prefers-reduced-motion: reduce){.how-slide img,.how-slide.active img{animation:none;transform:scale(1.04);}}
+  .how-slide::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(20,12,7,.82) 0%,rgba(20,12,7,.32) 38%,rgba(20,12,7,0) 64%);}
+  .how-cap{position:absolute;left:clamp(28px,4vw,56px);bottom:clamp(30px,4.5vw,56px);right:56px;max-width:640px;z-index:2;
+    font-family:var(--serif);font-weight:700;font-size:clamp(22px,2.4vw,34px);line-height:1.24;letter-spacing:-0.01em;color:#fff;text-wrap:balance;}
+  .how-cap .muted{color:rgba(255,255,255,.55);}
+
+  /* ---------- Success / feature bento ---------- */
+  .feat{padding:108px 0 116px;}
+  .feat-head{display:grid;grid-template-columns:1fr 360px;gap:40px;align-items:end;margin-bottom:48px;}
+  .feat-head .eyebrow{margin-bottom:16px;}
+  .feat-head h2{font-size:50px;line-height:1.03;letter-spacing:-0.02em;text-wrap:balance;}
+  .feat-head .fsub{font-size:17px;color:var(--stone);line-height:1.6;padding-bottom:6px;}
+  .bento{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  .fcard{border-radius:var(--card-radius);padding:34px;position:relative;overflow:hidden;min-height:420px;display:flex;flex-direction:column;}
+  .fcard h3{font-size:30px;line-height:1.1;letter-spacing:-0.02em;margin-bottom:12px;}
+  .fcard p{font-size:15.5px;line-height:1.55;margin:0;max-width:94%;}
+  .fcard.clay{background:var(--clay);color:#fff;}
+  .fcard.clay h3{color:#fff;}
+  .fcard.clay p{color:rgba(255,255,255,.92);}
+  .fcard.cream{background:var(--cream);border:1px solid var(--line);}
+  .fcard.cream p{color:var(--stone);}
+  .fcard.espresso{background:var(--espresso);color:#fff;}
+  .fcard.espresso h3{color:#fff;}
+  .fcard.espresso p{color:rgba(255,255,255,.78);}
+  /* vertical arrangement */
+  .fcard.v-textbottom .fc-top{margin-top:auto;padding-top:30px;}
+  .fcard.v-texttop .fc-art{margin-top:auto;padding-top:28px;}
+
+  /* global-exposure mini widget */
+  .gmini{background:#fff;border-radius:20px;padding:26px 24px 22px;text-align:center;box-shadow:0 22px 46px -28px rgba(42,24,16,.45);max-width:330px;margin:0 auto;}
+  .gmini .gicon{width:48px;height:48px;border-radius:50%;background:var(--clay-soft);color:var(--clay);display:grid;place-items:center;margin:0 auto 14px;}
+  .gmini .gicon svg{width:25px;height:25px;}
+  .gmini .gname{font-family:var(--serif);font-weight:700;font-size:30px;line-height:1.04;letter-spacing:-0.02em;color:var(--espresso);margin-bottom:16px;}
+  .gmini .gchips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .gchip{font-size:12.5px;font-weight:700;color:var(--clay-dark);background:var(--clay-soft);padding:6px 13px;border-radius:999px;}
+  .gchip.moss{color:var(--moss-dark);background:#e7ead4;}
+  .gchip.ochre{color:#9c6a14;background:#f8e8c8;}
+
+  /* bento media slots */
+  .fc-art image-slot{display:block;width:100%;height:200px;border-radius:14px;overflow:hidden;}
+  .fcard .fc-art.fill image-slot{height:300px;}
+  .fcard .fc-art.bleed-br{margin:0 -34px -34px 0;}
+  .fcard .fc-art.bleed-br image-slot{height:320px;border-radius:16px 0 0 0;}
+  /* phone card — full-bleed photo to every edge with a gradient scrim + overlaid text */
+  .fcard.phone-card{overflow:hidden;}
+  .fcard.phone-card > image-slot{position:absolute;inset:0;width:100%;height:100%;border-radius:0;display:block;z-index:0;}
+  .fcard.phone-card::after{content:"";position:absolute;inset:0;z-index:1;
+    background:linear-gradient(to top,rgba(20,12,7,.92) 0%,rgba(20,12,7,.55) 28%,rgba(20,12,7,.12) 55%,rgba(20,12,7,0) 74%);}
+  .fcard.phone-card .fc-top{position:relative;z-index:2;}
+
+  /* ---------- Reviews ---------- */
+  .revs{padding:104px 0 110px;background:var(--cream);overflow:hidden;}
+  .revs .wrap{display:grid;grid-template-columns:.82fr 1.18fr;gap:56px;align-items:center;}
+  .revs-l .eyebrow{margin-bottom:18px;}
+  .revs-l h2{font-size:50px;line-height:1.05;letter-spacing:-0.02em;text-wrap:balance;}
+  .revs-l h2 .em{color:var(--clay);}
+  .revs-l p{font-size:17px;color:var(--stone);line-height:1.6;margin:20px 0 0;max-width:380px;}
+  .revs-agg{display:flex;align-items:center;gap:16px;margin-top:38px;}
+  .revs-agg .cluster{display:flex;}
+  .revs-agg .cluster image-slot{width:46px;height:46px;border-radius:50%;border:3px solid var(--cream);margin-left:-14px;display:block;}
+  .revs-agg .cluster image-slot:first-child{margin-left:0;}
+  .revs-agg .av-v{font-family:var(--serif);font-weight:700;font-size:21px;color:var(--espresso);line-height:1;display:flex;align-items:center;gap:8px;}
+  .revs-agg .av-v .ag-stars{display:inline-flex;gap:1px;color:var(--ochre);}
+  .revs-agg .av-v .ag-stars svg{width:15px;height:15px;}
+  .revs-agg .av-l{font-size:13px;color:var(--stone);margin-top:5px;}
+
+  .revs-marquee{position:relative;height:580px;display:grid;grid-template-columns:1fr 1fr;gap:22px;
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 13%,#000 87%,transparent 100%);
+    mask-image:linear-gradient(to bottom,transparent 0,#000 13%,#000 87%,transparent 100%);}
+  .revs-col{display:flex;flex-direction:column;gap:22px;will-change:transform;}
+  .revs-col.up{animation:revUp 34s linear infinite;}
+  .revs-col.down{animation:revDown 34s linear infinite;}
+  .revs-marquee:hover .revs-col{animation-play-state:paused;}
+  @keyframes revUp{from{transform:translateY(0);}to{transform:translateY(-50%);}}
+  @keyframes revDown{from{transform:translateY(-50%);}to{transform:translateY(0);}}
+  @media (prefers-reduced-motion: reduce){.revs-col{animation:none;}}
+
+  .rev{background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px 28px;text-align:center;box-shadow:0 18px 40px -30px rgba(42,24,16,.45);}
+  .rev .ravatar{width:62px;height:62px;border-radius:50%;margin:0 auto 14px;overflow:hidden;}
+  .rev .ravatar image-slot{width:62px;height:62px;display:block;}
+  .rev .nm{font-family:var(--serif);font-weight:700;font-size:19px;color:var(--espresso);letter-spacing:-0.01em;}
+  .rev .rl{font-size:13.5px;color:var(--stone);margin-top:4px;}
+  .rev .rdiv{height:1px;background:var(--line);margin:18px -28px;}
+  .rev .stars{display:flex;justify-content:center;gap:3px;color:var(--ochre);margin-bottom:16px;}
+  .rev .stars svg{width:18px;height:18px;}
+  .rev blockquote{margin:0;font-size:15.5px;line-height:1.58;color:var(--bark);font-weight:500;text-wrap:pretty;}
+
+  /* ---------- FAQ ---------- */
+  .faq{padding:104px 0 112px;}
+  .faq .wrap{display:grid;grid-template-columns:380px 1fr;gap:64px;align-items:start;}
+  .faq-l .eyebrow{margin-bottom:16px;}
+  .faq-l h2{font-size:44px;line-height:1.05;letter-spacing:-0.02em;text-wrap:balance;}
+  .faq-l p{font-size:16px;color:var(--stone);line-height:1.6;margin:18px 0 26px;max-width:300px;}
+  .faq-contact{display:flex;align-items:center;gap:12px;padding:16px 18px;background:var(--cream);border-radius:14px;border:1px solid var(--line);}
+  .faq-contact .ci{width:42px;height:42px;border-radius:11px;background:var(--clay-soft);color:var(--clay-dark);display:grid;place-items:center;flex:0 0 auto;}
+  .faq-contact .ci svg{width:20px;height:20px;}
+  .faq-contact .ct{font-size:13px;color:var(--stone);font-weight:600;}
+  .faq-contact .ct b{display:block;font-family:var(--serif);font-size:16px;color:var(--espresso);font-weight:700;}
+  .faq-list{border-top:1px solid var(--line);}
+  .faq-item{border-bottom:1px solid var(--line);}
+  .faq-q{width:100%;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:18px;
+    padding:24px 4px;text-align:left;font-family:var(--sans);}
+  .faq-q .num{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--clay);flex:0 0 auto;}
+  .faq-q .qt{flex:1;font-family:var(--serif);font-weight:700;font-size:19px;color:var(--espresso);letter-spacing:-0.01em;}
+  .faq-q .chev{width:22px;height:22px;color:var(--stone);flex:0 0 auto;transition:transform .3s;}
+  .faq-item.open .faq-q .chev{transform:rotate(45deg);color:var(--clay);}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.33,1,.68,1);}
+  .faq-item.open .faq-a{max-height:260px;}
+  .faq-a-inner{padding:0 44px 26px;font-size:15.5px;color:var(--stone);line-height:1.62;max-width:620px;}
+
+  /* ---------- Contact CTA ---------- */
+  .cta{padding:40px 0 110px;}
+  .cta-box{
+    position:relative;overflow:hidden;border-radius:34px;
+    background:var(--clay);color:#fff;text-align:center;padding:84px 40px 88px;
+  }
+  .cta-topo{position:absolute;inset:0;z-index:0;opacity:.5;
+    background-image:radial-gradient(circle at 20% 30%,transparent 38%,rgba(255,255,255,.13) 39%,rgba(255,255,255,.13) 40%,transparent 41%),
+      radial-gradient(circle at 20% 30%,transparent 58%,rgba(255,255,255,.1) 59%,rgba(255,255,255,.1) 60%,transparent 61%),
+      radial-gradient(circle at 78% 62%,transparent 30%,rgba(255,255,255,.12) 31%,rgba(255,255,255,.12) 32%,transparent 33%),
+      radial-gradient(circle at 78% 62%,transparent 48%,rgba(255,255,255,.09) 49%,rgba(255,255,255,.09) 50%,transparent 51%),
+      radial-gradient(circle at 78% 62%,transparent 66%,rgba(255,255,255,.07) 67%,rgba(255,255,255,.07) 68%,transparent 69%);
+    background-size:cover;}
+  .cta-inner{position:relative;z-index:1;}
+  .cta-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#fff;
+    background:rgba(255,255,255,.15);padding:8px 16px;border-radius:999px;margin-bottom:24px;}
+  .cta-eyebrow .cd{width:7px;height:7px;border-radius:50%;background:#fff;}
+  .cta-box h2{color:#fff;font-size:54px;line-height:1.04;letter-spacing:-0.025em;text-wrap:balance;max-width:660px;margin:0 auto;}
+  .cta-box p{color:rgba(255,255,255,.9);font-size:18px;margin:20px auto 36px;max-width:480px;line-height:1.55;}
+  .cta-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .cta-btn{display:inline-flex;align-items:center;gap:9px;border:none;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:17px;
+    padding:16px 34px;border-radius:999px;transition:transform .15s,background .15s;}
+  .cta-btn.solid{background:var(--espresso);color:#fff;}
+  .cta-btn.solid:hover{background:#1c0f08;transform:translateY(-2px);}
+  .cta-btn.solid svg{width:18px;height:18px;}
+  .cta-btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.4);}
+  .cta-btn.ghost:hover{background:rgba(255,255,255,.24);}
+
+  /* ---------- Footer ---------- */
+  .ftr{background:var(--espresso);color:#d8c7b3;overflow:hidden;}
+  .ftr .wrap{padding-top:64px;}
+  .ftr-top{display:grid;grid-template-columns:1.7fr 1fr 1fr 1fr;gap:48px 40px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .ftr-brand .logo{color:#fff;font-size:22px;margin-bottom:14px;}
+  .ftr-brand .logo .terra{color:var(--ochre);}
+  .ftr-tag{font-size:14.5px;line-height:1.65;color:#b09a85;max-width:300px;margin:0 0 22px;}
+  .ftr-social{display:flex;gap:10px;}
+  .ftr-social a{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.07);display:grid;place-items:center;color:#fff;transition:background .18s,transform .18s;}
+  .ftr-social a:hover{background:var(--clay);transform:translateY(-2px);}
+  .ftr-social svg{width:18px;height:18px;}
+  .ftr-col h4{font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#fff;margin:0 0 18px;}
+  .ftr-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .ftr-col a{font-size:14px;color:#b09a85;font-weight:500;transition:color .15s;}
+  .ftr-col a:hover{color:var(--ochre);}
+  .ftr-cta{display:flex;flex-direction:column;align-items:flex-start;gap:12px;}
+  .ftr-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;
+    font-family:var(--sans);font-weight:700;font-size:14px;padding:11px 22px;width:100%;max-width:200px;transition:background .15s,border-color .15s,transform .12s,color .15s;}
+  .ftr-btn.solid{background:var(--clay);color:#fff;}
+  .ftr-btn.solid:hover{background:var(--clay-dark);color:#fff;transform:translateY(-1px);}
+  .ftr-btn.solid svg{width:16px;height:16px;}
+  .ftr-btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.25);}
+  .ftr-btn.ghost:hover{border-color:var(--ochre);color:var(--ochre);}
+  .ftr-bot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:26px 0 30px;}
+  .ftr-copy{font-size:13px;color:#8f7c69;}
+  .ftr-copy b{color:#b09a85;font-weight:600;}
+  .ftr-legal{display:flex;align-items:center;gap:5px 16px;flex-wrap:wrap;}
+  .ftr-legal a{font-size:13px;color:#8f7c69;transition:color .15s;}
+  .ftr-legal a:hover{color:#fff;}
+  .ftr-legal .dot{width:3px;height:3px;border-radius:50%;background:#5a463a;}
+  .ftr-word{text-align:center;line-height:1;padding:14px 0 calc(18px + env(safe-area-inset-bottom));overflow:hidden;}
+  .ftr-word image-slot{display:block;width:100%;height:clamp(60px,12vw,180px);}
+
+  /* bouncy footer shoulder — elastic morph on scroll-in */
+  .ftr-wave{position:relative;z-index:2;height:56px;margin-bottom:-1px;line-height:0;pointer-events:none;}
+  .ftr-wave svg{display:block;width:100%;height:100%;}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:1080px){
+    .wrap{padding:0 28px;}
+    nav.main{gap:18px;}
+  }
+  @media(max-width:980px){
+    nav.main{display:none;}
+    .nav-right .signin{display:none;}
+    .hamburger{display:block;}
+    .hero .wrap{grid-template-columns:1fr;gap:44px;padding-top:54px;padding-bottom:60px;}
+    .hero-copy h1{font-size:46px;}
+    .signup{max-width:460px;}
+    .proof-head h2,.feat-head h2,.revs-head h2,.how-head h2{font-size:38px;}
+    .how-tabs{grid-template-columns:repeat(2,1fr);gap:10px 22px;}
+    .how-stage{aspect-ratio:4/3.4;}
+    .feat-head{grid-template-columns:1fr;}
+    .bento{grid-template-columns:1fr;}
+    .revs .wrap{grid-template-columns:1fr;gap:40px;}
+    .revs-marquee{height:520px;}
+    .faq .wrap{grid-template-columns:1fr;gap:36px;}
+    .cta-box h2{font-size:38px;}
+    .cta-box{padding:60px 28px 64px;}
+    .ftr-top{grid-template-columns:1fr 1fr;gap:36px 28px;}
+    .ftr-brand{grid-column:1/-1;}
+  }
+  @media(max-width:560px){
+    .wrap{padding:0 20px;}
+    .hero-copy h1{font-size:38px;}
+    .proof-rail{padding-left:20px;padding-right:20px;}
+    .ftr-top{grid-template-columns:1fr;}
+    .hero-stats{gap:26px;}
+  }
+
+  /* ---------- Title reveal (GSAP SplitText line mask) ---------- */
+  .reveal-on .reveal-title{opacity:0;}
+  .reveal-title .rl-line{will-change:transform;}
+  .reveal-on .reveal-desc{opacity:0;}
+  .reveal-desc .rd-char{will-change:transform;}
+  .cta-spin{display:inline-block;}
+  .cta-spin .cta-char{display:inline-block;backface-visibility:hidden;}
+  .reveal-on .bento .fcard{opacity:0;will-change:transform;}
+  @media (prefers-reduced-motion: reduce){
+    .reveal-on .reveal-title,
+    .reveal-on .reveal-desc,
+    .reveal-on .bento .fcard{opacity:1 !important;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== Topbar ===== -->
+  <div class="topbar">
+    <div class="wrap">
+      <span>Iceland hosts earned <strong>€2.4M+</strong> last year.</span>
+      <a href="#signup">See what you'd earn
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- ===== Header ===== -->
+  <header class="nav">
+    <div class="wrap">
+      <a href="MyTerraBook.html" class="logo">
+        <span class="mark"><svg viewBox="0 0 56.97 71.17" fill="currentColor" aria-hidden="true"><path d="M.07,71.17l-.07-.34V.07l.34-.07h34.32c9.88,0,18.36,7.39,19.31,16.83.48,4.78.31,8.6-3.62,13.23-.33.39-.8.59-1.39.59-1.5,0-3.34-1.31-3.42-1.36l-.27-.19.24-.23c4.22-4.02,5.28-9.84,3.2-15.3-2.09-5.49-7.68-9.18-13.9-9.18H4.39v35.74l.94-.98c2.85-3,6.51-4.96,10.6-5.68-.21-.92-.5-1.92-.79-2.88-.19-.63-.38-1.26-.54-1.86l-.11-.4c-.09-.3-.18-.62-.23-.9l.02-.11.11-.28.11-.07.13.04h.31s.04,0,.06,0c.35,0,.51.03.63.13.63.8,1.23,1.58,1.82,2.36,1,1.32,2.01,2.64,3.07,3.92l.15.06,12.23-.93s.06-.04.11-.28l-4.97-18.29,1.96.13.2.09,11.24,17.75.3.08c1.17-.15,2.48-.23,3.79-.32l.57-.04c.42-.03.86-.07,1.31-.1.92-.08,1.88-.16,2.81-.16.77,0,1.43.06,2.03.17.75.15,3.19.75,3,2.39-.22,1.86-3.82,2.48-4.77,2.55-.71.05-1.45.06-2.19.06s-1.45-.01-2.17-.03c-.72-.01-1.44-.03-2.15-.03-.37,0-.75,0-1.11.01h-.32c-.51,0-.88.03-1,.23l-9.72,18.4-1.91.38-.12-.27-.04-.21,3.45-18.25c-.05-.09-.13-.16-.36-.19l-12.18.1-.08.1-4.35,6.61-1.18.23-.15-.25-.04-.2,1.01-5.25c-6.63,1.6-11.45,7.67-11.45,14.55v14.28h33.6c8.04,0,14.58-6.58,14.58-14.66,0-5.07-2.56-9.7-6.85-12.38l-.21-.13.09-.3c.05-.07.49-.5,1.03-1.02.6-.57,1.39-.89,2.22-.89.79,0,1.54.29,2.1.82,3.82,3.56,6.02,8.62,6.02,13.89,0,10.5-8.51,19.05-18.97,19.05H.07Z"></path></svg></span>
+        My<span class="terra">Terra</span>Book
+      </a>
+      <nav class="main">
+        <div class="nav-item" id="navWhy">
+          <button class="nav-link" type="button">Why host
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="mega">
+            <a class="mega-card" href="#how">
+              <span class="mega-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="mega-tx"><h4>Get started</h4><p>List your van or room in under 15 minutes.</p></span>
+            </a>
+            <a class="mega-card ochre" href="#feat">
+              <span class="mega-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v6h-6"/></svg></span>
+              <span class="mega-tx"><h4>Grow your earnings</h4><p>Pricing tips and tools that lift your bookings.</p></span>
+            </a>
+            <a class="mega-card moss" href="#feat">
+              <span class="mega-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M10 19V9M16 19v-7M20 19V7"/></svg></span>
+              <span class="mega-tx"><h4>Host insights</h4><p>See demand across Iceland season by season.</p></span>
+            </a>
+            <a class="mega-card" href="#revs">
+              <span class="mega-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z"/></svg></span>
+              <span class="mega-tx"><h4>Success stories</h4><p>How hosts across Iceland are thriving.</p></span>
+            </a>
+          </div>
+        </div>
+        <a class="nav-link" href="#how">How it works</a>
+        <a class="nav-link" href="#feat">Earnings</a>
+        <a class="nav-link" href="#faq">Help center</a>
+      </nav>
+      <div class="nav-right">
+        <button class="signin" type="button">Log in</button>
+        <button class="btn-host" type="button"><span class="cta-spin">Start hosting</span></button>
+        <button class="hamburger" type="button" aria-label="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero" id="signup">
+    <div class="wrap">
+      <div class="hero-copy">
+        <h1 class="reveal-title" data-reveal-now="1">Built for real hosts, <span class="em">loved by travellers.</span></h1>
+        <p class="lead reveal-desc" data-reveal-now="1">Your campervan sits idle between trips and your spare room stays empty. Put them to work on the platform Iceland's travellers already trust.</p>
+      </div>
+
+      <div class="signup">
+        <h3>Create your host account</h3>
+        <p class="su-sub">Free to list. No commitment. Earn on your own schedule.</p>
+        <form onsubmit="return false;">
+          <div class="su-field">
+            <label for="su-email">Email</label>
+            <input id="su-email" type="email" placeholder="your@email.com" autocomplete="email" />
+          </div>
+          <div class="su-field">
+            <label for="su-pass">Password</label>
+            <input id="su-pass" type="password" placeholder="Create a password" autocomplete="new-password" />
+          </div>
+          <button class="su-btn" type="submit"><span class="cta-spin">Get started</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </form>
+        <div class="su-or">OR</div>
+        <button class="su-google" type="button">
+          <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.5-1.7 4.4-5.5 4.4-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C17.1 3.1 14.8 2 12 2 6.9 2 2.8 6.1 2.8 11.2S6.9 20.4 12 20.4c5.9 0 9.8-4.1 9.8-9.9 0-.7-.1-1.2-.2-1.7H12Z"/></svg>
+          Continue with Google
+        </button>
+        <p class="su-foot">Already a host? <a href="#">Log in</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Social proof marquee ===== -->
+  <section class="proof">
+    <div class="proof-marquee">
+      <div class="proof-track" id="proofRail">
+        <!-- pair 1 -->
+        <div class="pcol-tall">
+          <image-slot id="host-anna" shape="rect" placeholder="Host portrait — campervan"></image-slot>
+          <div class="pmeta"><div class="nm">Anna Sigurðar</div><div class="rl">Campervan host · Reykjavík</div></div>
+        </div>
+        <div class="pcol-stack">
+          <div class="psq stat clay">
+            <div class="big">€2.4M+</div>
+            <div class="desc">Paid out to MyTerraBook hosts last year.</div>
+          </div>
+          <div class="psq photo">
+            <image-slot id="host-evan" shape="rect" placeholder="Host portrait — guesthouse"></image-slot>
+            <div class="pmeta"><div class="nm">Evan Brooks</div><div class="rl">Guesthouse host</div></div>
+          </div>
+        </div>
+        <!-- pair 2 -->
+        <div class="pcol-tall">
+          <image-slot id="host-jon" shape="rect" placeholder="Host portrait — 4×4"></image-slot>
+          <div class="pmeta"><div class="nm">JónÞór</div><div class="rl">4×4 host · Akureyri</div></div>
+        </div>
+        <div class="pcol-stack">
+          <div class="psq photo">
+            <image-slot id="host-tom" shape="rect" placeholder="Host portrait — van"></image-slot>
+            <div class="pmeta"><div class="nm">Tom Reyes</div><div class="rl">Van host · Selfoss</div></div>
+          </div>
+          <div class="psq stat moss">
+            <div class="big">1,800+</div>
+            <div class="desc">Active hosts around the Ring Road.</div>
+          </div>
+        </div>
+        <!-- pair 3 -->
+        <div class="pcol-tall">
+          <image-slot id="host-eva" shape="rect" placeholder="Host portrait — cabin"></image-slot>
+          <div class="pmeta"><div class="nm">Eva Magnús</div><div class="rl">Cabin host · Vík</div></div>
+        </div>
+        <div class="pcol-stack">
+          <div class="psq stat ochre">
+            <div class="big">€1,900</div>
+            <div class="desc">Avg. monthly host earnings.</div>
+          </div>
+          <div class="psq photo">
+            <image-slot id="host-rob" shape="rect" placeholder="Host portrait — car"></image-slot>
+            <div class="pmeta"><div class="nm">Rob Mendes</div><div class="rl">Car host · Höfn</div></div>
+          </div>
+        </div>
+        <!-- pair 4 -->
+        <div class="pcol-tall">
+          <image-slot id="host-aisha" shape="rect" placeholder="Host portrait — guesthouse"></image-slot>
+          <div class="pmeta"><div class="nm">Aisha Grant</div><div class="rl">Guesthouse host · Egilsstaðir</div></div>
+        </div>
+        <div class="pcol-stack">
+          <div class="psq photo">
+            <image-slot id="host-ryan" shape="rect" placeholder="Host portrait — 4×4"></image-slot>
+            <div class="pmeta"><div class="nm">Ryan Mitchell</div><div class="rl">4×4 host · Ísafjörður</div></div>
+          </div>
+          <div class="psq stat espresso">
+            <div class="big">4.9★</div>
+            <div class="desc">Average host rating from travellers.</div>
+          </div>
+        </div>
+
+        <!-- duplicate for seamless loop -->
+        <div class="pcol-tall" aria-hidden="true">
+          <image-slot id="host-anna-2" shape="rect" placeholder="Host portrait — campervan"></image-slot>
+          <div class="pmeta"><div class="nm">Anna Sigurðar</div><div class="rl">Campervan host · Reykjavík</div></div>
+        </div>
+        <div class="pcol-stack" aria-hidden="true">
+          <div class="psq stat clay">
+            <div class="big">€2.4M+</div>
+            <div class="desc">Paid out to MyTerraBook hosts last year.</div>
+          </div>
+          <div class="psq photo">
+            <image-slot id="host-evan-2" shape="rect" placeholder="Host portrait — guesthouse"></image-slot>
+            <div class="pmeta"><div class="nm">Evan Brooks</div><div class="rl">Guesthouse host</div></div>
+          </div>
+        </div>
+        <div class="pcol-tall" aria-hidden="true">
+          <image-slot id="host-jon-2" shape="rect" placeholder="Host portrait — 4×4"></image-slot>
+          <div class="pmeta"><div class="nm">JónÞór</div><div class="rl">4×4 host · Akureyri</div></div>
+        </div>
+        <div class="pcol-stack" aria-hidden="true">
+          <div class="psq photo">
+            <image-slot id="host-tom-2" shape="rect" placeholder="Host portrait — van"></image-slot>
+            <div class="pmeta"><div class="nm">Tom Reyes</div><div class="rl">Van host · Selfoss</div></div>
+          </div>
+          <div class="psq stat moss">
+            <div class="big">1,800+</div>
+            <div class="desc">Active hosts around the Ring Road.</div>
+          </div>
+        </div>
+        <div class="pcol-tall" aria-hidden="true">
+          <image-slot id="host-eva-2" shape="rect" placeholder="Host portrait — cabin"></image-slot>
+          <div class="pmeta"><div class="nm">Eva Magnús</div><div class="rl">Cabin host · Vík</div></div>
+        </div>
+        <div class="pcol-stack" aria-hidden="true">
+          <div class="psq stat ochre">
+            <div class="big">€1,900</div>
+            <div class="desc">Avg. monthly host earnings.</div>
+          </div>
+          <div class="psq photo">
+            <image-slot id="host-rob-2" shape="rect" placeholder="Host portrait — car"></image-slot>
+            <div class="pmeta"><div class="nm">Rob Mendes</div><div class="rl">Car host · Höfn</div></div>
+          </div>
+        </div>
+        <div class="pcol-tall" aria-hidden="true">
+          <image-slot id="host-aisha-2" shape="rect" placeholder="Host portrait — guesthouse"></image-slot>
+          <div class="pmeta"><div class="nm">Aisha Grant</div><div class="rl">Guesthouse host · Egilsstaðir</div></div>
+        </div>
+        <div class="pcol-stack" aria-hidden="true">
+          <div class="psq photo">
+            <image-slot id="host-ryan-2" shape="rect" placeholder="Host portrait — 4×4"></image-slot>
+            <div class="pmeta"><div class="nm">Ryan Mitchell</div><div class="rl">4×4 host · Ísafjörður</div></div>
+          </div>
+          <div class="psq stat espresso">
+            <div class="big">4.9★</div>
+            <div class="desc">Average host rating from travellers.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== How it works ===== -->
+  <section class="how" id="how">
+    <div class="wrap">
+      <div class="how-head">
+        <span class="eyebrow"><span class="rule"></span>How it works</span>
+        <h2 class="reveal-title">From idle to earning, <span class="em">in four simple steps.</span></h2>
+      </div>
+      <div class="how-tabs" id="howTabs">
+        <button class="how-tab active" data-tab="0"><span class="tn">1.</span>List it<span class="bar"></span></button>
+        <button class="how-tab" data-tab="1"><span class="tn">2.</span>Get discovered<span class="bar"></span></button>
+        <button class="how-tab" data-tab="2"><span class="tn">3.</span>Welcome travellers<span class="bar"></span></button>
+        <button class="how-tab" data-tab="3"><span class="tn">4.</span>Get paid<span class="bar"></span></button>
+      </div>
+
+      <div class="how-stage" id="howStage">
+        <div class="how-slide active" data-panel="0">
+          <img src="images/card-house.jpg" alt="A guesthouse listed on MyTerraBook" />
+          <div class="how-cap">List your van or guesthouse in minutes, <span class="muted">our team reviews every listing so travellers know it's the real thing.</span></div>
+        </div>
+        <div class="how-slide" data-panel="1">
+          <img src="images/hero-van.jpg" alt="A campervan discovered through MyTerraBook" />
+          <div class="how-cap">Your listing reaches travellers planning Iceland, <span class="muted">featured across 30,000+ trip searches every month.</span></div>
+        </div>
+        <div class="how-slide" data-panel="2">
+          <img src="images/card-camper.jpg" alt="A traveller picking up a campervan" />
+          <div class="how-cap">Insurance, verification and 24/7 roadside support are built in, <span class="muted">you just hand over the keys.</span></div>
+        </div>
+        <div class="how-slide" data-panel="3">
+          <img src="images/card-car.jpg" alt="A car earning income on MyTerraBook" />
+          <div class="how-cap">Payouts land within 24 hours of pickup, <span class="muted">you keep 85% of every booking, with no hidden fees.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Success / feature bento ===== -->
+  <section class="feat" id="feat">
+    <div class="wrap">
+      <div class="feat-head">
+        <div>
+          <span class="eyebrow"><span class="rule"></span>Why hosts choose us</span>
+          <h2 class="reveal-title">Everything you need to earn more.</h2>
+        </div>
+        <p class="fsub reveal-desc">We bring the travellers, the tools and the protection. You bring the van, the car or the spare room.</p>
+      </div>
+
+      <div class="bento">
+        <!-- 1 · Global exposure (clay) — art top, text bottom -->
+        <div class="fcard clay v-textbottom">
+          <div class="fc-art">
+            <div class="gmini">
+              <div class="gicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+              <div class="gname">Global<br/>exposure</div>
+              <div class="gchips">
+                <span class="gchip">Online publishers</span>
+                <span class="gchip">Transport</span>
+                <span class="gchip">OTAs</span>
+                <span class="gchip">Accommodation</span>
+              </div>
+            </div>
+          </div>
+          <div class="fc-top">
+            <h3>Get discovered across 30K+ touchpoints</h3>
+            <p>We partner with 2.5K+ affiliates like Emirates, Expedia, Hilton, American Express and more — putting you in front of travellers as they plan and book their next trip.</p>
+          </div>
+        </div>
+
+        <!-- 2 · Premium ad placement (espresso) — text top, art bottom -->
+        <div class="fcard espresso v-texttop">
+          <div class="fc-top">
+            <h3>Premium ad placement</h3>
+            <p>Targeted ads ensure you appear at the top of travellers' search results at every stage of their planning.</p>
+          </div>
+          <div class="fc-art bleed-br">
+            <image-slot id="feat-google" shape="rect" placeholder="Google search results screenshot" style="border-radius: 0px; height: 351px"></image-slot>
+          </div>
+        </div>
+
+        <!-- 3 · Showcase your quality (espresso) — art top, text bottom -->
+        <div class="fcard espresso v-textbottom phone-card">
+          <image-slot id="feat-phone-img" shape="rect" fit="cover" position="50% 45%" placeholder="Phone in hand — fills the card"></image-slot>
+          <div class="fc-top">
+            <h3>Showcase your quality</h3>
+            <p>Join a curated marketplace where every supplier is verified and only top activities are approved.</p>
+          </div>
+        </div>
+
+        <!-- 4 · Turn data into insights (clay) — art top, text bottom -->
+        <div class="fcard clay v-textbottom">
+          <div class="fc-art">
+            <image-slot id="feat-stats" shape="rect" placeholder="Analytics charts (line + bar)" style="height: 204px; width: 546px"></image-slot>
+          </div>
+          <div class="fc-top">
+            <h3>Turn data into insights</h3>
+            <p>Data-driven insights and tools make it easy to optimize your listings, stay competitive and fill more slots. All on your own terms.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Reviews ===== -->
+  <section class="revs" id="revs">
+    <div class="wrap">
+      <div class="revs-l">
+        <span class="eyebrow"><span class="rule"></span>Host stories</span>
+        <h2 class="reveal-title">Our hosts <span class="em">talk about us.</span></h2>
+        <p class="reveal-desc">Thousands of Icelanders are already turning idle vehicles and spare rooms into income. Here's what they say.</p>
+        <div class="revs-agg">
+          <div class="cluster">
+            <image-slot id="agg-1" shape="circle" placeholder="Host"></image-slot>
+            <image-slot id="agg-2" shape="circle" placeholder="Host"></image-slot>
+            <image-slot id="agg-3" shape="circle" placeholder="Host"></image-slot>
+          </div>
+          <div>
+            <div class="av-v">4.8/5
+              <span class="ag-stars">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
+              </span>
+            </div>
+            <div class="av-l">Based on 14K+ host reviews</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="revs-marquee">
+        <div class="revs-col up">
+          <div class="rev"><div class="ravatar"><image-slot id="rev-anna" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Anna Sigurðar</div><div class="rl">Campervan host · Reykjavík</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"My van used to sit in the driveway nine months a year. Now it pays for itself twice over and I've met travellers from all over the world."</blockquote></div>
+          <div class="rev"><div class="ravatar"><image-slot id="rev-eva" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Eva Magnús</div><div class="rl">4×4 host · Vík</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"The insurance and gravel cover took away every worry I had about renting out my 4×4. I just approve dates and the payouts arrive."</blockquote></div>
+          <div class="rev"><div class="ravatar"><image-slot id="rev-katrin" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Katrín Helga</div><div class="rl">Cabin host · Egilsstaðir</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"Travellers leave my cabin spotless because every guest is verified first. For the first time, hosting actually feels safe."</blockquote></div>
+          <!-- duplicate set for seamless loop -->
+          <div class="rev" aria-hidden="true"><div class="ravatar"><image-slot id="rev-anna-d" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Anna Sigurðar</div><div class="rl">Campervan host · Reykjavík</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"My van used to sit in the driveway nine months a year. Now it pays for itself twice over and I've met travellers from all over the world."</blockquote></div>
+          <div class="rev" aria-hidden="true"><div class="ravatar"><image-slot id="rev-eva-d" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Eva Magnús</div><div class="rl">4×4 host · Vík</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"The insurance and gravel cover took away every worry I had about renting out my 4×4. I just approve dates and the payouts arrive."</blockquote></div>
+          <div class="rev" aria-hidden="true"><div class="ravatar"><image-slot id="rev-katrin-d" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Katrín Helga</div><div class="rl">Cabin host · Egilsstaðir</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"Travellers leave my cabin spotless because every guest is verified first. For the first time, hosting actually feels safe."</blockquote></div>
+        </div>
+
+        <div class="revs-col down">
+          <div class="rev"><div class="ravatar"><image-slot id="rev-jon" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Jón Þór</div><div class="rl">Guesthouse host · Akureyri</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"Listing the guesthouse took one evening. The booking team handles everything, and a real person picks up when I call. That's rare."</blockquote></div>
+          <div class="rev"><div class="ravatar"><image-slot id="rev-bjarni" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Bjarni Ólafsson</div><div class="rl">Car host · Selfoss</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"I added my second car within a week. Summer demand was far higher than I ever expected, and the dashboard made pricing easy."</blockquote></div>
+          <div class="rev"><div class="ravatar"><image-slot id="rev-olafur" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Ólafur Garðar</div><div class="rl">Van host · Höfn</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"Payouts land within a day and the dashboard shows me exactly what's booking. No guesswork, no chasing invoices."</blockquote></div>
+          <!-- duplicate set for seamless loop -->
+          <div class="rev" aria-hidden="true"><div class="ravatar"><image-slot id="rev-jon-d" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Jón Þór</div><div class="rl">Guesthouse host · Akureyri</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"Listing the guesthouse took one evening. The booking team handles everything, and a real person picks up when I call. That's rare."</blockquote></div>
+          <div class="rev" aria-hidden="true"><div class="ravatar"><image-slot id="rev-bjarni-d" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Bjarni Ólafsson</div><div class="rl">Car host · Selfoss</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"I added my second car within a week. Summer demand was far higher than I ever expected, and the dashboard made pricing easy."</blockquote></div>
+          <div class="rev" aria-hidden="true"><div class="ravatar"><image-slot id="rev-olafur-d" shape="circle" placeholder="Photo"></image-slot></div><div class="nm">Ólafur Garðar</div><div class="rl">Van host · Höfn</div><div class="rdiv"></div><div class="stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg></div><blockquote>"Payouts land within a day and the dashboard shows me exactly what's booking. No guesswork, no chasing invoices."</blockquote></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="faq" id="faq">
+    <div class="wrap">
+      <div class="faq-l">
+        <span class="eyebrow"><span class="rule"></span>Good to know</span>
+        <h2 class="reveal-title">Questions, answered.</h2>
+        <p class="reveal-desc">Thinking about hosting but not sure where to start? Our team in Reykjavík is one message away.</p>
+        <div class="faq-contact">
+          <span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg></span>
+          <span class="ct">Talk to the host team<b><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d2babda1a6a192bfaba6b7a0a0b3b0bdbdb9fcbba1">[email&#160;protected]</a></b></span>
+        </div>
+      </div>
+
+      <div class="faq-list" id="faqList">
+        <div class="faq-item open">
+          <button class="faq-q" type="button" aria-expanded="true">
+            <span class="num">01</span>
+            <span class="qt">How much can I actually earn?</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner">It depends on what you list and when. Campervan hosts earn €1,900/month on average over the season, and the top earners clear €3,200+. We show you a personalised estimate based on real local demand before you publish.</div></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" type="button" aria-expanded="false">
+            <span class="num">02</span>
+            <span class="qt">What does it cost to list?</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner">Listing is completely free. We only take a 15% service fee on confirmed bookings, which covers payments, marketing, insurance and 24/7 support. No subscriptions, no upfront costs, no surprises.</div></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" type="button" aria-expanded="false">
+            <span class="num">03</span>
+            <span class="qt">Is my vehicle or property insured?</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner">Yes. Every booking is covered by comprehensive insurance including Iceland-specific gravel, sand and ash protection. Guests are identity-verified before pickup, and our team is on call around the clock if anything comes up.</div></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" type="button" aria-expanded="false">
+            <span class="num">04</span>
+            <span class="qt">How and when do I get paid?</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner">Payouts are sent to your bank account within 24 hours of each trip starting. You'll see every booking, payout and upcoming reservation in a single earnings dashboard, so you always know what's coming in.</div></div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" type="button" aria-expanded="false">
+            <span class="num">05</span>
+            <span class="qt">Do I have to accept every booking?</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner">Never. You control your own calendar and can block any dates you need the vehicle or room for yourself. Turn on instant booking for convenience, or review each request by hand — it's entirely up to you.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Contact CTA ===== -->
+  <section class="cta">
+    <div class="wrap">
+      <div class="cta-box">
+        <div class="cta-topo"></div>
+        <div class="cta-inner">
+          <span class="cta-eyebrow"><span class="cd"></span>Start hosting</span>
+          <h2 class="reveal-title">Got a van or a spare room sitting idle?</h2>
+          <p class="reveal-desc">Join 1,800+ Iceland hosts already earning with MyTerraBook. It's free to list, and you could be booked within the week.</p>
+          <div class="cta-actions">
+            <button class="cta-btn solid" type="button"><span class="cta-spin">Become a host</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+            <button class="cta-btn ghost" type="button"><span class="cta-spin">Estimate my earnings</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="ftr">
+    <div class="wrap">
+      <div class="ftr-top">
+        <div class="ftr-brand">
+          <div class="logo">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="m4 17 5-9 4 7 3-4 4 6"/></svg></span>
+            My<span class="terra">Terra</span>Book
+          </div>
+          <p class="ftr-tag">Iceland's locally-run platform for campervans, 4×4s, cars and guesthouses — booked in minutes, hosted with care.</p>
+          <div class="ftr-social">
+            <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.7c0-.9.3-1.5 1.5-1.5h1.5V4.6c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.2H8v3h2.6V21h2.9Z"/></svg></a>
+          </div>
+        </div>
+        <div class="ftr-col">
+          <h4>Host</h4>
+          <ul>
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#feat">Earnings</a></li>
+            <li><a href="#signup">List your van</a></li>
+            <li><a href="#signup">List your guesthouse</a></li>
+            <li><a href="#faq">Host insurance</a></li>
+          </ul>
+        </div>
+        <div class="ftr-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#">About us</a></li>
+            <li><a href="#">Sustainability</a></li>
+            <li><a href="#faq">Help center</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="ftr-col ftr-cta">
+          <h4>Get started</h4>
+          <a class="ftr-btn ghost" href="#">Log in</a>
+          <a class="ftr-btn solid" href="#signup"><span class="cta-spin">Start hosting</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="ftr-bot">
+        <span class="ftr-copy">© 2026 <b>MyTerraBook ehf.</b></span>
+        <div class="ftr-legal">
+          <a href="#">Terms &amp; Conditions</a>
+          <span class="dot"></span>
+          <a href="#">Privacy</a>
+          <span class="dot"></span>
+          <a href="#">Cookies</a>
+        </div>
+      </div>
+    </div>
+    <div class="ftr-word"><image-slot id="ftr-logo" shape="rect" fit="contain" placeholder="Upload your logo SVG"></image-slot></div>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="image-slot.js"></script>
+  <script>
+    // ===== Mega menu (hover + click) =====
+    (function(){
+      var item = document.getElementById('navWhy');
+      if(!item) return;
+      var t;
+      item.addEventListener('mouseenter', function(){ clearTimeout(t); item.classList.add('open'); });
+      item.addEventListener('mouseleave', function(){ t = setTimeout(function(){ item.classList.remove('open'); }, 120); });
+      item.querySelector('.nav-link').addEventListener('click', function(e){ e.stopPropagation(); item.classList.toggle('open'); });
+      document.addEventListener('click', function(){ item.classList.remove('open'); });
+    })();
+
+    // ===== How it works tabs (autoplay) =====
+    (function(){
+      var tabs = document.getElementById('howTabs');
+      var stage = document.getElementById('howStage');
+      if(!tabs || !stage) return;
+      var tabEls = [].slice.call(tabs.querySelectorAll('.how-tab'));
+      var slides = [].slice.call(stage.querySelectorAll('.how-slide'));
+      var DUR = 6000;
+      var cur = 0, timer = null;
+
+      function show(i){
+        cur = (i + tabEls.length) % tabEls.length;
+        tabEls.forEach(function(t,n){ t.classList.toggle('active', n === cur); });
+        slides.forEach(function(s,n){ s.classList.toggle('active', n === cur); });
+        // restart the progress-bar fill animation on the active tab
+        var bar = tabEls[cur].querySelector('.bar');
+        if(bar){ bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; }
+      }
+      function schedule(){ clearTimeout(timer); timer = setTimeout(function(){ show(cur + 1); schedule(); }, DUR); }
+      function go(i){ show(i); schedule(); }
+
+      tabs.addEventListener('click', function(e){
+        var btn = e.target.closest('.how-tab');
+        if(!btn) return;
+        go(parseInt(btn.getAttribute('data-tab'), 10));
+      });
+
+      // pause on hover, resume on leave
+      stage.addEventListener('mouseenter', function(){ clearTimeout(timer); });
+      stage.addEventListener('mouseleave', function(){ schedule(); });
+
+      show(0); schedule();
+    })();
+
+    // ===== FAQ accordion =====
+    (function(){
+      var list = document.getElementById('faqList');
+      if(!list) return;
+      var items = [].slice.call(list.querySelectorAll('.faq-item'));
+      items.forEach(function(item){
+        item.querySelector('.faq-q').addEventListener('click', function(){
+          var isOpen = item.classList.contains('open');
+          items.forEach(function(o){ o.classList.remove('open'); o.querySelector('.faq-q').setAttribute('aria-expanded','false'); });
+          if(!isOpen){ item.classList.add('open'); item.querySelector('.faq-q').setAttribute('aria-expanded','true'); }
+        });
+      });
+    })();
+  </script>
+
+  <!-- ===== Title reveal: GSAP SplitText line mask ===== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js"></script>
+  <script>
+    (function(){
+      var titles = [].slice.call(document.querySelectorAll('.reveal-title'));
+      var descs = [].slice.call(document.querySelectorAll('.reveal-desc'));
+      var bento = [].slice.call(document.querySelectorAll('.bento .fcard'));
+      function reveal(){
+        titles.concat(descs).concat(bento).forEach(function(el){ el.style.opacity = 1; });
+      }
+
+      // Fallback: libraries failed to load, or user prefers reduced motion → just show.
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(!window.gsap || !window.SplitText || reduce){ reveal(); return; }
+
+      gsap.registerPlugin(SplitText, ScrollTrigger);
+      // Safety net in case fonts.ready never resolves.
+      var safety = setTimeout(reveal, 2500);
+
+      function animateDesc(el){
+        gsap.set(el, { opacity: 1 });
+        var split = SplitText.create(el, { type: 'chars,words', charsClass: 'rd-char' });
+        gsap.from(split.chars, {
+          duration: 0.9,
+          opacity: 0,
+          scale: 0,
+          y: 60,
+          rotationX: 160,
+          transformOrigin: '0% 50% -50',
+          ease: 'back',
+          stagger: 0.012,
+          onComplete: function(){ split.revert(); } // back to clean, selectable text
+        });
+      }
+
+      (document.fonts ? document.fonts.ready : Promise.resolve()).then(function(){
+        clearTimeout(safety);
+
+        // ----- Section titles: line-mask reveal -----
+        titles.forEach(function(el){
+          gsap.set(el, { opacity: 1 });
+          var fireNow = el.dataset.revealNow === '1';
+          SplitText.create(el, {
+            type: 'lines',
+            linesClass: 'rl-line',
+            mask: 'lines',
+            autoSplit: true,
+            onSplit: function(self){
+              return gsap.from(self.lines, {
+                yPercent: 115,
+                duration: 0.85,
+                stagger: 0.12,
+                ease: 'expo.out',
+                scrollTrigger: fireNow ? undefined : {
+                  trigger: el,
+                  start: 'top 84%',
+                  once: true
+                }
+              });
+            }
+          });
+        });
+
+        // ----- Section descriptions: char fly-in, then revert -----
+        descs.forEach(function(el){
+          if(el.dataset.revealNow === '1'){
+            animateDesc(el);
+          } else {
+            ScrollTrigger.create({
+              trigger: el,
+              start: 'top 86%',
+              once: true,
+              onEnter: function(){ animateDesc(el); }
+            });
+          }
+        });
+
+        // ----- Bento cards: fly in from different directions, settle into the grid -----
+        if(bento.length){
+          gsap.set(bento, { opacity: 1 });               // CSS hid them; gsap.from handles the entrance
+          // top-left ← left, top-right → right, bottom-left ↑ bottom, bottom-right ↑ bottom
+          var dirs = [
+            { x: -90, y: 0,  rotation: -3 },
+            { x: 90,  y: 0,  rotation: 3  },
+            { x: 0,   y: 90, rotation: -2 },
+            { x: 0,   y: 90, rotation: 2  }
+          ];
+          bento.forEach(function(card, i){
+            var d = dirs[i % dirs.length];
+            var bottom = i >= 2;                          // two bottom squares
+            gsap.from(card, {
+              opacity: 0,
+              x: d.x,
+              y: d.y,
+              rotation: d.rotation,
+              duration: bottom ? 1.5 : 0.9,               // bottom row settles slower so it's visible on scroll
+              ease: bottom ? 'power2.out' : 'power3.out',
+              scrollTrigger: { trigger: card, start: 'top 88%', once: true }
+            });
+          });
+        }
+      });
+    })();
+  </script>
+
+  <!-- ===== CTA hover spin (one-shot 3D char flip) ===== -->
+  <script>
+    (function(){
+      if(!window.gsap || !window.SplitText) return;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduce) return;
+
+      [].slice.call(document.querySelectorAll('.cta-spin')).forEach(function(label){
+        var trigger = label.closest('button, a') || label;
+        gsap.set(label, { perspective: 500 });
+
+        trigger.addEventListener('mouseenter', function(){
+          if(label._spinning) return;          // ignore re-hover while mid-spin → no stacking/looping
+          label._spinning = true;
+
+          var split = SplitText.create(label, { type: 'chars', charsClass: 'cta-char' });
+          gsap.fromTo(split.chars,
+            { rotationX: 0 },
+            {
+              rotationX: 360,
+              duration: 0.6,
+              ease: 'power2.out',
+              stagger: 0.045,
+              transformOrigin: '50% 50% -16',
+              onComplete: function(){
+                split.revert();                 // back to plain text
+                label._spinning = false;
+              }
+            }
+          );
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

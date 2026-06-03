@@ -1,4 +1,10 @@
+import { Link } from 'react-router-dom'
+
 export default function TopBar({ linkLabel, linkHref }) {
+  const isInternal = linkHref?.startsWith('/') && !linkHref.startsWith('//')
+  const LinkTag = isInternal ? Link : 'a'
+  const linkProps = isInternal ? { to: linkHref } : { href: linkHref || '#' }
+
   return (
     <div className="topbar">
       <div className="wrap">
@@ -6,12 +12,12 @@ export default function TopBar({ linkLabel, linkHref }) {
           <strong>Become a Host</strong> and start earning money!
         </span>
         {linkLabel && (
-          <a className="bannerlink" href={linkHref || '#'}>
+          <LinkTag className="bannerlink" {...linkProps}>
             {linkLabel}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
-          </a>
+          </LinkTag>
         )}
       </div>
     </div>
