@@ -16,8 +16,12 @@
         <input type="text" name="content[badge][rating]" value="{{ $content['badge']['rating'] ?? '' }}">
     </div>
     <div class="field">
-        <label>Badge review text</label>
-        <input type="text" name="content[badge][reviewCount]" value="{{ $content['badge']['reviewCount'] ?? '' }}">
+        <label>Badge — bold line</label>
+        <input type="text" name="content[badge][reviewBold]" value="{{ $content['badge']['reviewBold'] ?? '' }}" placeholder="12,400+ travellers">
+    </div>
+    <div class="field">
+        <label>Badge — second line</label>
+        <input type="text" name="content[badge][reviewRest]" value="{{ $content['badge']['reviewRest'] ?? '' }}" placeholder="who booked with us">
     </div>
 </div>
 

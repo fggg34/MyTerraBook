@@ -381,6 +381,8 @@ body.homepage-active { margin: 0; }
   .why-split.revealed .wf{transform:translateX(0);}
   .why-photo{transform:scale(.94);transition:transform .85s cubic-bezier(.33,1,.68,1);}
   .why-split.revealed .why-photo{transform:scale(1);}
+  .why-split.reveal-done .wf,
+  .why-split.reveal-done .why-photo{transform:none !important;}
   @media(prefers-reduced-motion:reduce){
     .why-split .wf,.why-photo{transform:none;transition:none;}
   }
@@ -1611,4 +1613,31 @@ body.homepage-active .news-form input{
 }
 body.homepage-active .pcard-open,
 body.homepage-active .pcard-book{text-decoration:none;color:inherit;}
+
+/* Why MyTerra columns */
+body.homepage-active .why .why-split{
+  display:grid;grid-template-columns:1fr minmax(300px,380px) 1fr;gap:52px;align-items:start;
+}
+body.homepage-active .why .why-col{display:flex;flex-direction:column;overflow:hidden;}
+body.homepage-active .why .wf{
+  display:flex;align-items:flex-start;gap:16px;padding:24px 18px;border-radius:16px;
+}
+body.homepage-active .why .why-col.left .wf{flex-direction:row-reverse;text-align:right;}
+body.homepage-active .why .why-photo{
+  position:relative;border-radius:24px;overflow:hidden;height:560px;background:#eef2f8;
+}
+body.homepage-active .why .why-photo img{width:100%;height:100%;object-fit:cover;display:block;max-width:none;}
+body.homepage-active .why .wf-tx h3{
+  font-family:var(--serif);font-weight:700;font-size:18px;color:var(--navy);margin:0 0 6px;
+}
+body.homepage-active .why .wf-more{
+  appearance:none;-webkit-appearance:none;
+  margin-top:12px;background:none;border:none;cursor:pointer;padding:0;
+  font-family:var(--sans);font-weight:700;font-size:13.5px;color:var(--green);
+  display:inline-flex;align-items:center;gap:6px;
+}
+body.homepage-active .why-split.revealed .wf,
+body.homepage-active .why-split.reveal-done .wf{transform:translateX(0) !important;}
+body.homepage-active .why-split.revealed .why-photo,
+body.homepage-active .why-split.reveal-done .why-photo{transform:scale(1) !important;}
 

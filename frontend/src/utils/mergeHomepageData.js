@@ -33,6 +33,10 @@ export function mergeHomepageData(apiData = {}) {
     ...defaults.whySection,
     ...apiData.whySection,
     photo: mergeImages(apiData.whySection?.photo, defaults.whySection.photo),
+    badge: {
+      ...defaults.whySection.badge,
+      ...apiData.whySection?.badge,
+    },
     featuresLeft: apiData.whySection?.featuresLeft?.length
       ? apiData.whySection.featuresLeft
       : defaults.whySection.featuresLeft,

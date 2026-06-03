@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import useSectionReveal from '../../hooks/useSectionReveal'
 
 const FEATURE_ICONS = {
   campervan: (
@@ -72,6 +73,9 @@ export default function WhyMyTerraSection({
   featuresLeft = [],
   featuresRight = [],
 }) {
+  const splitRef = useRef(null)
+  useSectionReveal(splitRef, { revealDoneMs: 1200, threshold: 0.22 })
+
   return (
     <section className="why">
       <div className="wrap">
@@ -79,7 +83,7 @@ export default function WhyMyTerraSection({
           {heading && <h2>{heading}</h2>}
           {subheading && <p>{subheading}</p>}
         </div>
-        <div className="why-split">
+        <div className="why-split" ref={splitRef}>
           <div className="why-col left">
             {featuresLeft.map((feature) => (
               <FeatureRow key={feature.title} feature={feature} />
