@@ -52,7 +52,10 @@ export default function BookingModule({
       ]
   const [activeTab, setActiveTab] = useState(tabList[0]?.id || 'campervan')
 
-  const handleSearch = () => navigate('/cars')
+  const handleSearch = () => {
+    const target = activeTab === 'cars' ? '/cars' : '/campervans'
+    navigate(target)
+  }
 
   return (
     <div className="booking">

@@ -30,7 +30,7 @@ export const defaultHomepageData = {
   },
   header: {
     navLinks: [
-      { label: 'Campervan', href: '#campervan' },
+      { label: 'Campervan', href: '/campervans' },
       { label: 'Car', href: '/cars' },
       { label: 'Guesthouse', href: '#guesthouse' },
       { label: 'Discover Iceland', href: '#discover' },

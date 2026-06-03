@@ -1,19 +1,24 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-function NavLink({ href, children, onClick }) {
+function NavLink({ href, children, onClick, className = '' }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
     return (
-      <Link to={href} onClick={onClick}>
+      <Link className={className || undefined} to={href} onClick={onClick}>
         {children}
       </Link>
     )
   }
   return (
-    <a href={href || '#'} onClick={onClick}>
+    <a className={className || undefined} href={href || '#'} onClick={onClick}>
       {children}
     </a>
   )
+}
+
+function navLinkClass(href) {
+  if (!href || href.startsWith('/')) return ''
+  return 'nav-collapsible'
 }
 
 export default function Header({
@@ -46,10 +51,11 @@ export default function Header({
 
         <nav className="main" aria-label="Main">
           {navLinks.map((link) => (
-            <NavLink key={link.label} href={link.href}>
+            <NavLink key={link.label} href={link.href} className={navLinkClass(link.href)}>
               {link.label}
             </NavLink>
           ))}
+          <span id="headerSearchSlot" />
         </nav>
 
         <div className="nav-right">

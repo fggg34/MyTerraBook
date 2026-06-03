@@ -11,10 +11,9 @@ import LoadingSpinner from './components/ui/LoadingSpinner'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import BecomeHostPage from './pages/BecomeHostPage'
 import CarDetailsPage from './pages/CarDetailsPage'
-import CarListingPage from './pages/CarListingPage'
+import SearchResultsPage from './pages/SearchResultsPage'
 import CheckoutPage from './pages/CheckoutPage'
 import HomePageContainer from './pages/HomePageContainer'
-import HomeSearchPage from './pages/HomeSearchPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import UnderConstructionPage from './pages/UnderConstructionPage'
@@ -77,9 +76,10 @@ function AppRoutes() {
         }
       >
         <Route path="/" element={<HomePageContainer />} />
-        <Route path="/search" element={<HomeSearchPage />} />
+        <Route path="/search" element={<SearchResultsPage vehicleType="campervan" />} />
         <Route path="/home" element={<Navigate to="/" replace />} />
-        <Route path="/cars" element={<CarListingPage />} />
+        <Route path="/campervans" element={<SearchResultsPage vehicleType="campervan" />} />
+        <Route path="/cars" element={<SearchResultsPage vehicleType="car" />} />
         <Route path="/cars/:id" element={<CarDetailsPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route
