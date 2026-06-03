@@ -7,6 +7,7 @@ import { SiteLayoutProvider } from './context/SiteLayoutContext'
 import { ToastProvider } from './context/ToastContext'
 import { getStoredToken } from './auth'
 import SiteLayout from './components/layout/SiteLayout'
+import SearchResultsLayout from './components/layout/SearchResultsLayout'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import BecomeHostPage from './pages/BecomeHostPage'
@@ -76,10 +77,7 @@ function AppRoutes() {
         }
       >
         <Route path="/" element={<HomePageContainer />} />
-        <Route path="/search" element={<SearchResultsPage vehicleType="campervan" />} />
         <Route path="/home" element={<Navigate to="/" replace />} />
-        <Route path="/campervans" element={<SearchResultsPage vehicleType="campervan" />} />
-        <Route path="/cars" element={<SearchResultsPage vehicleType="car" />} />
         <Route path="/cars/:id" element={<CarDetailsPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route
@@ -100,6 +98,17 @@ function AppRoutes() {
         />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+      </Route>
+      <Route
+        element={
+          <SiteLayoutProvider>
+            <SearchResultsLayout />
+          </SiteLayoutProvider>
+        }
+      >
+        <Route path="/search" element={<SearchResultsPage vehicleType="campervan" />} />
+        <Route path="/campervans" element={<SearchResultsPage vehicleType="campervan" />} />
+        <Route path="/cars" element={<SearchResultsPage vehicleType="car" />} />
       </Route>
     </Routes>
   )

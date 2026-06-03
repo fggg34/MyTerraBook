@@ -6,6 +6,7 @@ import { SearchResultsChromeProvider } from '../context/SearchResultsChromeConte
 import SearchResultsChrome, { SearchResultsHeaderPill } from '../components/search-results/SearchResultsChrome'
 import useSearchResultsPage from '../hooks/useSearchResultsPage'
 import useSearchResultsEffects from '../hooks/useSearchResultsEffects'
+import useSearchResultsIntroEffects from '../hooks/useSearchResultsIntroEffects'
 import { PAGE_SIZE } from '../data/searchResultsConfig'
 import '../styles/search-results.css'
 
@@ -129,6 +130,8 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     onLoadMore,
   })
 
+  useSearchResultsIntroEffects(rootRef)
+
   const locationShort = pickupLabel.split('(').pop()?.replace(')', '').trim() || 'Keflavík'
 
   return (
@@ -137,24 +140,28 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
         {typeof document !== 'undefined' &&
           createPortal(<SearchResultsHeaderPill pillText={pillText} />, document.getElementById('headerSearchSlot') || document.body)}
 
-        <SearchResultsChrome
-          vehicleType={vehicleType}
-          pickupLabel={pickupLabel}
-          dropoffLabel={dropoffLabel}
-          query={query}
-          updateSearch={updateSearch}
-          totalCount={totalCount}
-          config={config}
-          sort={sort}
-          setSort={setSort}
-          sortLabel={sortLabel}
-          quickFilters={quickFilters}
-          toggleQuick={toggleQuick}
-          clearFilters={clearFilters}
-          hasActiveFilters={hasActiveFilters}
-          filters={filters}
-          setFilters={setFilters}
-        />
+        {typeof document !== 'undefined' &&
+          createPortal(
+            <SearchResultsChrome
+              vehicleType={vehicleType}
+              pickupLabel={pickupLabel}
+              dropoffLabel={dropoffLabel}
+              query={query}
+              updateSearch={updateSearch}
+              totalCount={totalCount}
+              config={config}
+              sort={sort}
+              setSort={setSort}
+              sortLabel={sortLabel}
+              quickFilters={quickFilters}
+              toggleQuick={toggleQuick}
+              clearFilters={clearFilters}
+              hasActiveFilters={hasActiveFilters}
+              filters={filters}
+              setFilters={setFilters}
+            />,
+            document.getElementById('searchChromeBar') || document.body,
+          )}
 
         <main className="results">
           <div className="wrap">
@@ -180,7 +187,7 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
                     {config.subtitle}
                   </p>
                 </div>
-                <div className="ri-tags">
+                <div className="ri-tags reveal-tags">
                   <span className="ri-tag">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11Z" />

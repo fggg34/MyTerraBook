@@ -74,7 +74,7 @@ export default function SearchResultsChrome({
   }
 
   return (
-    <div className="search-chrome chrome" id="searchChrome">
+    <>
       <div className="hsearch" id="hsearch">
         <div className="hsearch-inner">
           <div className="hcats" id="hcats">
@@ -228,7 +228,6 @@ export default function SearchResultsChrome({
             </div>
           </div>
         </div>
-        <div className="scroll-progress" id="scrollProgress" />
       </div>
 
       {openPop === 'price' && (
@@ -270,7 +269,7 @@ export default function SearchResultsChrome({
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
 

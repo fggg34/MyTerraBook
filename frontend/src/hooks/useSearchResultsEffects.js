@@ -9,10 +9,10 @@ export default function useSearchResultsEffects({ rootRef, totalCount, visibleCo
     document.documentElement.classList.add('reveal-on')
 
     const root = rootRef.current
-    if (!root) return undefined
+    const chromeEl = document.getElementById('searchChrome')
+    if (!root || !chromeEl) return undefined
 
-    const chromeEl = root.querySelector('#searchChrome')
-    const progressEl = root.querySelector('#scrollProgress')
+    const progressEl = document.getElementById('scrollProgress')
     const resfloat = root.querySelector('#resfloat')
     const rfBar = root.querySelector('#rfBar')
     const intro = root.querySelector('.results-intro')
@@ -22,16 +22,13 @@ export default function useSearchResultsEffects({ rootRef, totalCount, visibleCo
       const introBottom = intro ? intro.getBoundingClientRect().bottom + y : 400
       const condensed = y > introBottom - 120
       chrome?.setCondensed?.(condensed)
-      chromeEl?.classList.toggle('condensed', condensed)
+      chromeEl.classList.toggle('condensed', condensed)
       document.body.classList.toggle('search-chrome-condensed', condensed)
 
-      if (chromeEl) {
-        const rect = chromeEl.getBoundingClientRect()
-        const stuck = rect.top <= 74 && y > 80
-        chromeEl.classList.toggle('stuck', stuck)
-        chrome?.setStuck?.(stuck)
-        document.body.classList.toggle('search-chrome-stuck', stuck)
-      }
+      const stuck = y > 80
+      chromeEl.classList.toggle('stuck', stuck)
+      chrome?.setStuck?.(stuck)
+      document.body.classList.toggle('search-chrome-stuck', stuck)
 
       const docH = document.documentElement.scrollHeight - window.innerHeight
       const pct = docH > 0 ? Math.min(100, (y / docH) * 100) : 0
@@ -66,8 +63,8 @@ export default function useSearchResultsEffects({ rootRef, totalCount, visibleCo
 
     const pill = document.getElementById('hsearchPill')
     const onPill = () => {
-      chromeEl?.classList.remove('condensed')
-      document.body.classList.remove('search-chrome-condensed')
+      chromeEl.classList.remove('condensed', 'stuck')
+      document.body.classList.remove('search-chrome-condensed', 'search-chrome-stuck')
       intro?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
     pill?.addEventListener('click', onPill)
