@@ -1,27 +1,17 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useRef } from 'react'
+import useHowStepsEffects from '../../hooks/useHowStepsEffects'
 
 export default function HowItWorksSection({ heading, steps = [] }) {
-  const [activeStep, setActiveStep] = useState(0)
+  const wrapRef = useRef(null)
+  useHowStepsEffects(wrapRef, steps.length)
 
   return (
     <section className="how">
       <div className="wrap">
         <div className="how-head">{heading && <h2>{heading}</h2>}</div>
-        <div className="how-steps" id="howSteps">
+        <div className="how-steps" id="howSteps" ref={wrapRef}>
           {steps.map((step, index) => (
-            <div
-              key={step.num}
-              className={`hstep ${activeStep === index ? 'active' : ''}`}
-              data-step={index}
-              onMouseEnter={() => setActiveStep(index)}
-              onFocus={() => setActiveStep(index)}
-              onClick={() => setActiveStep(index)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') setActiveStep(index)
-              }}
-            >
+            <div key={step.num} className={`hstep ${index === 0 ? 'active' : ''}`} data-step={index}>
               <span className="hstep-bar" />
               <div className="hstep-num">{step.num}</div>
               <div className="hstep-title">{step.title}</div>
