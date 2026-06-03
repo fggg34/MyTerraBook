@@ -297,11 +297,11 @@ export default function BecomeHostPageContent() {
                 <p>Targeted ads ensure you appear at the top of travellers&apos; search results at every stage of their planning.</p>
               </div>
               <div className="fc-art bleed-br">
-                <HostPhoto src={becomeHostImages.cardHouse} alt="Search results preview" style={{ borderRadius: 0, height: 351, width: '100%', objectFit: 'cover' }} />
+                <HostPhoto src={becomeHostImages.cardHouse} alt="Search results preview" className="feat-google" />
               </div>
             </div>
             <div className="fcard espresso v-textbottom phone-card">
-              <HostPhoto src={becomeHostImages.whyPhoto} alt="Phone in hand" />
+              <HostPhoto src={becomeHostImages.whyPhoto} alt="Phone in hand" className="feat-phone" />
               <div className="fc-top">
                 <h3>Showcase your quality</h3>
                 <p>Join a curated marketplace where every supplier is verified and only top activities are approved.</p>
@@ -309,7 +309,7 @@ export default function BecomeHostPageContent() {
             </div>
             <div className="fcard clay v-textbottom">
               <div className="fc-art">
-                <HostPhoto src={becomeHostImages.cardCar} alt="Analytics charts" style={{ height: 204, width: '100%', objectFit: 'cover', borderRadius: 16 }} />
+                <HostPhoto src={becomeHostImages.cardCar} alt="Analytics charts" className="feat-stats" />
               </div>
               <div className="fc-top">
                 <h3>Turn data into insights</h3>
