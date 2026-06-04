@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('listing_reviews')) {
+            return;
+        }
+
         Schema::create('listing_reviews', function (Blueprint $table) {
             $table->id();
             $table->morphs('reviewable');
@@ -19,7 +23,10 @@ return new class extends Migration
             $table->boolean('is_approved')->default(true);
             $table->timestamps();
 
-            $table->index(['reviewable_type', 'reviewable_id', 'is_approved', 'created_at']);
+            $table->index(
+                ['reviewable_type', 'reviewable_id', 'is_approved', 'created_at'],
+                'lr_reviewable_approved_idx',
+            );
         });
     }
 
