@@ -42,4 +42,15 @@ class ListingReview extends Model
     {
         return $query->where('is_approved', true);
     }
+
+    public function listingName(): string
+    {
+        $reviewable = $this->reviewable;
+
+        if ($reviewable instanceof Car || $reviewable instanceof GuestHouse) {
+            return $reviewable->name;
+        }
+
+        return 'Listing #'.$this->reviewable_id;
+    }
 }
