@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MyTerraBook — 2023 Winnebago Revel 4×4 Diesel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --navy:#0f2036;
+    --ink:#1d2b40;
+    --slate:#5a6b82;
+    --slate-light:#8090a4;
+    --green:#45a06a;
+    --red:#e23744;
+    --green-dark:#3a8d5d;
+    --blue:#34629e;
+    --blue-soft:#eef2f8;
+    --line:#e2e7ef;
+    --bg:#fbfcfe;
+    --card-radius:22px;
+    --maxw:1320px;
+    --serif:'Quicksand',sans-serif;
+    --sans:'Open Sans',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:var(--sans);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.5;}
+  h1,h2,h3,h4{font-family:var(--serif);margin:0;color:var(--navy);font-weight:700;letter-spacing:-0.01em;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:var(--sans);}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px;}
+
+  /* ---------- Header / nav ---------- */
+  header.nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40;}
+  header.nav .wrap{display:flex;align-items:center;height:74px;gap:36px;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:700;font-size:23px;color:var(--navy);letter-spacing:-0.02em;}
+  .logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(150deg,var(--green),#5bb481);display:grid;place-items:center;color:#fff;flex:0 0 auto;}
+  .logo .mark svg{width:20px;height:20px;}
+  .logo .terra{color:var(--green);}
+  nav.main{display:flex;align-items:center;gap:28px;margin-left:8px;}
+  nav.main a{font-size:15px;color:var(--ink);font-weight:600;white-space:nowrap;position:relative;transition:color .15s,transform .35s cubic-bezier(.34,1.56,.64,1);}
+  nav.main a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:2px;background:var(--green);border-radius:2px;transform:scaleX(0);transform-origin:left;transition:transform .25s ease;}
+  nav.main a:hover{color:var(--green);transform:translateY(-4px);}
+  nav.main a:hover::after{transform:scaleX(1);}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:18px;}
+  .nav-right .host{border:none;border-radius:999px;padding:9px 22px;font-size:15px;font-weight:700;color:#fff;background:var(--green);cursor:pointer;transition:.15s;white-space:nowrap;}
+  .nav-right .host:hover{background:var(--green-dark);}
+  .signin{border:1.5px solid var(--line);border-radius:999px;padding:9px 22px;font-size:15px;font-weight:600;color:var(--navy);background:#fff;cursor:pointer;transition:.15s;white-space:nowrap;}
+  .signin:hover{border-color:var(--green);color:var(--green);}
+  .lang-cur{display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;padding:6px 4px;transition:color .15s;}
+  .lang-cur:hover{color:var(--green);}
+  .lang-cur svg{width:18px;height:18px;color:var(--slate);flex:0 0 auto;}
+  .lang-cur .lc-div{width:1px;height:15px;background:var(--line);}
+  .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--navy);padding:6px;}
+  .hamburger svg{width:26px;height:26px;display:block;}
+
+  /* ---------- Breadcrumb / actions bar ---------- */
+  .subbar{border-bottom:1px solid var(--line);background:#fff;}
+  .subbar .wrap{display:flex;align-items:center;justify-content:space-between;height:58px;}
+  .crumb{display:inline-flex;align-items:center;gap:9px;font-size:15px;font-weight:600;color:var(--navy);background:none;border:none;cursor:pointer;transition:gap .2s,color .15s;}
+  .crumb:hover{gap:13px;color:var(--green);}
+  .crumb svg{width:18px;height:18px;}
+  .subactions{display:flex;align-items:center;gap:6px;}
+  .sa-btn{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;font-weight:600;color:var(--navy);background:none;border:none;cursor:pointer;padding:8px 12px;border-radius:999px;transition:background .15s;}
+  .sa-btn:hover{background:var(--blue-soft);}
+  .sa-btn svg{width:18px;height:18px;}
+
+  /* ---------- Gallery ---------- */
+  .gallery-wrap{padding:24px 0 0;}
+  .gallery{
+    display:grid;
+    grid-template-columns:1.55fr 1fr 1fr;
+    grid-template-rows:repeat(2,minmax(0,1fr));
+    gap:10px;height:560px;border-radius:20px;overflow:hidden;
+  }
+  .gslot{position:relative;background:#e9eef5;overflow:hidden;}
+  .gslot.main{grid-row:1 / span 2;}
+  .gslot image-slot{width:100%;height:100%;display:block;}
+  .save-btn{
+    position:absolute;top:18px;right:18px;z-index:3;
+    display:inline-flex;align-items:center;gap:9px;
+    background:rgba(255,255,255,.94);backdrop-filter:blur(6px);
+    border:none;cursor:pointer;border-radius:999px;padding:11px 18px;
+    font-size:15px;font-weight:700;color:var(--navy);
+    box-shadow:0 6px 18px -8px rgba(15,32,54,.5);transition:transform .15s,background .15s;
+  }
+  .save-btn:hover{transform:translateY(-2px);}
+  .save-btn svg{width:18px;height:18px;color:var(--red);transition:fill .15s;}
+  .save-btn.on svg{fill:var(--red);}
+  .save-btn .scount{color:var(--slate);font-weight:600;}
+  .allphotos{
+    position:absolute;right:16px;bottom:16px;z-index:3;
+    display:inline-flex;align-items:center;gap:9px;
+    background:rgba(15,32,54,.82);backdrop-filter:blur(6px);
+    color:#fff;border:none;cursor:pointer;border-radius:999px;
+    padding:11px 18px;font-size:14.5px;font-weight:700;transition:background .15s,transform .15s;
+  }
+  .allphotos:hover{background:var(--navy);transform:translateY(-2px);}
+  .allphotos svg{width:17px;height:17px;}
+
+  /* ---------- Tab bar ---------- */
+  .layout{padding:34px 0 90px;}
+  .tabbar{
+    display:flex;align-items:center;gap:8px;
+    border-bottom:1px solid var(--line);margin-bottom:30px;
+    position:relative;
+  }
+  .tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1 1 auto;}
+  .tab{
+    position:relative;background:none;border:none;cursor:pointer;
+    font-size:16px;font-weight:700;color:var(--slate-light);
+    padding:14px 6px 16px;letter-spacing:-0.01em;transition:color .18s;
+    white-space:nowrap;
+  }
+  .tab:hover{color:var(--navy);}
+  .tab.active{color:var(--navy);}
+  .tab .underline{position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:3px;background:var(--navy);transform:scaleX(0);transform-origin:left;transition:transform .25s ease;}
+  .tab.active .underline{transform:scaleX(1);}
+  .tab-arrows{display:flex;align-items:center;gap:8px;flex:0 0 auto;padding-left:14px;}
+  .tarrow{
+    width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);
+    background:#fff;cursor:pointer;color:var(--navy);display:grid;place-items:center;
+    transition:.16s;
+  }
+  .tarrow:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .tarrow svg{width:19px;height:19px;}
+  /* autoplay progress ring sits under arrows */
+  .autoplay-dot{display:flex;align-items:center;gap:7px;margin-left:4px;color:var(--slate-light);font-size:12.5px;font-weight:600;letter-spacing:.02em;}
+  .autoplay-dot .pdot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:autopulse 5s linear infinite;}
+  @keyframes autopulse{0%{box-shadow:0 0 0 0 rgba(69,160,106,.5);}70%{box-shadow:0 0 0 7px rgba(69,160,106,0);}100%{box-shadow:0 0 0 0 rgba(69,160,106,0);}}
+  .tabbar.paused .autoplay-dot .pdot{animation-play-state:paused;background:var(--slate-light);}
+
+  /* ---------- Main split ---------- */
+  .split{display:grid;grid-template-columns:1fr 392px;gap:46px;align-items:start;}
+
+  /* owner row (static) */
+  .owner{display:flex;align-items:center;gap:13px;margin-bottom:14px;}
+  .owner-av{width:44px;height:44px;border-radius:50%;flex:0 0 auto;overflow:hidden;background:linear-gradient(150deg,var(--blue),#5b86c4);display:grid;place-items:center;color:#fff;font-family:var(--serif);font-weight:700;font-size:18px;}
+  .owner-meta{display:flex;flex-direction:column;line-height:1.3;}
+  .owner-name{font-family:var(--serif);font-weight:700;font-size:16px;color:var(--navy);display:flex;align-items:center;gap:8px;}
+  .owner-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--sans);font-size:11px;font-weight:700;color:var(--green-dark);background:#e7f3ec;padding:2px 8px;border-radius:999px;letter-spacing:.02em;}
+  .owner-sub{font-size:13.5px;color:var(--slate);}
+  .owner-sub b{color:var(--navy);font-weight:700;}
+
+  /* title (static) */
+  .listing-title{font-size:38px;line-height:1.08;letter-spacing:-0.02em;margin-bottom:22px;text-wrap:balance;}
+
+  /* ===== The blue box (swappable tab content) ===== */
+  .tabcard{
+    position:relative;border:2px solid var(--blue);border-radius:20px;background:#fff;
+    box-shadow:0 18px 44px -28px rgba(52,98,158,.55);
+    overflow:hidden;
+    transition:height .5s cubic-bezier(.33,1,.68,1);
+  }
+  .tabcard::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(52,98,158,.045),transparent 120px);pointer-events:none;}
+  .tpanel{
+    position:absolute;top:0;left:0;right:0;
+    padding:30px 32px 32px;
+    opacity:0;transform:translateY(10px);pointer-events:none;
+    transition:opacity .4s ease,transform .45s cubic-bezier(.33,1,.68,1);
+  }
+  .tpanel.active{opacity:1;transform:none;pointer-events:auto;}
+  .panel-kicker{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:18px;}
+  .panel-kicker .pk-line{flex:1 1 auto;height:1px;background:var(--line);}
+
+  /* Details panel */
+  .rating-strip{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;}
+  .rblock{display:flex;align-items:center;gap:14px;padding-right:26px;}
+  .rscore{display:flex;align-items:center;gap:8px;}
+  .rscore .star{width:30px;height:30px;color:var(--green);}
+  .rscore .num{font-family:var(--serif);font-weight:700;font-size:42px;line-height:1;color:var(--navy);letter-spacing:-0.02em;}
+  .rmeta{display:flex;flex-direction:column;gap:3px;}
+  .rmeta .excellent{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--navy);}
+  .rmeta .ministars{display:flex;gap:2px;color:var(--green);}
+  .rmeta .ministars svg{width:13px;height:13px;}
+  .rmeta a{font-size:13px;color:var(--slate);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+  .rmeta a:hover{color:var(--blue);}
+  .spec-grid{display:flex;align-items:center;gap:0;flex:1 1 auto;flex-wrap:wrap;}
+  .spec{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;padding:0 24px;position:relative;flex:1 1 0;min-width:96px;}
+  .spec + .spec::before,.rblock + .spec::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:1px;background:var(--line);}
+  .spec .spec-ic{width:28px;height:28px;color:var(--navy);}
+  .spec .spec-lbl{font-size:14px;font-weight:700;color:var(--navy);line-height:1.2;}
+  .descwrap{margin-top:24px;padding-top:24px;border-top:1px solid var(--line);}
+  .desc{font-size:15.5px;color:var(--ink);line-height:1.68;}
+  .desc .more-text{display:none;}
+  .desc.open .more-text{display:inline;}
+  .showmore{margin-top:14px;background:none;border:none;cursor:pointer;padding:0 0 3px;font-weight:700;font-size:15px;color:var(--navy);border-bottom:2px solid var(--navy);display:inline-flex;align-items:center;gap:7px;transition:gap .2s;}
+  .showmore:hover{gap:11px;}
+  .showmore svg{width:15px;height:15px;transition:transform .3s;}
+  .desc.open + .showmore svg{transform:rotate(180deg);}
+
+  /* Amenities panel */
+  .amen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px 22px;}
+  .amen{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600;color:var(--ink);}
+  .amen .a-ic{width:38px;height:38px;border-radius:11px;background:var(--blue-soft);display:grid;place-items:center;color:var(--blue);flex:0 0 auto;}
+  .amen .a-ic svg{width:20px;height:20px;}
+  .amen.feat .a-ic{background:#e7f3ec;color:var(--green-dark);}
+  .amen .a-tag{font-size:10px;font-weight:800;letter-spacing:.04em;color:var(--green-dark);background:#e7f3ec;padding:2px 6px;border-radius:5px;margin-left:2px;}
+
+  /* Conditions panel */
+  .cond-list{display:grid;grid-template-columns:1fr 1fr;gap:16px 34px;}
+  .cond{display:flex;gap:13px;align-items:flex-start;}
+  .cond .c-ic{width:30px;height:30px;border-radius:9px;background:var(--blue-soft);display:grid;place-items:center;color:var(--blue);flex:0 0 auto;margin-top:1px;}
+  .cond .c-ic svg{width:17px;height:17px;}
+  .cond .c-t{font-size:14.5px;font-weight:700;color:var(--navy);}
+  .cond .c-d{font-size:13.5px;color:var(--slate);line-height:1.5;}
+
+  /* Sleeping panel */
+  .sleep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .bedcard{position:relative;border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;background:#fbfcfe;cursor:pointer;transition:border-color .18s,box-shadow .18s,transform .18s,background .18s;}
+  .bedcard:hover{border-color:#c9d6ea;transform:translateY(-2px);}
+  .bedcard.sel{border-color:var(--blue);background:#fff;box-shadow:0 0 0 1px var(--blue) inset,0 14px 30px -20px rgba(52,98,158,.6);}
+  .bedcard .b-pick{position:absolute;top:14px;right:14px;width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;color:#fff;transition:background .18s,border-color .18s;}
+  .bedcard.sel .b-pick{background:var(--blue);border-color:var(--blue);}
+  .bedcard .b-pick svg{width:12px;height:12px;opacity:0;transition:opacity .15s;}
+  .bedcard.sel .b-pick svg{opacity:1;}
+  .bedcard .b-ic{width:42px;height:42px;color:var(--blue);}
+  .bedcard .b-ic svg{width:42px;height:42px;}
+  .bedcard h4{font-size:16px;}
+  .bedcard p{font-size:13.5px;color:var(--slate);line-height:1.5;margin:0;}
+  .bedcard .b-dim{font-size:12.5px;font-weight:700;color:var(--blue);letter-spacing:.02em;margin-top:auto;}
+  .sleep-preview{position:relative;margin-top:18px;border-radius:14px;overflow:hidden;background:#e9eef5;}
+  .sleep-shot{display:none;width:100%;aspect-ratio:16 / 7;}
+  .sleep-shot.active{display:block;}
+  .sleep-cap{position:absolute;left:14px;bottom:14px;z-index:2;display:inline-flex;align-items:center;gap:8px;background:rgba(15,32,54,.82);backdrop-filter:blur(6px);color:#fff;font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;pointer-events:none;}
+
+  /* Add-ons panel */
+  .addon-list{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;}
+  .addon{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:13px;padding:13px 16px;transition:border-color .15s,box-shadow .15s;}
+  .addon:hover{border-color:#c9d6ea;box-shadow:0 8px 20px -16px rgba(15,32,54,.5);}
+  .addon .ad-ic{width:38px;height:38px;border-radius:10px;background:var(--blue-soft);display:grid;place-items:center;color:var(--blue);flex:0 0 auto;}
+  .addon .ad-ic svg{width:20px;height:20px;}
+  .addon .ad-tx{display:flex;flex-direction:column;line-height:1.3;}
+  .addon .ad-name{font-size:14.5px;font-weight:700;color:var(--navy);}
+  .addon .ad-sub{font-size:12.5px;color:var(--slate);}
+  .addon .ad-price{margin-left:auto;font-family:var(--serif);font-weight:700;font-size:15px;color:var(--navy);white-space:nowrap;}
+  .addon .ad-price.free{color:var(--green-dark);}
+
+  /* ---------- Booking card (sticky) ---------- */
+  .booking{position:sticky;top:96px;}
+  .bcard{border:1px solid var(--line);border-radius:18px;background:#fff;padding:22px;box-shadow:0 24px 50px -30px rgba(15,32,54,.5);}
+  .date-wrap{position:relative;margin-bottom:18px;}
+  .date-field{width:100%;display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:13px;padding:13px 16px;cursor:pointer;background:#fff;text-align:left;transition:border-color .15s,box-shadow .15s;}
+  .date-field:hover{border-color:#c9d3e2;}
+  .date-field.open{border-color:var(--blue);box-shadow:0 0 0 3px rgba(52,98,158,.12);}
+  .date-field svg{width:20px;height:20px;color:var(--blue);flex:0 0 auto;}
+  .date-field span{font-size:15.5px;color:var(--slate-light);}
+  .df-segs{display:flex;align-items:center;flex:1 1 auto;min-width:0;}
+  .df-seg{display:flex;flex-direction:column;gap:1px;flex:1 1 0;min-width:0;}
+  .df-seg.right{padding-left:14px;}
+  .df-div{width:1px;height:30px;background:var(--line);flex:0 0 auto;}
+  .df-lab{font-size:10.5px;font-weight:700;color:var(--navy);letter-spacing:.04em;text-transform:uppercase;}
+  .df-val{font-size:15px;color:var(--slate-light);}
+  .df-val.set{color:var(--ink);font-weight:700;}
+  /* calendar popover */
+  .cal-pop{position:absolute;top:calc(100% + 10px);left:0;right:auto;width:340px;max-width:100%;z-index:30;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 26px 60px -22px rgba(15,32,54,.55);padding:16px;display:none;}
+  .cal-pop.open{display:block;animation:calIn .18s ease;}
+  @keyframes calIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .cal-title{font-family:var(--serif);font-weight:700;font-size:16px;color:var(--navy);}
+  .cal-nav{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--navy);display:grid;place-items:center;transition:.15s;}
+  .cal-nav:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .cal-nav:disabled{opacity:.32;cursor:default;background:#fff;color:var(--navy);border-color:var(--line);}
+  .cal-nav svg{width:16px;height:16px;}
+  .cal-dows{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:3px;}
+  .cal-dows span{text-align:center;font-size:10.5px;font-weight:700;color:var(--slate-light);padding:3px 0;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+  .cal-cell{aspect-ratio:1/1;display:grid;place-items:center;font-size:13.5px;font-weight:600;color:var(--ink);border:none;background:none;cursor:pointer;border-radius:9px;position:relative;transition:background .12s,color .12s;font-family:var(--sans);}
+  .cal-cell.empty{visibility:hidden;cursor:default;}
+  .cal-cell.past{color:#c5ccd8;cursor:default;}
+  .cal-cell.today::after{content:"";position:absolute;bottom:5px;width:4px;height:4px;border-radius:50%;background:var(--green);}
+  .cal-cell:not(.past):not(.sel):not(.inrange):hover{background:var(--blue-soft);}
+  .cal-cell.inrange{background:#dfe8f5;color:var(--blue);border-radius:0;}
+  .cal-cell.sel{background:var(--blue);color:#fff;z-index:1;}
+  .cal-cell.range-start{border-radius:9px 0 0 9px;}
+  .cal-cell.range-end{border-radius:0 9px 9px 0;}
+  .cal-cell.sel.today::after{background:#fff;}
+  .cal-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);}
+  .cal-nights{font-size:13.5px;color:var(--navy);}
+  .cal-nights b{font-weight:700;}
+  .cal-nights span{color:var(--slate);font-weight:500;}
+  .cal-clear{background:none;border:none;cursor:pointer;font-size:13.5px;font-weight:700;color:var(--blue);text-decoration:underline;text-underline-offset:3px;padding:4px;}
+  .cal-clear:hover{color:var(--navy);}
+  .rate-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;}
+  .rate-row .rl{font-size:16px;color:var(--slate);font-weight:600;}
+  .rate-row .rr{font-size:15px;color:var(--slate);font-weight:600;}
+  .rate-row .rr b{font-family:var(--serif);font-size:22px;color:var(--navy);font-weight:700;letter-spacing:-0.01em;margin-left:5px;}
+  .book-btn{width:100%;border:none;cursor:pointer;background:var(--red);color:#fff;font-weight:700;font-size:17px;border-radius:13px;padding:16px;transition:background .15s,transform .06s;}
+  .book-btn:hover{background:#c92e3b;}
+  .book-btn:active{transform:translateY(1px);}
+  .book-link{display:block;text-align:center;margin-top:14px;font-size:14px;color:var(--blue);font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;background:none;border:none;width:100%;font-family:var(--sans);}
+  .book-link:hover{color:var(--navy);}
+
+  /* ---------- Booking-process modal ---------- */
+  .bp-overlay{position:fixed;inset:0;z-index:200;background:rgba(11,21,37,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .bp-overlay.open{opacity:1;pointer-events:auto;}
+  .bp-modal{position:relative;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;background:#fff;border-radius:22px;box-shadow:0 40px 90px -30px rgba(11,21,37,.7);transform:translateY(18px) scale(.97);opacity:0;transition:transform .32s cubic-bezier(.33,1,.68,1),opacity .28s ease;}
+  .bp-overlay.open .bp-modal{transform:none;opacity:1;}
+  .bp-head{position:relative;padding:30px 32px 22px;border-bottom:1px solid var(--line);}
+  .bp-eyebrow{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;}
+  .bp-head h3{font-size:27px;letter-spacing:-0.02em;line-height:1.1;}
+  .bp-head p{margin:8px 0 0;font-size:14.5px;color:var(--slate);line-height:1.55;}
+  .bp-close{position:absolute;top:20px;right:20px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--navy);display:grid;place-items:center;transition:.15s;}
+  .bp-close:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .bp-close svg{width:18px;height:18px;}
+  .bp-steps{padding:24px 32px 8px;position:relative;}
+  .bp-step{display:flex;gap:18px;position:relative;padding-bottom:26px;}
+  .bp-step:last-child{padding-bottom:8px;}
+  .bp-step::before{content:"";position:absolute;left:19px;top:42px;bottom:-2px;width:2px;background:var(--line);}
+  .bp-step:last-child::before{display:none;}
+  .bp-num{position:relative;z-index:1;flex:0 0 auto;width:40px;height:40px;border-radius:50%;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:17px;}
+  .bp-step.done .bp-num{background:var(--green);color:#fff;}
+  .bp-tx{padding-top:3px;}
+  .bp-tx h4{font-size:17px;letter-spacing:-0.01em;margin-bottom:5px;}
+  .bp-tx p{margin:0;font-size:14px;color:var(--slate);line-height:1.6;}
+  .bp-tx .bp-tag{display:inline-flex;align-items:center;gap:6px;margin-top:9px;font-size:12px;font-weight:700;color:var(--green-dark);background:#e7f3ec;padding:4px 11px;border-radius:999px;}
+  .bp-tx .bp-tag svg{width:13px;height:13px;}
+  .bp-foot{padding:18px 32px 28px;display:flex;gap:14px;align-items:center;border-top:1px solid var(--line);margin-top:6px;}
+  .bp-foot .bp-cta{flex:1 1 auto;background:var(--red);color:#fff;border:none;border-radius:13px;padding:15px;font-weight:700;font-size:16px;cursor:pointer;transition:background .15s;}
+  .bp-foot .bp-cta:hover{background:#c92e3b;}
+  .bp-foot .bp-note{font-size:12.5px;color:var(--slate);line-height:1.4;max-width:160px;}
+  @media(max-width:560px){
+    .bp-head,.bp-steps,.bp-foot{padding-left:22px;padding-right:22px;}
+    .bp-foot{flex-direction:column;align-items:stretch;}
+    .bp-foot .bp-note{max-width:none;text-align:center;}
+  }
+
+  .bcard-div{height:1px;background:var(--line);margin:20px 0;}
+  .trust-points{display:flex;flex-direction:column;gap:14px;}
+  .tp{display:flex;gap:11px;align-items:flex-start;}
+  .tp .tp-ic{width:20px;height:20px;border-radius:50%;background:#e7f3ec;display:grid;place-items:center;color:var(--green-dark);flex:0 0 auto;margin-top:1px;}
+  .tp .tp-ic svg{width:13px;height:13px;}
+  .tp span{font-size:13.5px;color:var(--slate);line-height:1.5;}
+  .tp span b{color:var(--navy);font-weight:700;}
+
+  /* ---------- Guest reviews ---------- */
+  .reviews-sec{border-top:1px solid var(--line);padding:40px 0 96px;}
+  .reviews-sec h2{font-size:30px;letter-spacing:-0.02em;margin-bottom:30px;}
+  .rev-summary{display:flex;align-items:flex-start;gap:0;flex-wrap:wrap;margin-bottom:40px;}
+  .rev-score{display:flex;gap:14px;padding-right:34px;}
+  .rev-score .rs-star{width:30px;height:30px;color:var(--green);margin-top:6px;flex:0 0 auto;}
+  .rev-score .rs-num{font-family:var(--serif);font-weight:700;font-size:44px;line-height:1;color:var(--navy);letter-spacing:-0.02em;}
+  .rev-score .rs-meta{display:flex;flex-direction:column;}
+  .rev-score .rs-meta .rs-excellent{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--navy);margin-top:6px;}
+  .rev-score .rs-meta a{font-size:13px;color:var(--slate);text-decoration:underline;text-underline-offset:3px;margin-top:3px;cursor:pointer;}
+  .rev-score .rs-meta a:hover{color:var(--blue);}
+  .rev-overall{padding:0 34px;border-left:1px solid var(--line);}
+  .rev-overall .ro-label{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;}
+  .ro-bars{display:flex;flex-direction:column;gap:5px;}
+  .ro-bar{display:flex;align-items:center;gap:10px;}
+  .ro-bar .ro-n{font-size:12px;color:var(--slate-light);width:8px;text-align:right;font-weight:600;}
+  .ro-bar .ro-track{width:128px;height:5px;border-radius:3px;background:var(--line);overflow:hidden;}
+  .ro-bar .ro-fill{height:100%;border-radius:3px;background:var(--green);width:0;}
+  .rev-cats{display:flex;flex-wrap:wrap;gap:26px 40px;flex:1 1 auto;padding-left:34px;border-left:1px solid var(--line);align-self:stretch;align-content:flex-start;}
+  .rev-cat{display:flex;flex-direction:column;gap:7px;min-width:90px;}
+  .rev-cat .rc-label{font-size:14px;font-weight:700;color:var(--navy);}
+  .rev-cat .rc-val{display:flex;align-items:center;gap:7px;font-family:var(--serif);font-weight:700;font-size:18px;color:var(--navy);}
+  .rev-cat .rc-bar{flex:1 1 auto;max-width:120px;height:4px;border-radius:3px;background:var(--line);overflow:hidden;}
+  .rev-cat .rc-bar i{display:block;height:100%;background:var(--green);border-radius:3px;}
+
+  .rev-grid{display:grid;grid-template-columns:1.05fr repeat(3,1fr);gap:18px;align-items:start;}
+  .rev-feature{grid-row:1 / span 2;border-radius:18px;overflow:hidden;min-height:100%;background:#e9eef5;}
+  .rev-feature image-slot{width:100%;height:100%;min-height:480px;display:block;}
+  .rcard-rev{border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;background:#fff;display:flex;flex-direction:column;transition:box-shadow .2s,transform .2s,border-color .2s;}
+  .rcard-rev:hover{box-shadow:0 16px 34px -22px rgba(15,32,54,.4);transform:translateY(-2px);border-color:#d4dcea;}
+  .rcard-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .rcard-av{width:42px;height:42px;border-radius:50%;flex:0 0 auto;overflow:hidden;background:#1f4034;display:grid;place-items:center;color:#fff;font-family:var(--serif);font-weight:700;font-size:16px;}
+  .rcard-av img{width:100%;height:100%;object-fit:cover;display:block;}
+  .rcard-id{display:flex;flex-direction:column;line-height:1.3;}
+  .rcard-name{font-family:var(--serif);font-weight:700;font-size:16px;color:var(--navy);}
+  .rcard-sub{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--slate);}
+  .rcard-sub .rc-star{display:inline-flex;align-items:center;gap:3px;font-weight:700;color:var(--navy);}
+  .rcard-sub .rc-star svg{width:13px;height:13px;color:var(--green);}
+  .rcard-text{font-size:14.5px;color:var(--ink);line-height:1.6;}
+  .rcard-text.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+  .rcard-more{margin-top:13px;align-self:flex-start;background:none;border:none;cursor:pointer;padding:0 0 2px;font-weight:700;font-size:14px;color:var(--navy);border-bottom:2px solid var(--navy);transition:gap .2s;}
+  .rcard-more:hover{color:var(--blue);border-color:var(--blue);}
+  .rev-foot{margin-top:24px;}
+  .rev-all{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:13px 24px;font-family:var(--serif);font-weight:700;font-size:15px;color:var(--navy);cursor:pointer;transition:.18s;}
+  .rev-all:hover{border-color:var(--green);color:var(--green);}
+  .rev-all svg{width:16px;height:16px;}
+  @media(max-width:1100px){
+    .rev-grid{grid-template-columns:repeat(2,1fr);}
+    .rev-feature{grid-row:auto;grid-column:1 / -1;}
+    .rev-feature image-slot{min-height:280px;}
+  }
+  @media(max-width:680px){
+    .rev-grid{grid-template-columns:1fr;}
+    .rev-overall,.rev-cats{border-left:none;padding-left:0;}
+    .rev-summary{gap:24px;}
+  }
+
+  /* ---------- Guest photos (animated marquee) ---------- */
+  .gphotos{border-top:1px solid var(--line);padding:40px 0 92px;overflow:hidden;}
+  .gphotos h2{font-size:30px;letter-spacing:-0.02em;margin-bottom:6px;}
+  .gp-marquee{position:relative;margin:26px 0 26px;padding:6px 0;
+    -webkit-mask:linear-gradient(90deg,transparent 0,#000 4%,#000 96%,transparent 100%);
+    mask:linear-gradient(90deg,transparent 0,#000 4%,#000 96%,transparent 100%);}
+  .gp-track{display:flex;gap:16px;width:max-content;animation:gpscroll 46s linear infinite;will-change:transform;}
+  .gp-marquee:hover .gp-track{animation-play-state:paused;}
+  @keyframes gpscroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+  .gp-tile{flex:0 0 300px;height:300px;border-radius:18px;overflow:hidden;position:relative;background:#e9eef5;
+    box-shadow:0 14px 30px -22px rgba(15,32,54,.55);transition:transform .35s cubic-bezier(.33,1,.68,1),box-shadow .35s;}
+  .gp-tile image-slot{width:100%;height:100%;display:block;transition:transform .6s cubic-bezier(.2,.6,.2,1);}
+  .gp-tile:hover{transform:translateY(-4px);box-shadow:0 26px 46px -26px rgba(15,32,54,.6);}
+  .gp-tile:hover image-slot{transform:scale(1.06);}
+  .gp-all{display:inline-flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:0 0 3px;
+    font-family:var(--serif);font-weight:700;font-size:16px;color:var(--navy);border-bottom:2px solid var(--navy);transition:gap .2s,color .15s;}
+  .gp-all:hover{gap:12px;color:var(--green);border-color:var(--green);}
+  .gp-all svg{width:16px;height:16px;}
+  @media(prefers-reduced-motion:reduce){
+    .gp-track{animation:none;flex-wrap:nowrap;overflow-x:auto;}
+    .gp-tile image-slot{transition:none;}
+  }
+  @media(max-width:680px){
+    .gp-tile{flex:0 0 220px;height:220px;}
+  }
+
+  /* ---------- Similar rentals + FAQ (shared soft band) ---------- */
+  .similar{background:#e7eef8;padding:84px 0 44px;}
+  .faqs{background:#e7eef8;padding:44px 0 100px;}
+  .similar-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:30px;}
+  .similar-head h2{font-size:36px;line-height:1.05;letter-spacing:-0.02em;text-wrap:balance;max-width:640px;}
+  .sim-nav{display:flex;gap:10px;flex:0 0 auto;}
+  .sim-arrow{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--navy);display:grid;place-items:center;box-shadow:0 10px 24px -14px rgba(15,32,54,.4);transition:.18s;}
+  .sim-arrow:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .sim-arrow:disabled{opacity:.4;cursor:default;background:#fff;color:var(--navy);border-color:var(--line);}
+  .sim-arrow svg{width:20px;height:20px;}
+  .sim-track{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:6px;}
+  .sim-track::-webkit-scrollbar{display:none;}
+  .pcard{flex:0 0 calc((100% - 44px)/3);scroll-snap-align:start;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff;display:flex;flex-direction:column;padding:14px;box-shadow:0 10px 30px -18px rgba(15,32,54,.4);transition:box-shadow .2s,transform .2s,border-color .2s;}
+  .pcard:hover{box-shadow:0 18px 36px -22px rgba(15,32,54,.45);transform:translateY(-3px);border-color:#d4dcea;}
+  .pcard-media{position:relative;aspect-ratio:16/9;background:#eef2f8;overflow:hidden;border-radius:14px;}
+  .pcard-media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.6,.2,1);}
+  .pcard:hover .pcard-media img{transform:scale(1.05);}
+  .pbadge{position:absolute;top:12px;left:12px;z-index:2;background:#e7edfb;color:var(--navy);font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:999px;}
+  .pcard-open{position:absolute;top:10px;right:10px;z-index:2;width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;background:rgba(255,255,255,.92);color:var(--blue);display:grid;place-items:center;box-shadow:0 6px 16px -8px rgba(15,32,54,.5);transition:transform .35s cubic-bezier(.34,1.4,.64,1);}
+  .pcard-open:hover{transform:scale(1.1);}
+  .pcard-open svg{width:19px;height:19px;transform:rotate(-45deg);transition:transform .44s cubic-bezier(.34,1.4,.64,1);}
+  .pcard-open:hover svg{transform:rotate(0deg);}
+  .pcard-foot{margin-top:14px;background:#f2f4f8;border-radius:16px;padding:18px 20px 16px;display:flex;flex-direction:column;flex:1 1 auto;}
+  .pcard-foot h3{font-size:21px;letter-spacing:-0.01em;margin-bottom:13px;color:#1a2740;}
+  .pspecs{display:flex;flex-wrap:wrap;gap:9px 16px;align-items:center;}
+  .pspec{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:#34425c;font-weight:600;white-space:nowrap;}
+  .pspec svg{width:18px;height:18px;color:#34425c;flex:0 0 auto;}
+  .pcard-cta{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:15px;padding-top:15px;border-top:1px solid #e1e6ee;}
+  .pprice{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+  .pprice .per0{font-size:13px;color:#5a6b82;font-weight:500;}
+  .pprice .amt{font-family:var(--serif);font-weight:800;font-size:22px;color:var(--navy);letter-spacing:-0.01em;line-height:1;}
+  .pprice .per{font-size:13px;color:#5a6b82;font-weight:500;}
+  .pbook{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:var(--red);border:none;color:#fff;font-weight:700;font-size:14px;padding:10px 16px;border-radius:999px;transition:background .15s,gap .2s;}
+  .pbook:hover{background:#c52b37;gap:10px;}
+  .pbook svg{width:14px;height:14px;}
+
+  .faq-grid{display:grid;grid-template-columns:340px 1fr;gap:54px;align-items:start;}
+  .faq-head h2{font-size:34px;line-height:1.06;letter-spacing:-0.02em;text-wrap:balance;}
+  .faq-head p{font-size:15.5px;color:var(--slate);line-height:1.6;margin:16px 0 22px;}
+  .faq-contact{display:inline-flex;align-items:center;gap:9px;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:12px 22px;font-family:var(--serif);font-weight:700;font-size:15px;color:var(--navy);cursor:pointer;transition:.18s;}
+  .faq-contact:hover{border-color:var(--green);color:var(--green);}
+  .faq-contact svg{width:17px;height:17px;}
+  .faq-list{border-top:1px solid #d4ddea;}
+  .faq-item{border-bottom:1px solid #d4ddea;}
+  .faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:24px;background:none;border:none;cursor:pointer;text-align:left;padding:22px 4px;font-family:var(--serif);font-weight:700;font-size:18.5px;color:var(--navy);letter-spacing:-0.01em;transition:color .15s;}
+  .faq-q:hover{color:var(--blue);}
+  .faq-ic{position:relative;width:22px;height:22px;flex:0 0 auto;}
+  .faq-ic::before,.faq-ic::after{content:"";position:absolute;background:var(--navy);border-radius:2px;transition:transform .3s ease,background .15s;}
+  .faq-ic::before{left:0;right:0;top:10px;height:2.5px;}
+  .faq-ic::after{top:0;bottom:0;left:10px;width:2.5px;}
+  .faq-item.open .faq-ic::after{transform:scaleY(0);}
+  .faq-q:hover .faq-ic::before,.faq-q:hover .faq-ic::after{background:var(--blue);}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .42s cubic-bezier(.33,1,.68,1);}
+  .faq-item.open .faq-a{max-height:340px;}
+  .faq-a p{margin:0;padding:0 40px 24px 4px;font-size:15px;color:var(--slate);line-height:1.68;max-width:680px;}
+
+  @media(max-width:980px){
+    .similar-head h2{font-size:28px;}
+    .pcard{flex:0 0 76%;}
+    .faq-grid{grid-template-columns:1fr;gap:28px;}
+  }
+  @media(max-width:680px){
+    .pcard{flex:0 0 86%;}
+    .faq-q{font-size:16.5px;}
+  }
+
+  /* ---------- Footer ---------- */
+  .ftr{background:#eef2f8;border-top:1px solid var(--line);}
+  .ftr-inner{padding:60px 0 0;}
+  .ftr-top{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:48px 40px;padding-bottom:48px;border-bottom:1px solid var(--line);}
+  .ftr-brand .logo{color:var(--navy);font-size:22px;margin-bottom:14px;}
+  .ftr-tag{font-size:14.5px;line-height:1.65;color:var(--slate);max-width:300px;margin:0 0 24px;}
+  .ftr-social{display:flex;gap:10px;}
+  .ftr-social a{width:40px;height:40px;border-radius:12px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;color:var(--slate);transition:background .18s,border-color .18s,color .18s,transform .18s;}
+  .ftr-social a:hover{background:var(--green);border-color:var(--green);color:#fff;transform:translateY(-2px);}
+  .ftr-social svg{width:18px;height:18px;}
+  .ftr-col h4{font-family:var(--serif);font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--navy);margin:0 0 18px;}
+  .ftr-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .ftr-col a{font-size:14px;color:var(--slate);font-weight:500;transition:color .15s;}
+  .ftr-col a:hover{color:var(--green);}
+  .ftr-bot{display:flex;flex-direction:column;padding:36px 0 48px;}
+  .ftr-bot-bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .ftr-copy{font-size:13px;color:var(--slate-light);}
+  .ftr-copy b{color:var(--slate);font-weight:600;}
+  .ftr-legal{display:flex;align-items:center;gap:5px 16px;flex-wrap:wrap;}
+  .ftr-legal a{font-size:13px;color:var(--slate-light);transition:color .15s;}
+  .ftr-legal a:hover{color:var(--navy);}
+  .ftr-legal .dot{width:3px;height:3px;border-radius:50%;background:#c8d2df;}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:1100px){
+    nav.main{display:none;}
+    .nav-right .host,.lang-cur{display:none;}
+    .hamburger{display:block;}
+    .split{grid-template-columns:1fr;gap:36px;}
+    .booking{position:static;}
+  }
+  @media(max-width:980px){
+    .wrap{padding:0 24px;}
+    .gallery{grid-template-columns:1fr 1fr;height:auto;grid-auto-rows:200px;}
+    .gslot.main{grid-column:1 / -1;grid-row:auto;height:300px;}
+    .listing-title{font-size:30px;}
+    .amen-grid,.sleep-grid{grid-template-columns:1fr 1fr;}
+    .cond-list,.addon-list{grid-template-columns:1fr;}
+    .ftr-top{grid-template-columns:1fr 1fr;gap:36px 28px;}
+    .ftr-brand{grid-column:1/-1;}
+  }
+  @media(max-width:620px){
+    .rating-strip{flex-direction:column;align-items:flex-start;gap:20px;}
+    .rblock{padding-right:0;}
+    .spec-grid{width:100%;justify-content:space-between;}
+    .spec{padding:0 10px;}
+    .amen-grid{grid-template-columns:1fr;}
+    .tpanel{padding:24px 20px 26px;}
+    .tab{font-size:14px;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="nav">
+    <div class="wrap">
+      <a class="logo" href="MyTerraBook.html">
+        <span class="mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg>
+        </span>
+        <span>My<span class="terra">Terra</span>Book</span>
+      </a>
+      <nav class="main">
+        <a href="#">Campervan</a>
+        <a href="#">Car</a>
+        <a href="#">Guesthouse</a>
+        <a href="#">Discover Iceland</a>
+        <a href="#">Good to Know</a>
+      </nav>
+      <div class="nav-right">
+        <button class="lang-cur" aria-label="Language and currency">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg>
+          <span>EN</span><span class="lc-div"></span><span>€ EUR</span>
+        </button>
+        <button class="host">Become a host</button>
+        <button class="signin">Sign in</button>
+        <button class="hamburger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Breadcrumb / actions ===== -->
+  <div class="subbar">
+    <div class="wrap">
+      <a class="crumb" href="Search Results.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        See all listings
+      </a>
+      <div class="subactions">
+        <button class="sa-btn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13M8 7l4-4 4 4"/></svg>
+          Share
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Gallery ===== -->
+  <div class="gallery-wrap">
+    <div class="wrap">
+      <div class="gallery">
+        <div class="gslot main">
+          <image-slot id="listing-photo-1" src="images/hero-van.jpg" placeholder="Exterior hero shot" radius="0"></image-slot>
+        </div>
+        <div class="gslot"><image-slot id="listing-photo-2" placeholder="Floor plan" radius="0"></image-slot></div>
+        <div class="gslot"><image-slot id="listing-photo-3" placeholder="Wet bath / storage" radius="0"></image-slot></div>
+        <div class="gslot"><image-slot id="listing-photo-4" src="images/card-camper.jpg" placeholder="Kitchen / galley" radius="0"></image-slot></div>
+        <div class="gslot">
+          <image-slot id="listing-photo-5" placeholder="Dinette / seating" radius="0"></image-slot>
+          <button class="allphotos" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            View all 35 photos
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Layout: tabs + split ===== -->
+  <div class="layout">
+    <div class="wrap">
+
+      <!-- Tab bar -->
+      <div class="tabbar" id="tabbar">
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-i="0" type="button">Details<span class="underline"></span></button>
+          <button class="tab" data-i="1" type="button">Amenities<span class="underline"></span></button>
+          <button class="tab" data-i="2" type="button">Rental conditions<span class="underline"></span></button>
+          <button class="tab" data-i="3" type="button">Sleeping arrangement<span class="underline"></span></button>
+          <button class="tab" data-i="4" type="button">Host add-ons<span class="underline"></span></button>
+        </div>
+      </div>
+
+      <div class="split">
+        <!-- LEFT: static header + swappable blue box -->
+        <div class="maincol">
+          <!-- owner (static) -->
+          <div class="owner">
+            <div class="owner-av">B</div>
+            <div class="owner-meta">
+              <div class="owner-name">Bjarki Þór</div>
+              <div class="owner-sub">Host · <b>11 trips hosted</b> · 7 reviews</div>
+            </div>
+          </div>
+          <!-- title (static) -->
+          <h1 class="listing-title">2023 Winnebago Revel 4×4 Diesel — Ring Road ready</h1>
+
+          <!-- THE BLUE BOX (only this changes between tabs) -->
+          <div class="tabcard" id="tabcard">
+
+            <!-- Panel 0: Details -->
+            <div class="tpanel active" data-panel="0">
+              <div class="rating-strip">
+                <div class="rblock">
+                  <div class="rscore">
+                    <svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>
+                    <span class="num">5.0</span>
+                  </div>
+                  <div class="rmeta">
+                    <span class="excellent">Excellent</span>
+                    <span class="ministars">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>
+                    </span>
+                    <a>7 reviews</a>
+                  </div>
+                </div>
+                <div class="spec-grid">
+                  <div class="spec">
+                    <svg class="spec-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="9" r="2"/><circle cx="18" cy="9" r="2"/><circle cx="9.5" cy="6" r="2"/><circle cx="14.5" cy="6" r="2"/><path d="M12 11c-2.5 0-4.5 2-4.5 4 0 1.7 1.3 2.5 3 2.5h3c1.7 0 3-.8 3-2.5 0-2-2-4-4.5-4Z"/></svg>
+                    <span class="spec-lbl">Pet friendly</span>
+                  </div>
+                  <div class="spec">
+                    <svg class="spec-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5"/><path d="m15 18 2 2 4-4"/></svg>
+                    <span class="spec-lbl">Age 25+</span>
+                  </div>
+                  <div class="spec">
+                    <svg class="spec-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 18h18M3 14h18"/><path d="M7 10V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>
+                    <span class="spec-lbl">Sleeps 3</span>
+                  </div>
+                  <div class="spec">
+                    <svg class="spec-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>
+                    <span class="spec-lbl">19.7 ft long</span>
+                  </div>
+                </div>
+              </div>
+              <div class="descwrap">
+                <p class="desc" id="desc">From our base 20 minutes outside Reykjavík, this 2023 Winnebago Revel 4×4 is built for the Ring Road and the highland F-roads beyond it. Lithium house batteries and roof solar mean you can camp off-grid for days — no loud generator to spoil the silence under the northern lights.<span class="more-text"> Inside you'll find a power lift bed, a wet bath with hot shower, an induction cooktop and a 12V fridge. Diesel heating keeps it cosy down to −15°C, so it runs comfortably in every season. We meet you at the door, walk you through every system, and we're a phone call away for the whole trip. Free airport transfer from KEF is included on stays of 5 nights or more.</span></p>
+                <button class="showmore" id="showMore" type="button">Show more <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+              </div>
+            </div>
+
+            <!-- Panel 1: Amenities -->
+            <div class="tpanel" data-panel="1">
+              <div class="panel-kicker">Featured amenities<span class="pk-line"></span></div>
+              <div class="amen-grid">
+                <div class="amen feat"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v18M4 8h6a2 2 0 0 1 0 4H4"/><path d="M14 3v6a3 3 0 0 0 6 0V3M17 9v12"/></svg></span>Induction cooktop</div>
+                <div class="amen feat"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M6 11h12M10 5v2M10 15v2"/></svg></span>12V fridge</div>
+                <div class="amen feat"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-9 12h7l-2 8 9-12h-7l2-8z"/></svg></span>Lithium + solar</div>
+                <div class="amen feat"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2c1.5 2 1.5 4 0 6s-1.5 4 0 6M15 2c1.5 2 1.5 4 0 6s-1.5 4 0 6M12 2c1.5 2 1.5 4 0 6s-1.5 4 0 6"/><path d="M4 18h16M6 22h12"/></svg></span>Diesel heating</div>
+                <div class="amen"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3z"/><path d="M7 12V6a2 2 0 0 1 2-2c1 0 1.5.5 1.8 1M6 19l-1 2M18 19l1 2"/></svg></span>Wet bath & shower</div>
+                <div class="amen"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12V5a2 2 0 0 1 2-2h2v6M6 12h13a1 1 0 0 1 1 1 5 5 0 0 1-5 5H9a3 3 0 0 1-3-3v-3z"/><path d="M8 21v-3M14 21v-3"/></svg></span>Cassette toilet</div>
+                <div class="amen"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l-1 7H8L7 3zM6 10h12l1 11H5l1-11z"/></svg></span>90L fresh water</div>
+                <div class="amen"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 6v6l3 2"/></svg></span>USB-C charging</div>
+                <div class="amen"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg></span>Bluetooth stereo</div>
+                <div class="amen"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M5 18l2-7h10l2 7M8 11V8h8v3"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg></span>Roof rack</div>
+                <div class="amen"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg></span>Pet friendly</div>
+                <div class="amen"><span class="a-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0M2 9.5a16 16 0 0 1 20 0"/><circle cx="12" cy="20" r="1"/></svg></span>4G Wi-Fi ready</div>
+              </div>
+            </div>
+
+            <!-- Panel 2: Rental conditions -->
+            <div class="tpanel" data-panel="2">
+              <div class="panel-kicker">What's required to book<span class="pk-line"></span></div>
+              <div class="cond-list">
+                <div class="cond"><span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg></span><span><span class="c-t">Driver age 25+</span><span class="c-d">All drivers must be at least 25 years old.</span></span></div>
+                <div class="cond"><span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h4M7 14h6"/><circle cx="16.5" cy="11" r="1.5"/></svg></span><span><span class="c-t">Licence held 2+ years</span><span class="c-d">Full driving licence valid for the trip.</span></span></div>
+                <div class="cond"><span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/></svg></span><span><span class="c-t">€1,500 deposit</span><span class="c-d">Refundable hold, reducible with Excess Insurance.</span></span></div>
+                <div class="cond"><span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 12l3-3M3 12l3 3"/><circle cx="18" cy="12" r="3"/></svg></span><span><span class="c-t">Unlimited mileage</span><span class="c-d">Drive the whole Ring Road, no extra per-km fees.</span></span></div>
+                <div class="cond"><span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z"/><path d="M12 7v5l3 2"/></svg></span><span><span class="c-t">Return with full tank</span><span class="c-d">Same diesel level as pick-up, or pre-pay fuel.</span></span></div>
+                <div class="cond"><span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.4-3.4 7.6-8 9-4.6-1.4-8-4.6-8-9V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span><span><span class="c-t">CDW insurance included</span><span class="c-d">Collision damage waiver comes with every booking.</span></span></div>
+                <div class="cond"><span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/><path d="m9 14 2 2 4-4"/></svg></span><span><span class="c-t">Free cancellation</span><span class="c-d">Full refund up to 48 hours before pick-up.</span></span></div>
+                <div class="cond"><span class="c-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></span><span><span class="c-t">Pets welcome</span><span class="c-d">Bring the dog — no extra cleaning charge.</span></span></div>
+              </div>
+            </div>
+
+            <!-- Panel 3: Sleeping arrangement -->
+            <div class="tpanel" data-panel="3">
+              <div class="panel-kicker">Sleeps up to 3 guests<span class="pk-line"></span></div>
+              <div class="sleep-grid">
+                <div class="bedcard sel" data-bed="0">
+                  <span class="b-pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>
+                  <span class="b-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 18h18M3 14h18"/><path d="M6 10V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></svg></span>
+                  <h4>Power lift bed</h4>
+                  <p>Electric drop-down rear bed, sleeps 2 adults comfortably.</p>
+                  <span class="b-dim">49" × 79"</span>
+                </div>
+                <div class="bedcard" data-bed="1">
+                  <span class="b-pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>
+                  <span class="b-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v11"/><path d="M4 14h16M8 6V4h8v2"/></svg></span>
+                  <h4>Convertible dinette</h4>
+                  <p>Folds flat into a single berth for a third guest or child.</p>
+                  <span class="b-dim">28" × 70"</span>
+                </div>
+                <div class="bedcard" data-bed="2">
+                  <span class="b-pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>
+                  <span class="b-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/><path d="M7 8V6a3 3 0 0 1 6 0v2"/></svg></span>
+                  <h4>Bedding included</h4>
+                  <p>Duvets, pillows and fresh linen provided and laundered.</p>
+                  <span class="b-dim">Complimentary</span>
+                </div>
+              </div>
+              <div class="sleep-preview">
+                <image-slot id="sleep-shot-0" class="sleep-shot active" src="images/card-camper.jpg" placeholder="Power lift bed — made up for the night" radius="0"></image-slot>
+                <image-slot id="sleep-shot-1" class="sleep-shot" placeholder="Convertible dinette berth photo" radius="0"></image-slot>
+                <image-slot id="sleep-shot-2" class="sleep-shot" placeholder="Bedding & linen photo" radius="0"></image-slot>
+                <span class="sleep-cap" id="sleepCap">Power lift bed · 49" × 79"</span>
+              </div>
+            </div>
+
+            <!-- Panel 4: Host add-ons -->
+            <div class="tpanel" data-panel="4">
+              <div class="panel-kicker">Optional extras<span class="pk-line"></span></div>
+              <div class="addon-list">
+                <div class="addon"><span class="ad-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v16M5 4l10 4-10 4M19 4v16"/></svg></span><span class="ad-tx"><span class="ad-name">Camping chairs & table</span><span class="ad-sub">Foldable set for two</span></span><span class="ad-price">€15</span></div>
+                <div class="addon"><span class="ad-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/><path d="M7 8V6a3 3 0 0 1 6 0v2"/></svg></span><span class="ad-tx"><span class="ad-name">Extra bedding kit</span><span class="ad-sub">Duvet, pillow, linen for guest 3</span></span><span class="ad-price">€25</span></div>
+                <div class="addon"><span class="ad-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v7M8 3v7M5 7h3M6.5 10v11M16 3c-1.5 1-2 3-2 6s.5 4 2 5v7"/></svg></span><span class="ad-tx"><span class="ad-name">Kitchen kit</span><span class="ad-sub">Pots, pans, cutlery, French press</span></span><span class="ad-price">€20</span></div>
+                <div class="addon"><span class="ad-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0M2 9.5a16 16 0 0 1 20 0"/><circle cx="12" cy="20" r="1"/></svg></span><span class="ad-tx"><span class="ad-name">4G Wi-Fi hotspot</span><span class="ad-sub">Unlimited data, per day</span></span><span class="ad-price">€9</span></div>
+                <div class="addon"><span class="ad-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l2-5h8l2 5h4"/><path d="M4 12v4M20 12v4M3 16h18"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg></span><span class="ad-tx"><span class="ad-name">KEF airport transfer</span><span class="ad-sub">Door-to-door, one way</span></span><span class="ad-price">€55</span></div>
+                <div class="addon"><span class="ad-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg></span><span class="ad-tx"><span class="ad-name">Unlimited mileage</span><span class="ad-sub">Included with every trip</span></span><span class="ad-price free">Free</span></div>
+              </div>
+            </div>
+
+          </div><!-- /tabcard -->
+        </div>
+
+        <!-- RIGHT: booking card (static) -->
+        <aside class="booking">
+          <div class="bcard">
+            <div class="date-wrap" id="dateWrap">
+              <button class="date-field" id="dateField" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg>
+                <div class="df-segs">
+                  <span class="df-seg"><span class="df-lab">Pick-up</span><span class="df-val" id="dfStart">Add date</span></span>
+                  <span class="df-div"></span>
+                  <span class="df-seg right"><span class="df-lab">Drop-off</span><span class="df-val" id="dfEnd">Add date</span></span>
+                </div>
+              </button>
+              <div class="cal-pop" id="calPop">
+                <div class="cal-head">
+                  <button class="cal-nav" id="calPrev" type="button" aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+                  <div class="cal-title" id="calTitle">Month</div>
+                  <button class="cal-nav" id="calNext" type="button" aria-label="Next month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+                </div>
+                <div class="cal-dows"><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span></div>
+                <div class="cal-grid" id="calGrid"></div>
+                <div class="cal-foot">
+                  <span class="cal-nights" id="calNights"><span>Select your dates</span></span>
+                  <button class="cal-clear" id="calClear" type="button">Clear</button>
+                </div>
+              </div>
+            </div>
+            <div class="rate-row">
+              <span class="rl" id="rateL">Daily rate</span>
+              <span class="rr" id="rateR">From <b>€94.00</b></span>
+            </div>
+            <button class="book-btn" type="button">Request to Book</button>
+            <button class="book-link" id="bookProcessLink" type="button">View the booking process</button>
+            <div class="bcard-div"></div>
+            <div class="trust-points">
+              <div class="tp"><span class="tp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span><span><b>Comprehensive insurance</b> and 24/7 roadside assistance</span></div>
+              <div class="tp"><span class="tp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span><span>Affordable security deposit with our <b>Excess Insurance</b></span></div>
+              <div class="tp"><span class="tp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span><span>Pay in instalments via a trusted third-party provider</span></div>
+              <div class="tp"><span class="tp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span><span><b>Flexible cancellation</b> in case your plans change</span></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Guest reviews ===== -->
+  <section class="reviews-sec">
+    <div class="wrap">
+      <h2>Guest reviews</h2>
+
+      <div class="rev-summary">
+        <div class="rev-score">
+          <svg class="rs-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>
+          <div class="rs-meta">
+            <span class="rs-num">5.0</span>
+            <span class="rs-excellent">Excellent</span>
+            <a>7 reviews</a>
+          </div>
+        </div>
+        <div class="rev-overall">
+          <div class="ro-label">Overall rating</div>
+          <div class="ro-bars">
+            <div class="ro-bar"><span class="ro-n">5</span><span class="ro-track"><span class="ro-fill" data-w="100"></span></span></div>
+            <div class="ro-bar"><span class="ro-n">4</span><span class="ro-track"><span class="ro-fill" data-w="0"></span></span></div>
+            <div class="ro-bar"><span class="ro-n">3</span><span class="ro-track"><span class="ro-fill" data-w="0"></span></span></div>
+            <div class="ro-bar"><span class="ro-n">2</span><span class="ro-track"><span class="ro-fill" data-w="0"></span></span></div>
+            <div class="ro-bar"><span class="ro-n">1</span><span class="ro-track"><span class="ro-fill" data-w="0"></span></span></div>
+          </div>
+        </div>
+        <div class="rev-cats">
+          <div class="rev-cat"><span class="rc-label">Communication</span><span class="rc-val">5.0 <span class="rc-bar"><i style="width:100%"></i></span></span></div>
+          <div class="rev-cat"><span class="rc-label">Cleanliness</span><span class="rc-val">5.0 <span class="rc-bar"><i style="width:100%"></i></span></span></div>
+          <div class="rev-cat"><span class="rc-label">Maintenance</span><span class="rc-val">5.0 <span class="rc-bar"><i style="width:100%"></i></span></span></div>
+          <div class="rev-cat"><span class="rc-label">Value</span><span class="rc-val">4.9 <span class="rc-bar"><i style="width:98%"></i></span></span></div>
+          <div class="rev-cat"><span class="rc-label">Listing accuracy</span><span class="rc-val">5.0 <span class="rc-bar"><i style="width:100%"></i></span></span></div>
+        </div>
+      </div>
+
+      <div class="rev-grid">
+        <div class="rev-feature">
+          <image-slot id="review-feature" placeholder="Campervan featured photo" radius="0"></image-slot>
+        </div>
+
+        <div class="rcard-rev">
+          <div class="rcard-head">
+            <div class="rcard-av">J</div>
+            <div class="rcard-id">
+              <span class="rcard-name">Joey M.</span>
+              <span class="rcard-sub">October 2025 <span class="rc-star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>5.0</span></span>
+            </div>
+          </div>
+          <p class="rcard-text">Bjarki was brilliant and the whole rental was fun and adventurous — exactly what we wanted for the Ring Road.</p>
+        </div>
+
+        <div class="rcard-rev">
+          <div class="rcard-head">
+            <div class="rcard-av">J</div>
+            <div class="rcard-id">
+              <span class="rcard-name">Joselyn A.</span>
+              <span class="rcard-sub">September 2025 <span class="rc-star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>5.0</span></span>
+            </div>
+          </div>
+          <p class="rcard-text clamp">An incredible experience — the van feels like part of our family now and we made so many beautiful memories. When we had a question Bjarki replied within minutes, and the diesel heater kept us toasty through a snowy night near Vík. We'd book it again in a heartbeat.</p>
+          <button class="rcard-more" type="button">Show more</button>
+        </div>
+
+        <div class="rcard-rev">
+          <div class="rcard-head">
+            <div class="rcard-av">D</div>
+            <div class="rcard-id">
+              <span class="rcard-name">David D.</span>
+              <span class="rcard-sub">June 2025 <span class="rc-star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>5.0</span></span>
+            </div>
+          </div>
+          <p class="rcard-text clamp">Our trip was great and Bjarki was really awesome. He was very kind, accommodating and flexible with our pick-up time when our flight landed late. The van was spotless and fully stocked. Highly recommend to anyone touring Iceland.</p>
+          <button class="rcard-more" type="button">Show more</button>
+        </div>
+
+        <div class="rcard-rev">
+          <div class="rcard-head">
+            <div class="rcard-av">N</div>
+            <div class="rcard-id">
+              <span class="rcard-name">Neill K.</span>
+              <span class="rcard-sub">April 2025 <span class="rc-star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>5.0</span></span>
+            </div>
+          </div>
+          <p class="rcard-text clamp">We had a great experience on our 10-day rental of the Revel. Bjarki is very thorough on the pick-up walkthrough and made sure we understood every system before we set off. The 4×4 handled the F-roads with no trouble at all.</p>
+          <button class="rcard-more" type="button">Show more</button>
+        </div>
+
+        <div class="rcard-rev">
+          <div class="rcard-head">
+            <div class="rcard-av">J</div>
+            <div class="rcard-id">
+              <span class="rcard-name">Joe P.</span>
+              <span class="rcard-sub">March 2025 <span class="rc-star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z"/></svg>5.0</span></span>
+            </div>
+          </div>
+          <p class="rcard-text clamp">Bjarki and his wife were fantastic! This was the first time I had ever rented or stayed in a Sprinter van and they made the whole thing effortless. The lithium setup meant we could camp off-grid for days. Unforgettable trip.</p>
+          <button class="rcard-more" type="button">Show more</button>
+        </div>
+      </div>
+
+      <div class="rev-foot">
+        <button class="rev-all" type="button">Show all 7 reviews
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Guest photos (animated marquee) ===== -->
+  <section class="gphotos">
+    <div class="wrap"><h2>Guest Photos</h2></div>
+    <div class="gp-marquee" id="gpMarquee">
+      <div class="gp-track">
+        <!-- set A (fillable) -->
+        <div class="gp-tile"><image-slot id="gp-1" src="images/hero-van.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile"><image-slot id="gp-2" src="images/card-camper.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile"><image-slot id="gp-3" src="images/card-car.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile"><image-slot id="gp-4" src="images/card-house.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile"><image-slot id="gp-5" src="images/hero-van.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile"><image-slot id="gp-6" src="images/card-camper.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <!-- set B (decorative duplicate for seamless loop) -->
+        <div class="gp-tile" aria-hidden="true"><image-slot id="gp-1b" src="images/hero-van.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile" aria-hidden="true"><image-slot id="gp-2b" src="images/card-camper.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile" aria-hidden="true"><image-slot id="gp-3b" src="images/card-car.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile" aria-hidden="true"><image-slot id="gp-4b" src="images/card-house.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile" aria-hidden="true"><image-slot id="gp-5b" src="images/hero-van.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+        <div class="gp-tile" aria-hidden="true"><image-slot id="gp-6b" src="images/card-camper.jpg" placeholder="Guest snapshot" radius="0"></image-slot></div>
+      </div>
+    </div>
+    <div class="wrap">
+      <button class="gp-all" type="button">Show all 10 guest photos
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== Similar rentals ===== -->
+  <section class="similar">
+    <div class="wrap">
+      <div class="similar-head">
+        <h2>Similar rentals available on your dates</h2>
+        <div class="sim-nav">
+          <button class="sim-arrow" id="simPrev" type="button" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+          <button class="sim-arrow" id="simNext" type="button" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+        </div>
+      </div>
+      <div class="sim-track" id="simTrack">
+
+        <div class="pcard">
+          <div class="pcard-media"><img src="images/card-camper.jpg" alt="Campervan" /><span class="pbadge">4×4 · Diesel</span><button class="pcard-open" type="button" aria-label="Open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+          <div class="pcard-foot">
+            <h3>2024 Winnebago Revel</h3>
+            <div class="pspecs">
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 18h18M7 10V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>Sleeps 2</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Automatic</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-9 12h7l-2 8 9-12h-7l2-8z"/></svg>Lithium</span>
+            </div>
+            <div class="pcard-cta">
+              <div class="pprice"><span class="per0">From</span> <span class="amt">€102</span><span class="per">/day</span></div>
+              <button class="pbook" type="button">Book <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pcard">
+          <div class="pcard-media"><img src="images/card-car.jpg" alt="4x4 SUV" /><span class="pbadge">4×4 SUV</span><button class="pcard-open" type="button" aria-label="Open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+          <div class="pcard-foot">
+            <h3>Dacia Duster 4×4</h3>
+            <div class="pspecs">
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/></svg>5 seats</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5"/></svg>Manual</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M5 18l2-7h10l2 7M8 11V8h8v3"/></svg>Roof tent</span>
+            </div>
+            <div class="pcard-cta">
+              <div class="pprice"><span class="per0">From</span> <span class="amt">€78</span><span class="per">/day</span></div>
+              <button class="pbook" type="button">Book <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pcard">
+          <div class="pcard-media"><img src="images/hero-van.jpg" alt="Campervan" /><span class="pbadge">4×4 · Diesel</span><button class="pcard-open" type="button" aria-label="Open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+          <div class="pcard-foot">
+            <h3>2023 Revel — Highland</h3>
+            <div class="pspecs">
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 18h18M7 10V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>Sleeps 3</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Automatic</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>Pet friendly</span>
+            </div>
+            <div class="pcard-cta">
+              <div class="pprice"><span class="per0">From</span> <span class="amt">€94</span><span class="per">/day</span></div>
+              <button class="pbook" type="button">Book <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pcard">
+          <div class="pcard-media"><img src="images/card-camper.jpg" alt="Campervan" /><span class="pbadge">2-berth</span><button class="pcard-open" type="button" aria-label="Open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+          <div class="pcard-foot">
+            <h3>VW California Ocean</h3>
+            <div class="pspecs">
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 18h18M7 10V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>Sleeps 4</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Automatic</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2c1.5 2 1.5 4 0 6s-1.5 4 0 6M15 2c1.5 2 1.5 4 0 6s-1.5 4 0 6"/><path d="M4 18h16"/></svg>Pop-top</span>
+            </div>
+            <div class="pcard-cta">
+              <div class="pprice"><span class="per0">From</span> <span class="amt">€118</span><span class="per">/day</span></div>
+              <button class="pbook" type="button">Book <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pcard">
+          <div class="pcard-media"><img src="images/card-car.jpg" alt="SUV" /><span class="pbadge">4×4 SUV</span><button class="pcard-open" type="button" aria-label="Open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+          <div class="pcard-foot">
+            <h3>Toyota Land Cruiser</h3>
+            <div class="pspecs">
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/></svg>7 seats</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Automatic</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/></svg>Winter-ready</span>
+            </div>
+            <div class="pcard-cta">
+              <div class="pprice"><span class="per0">From</span> <span class="amt">€135</span><span class="per">/day</span></div>
+              <button class="pbook" type="button">Book <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pcard">
+          <div class="pcard-media"><img src="images/hero-van.jpg" alt="Campervan" /><span class="pbadge">4×4 · Diesel</span><button class="pcard-open" type="button" aria-label="Open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+          <div class="pcard-foot">
+            <h3>Mercedes Marco Polo</h3>
+            <div class="pspecs">
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6"/><path d="M3 18h18M7 10V8a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/></svg>Sleeps 2</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Automatic</span>
+              <span class="pspec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3z"/><path d="M7 12V6a2 2 0 0 1 2-2"/></svg>Wet bath</span>
+            </div>
+            <div class="pcard-cta">
+              <div class="pprice"><span class="per0">From</span> <span class="amt">€126</span><span class="per">/day</span></div>
+              <button class="pbook" type="button">Book <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="faqs">
+    <div class="wrap">
+      <div class="faq-grid">
+        <div class="faq-head">
+          <h2>Frequently asked questions</h2>
+          <p>Everything you need to know before you book this camper. Still unsure? Bjarki usually replies within the hour.</p>
+          <button class="faq-contact" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Message the host
+          </button>
+        </div>
+        <div class="faq-list">
+          <div class="faq-item open">
+            <button class="faq-q" type="button">What do I need to pick up the camper?<span class="faq-ic"></span></button>
+            <div class="faq-a"><p>A full driving licence held for at least two years, a passport or ID, and the credit card used to book in the main driver's name. All drivers must be 25 or older. We'll do a full walkthrough of every system at handover.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button">Is insurance included in the price?<span class="faq-ic"></span></button>
+            <div class="faq-a"><p>Yes — collision damage waiver (CDW) and 24/7 roadside assistance come with every booking. You can lower your deposit and excess by adding our optional Excess Insurance at checkout.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button">Can I drive the F-roads and highlands?<span class="faq-ic"></span></button>
+            <div class="faq-a"><p>This Revel is a genuine 4×4, so the marked F-roads are allowed. River crossings and off-track driving are not covered by insurance and aren't permitted. We'll point you to the routes that suit your dates and the season.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button">What's the fuel and mileage policy?<span class="faq-ic"></span></button>
+            <div class="faq-a"><p>Mileage is unlimited, so you can drive the whole Ring Road without extra per-kilometre charges. Return the van with the same diesel level it had at pick-up, or pre-pay a fuel package and bring it back empty.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button">Are pets allowed on board?<span class="faq-ic"></span></button>
+            <div class="faq-a"><p>Absolutely — well-behaved dogs are welcome at no extra cleaning charge. Just let us know in your booking notes so we can have the van ready for your four-legged co-pilot.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button">What is the cancellation policy?<span class="faq-ic"></span></button>
+            <div class="faq-a"><p>Free cancellation with a full refund up to 48 hours before pick-up. Within 48 hours the first night is charged. You can also pay in instalments via our trusted third-party provider.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Booking-process modal ===== -->
+  <div class="bp-overlay" id="bpOverlay" aria-hidden="true">
+    <div class="bp-modal" role="dialog" aria-modal="true" aria-labelledby="bpTitle">
+      <div class="bp-head">
+        <div class="bp-eyebrow">How it works</div>
+        <h3 id="bpTitle">Booking this camper in 4 steps</h3>
+        <p>Every reservation on MyTerraBook is reviewed by the host before it's confirmed — here's exactly what happens after you hit request.</p>
+        <button class="bp-close" id="bpClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <div class="bp-steps">
+        <div class="bp-step">
+          <span class="bp-num">1</span>
+          <div class="bp-tx">
+            <h4>Choose your dates &amp; send a request</h4>
+            <p>Pick your pick-up and drop-off dates and add any extras. Sending a request doesn't charge your card yet.</p>
+          </div>
+        </div>
+        <div class="bp-step">
+          <span class="bp-num">2</span>
+          <div class="bp-tx">
+            <h4>The host confirms availability</h4>
+            <p>Bjarki reviews your trip and approves it — usually within an hour. You'll get a message and email the moment it's accepted.</p>
+            <span class="bp-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>Avg. reply under 1 hour</span>
+          </div>
+        </div>
+        <div class="bp-step">
+          <span class="bp-num">3</span>
+          <div class="bp-tx">
+            <h4>Pay securely &amp; get confirmed</h4>
+            <p>Once approved, pay in full or in instalments via our trusted payment provider. Your insurance and deposit terms are locked in.</p>
+            <span class="bp-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.4-3.4 7.6-8 9-4.6-1.4-8-4.6-8-9V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg>Free cancellation up to 48h</span>
+          </div>
+        </div>
+        <div class="bp-step">
+          <span class="bp-num">4</span>
+          <div class="bp-tx">
+            <h4>Pick up &amp; hit the Ring Road</h4>
+            <p>Meet Bjarki at the door 20 minutes from Reykjavík for a full walkthrough of every system, then you're off. He's a call away the whole trip.</p>
+          </div>
+        </div>
+      </div>
+      <div class="bp-foot">
+        <button class="bp-cta" id="bpCta" type="button">Request to Book</button>
+        <span class="bp-note">No charge until the host approves your trip.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="ftr">
+    <div class="wrap">
+      <div class="ftr-inner">
+        <div class="ftr-top">
+          <div class="ftr-brand">
+            <div class="logo">
+              <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="m4 17 5-9 4 7 3-4 4 6"/></svg></span>
+              My<span class="terra">Terra</span>Book
+            </div>
+            <p class="ftr-tag">Iceland's locally-run platform for campervans, 4×4s, cars and guesthouses — booked in minutes, backed by a small team in Reykjavík.</p>
+            <div class="ftr-social">
+              <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+              <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.7c0-.9.3-1.5 1.5-1.5h1.5V4.6c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.2H8v3h2.6V21h2.9Z"/></svg></a>
+            </div>
+          </div>
+          <div class="ftr-col"><h4>Explore</h4><ul><li><a href="#">Campervans</a></li><li><a href="#">4×4 SUVs</a></li><li><a href="#">Cars</a></li><li><a href="#">Guesthouses</a></li></ul></div>
+          <div class="ftr-col"><h4>Plan</h4><ul><li><a href="#">Ring Road guide</a></li><li><a href="#">Driving in Iceland</a></li><li><a href="#">Weather &amp; aurora</a></li><li><a href="#">Travel blog</a></li></ul></div>
+          <div class="ftr-col"><h4>Company</h4><ul><li><a href="#">About us</a></li><li><a href="#">Become a host</a></li><li><a href="#">Help center</a></li></ul></div>
+        </div>
+        <div class="ftr-bot">
+          <div class="ftr-bot-bottom">
+            <span class="ftr-copy">© 2026 <b>MyTerraBook ehf.</b></span>
+            <div class="ftr-legal"><a href="#">Terms &amp; Conditions</a><span class="dot"></span><a href="#">Privacy</a><span class="dot"></span><a href="#">Cookies</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="image-slot.js"></script>
+  <script>
+  (function(){
+    var tabbar=document.getElementById('tabbar');
+    var tabs=[].slice.call(document.querySelectorAll('.tab'));
+    var panels=[].slice.call(document.querySelectorAll('.tpanel'));
+    var card=document.getElementById('tabcard');
+    var prev=document.getElementById('prevTab');
+    var next=document.getElementById('nextTab');
+    var cur=0, timer=null, AUTO=5000;
+
+    function measure(){
+      // set the blue box height to the active panel so it animates smoothly
+      var p=panels[cur];
+      card.style.height=p.offsetHeight+'px';
+    }
+
+    function go(i,user){
+      cur=(i+panels.length)%panels.length;
+      tabs.forEach(function(t,k){ t.classList.toggle('active',k===cur); });
+      panels.forEach(function(p,k){ p.classList.toggle('active',k===cur); });
+      requestAnimationFrame(measure);
+      if(user) restart();
+    }
+
+    function tick(){ go(cur+1,false); }
+    function start(){ stop(); timer=setInterval(tick,AUTO); tabbar.classList.remove('paused'); }
+    function stop(){ if(timer){clearInterval(timer);timer=null;} }
+    function restart(){ start(); }
+    function pause(){ stop(); tabbar.classList.add('paused'); }
+
+    tabs.forEach(function(t){ t.addEventListener('click',function(){ go(+t.dataset.i,true); }); });
+    prev.addEventListener('click',function(){ go(cur-1,true); });
+    next.addEventListener('click',function(){ go(cur+1,true); });
+
+    // pause autoplay while the user is reading / interacting with the box
+    var hoverZone=document.querySelector('.split');
+    hoverZone.addEventListener('mouseenter',pause);
+    hoverZone.addEventListener('mouseleave',start);
+
+    // Show more (Details) — re-measure box after expanding
+    var desc=document.getElementById('desc');
+    var showMore=document.getElementById('showMore');
+    showMore.addEventListener('click',function(){
+      desc.classList.toggle('open');
+      showMore.firstChild.textContent=desc.classList.contains('open')?'Show less ':'Show more ';
+      requestAnimationFrame(measure);
+    });
+
+    // Sleeping arrangement: click a card to reveal its landscape photo
+    var beds=[].slice.call(document.querySelectorAll('.bedcard'));
+    var shots=[].slice.call(document.querySelectorAll('.sleep-shot'));
+    var sleepCap=document.getElementById('sleepCap');
+    var bedCaps=['Power lift bed · 49" × 79"','Convertible dinette · 28" × 70"','Bedding included · complimentary'];
+    beds.forEach(function(b){
+      b.addEventListener('click',function(){
+        var i=+b.dataset.bed;
+        beds.forEach(function(x){ x.classList.toggle('sel',x===b); });
+        shots.forEach(function(s,k){ s.classList.toggle('active',k===i); });
+        if(sleepCap) sleepCap.textContent=bedCaps[i]||'';
+        requestAnimationFrame(measure);
+      });
+    });
+
+    // Save toggle
+    var save=document.getElementById('saveBtn');
+    var sc=document.getElementById('saveCount');
+    save.addEventListener('click',function(){
+      var on=save.classList.toggle('on');
+      sc.textContent=on?'78':'77';
+    });
+
+    // keep box height correct as fonts/images settle and on resize
+    window.addEventListener('resize',measure);
+    if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(measure); }
+    window.addEventListener('load',measure);
+    // re-measure when image-slots fill (they swap inner content)
+    setTimeout(measure,300);
+
+    go(0,false);
+    start();
+
+    // ===== Guest reviews: show-more toggles + bar fill =====
+    document.querySelectorAll('.rcard-more').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var txt=btn.previousElementSibling;
+        var open=txt.classList.toggle('clamp')===false;
+        btn.textContent=open?'Show less':'Show more';
+      });
+    });
+    var fills=document.querySelectorAll('.ro-fill');
+    fills.forEach(function(f){ f.style.transition='width .8s cubic-bezier(.33,1,.68,1)'; });
+    var barsFilled=false;
+    function fillBars(){ if(barsFilled)return; barsFilled=true; fills.forEach(function(f){ f.style.width=(f.dataset.w||0)+'%'; }); }
+    var rsEl=document.querySelector('.rev-overall');
+    function maybeFill(){ if(!rsEl)return; var r=rsEl.getBoundingClientRect(); if(r.top<window.innerHeight-60&&r.bottom>0) fillBars(); }
+    if('IntersectionObserver' in window && rsEl){
+      var ro=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ fillBars(); ro.disconnect(); } }); },{threshold:.25});
+      ro.observe(rsEl);
+    }
+    window.addEventListener('scroll',maybeFill,{passive:true});
+    maybeFill();
+    setTimeout(maybeFill,400);
+
+    // ===== Similar rentals carousel =====
+    var simTrack=document.getElementById('simTrack');
+    var simPrev=document.getElementById('simPrev');
+    var simNext=document.getElementById('simNext');
+    if(simTrack){
+      function simStep(){ var c=simTrack.querySelector('.pcard'); return c?c.getBoundingClientRect().width+22:320; }
+      function simUpdate(){
+        var max=simTrack.scrollWidth-simTrack.clientWidth-2;
+        simPrev.disabled=simTrack.scrollLeft<=2;
+        simNext.disabled=simTrack.scrollLeft>=max;
+      }
+      simPrev.addEventListener('click',function(){ simTrack.scrollBy({left:-simStep(),behavior:'smooth'}); });
+      simNext.addEventListener('click',function(){ simTrack.scrollBy({left:simStep(),behavior:'smooth'}); });
+      simTrack.addEventListener('scroll',simUpdate,{passive:true});
+      window.addEventListener('resize',simUpdate);
+      simUpdate();
+    }
+
+    // ===== FAQ accordion =====
+    document.querySelectorAll('.faq-q').forEach(function(q){
+      q.addEventListener('click',function(){ q.parentElement.classList.toggle('open'); });
+    });
+
+    // ===== Booking-process modal =====
+    var bpOverlay=document.getElementById('bpOverlay');
+    var bpLink=document.getElementById('bookProcessLink');
+    var bpClose=document.getElementById('bpClose');
+    var bpCta=document.getElementById('bpCta');
+    if(bpOverlay&&bpLink){
+      function bpOpen(){ bpOverlay.classList.add('open'); bpOverlay.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
+      function bpHide(){ bpOverlay.classList.remove('open'); bpOverlay.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+      bpLink.addEventListener('click',bpOpen);
+      bpClose.addEventListener('click',bpHide);
+      bpOverlay.addEventListener('click',function(e){ if(e.target===bpOverlay) bpHide(); });
+      if(bpCta) bpCta.addEventListener('click',bpHide);
+      document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&bpOverlay.classList.contains('open')) bpHide(); });
+    }
+
+    // ===== Interactive date-range calendar =====
+    var calWrap=document.getElementById('dateWrap');
+    if(calWrap){
+      var field=document.getElementById('dateField');
+      var pop=document.getElementById('calPop');
+      var grid=document.getElementById('calGrid');
+      var calTitle=document.getElementById('calTitle');
+      var calPrev=document.getElementById('calPrev');
+      var calNext=document.getElementById('calNext');
+      var calNights=document.getElementById('calNights');
+      var calClear=document.getElementById('calClear');
+      var dfStart=document.getElementById('dfStart');
+      var dfEnd=document.getElementById('dfEnd');
+      var rateL=document.getElementById('rateL');
+      var rateR=document.getElementById('rateR');
+      var RATE=94;
+      var MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+      var M3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      var today=new Date(); today.setHours(0,0,0,0);
+      var view=new Date(today.getFullYear(),today.getMonth(),1);
+      var dStart=null,dEnd=null;
+      function same(a,b){return a&&b&&a.getTime()===b.getTime();}
+      function fmt(d){return d.getDate()+' '+M3[d.getMonth()];}
+      function euro(n){return '€'+n.toLocaleString('en-IE');}
+      function render(){
+        calTitle.textContent=MON[view.getMonth()]+' '+view.getFullYear();
+        calPrev.disabled=(view.getFullYear()===today.getFullYear()&&view.getMonth()===today.getMonth());
+        grid.innerHTML='';
+        var startDow=(new Date(view.getFullYear(),view.getMonth(),1).getDay()+6)%7;
+        var days=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();
+        for(var i=0;i<startDow;i++){var e=document.createElement('div');e.className='cal-cell empty';grid.appendChild(e);}
+        for(var d=1;d<=days;d++){
+          var date=new Date(view.getFullYear(),view.getMonth(),d);
+          var cell=document.createElement('button');cell.type='button';cell.className='cal-cell';cell.textContent=d;
+          if(date<today){cell.classList.add('past');}
+          else{
+            if(same(date,today))cell.classList.add('today');
+            if(same(date,dStart)||same(date,dEnd))cell.classList.add('sel');
+            if(dStart&&dEnd){
+              if(same(date,dStart))cell.classList.add('range-start');
+              if(same(date,dEnd))cell.classList.add('range-end');
+              if(date>dStart&&date<dEnd)cell.classList.add('inrange');
+            }
+            (function(dt){cell.addEventListener('click',function(ev){ev.stopPropagation();pick(dt);});})(date);
+          }
+          grid.appendChild(cell);
+        }
+      }
+      function pick(d){
+        if(!dStart||(dStart&&dEnd)||d<dStart){dStart=d;dEnd=null;}
+        else if(!same(d,dStart)){dEnd=d;}
+        update();render();
+      }
+      function update(){
+        dfStart.textContent=dStart?fmt(dStart):'Add date';dfStart.classList.toggle('set',!!dStart);
+        dfEnd.textContent=dEnd?fmt(dEnd):'Add date';dfEnd.classList.toggle('set',!!dEnd);
+        if(dStart&&dEnd){
+          var n=Math.round((dEnd-dStart)/86400000);var total=n*RATE;
+          calNights.innerHTML='<b>'+n+' night'+(n>1?'s':'')+'</b> <span>· '+euro(total)+' total</span>';
+          rateL.textContent='Total · '+n+' night'+(n>1?'s':'');
+          rateR.innerHTML='<b>'+euro(total)+'.00</b>';
+        }else{
+          calNights.innerHTML=dStart?'<span>Choose your drop-off date</span>':'<span>Select your dates</span>';
+          rateL.textContent='Daily rate';
+          rateR.innerHTML='From <b>€94.00</b>';
+        }
+      }
+      function openCal(){pop.classList.add('open');field.classList.add('open');}
+      function closeCal(){pop.classList.remove('open');field.classList.remove('open');}
+      field.addEventListener('click',function(e){e.stopPropagation();pop.classList.contains('open')?closeCal():openCal();});
+      pop.addEventListener('click',function(e){e.stopPropagation();});
+      document.addEventListener('click',function(){if(pop.classList.contains('open'))closeCal();});
+      calPrev.addEventListener('click',function(e){e.stopPropagation();view.setMonth(view.getMonth()-1);render();});
+      calNext.addEventListener('click',function(e){e.stopPropagation();view.setMonth(view.getMonth()+1);render();});
+      calClear.addEventListener('click',function(e){e.stopPropagation();dStart=null;dEnd=null;update();render();});
+      render();update();
+    }
+  })();
+  </script>
+
+  <template id="__bundler_thumbnail">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0f2036"/><g fill="none" stroke="#45a06a" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M30 62V44a3 3 0 0 1 3-3h24l9 8h6a3 3 0 0 1 3 3v10"/><path d="M30 62h6M52 62h10M72 62h6"/><circle cx="44" cy="63" r="4"/><circle cx="66" cy="63" r="4"/></g></svg>
+  </template>
+
+</body>
+</html>

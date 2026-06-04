@@ -11,7 +11,7 @@ import SearchResultsLayout from './components/layout/SearchResultsLayout'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import BecomeHostPage from './pages/BecomeHostPage'
-import CarDetailsPage from './pages/CarDetailsPage'
+import ListingPage from './pages/ListingPage'
 import SearchResultsPage from './pages/SearchResultsPage'
 import CheckoutPage from './pages/CheckoutPage'
 import HomePageContainer from './pages/HomePageContainer'
@@ -81,7 +81,9 @@ function AppRoutes() {
       >
         <Route path="/" element={<HomePageContainer />} />
         <Route path="/home" element={<Navigate to="/" replace />} />
-        <Route path="/cars/:id" element={<CarDetailsPage />} />
+        <Route path="/cars/:id" element={<ListingPage listingType="car" />} />
+        <Route path="/campervans/:id" element={<ListingPage listingType="campervan" />} />
+        <Route path="/guesthouses/:id" element={<ListingPage listingType="guesthouse" />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route
           path="/dashboard"
