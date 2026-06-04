@@ -35,6 +35,8 @@ class HomepageController extends Controller
 
         $why = $this->resolveImages($sections->get('why')?->content ?? [], ['photo']);
 
+        $guestHousesHighlight = $sections->get('guest_houses_highlight')?->content ?? [];
+
         return response()->json([
             'topbar' => $sections->get('topbar')?->content ?? [],
             'header' => $sections->get('header')?->content ?? [],
@@ -42,6 +44,7 @@ class HomepageController extends Controller
             'trustItems' => $sections->get('trust')?->content['items'] ?? [],
             'rentSection' => $rent,
             'whySection' => $why,
+            'guestHousesHighlight' => $guestHousesHighlight,
             'footer' => $sections->get('footer')?->content ?? [],
         ]);
     }

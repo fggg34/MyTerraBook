@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
                 CarSeeder::class,
                 OrderSeeder::class,
                 DemoExtrasSeeder::class,
+                GuestHouseAmenitySeeder::class,
+                GuestHouseSeeder::class,
             ]);
         }
     }

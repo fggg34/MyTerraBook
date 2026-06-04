@@ -279,6 +279,13 @@ export const defaultHomepageData = {
       ],
     },
   },
+  guestHousesHighlight: {
+    title: 'Guest houses & stays',
+    subtitle: 'Hand-picked homes across Iceland — from cosy studios to private villas.',
+    featured_slugs: ['northern-lights-villa', 'harbour-view-apartment', 'moss-cottage'],
+    ctaLabel: 'View all stays',
+    ctaHref: '/guest-houses',
+  },
   howSection: {
     heading: 'From airport to open road in three steps.',
     steps: [

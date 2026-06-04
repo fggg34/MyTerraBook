@@ -19,6 +19,9 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import UnderConstructionPage from './pages/UnderConstructionPage'
 import UserDashboardPage from './pages/UserDashboardPage'
+import GuestHouseListPage from './pages/guest-houses/GuestHouseListPage'
+import GuestHouseDetailPage from './pages/guest-houses/GuestHouseDetailPage'
+import GuestHouseCheckoutPage from './pages/guest-houses/GuestHouseCheckoutPage'
 
 function ProtectedRoute({ children, role }) {
   const { user } = useAuth()
@@ -98,6 +101,9 @@ function AppRoutes() {
         />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/guest-houses" element={<GuestHouseListPage />} />
+        <Route path="/guest-houses/checkout" element={<GuestHouseCheckoutPage />} />
+        <Route path="/guest-houses/:slug" element={<GuestHouseDetailPage />} />
       </Route>
       <Route
         element={

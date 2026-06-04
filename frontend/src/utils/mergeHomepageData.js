@@ -57,6 +57,10 @@ export function mergeHomepageData(apiData = {}) {
     rentSection,
     whySection,
     picksSection: { ...defaults.picksSection, ...apiData.picksSection },
+    guestHousesHighlight: {
+      ...defaults.guestHousesHighlight,
+      ...apiData.guestHousesHighlight,
+    },
     howSection: { ...defaults.howSection, ...apiData.howSection },
     staySection: { ...defaults.staySection, ...apiData.staySection },
     blogSection: { ...defaults.blogSection, ...apiData.blogSection },

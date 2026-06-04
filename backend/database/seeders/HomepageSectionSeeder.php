@@ -252,6 +252,21 @@ class HomepageSectionSeeder extends Seeder
                     'currency' => 'EUR €',
                 ],
             ],
+            [
+                'section_key' => 'guest_houses_highlight',
+                'sort_order' => 8,
+                'content' => [
+                    'title' => 'Guest houses & stays',
+                    'subtitle' => 'Hand-picked homes across Iceland — from cosy studios to private villas.',
+                    'featured_slugs' => [
+                        'northern-lights-villa',
+                        'harbour-view-apartment',
+                        'moss-cottage',
+                    ],
+                    'ctaLabel' => 'View all stays',
+                    'ctaHref' => '/guest-houses',
+                ],
+            ],
         ];
 
         foreach ($sections as $section) {

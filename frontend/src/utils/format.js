@@ -4,6 +4,13 @@ export function formatCurrency(amount, currency = 'EUR') {
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency }).format(num)
 }
 
+/** Format integer cents from API (e.g. base_price_per_night_cents). */
+export function formatCurrencyFromCents(cents, currency = 'EUR') {
+  const num = typeof cents === 'number' ? cents / 100 : parseFloat(cents) / 100
+  if (Number.isNaN(num)) return `${currency} 0.00`
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency }).format(num)
+}
+
 export function formatDate(iso) {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-GB', {
