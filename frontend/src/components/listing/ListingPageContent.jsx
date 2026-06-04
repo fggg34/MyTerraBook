@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import ProductCard from '../homepage/ProductCard'
 import { mapCarToResultCard } from '../../utils/mapCarToResultCard'
 import ListingGallery from './ListingGallery'
+import ListingReviewsSection from './ListingReviewsSection'
 import ListingTabPanels from './ListingTabPanels'
 
 export default function ListingPageContent({ listing, related, searchQuery, typeConfig }) {
@@ -53,94 +54,7 @@ export default function ListingPageContent({ listing, related, searchQuery, type
         </div>
       </div>
 
-      <section className="reviews-sec" id="reviews">
-        <div className="wrap">
-          <h2>{typeConfig.reviewsTitle}</h2>
-          <div className="rev-summary">
-            <div className="rev-score">
-              <svg className="rs-star" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z" />
-              </svg>
-              <div className="rs-meta">
-                <span className="rs-num">{listing.rating.score}</span>
-                <span className="rs-excellent">{listing.rating.label}</span>
-                <a href="#reviews">{listing.rating.reviewLinkLabel}</a>
-              </div>
-            </div>
-            <div className="rev-overall">
-              <div className="ro-label">Overall rating</div>
-              <div className="ro-bars">
-                {[5, 4, 3, 2, 1].map((n) => (
-                  <div key={n} className="ro-bar">
-                    <span className="ro-n">{n}</span>
-                    <span className="ro-track">
-                      <span className="ro-fill" data-w={n === 5 ? 100 : 0} />
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="rev-cats">
-              {listing.reviewCategories.map((rc) => (
-                <div key={rc.label} className="rev-cat">
-                  <span className="rc-label">{rc.label}</span>
-                  <span className="rc-val">
-                    {rc.value}{' '}
-                    <span className="rc-bar">
-                      <i style={{ width: rc.width }} />
-                    </span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="rev-grid">
-            <div className="rev-feature">
-              <img src={listing.images[0]?.url || '/images/homepage/cardcamper.jpg'} alt="" />
-            </div>
-            {listing.reviews.map((rev) => (
-              <div key={rev.name + rev.date} className="rcard-rev">
-                <div className="rcard-head">
-                  <div className="rcard-av">{rev.initial}</div>
-                  <div className="rcard-id">
-                    <span className="rcard-name">{rev.name}</span>
-                    <span className="rcard-sub">
-                      {rev.date}{' '}
-                      <span className="rc-star">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z" />
-                        </svg>
-                        {rev.score}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-                <p className={`rcard-text ${rev.clamp ? 'clamp' : ''}`}>{rev.text}</p>
-                {rev.clamp ? (
-                  <button className="rcard-more" type="button">
-                    Show more
-                  </button>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="gphotos">
-        <div className="wrap">
-          <h2>{typeConfig.guestPhotosTitle}</h2>
-        </div>
-        <div className="gp-marquee" id="gpMarquee">
-          <div className="gp-track">
-            {[...listing.guestPhotoUrls, ...listing.guestPhotoUrls].map((url, i) => (
-              <div key={`${url}-${i}`} className="gp-tile" aria-hidden={i >= listing.guestPhotoUrls.length ? true : undefined}>
-                <img src={url} alt="" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ListingReviewsSection listing={listing} typeConfig={typeConfig} />
 
       {relatedCards.length > 0 && (
         <section className="similar">
@@ -168,32 +82,6 @@ export default function ListingPageContent({ listing, related, searchQuery, type
           </div>
         </section>
       )}
-
-      <section className="faqs">
-        <div className="wrap">
-          <div className="faq-grid">
-            <div className="faq-head">
-              <h2>Frequently asked questions</h2>
-              <p>{typeConfig.faqLead}</p>
-              <button className="faq-contact" type="button">
-                Message the host
-              </button>
-            </div>
-            <div className="faq-list">
-              {listing.faqs.map((faq) => (
-                <div key={faq.q} className="faq-item">
-                  <button className="faq-q" type="button">
-                    {faq.q}
-                  </button>
-                  <div className="faq-a">
-                    <p>{faq.a}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       <div className="bp-overlay" id="bpOverlay" aria-hidden="true">
         <div className="bp-modal" role="dialog" aria-modal="true" aria-labelledby="bpTitle">

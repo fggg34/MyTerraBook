@@ -7,56 +7,27 @@ export default function useListingEffects(rootRef, { priceFrom = 94, onBook }) {
     const root = rootRef.current
     if (!root) return undefined
 
-    const tabbar = root.querySelector('#tabbar')
     const tabs = [...root.querySelectorAll('.tab')]
     const panels = [...root.querySelectorAll('.tpanel')]
     const card = root.querySelector('#tabcard')
-    const prev = root.querySelector('#prevTab')
-    const next = root.querySelector('#nextTab')
     let cur = 0
-    let timer = null
-    const AUTO = 5000
 
     const measure = () => {
       const p = panels[cur]
       if (card && p) card.style.height = `${p.offsetHeight}px`
     }
 
-    const go = (i, user) => {
+    const go = (i) => {
       cur = (i + panels.length) % panels.length
       tabs.forEach((t, k) => t.classList.toggle('active', k === cur))
       panels.forEach((p, k) => p.classList.toggle('active', k === cur))
       requestAnimationFrame(measure)
-      if (user) restart()
-    }
-
-    const tick = () => go(cur + 1, false)
-    const start = () => {
-      if (timer) clearInterval(timer)
-      timer = setInterval(tick, AUTO)
-      tabbar?.classList.remove('paused')
-    }
-    const stop = () => {
-      if (timer) clearInterval(timer)
-      timer = null
-    }
-    const restart = () => start()
-    const pause = () => {
-      stop()
-      tabbar?.classList.add('paused')
     }
 
     const onTabClick = (e) => {
-      const t = e.currentTarget
-      go(Number(t.dataset.i), true)
+      go(Number(e.currentTarget.dataset.i))
     }
     tabs.forEach((t) => t.addEventListener('click', onTabClick))
-    prev?.addEventListener('click', () => go(cur - 1, true))
-    next?.addEventListener('click', () => go(cur + 1, true))
-
-    const hoverZone = root.querySelector('.split')
-    hoverZone?.addEventListener('mouseenter', pause)
-    hoverZone?.addEventListener('mouseleave', start)
 
     const desc = root.querySelector('#desc')
     const showMore = root.querySelector('#showMore')
@@ -98,19 +69,7 @@ export default function useListingEffects(rootRef, { priceFrom = 94, onBook }) {
     window.addEventListener('load', measure)
     setTimeout(measure, 300)
 
-    if (panels.length) {
-      go(0, false)
-      start()
-    }
-
-    root.querySelectorAll('.rcard-more').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const txt = btn.previousElementSibling
-        if (!txt) return
-        const open = txt.classList.toggle('clamp') === false
-        btn.textContent = open ? 'Show less' : 'Show more'
-      })
-    })
+    if (panels.length) go(0)
 
     const fills = [...root.querySelectorAll('.ro-fill')]
     fills.forEach((f) => {
@@ -169,10 +128,6 @@ export default function useListingEffects(rootRef, { priceFrom = 94, onBook }) {
     simTrack?.addEventListener('scroll', simUpdate, { passive: true })
     window.addEventListener('resize', simUpdate)
     simUpdate()
-
-    root.querySelectorAll('.faq-q').forEach((q) => {
-      q.addEventListener('click', () => q.parentElement?.classList.toggle('open'))
-    })
 
     const bpOverlay = root.querySelector('#bpOverlay')
     const bpLink = root.querySelector('#bookProcessLink')
@@ -365,7 +320,6 @@ export default function useListingEffects(rootRef, { priceFrom = 94, onBook }) {
       showMore?.removeEventListener('click', onShowMore)
       beds.forEach((b) => b.removeEventListener('click', onBedClick))
       save?.removeEventListener('click', onSave)
-      stop()
       ro?.disconnect()
       calCleanup()
     }
