@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\ListingReviews;
 
-use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\ListingReviews\Pages\CreateListingReview;
 use App\Filament\Resources\ListingReviews\Pages\EditListingReview;
 use App\Filament\Resources\ListingReviews\Pages\ListListingReviews;
@@ -20,7 +19,7 @@ class ListingReviewResource extends Resource
 {
     protected static ?string $model = ListingReview::class;
 
-    protected static ?string $cluster = ImpactRentCluster::class;
+    protected static ?string $slug = 'listing-reviews';
 
     protected static ?string $navigationLabel = 'Listing reviews';
 
@@ -30,9 +29,14 @@ class ListingReviewResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedStar;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Catalog';
+    protected static string|UnitEnum|null $navigationGroup = 'Content';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 4;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return true;
+    }
 
     public static function form(Schema $schema): Schema
     {
