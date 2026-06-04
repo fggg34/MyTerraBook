@@ -13,15 +13,6 @@ export default function ListingGallery({ images, photoCount }) {
             ) : (
               <div className="listing-ph" />
             )}
-            <button className="save-btn" id="saveBtn" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0l-.9.9-.9-.9a5.5 5.5 0 0 0-7.8 7.8l.9.9L12 21.4l7.6-7.6.9-.9a5.5 5.5 0 0 0 0-7.8Z" />
-              </svg>
-              Save
-              <span className="scount" id="saveCount">
-                77
-              </span>
-            </button>
           </div>
           {slots.slice(1, 4).map((i) => (
             <div key={i} className="gslot">

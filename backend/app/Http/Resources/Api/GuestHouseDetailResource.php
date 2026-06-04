@@ -14,9 +14,11 @@ class GuestHouseDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $avgRating = $this->reviews()
-            ->where('is_approved', true)
-            ->avg('rating');
+        $approvedReviews = $this->relationLoaded('listingReviews')
+            ? $this->listingReviews
+            : $this->listingReviews()->approved()->get();
+
+        $avgRating = $approvedReviews->avg('rating');
 
         $amenities = $this->amenities->groupBy('group')->map(
             fn ($items, $group) => [
@@ -70,9 +72,7 @@ class GuestHouseDetailResource extends JsonResource
                 'minimum_nights' => $sp->minimum_nights,
             ]),
             'rating' => $avgRating ? round((float) $avgRating, 1) : null,
-            'reviews' => GuestHouseReviewResource::collection(
-                $this->reviews()->where('is_approved', true)->latest()->limit(10)->get(),
-            ),
+            'listing_reviews' => ListingReviewResource::collection($approvedReviews),
         ];
     }
 }

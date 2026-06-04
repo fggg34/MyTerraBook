@@ -5,7 +5,7 @@ import ListingGallery from './ListingGallery'
 import ListingReviewsSection from './ListingReviewsSection'
 import ListingTabPanels from './ListingTabPanels'
 
-export default function ListingPageContent({ listing, related, searchQuery, typeConfig }) {
+export default function ListingPageContent({ listing, related, searchQuery, typeConfig, reviewTarget, onReviewsChange }) {
   const detailBase =
     listing.listingType === 'car' ? '/cars' : listing.listingType === 'guesthouse' ? '/guesthouses' : '/campervans'
   const relatedCards = related.map((car) => {
@@ -54,7 +54,12 @@ export default function ListingPageContent({ listing, related, searchQuery, type
         </div>
       </div>
 
-      <ListingReviewsSection listing={listing} typeConfig={typeConfig} />
+      <ListingReviewsSection
+        listing={listing}
+        typeConfig={typeConfig}
+        reviewTarget={reviewTarget}
+        onReviewsChange={onReviewsChange}
+      />
 
       {relatedCards.length > 0 && (
         <section className="similar">

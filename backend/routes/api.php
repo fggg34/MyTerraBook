@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Admin\AdminGuestHouseController;
 use App\Http\Controllers\Api\Admin\GuestHouseBookingPdfController;
 use App\Http\Controllers\Api\GuestHouseBookingController;
 use App\Http\Controllers\Api\GuestHouseController;
+use App\Http\Controllers\Api\ListingReviewController;
 use App\Http\Controllers\Api\GuestHouseQuoteController;
 use App\Http\Controllers\Api\MeGuestHouseBookingController;
 use App\Http\Controllers\Api\PublicOrderController;
@@ -68,6 +69,8 @@ Route::get('/locations', [CatalogController::class, 'locations']);
 Route::get('/booking-restrictions', [CatalogController::class, 'bookingRestrictions']);
 Route::get('/cars', [CatalogController::class, 'cars']);
 Route::get('/cars/{car}', [CatalogController::class, 'car']);
+Route::get('/cars/{car}/reviews', [ListingReviewController::class, 'indexCar']);
+Route::post('/cars/{car}/reviews', [ListingReviewController::class, 'storeCar']);
 Route::get('/cars/{car}/availability-calendar', [CatalogController::class, 'availabilityCalendar']);
 
 Route::post('/orders/quote', [PublicOrderController::class, 'quote']);
@@ -77,6 +80,8 @@ Route::prefix('guest-houses')->group(function () {
     Route::get('/', [GuestHouseController::class, 'index']);
     Route::post('/bookings', [GuestHouseBookingController::class, 'store']);
     Route::get('/{slug}', [GuestHouseController::class, 'show']);
+    Route::get('/{slug}/reviews', [ListingReviewController::class, 'indexGuestHouse']);
+    Route::post('/{slug}/reviews', [ListingReviewController::class, 'storeGuestHouse']);
     Route::get('/{slug}/availability', [GuestHouseController::class, 'availability']);
     Route::post('/{slug}/quote', [GuestHouseQuoteController::class, 'store']);
 });

@@ -3,9 +3,8 @@ import {
   DEFAULT_OWNER,
   DEFAULT_RATING,
   LISTING_TYPES,
-  MOCK_FAQS,
-  MOCK_REVIEWS,
 } from '../data/listingConfig'
+import { mapApiListingReviews } from './mapListingReviews'
 
 const FALLBACK_IMAGES = {
   campervan: ['/images/homepage/cardcamper.jpg', '/images/homepage/hero-van.jpg'],
@@ -168,7 +167,7 @@ function buildAddons(car, listingType) {
   ]
 }
 
-export function mapCarToListing(car, listingType = 'campervan') {
+export function mapCarToListing(car, listingType = 'campervan', listingReviewsOverride) {
   const typeConfig = LISTING_TYPES[listingType] || LISTING_TYPES.campervan
   const priceType = car.price_types?.[0]
   const priceFrom = formatPrice(
@@ -200,8 +199,7 @@ export function mapCarToListing(car, listingType = 'campervan') {
     addons: buildAddons(car, listingType),
     priceFrom,
     priceTypes: car.price_types || [],
-    reviews: MOCK_REVIEWS,
-    faqs: MOCK_FAQS,
+    reviews: listingReviewsOverride ?? mapApiListingReviews(car.listing_reviews),
     reviewCategories: [
       { label: 'Communication', value: '5.0', width: '100%' },
       { label: 'Cleanliness', value: '5.0', width: '100%' },
@@ -209,6 +207,6 @@ export function mapCarToListing(car, listingType = 'campervan') {
       { label: 'Value', value: '4.9', width: '98%' },
       { label: 'Listing accuracy', value: '5.0', width: '100%' },
     ],
-    guestPhotoUrls: buildImages(car, listingType).map((i) => i.url),
+    guestPhotoUrls: [],
   }
 }

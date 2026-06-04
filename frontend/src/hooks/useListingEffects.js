@@ -55,14 +55,6 @@ export default function useListingEffects(rootRef, { priceFrom = 94, onBook }) {
     }
     beds.forEach((b) => b.addEventListener('click', onBedClick))
 
-    const save = root.querySelector('#saveBtn')
-    const sc = root.querySelector('#saveCount')
-    const onSave = () => {
-      const on = save?.classList.toggle('on')
-      if (sc) sc.textContent = on ? '78' : '77'
-    }
-    save?.addEventListener('click', onSave)
-
     const onResize = () => measure()
     window.addEventListener('resize', onResize)
     if (document.fonts?.ready) document.fonts.ready.then(measure)
@@ -319,7 +311,6 @@ export default function useListingEffects(rootRef, { priceFrom = 94, onBook }) {
       tabs.forEach((t) => t.removeEventListener('click', onTabClick))
       showMore?.removeEventListener('click', onShowMore)
       beds.forEach((b) => b.removeEventListener('click', onBedClick))
-      save?.removeEventListener('click', onSave)
       ro?.disconnect()
       calCleanup()
     }

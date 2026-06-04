@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { submitListingReview } from '../../api/listingReviews'
 import {
-  buildUserReview,
+  buildMarqueePhotos,
   computeRating,
-  mergeGuestPhotos,
-  mergeReviews,
+  guestPhotosFromReviews,
   pickFeatureImage,
 } from '../../utils/listingReviews'
 
@@ -40,19 +40,15 @@ function ReviewCard({ review }) {
   )
 }
 
-function ListingReviewForm({ onSubmit }) {
+function ListingReviewForm({ onSubmit, disabled }) {
   const [name, setName] = useState('')
   const [score, setScore] = useState(5)
   const [text, setText] = useState('')
+  const [photoFile, setPhotoFile] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
-
-  useEffect(() => {
-    return () => {
-      if (photoPreview?.startsWith('blob:')) URL.revokeObjectURL(photoPreview)
-    }
-  }, [photoPreview])
+  const [submitting, setSubmitting] = useState(false)
 
   const onPhotoChange = (e) => {
     const file = e.target.files?.[0]
@@ -62,41 +58,57 @@ function ListingReviewForm({ onSubmit }) {
       return
     }
     if (photoPreview?.startsWith('blob:')) URL.revokeObjectURL(photoPreview)
+    setPhotoFile(file)
     setPhotoPreview(URL.createObjectURL(file))
     setError('')
   }
 
   const clearPhoto = () => {
     if (photoPreview?.startsWith('blob:')) URL.revokeObjectURL(photoPreview)
+    setPhotoFile(null)
     setPhotoPreview(null)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    if (disabled || submitting) return
     if (!text.trim()) {
       setError('Please write a few words about your stay.')
       return
     }
-    onSubmit({
-      name,
-      score,
-      text,
-      photoUrl: photoPreview,
-    })
-    setName('')
-    setScore(5)
-    setText('')
-    clearPhoto()
+    setSubmitting(true)
     setError('')
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 4000)
+    try {
+      await onSubmit({
+        name,
+        score,
+        text,
+        photoFile,
+      })
+      setName('')
+      setScore(5)
+      setText('')
+      clearPhoto()
+      setSubmitted(true)
+      setTimeout(() => setSubmitted(false), 4000)
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.errors
+      if (typeof msg === 'object') {
+        const first = Object.values(msg).flat()[0]
+        setError(first || 'Could not post your review. Please try again.')
+      } else {
+        setError(msg || 'Could not post your review. Please try again.')
+      }
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
     <form className="rev-write" onSubmit={handleSubmit}>
       <div className="rev-write-head">
         <h3>Share your experience</h3>
-        <p>Add a review and optional photo — it appears in guest reviews and guest photos.</p>
+        <p>Add a review and optional photo — it is saved and shown in guest reviews and guest photos.</p>
       </div>
       <div className="rev-write-grid">
         <label className="rev-field">
@@ -107,6 +119,7 @@ function ListingReviewForm({ onSubmit }) {
             onChange={(ev) => setName(ev.target.value)}
             placeholder="e.g. Alex K."
             maxLength={80}
+            disabled={disabled || submitting}
           />
         </label>
         <div className="rev-field">
@@ -119,6 +132,7 @@ function ListingReviewForm({ onSubmit }) {
                 className={`rev-star-btn ${n <= score ? 'on' : ''}`}
                 aria-label={`${n} star${n > 1 ? 's' : ''}`}
                 aria-pressed={n <= score}
+                disabled={disabled || submitting}
                 onClick={() => setScore(n)}
               >
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -136,13 +150,14 @@ function ListingReviewForm({ onSubmit }) {
             placeholder="What was your trip like?"
             rows={4}
             maxLength={2000}
+            disabled={disabled || submitting}
           />
         </label>
         <div className="rev-field rev-photo-field">
           <span className="rev-field-lab">Photo (optional)</span>
           <div className="rev-photo-row">
             <label className="rev-photo-upload">
-              <input type="file" accept="image/*" onChange={onPhotoChange} />
+              <input type="file" accept="image/*" onChange={onPhotoChange} disabled={disabled || submitting} />
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="5" width="18" height="14" rx="2" />
                 <circle cx="12" cy="12" r="3" />
@@ -162,36 +177,32 @@ function ListingReviewForm({ onSubmit }) {
         </div>
       </div>
       {error ? <p className="rev-write-error">{error}</p> : null}
-      {submitted ? <p className="rev-write-success">Thanks — your review is now visible below.</p> : null}
-      <button className="rev-submit" type="submit">
-        Post review
+      {submitted ? <p className="rev-write-success">Thanks — your review has been posted.</p> : null}
+      <button className="rev-submit" type="submit" disabled={disabled || submitting}>
+        {submitting ? 'Posting…' : 'Post review'}
       </button>
     </form>
   )
 }
 
-export default function ListingReviewsSection({ listing, typeConfig }) {
-  const [userReviews, setUserReviews] = useState([])
-
-  const allReviews = useMemo(
-    () => mergeReviews(listing.reviews, userReviews),
-    [listing.reviews, userReviews],
-  )
-  const guestPhotos = useMemo(
-    () => mergeGuestPhotos(userReviews, listing.guestPhotoUrls),
-    [userReviews, listing.guestPhotoUrls],
-  )
+export default function ListingReviewsSection({ listing, typeConfig, reviewTarget, onReviewsChange }) {
+  const allReviews = listing.reviews || []
+  const guestPhotos = useMemo(() => guestPhotosFromReviews(allReviews), [allReviews])
   const rating = useMemo(() => computeRating(listing.rating, allReviews), [listing.rating, allReviews])
-  const featureImage = useMemo(
-    () => pickFeatureImage(userReviews, guestPhotos, listing.images),
-    [userReviews, guestPhotos, listing.images],
+  const featureImage = useMemo(() => pickFeatureImage(allReviews), [allReviews])
+  const hasReviews = allReviews.length > 0
+  const marqueePhotos = useMemo(() => buildMarqueePhotos(guestPhotos), [guestPhotos])
+
+  const onSubmitReview = useCallback(
+    async (payload) => {
+      if (!reviewTarget) {
+        throw new Error('Listing not ready')
+      }
+      await submitListingReview(reviewTarget.listingType, reviewTarget.id, payload)
+      await onReviewsChange?.()
+    },
+    [reviewTarget, onReviewsChange],
   )
-
-  const onSubmitReview = useCallback(({ name, score, text, photoUrl }) => {
-    setUserReviews((prev) => [buildUserReview({ name, score, text, photoUrl }), ...prev])
-  }, [])
-
-  const marqueePhotos = guestPhotos.length ? [...guestPhotos, ...guestPhotos] : []
 
   return (
     <>
@@ -238,43 +249,45 @@ export default function ListingReviewsSection({ listing, typeConfig }) {
             </div>
           </div>
 
-          <ListingReviewForm onSubmit={onSubmitReview} />
+          <ListingReviewForm onSubmit={onSubmitReview} disabled={!reviewTarget} />
 
-          <div className="rev-grid">
-            <div className="rev-feature">
-              <img src={featureImage} alt="" />
+          {hasReviews ? (
+            <div className={`rev-grid${featureImage ? '' : ' rev-grid--no-feature'}`}>
+              {featureImage ? (
+                <div className="rev-feature">
+                  <img src={featureImage} alt="" />
+                </div>
+              ) : null}
+              {allReviews.map((rev) => (
+                <ReviewCard key={rev.id} review={rev} />
+              ))}
             </div>
-            {allReviews.map((rev) => (
-              <ReviewCard key={rev.id} review={rev} />
-            ))}
-          </div>
+          ) : (
+            <p className="reviews-empty">No guest reviews yet. Share your trip using the form above.</p>
+          )}
         </div>
       </section>
 
-      <section className="gphotos">
-        <div className="wrap">
-          <h2>{typeConfig.guestPhotosTitle}</h2>
-        </div>
-        {marqueePhotos.length > 0 ? (
+      {guestPhotos.length > 0 ? (
+        <section className="gphotos">
+          <div className="wrap">
+            <h2>{typeConfig.guestPhotosTitle}</h2>
+          </div>
           <div className="gp-marquee" id="gpMarquee">
             <div className="gp-track">
               {marqueePhotos.map((url, i) => (
                 <div
                   key={`${url}-${i}`}
                   className="gp-tile"
-                  aria-hidden={i >= guestPhotos.length ? true : undefined}
+                  aria-hidden={i >= marqueePhotos.length / 2 ? true : undefined}
                 >
                   <img src={url} alt="" />
                 </div>
               ))}
             </div>
           </div>
-        ) : (
-          <div className="wrap">
-            <p className="gp-empty">Guest photos will appear here when travellers share them.</p>
-          </div>
-        )}
-      </section>
+        </section>
+      ) : null}
     </>
   )
 }

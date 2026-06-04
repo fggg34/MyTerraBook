@@ -19,7 +19,8 @@ function toDateTimeLocal(date) {
 export default function ListingPage({ listingType = 'campervan' }) {
   const rootRef = useRef(null)
   const navigate = useNavigate()
-  const { listing, related, loadState, queryDefaults, searchQuery, typeConfig, car } = useListingPage(listingType)
+  const { listing, related, loadState, queryDefaults, searchQuery, typeConfig, car, reviewTarget, refetchReviews } =
+    useListingPage(listingType)
 
   const handleBook = useCallback(
     ({ pickupDate, dropoffDate } = {}) => {
@@ -71,7 +72,14 @@ export default function ListingPage({ listingType = 'campervan' }) {
 
   return (
     <div className="listing-page" ref={rootRef}>
-      <ListingPageContent listing={listing} related={related} searchQuery={searchQuery} typeConfig={typeConfig} />
+      <ListingPageContent
+        listing={listing}
+        related={related}
+        searchQuery={searchQuery}
+        typeConfig={typeConfig}
+        reviewTarget={reviewTarget}
+        onReviewsChange={refetchReviews}
+      />
     </div>
   )
 }

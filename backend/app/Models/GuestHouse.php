@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasListingReviews;
 use App\Enums\GuestHouseCancellationPolicy;
 use App\Enums\GuestHouseStatus;
 use App\Enums\GuestHouseType;
@@ -16,6 +17,7 @@ use Illuminate\Support\Str;
 
 class GuestHouse extends Model
 {
+    use HasListingReviews;
     use SoftDeletes;
 
     protected $fillable = [

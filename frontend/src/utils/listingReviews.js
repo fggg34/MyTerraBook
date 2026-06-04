@@ -30,20 +30,28 @@ export function mergeReviews(baseReviews, userReviews) {
   return [...userReviews, ...withReviewIds(baseReviews)]
 }
 
-export function mergeGuestPhotos(userReviews, baseUrls) {
-  const fromReviews = userReviews.filter((r) => r.photoUrl).map((r) => r.photoUrl)
+/** Guest photos only from reviews that include an uploaded image (no listing/demo URLs). */
+export function guestPhotosFromReviews(reviews) {
+  const urls = []
   const seen = new Set()
-  const merged = []
-  for (const url of [...fromReviews, ...baseUrls]) {
-    if (!url || seen.has(url)) continue
-    seen.add(url)
-    merged.push(url)
+  for (const r of reviews) {
+    if (!r.photoUrl || seen.has(r.photoUrl)) continue
+    seen.add(r.photoUrl)
+    urls.push(r.photoUrl)
   }
-  return merged
+  return urls
 }
 
 export function computeRating(baseRating, allReviews) {
-  if (!allReviews.length) return baseRating
+  if (!allReviews.length) {
+    return {
+      ...baseRating,
+      score: '—',
+      label: 'No reviews yet',
+      reviewCount: 0,
+      reviewLinkLabel: 'Be the first to review',
+    }
+  }
   const scores = allReviews.map((r) => Number.parseFloat(r.score)).filter((n) => !Number.isNaN(n))
   if (!scores.length) return baseRating
   const avg = scores.reduce((a, b) => a + b, 0) / scores.length
@@ -63,9 +71,19 @@ export function computeRating(baseRating, allReviews) {
   }
 }
 
-export function pickFeatureImage(userReviews, guestPhotos, listingImages) {
-  const withPhoto = userReviews.find((r) => r.photoUrl)
-  if (withPhoto?.photoUrl) return withPhoto.photoUrl
-  if (guestPhotos[0]) return guestPhotos[0]
-  return listingImages[0]?.url || '/images/homepage/cardcamper.jpg'
+/** Featured tile: first guest review photo only (never listing gallery images). */
+export function pickFeatureImage(reviews) {
+  const withPhoto = reviews.find((r) => r.photoUrl)
+  return withPhoto?.photoUrl || null
+}
+
+/** Duplicate tiles enough times for a smooth marquee loop (HTML uses two identical sets). */
+export function buildMarqueePhotos(urls) {
+  if (!urls.length) return []
+  const minTiles = 6
+  const out = []
+  while (out.length < minTiles) {
+    out.push(...urls)
+  }
+  return [...out, ...out]
 }

@@ -72,7 +72,12 @@ class GuestHouseController extends Controller
         $house = GuestHouse::query()
             ->where('slug', $slug)
             ->where('status', GuestHouseStatus::Active)
-            ->with(['images', 'amenities', 'seasonalPrices', 'reviews'])
+            ->with([
+                'images',
+                'amenities',
+                'seasonalPrices',
+                'listingReviews' => fn ($q) => $q->approved()->latest()->limit(50),
+            ])
             ->firstOrFail();
 
         return response()->json([

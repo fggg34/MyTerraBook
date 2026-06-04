@@ -44,6 +44,9 @@ class CarDetailResource extends JsonResource
             ]),
             'characteristics' => CharacteristicResource::collection($car->characteristics),
             'rental_options' => RentalOptionResource::collection($car->rentalOptions),
+            'listing_reviews' => ListingReviewResource::collection(
+                $car->relationLoaded('listingReviews') ? $car->listingReviews : collect(),
+            ),
         ];
     }
 }

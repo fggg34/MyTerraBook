@@ -133,7 +133,12 @@ class CatalogController extends Controller
 
     public function car(Car $car): JsonResponse
     {
-        $car->load(['category', 'characteristics', 'rentalOptions']);
+        $car->load([
+            'category',
+            'characteristics',
+            'rentalOptions',
+            'listingReviews' => fn ($q) => $q->approved()->latest()->limit(50),
+        ]);
 
         $fareMins = DailyFare::query()
             ->where('car_id', $car->id)

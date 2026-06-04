@@ -182,8 +182,8 @@ export default function ListingTabPanels({ listing }) {
           </div>
         </div>
 
-        <aside className="booking">
-          <div className="bcard">
+        <aside className="listing-book">
+          <div className="listing-bcard">
             <div className="date-wrap" id="dateWrap">
               <button className="date-field" id="dateField" type="button">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -256,7 +256,7 @@ export default function ListingTabPanels({ listing }) {
             <button className="book-link" id="bookProcessLink" type="button">
               View the booking process
             </button>
-            <div className="bcard-div" />
+            <div className="listing-bcard-div" />
             <div className="trust-points">
               {typeConfig.trustPoints.map((tp) => (
                 <div key={tp.html} className="tp">
