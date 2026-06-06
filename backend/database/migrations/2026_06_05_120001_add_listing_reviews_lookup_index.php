@@ -60,6 +60,13 @@ return new class extends Migration
     private function indexExists(string $table, string $indexName): bool
     {
         $connection = Schema::getConnection();
+
+        if ($connection->getDriverName() === 'sqlite') {
+            $rows = $connection->select("PRAGMA index_list('{$table}')");
+
+            return collect($rows)->contains(fn ($row) => ($row->name ?? null) === $indexName);
+        }
+
         $database = $connection->getDatabaseName();
         $rows = $connection->select(
             'SELECT 1 FROM information_schema.statistics

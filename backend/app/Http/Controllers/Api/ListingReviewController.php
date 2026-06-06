@@ -15,7 +15,7 @@ class ListingReviewController extends Controller
 {
     public function indexCar(Car $car): JsonResponse
     {
-        abort_unless($car->is_active, 404);
+        abort_unless($car->isPubliclyVisible(), 404);
 
         $reviews = $car->listingReviews()
             ->approved()
@@ -30,7 +30,7 @@ class ListingReviewController extends Controller
 
     public function storeCar(StoreListingReviewRequest $request, Car $car): JsonResponse
     {
-        abort_unless($car->is_active, 404);
+        abort_unless($car->isPubliclyVisible(), 404);
 
         $review = $this->createReview($request, $car);
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cars;
 
+use App\Enums\ListingApprovalStatus;
 use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\Cars\Pages\CreateCar;
 use App\Filament\Resources\Cars\Pages\EditCar;
@@ -27,6 +28,18 @@ class CarResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Catalog';
 
     protected static ?int $navigationSort = 1;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Car::query()->where('listing_status', ListingApprovalStatus::PendingReview)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'warning';
+    }
 
     public static function form(Schema $schema): Schema
     {

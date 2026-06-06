@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePageContent } from '../context/SiteContentContext'
 import './UnderConstructionPage.css'
 
 function CarSilhouetteIcon() {
@@ -27,6 +28,7 @@ function CarSilhouetteIcon() {
 
 export default function UnderConstructionPage() {
   const { t } = useTranslation()
+  const { page: copy } = usePageContent('under-construction')
 
   useEffect(() => {
     document.body.classList.add('uc-body-dim')
@@ -51,17 +53,17 @@ export default function UnderConstructionPage() {
 
       <main className="uc-main">
         <CarSilhouetteIcon />
-        <p className="uc-badge">{t('ucBadge')}</p>
-        <h1 className="uc-title">{t('ucTitle')}</h1>
-        <p className="uc-subtitle">{t('ucSubtitle')}</p>
+        <p className="uc-badge">{copy.badge ?? t('ucBadge')}</p>
+        <h1 className="uc-title">{copy.title ?? t('ucTitle')}</h1>
+        <p className="uc-subtitle">{copy.subtitle ?? t('ucSubtitle')}</p>
         <div className="uc-progress" aria-hidden>
           <div className="uc-progress-bar" />
         </div>
-        <p className="uc-hint">{t('ucHint')}</p>
+        <p className="uc-hint">{copy.hint ?? t('ucHint')}</p>
       </main>
 
       <footer className="uc-footer">
-        <p className="uc-footer-line">{t('ucFooter')}</p>
+        <p className="uc-footer-line">{copy.footer ?? t('ucFooter')}</p>
       </footer>
     </div>
   )

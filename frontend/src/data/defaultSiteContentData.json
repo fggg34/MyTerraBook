@@ -1,0 +1,1809 @@
+{
+  "global": {
+    "branding": {
+      "logoMode": "text",
+      "prefix": "My",
+      "accent": "Terra",
+      "suffix": "Book",
+      "logoImage": "",
+      "favicon": ""
+    },
+    "topbar": {
+      "text": "Become a Host and start earning money!",
+      "linkLabel": "List your van or guesthouse",
+      "linkHref": "/become-a-host"
+    },
+    "header": {
+      "navLinks": [
+        {
+          "label": "Campervan",
+          "href": "/campervans"
+        },
+        {
+          "label": "Car",
+          "href": "/cars"
+        },
+        {
+          "label": "Guesthouse",
+          "href": "/guesthouses"
+        },
+        {
+          "label": "Good to Know",
+          "href": "/good-to-know"
+        }
+      ],
+      "ctaLabel": "Become a host",
+      "ctaHref": "/become-a-host",
+      "langLabel": "EN",
+      "currencyLabel": "€ EUR",
+      "signInLabel": "Sign in",
+      "signInHref": "/login"
+    },
+    "footer": {
+      "tagline": "Campervans, cars and guesthouses across Iceland — booked in minutes, hosted with care.",
+      "address": "MyTerraBook ehf. · Laugavegur 178 · 105 Reykjavík · Iceland",
+      "columns": [
+        {
+          "title": "Book",
+          "links": [
+            {
+              "label": "Campervans",
+              "href": "/campervans"
+            },
+            {
+              "label": "Cars",
+              "href": "/cars"
+            },
+            {
+              "label": "Guesthouses",
+              "href": "/guesthouses"
+            }
+          ]
+        },
+        {
+          "title": "Company",
+          "links": [
+            {
+              "label": "Good to Know",
+              "href": "/good-to-know"
+            },
+            {
+              "label": "About us",
+              "href": "/about"
+            },
+            {
+              "label": "FAQs",
+              "href": "/faq"
+            },
+            {
+              "label": "Contact",
+              "href": "/contact"
+            }
+          ]
+        },
+        {
+          "title": "Account",
+          "links": [
+            {
+              "label": "Sign in",
+              "href": "/login"
+            },
+            {
+              "label": "Create account",
+              "href": "/register"
+            }
+          ]
+        }
+      ],
+      "copyright": "© 2026 MyTerraBook ehf. Made in Reykjavík.",
+      "locale": "English (UK)",
+      "currency": "EUR €",
+      "legal": [
+        {
+          "label": "Terms",
+          "href": "/terms"
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy"
+        },
+        {
+          "label": "Cookies",
+          "href": "/cookies"
+        }
+      ],
+      "social": []
+    },
+    "newsSection": {
+      "eyebrow": "Field notes from Iceland",
+      "heading": "Road conditions, seasonal deals & hidden detours.",
+      "headingAccent": "hidden detours",
+      "lead": "Aurora forecasts, last-minute van openings and local tips you won't find on a map — once a month, from our Reykjavík team.",
+      "backgroundImage": "/images/homepage/hero.jpg",
+      "placeholder": "you@somewhere-cold.is",
+      "successMessage": "Takk! Check your inbox to confirm."
+    },
+    "faqSection": {
+      "eyebrow": "Good to know",
+      "heading": "Questions & answers.",
+      "lead": "Still curious before you book? Our team in Reykjavík is one message away.",
+      "phone": "+354 519 1010",
+      "email": "support@myterrabook.is",
+      "items": [
+        {
+          "num": "01",
+          "question": "What do I need to rent and drive in Iceland?",
+          "answer": "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup — that's it.",
+          "open": true
+        },
+        {
+          "num": "02",
+          "question": "Is gravel and ash damage covered?",
+          "answer": "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter — they're the two things that catch most travellers out on Iceland's roads."
+        },
+        {
+          "num": "03",
+          "question": "Where can I sleep in a campervan?",
+          "answer": "At any of Iceland's registered campsites, which line the Ring Road. Wild camping in a vehicle isn't permitted, so we send a campsite map with every van booking to make planning each night easy."
+        },
+        {
+          "num": "04",
+          "question": "What if a road closes or the weather turns?",
+          "answer": "Call our Reykjavík team any hour and we'll help you re-route, find a stay, or rethink the plan. Live road and weather alerts are also pinned inside your booking so nothing catches you off guard."
+        },
+        {
+          "num": "05",
+          "question": "How does pickup near Keflavík work?",
+          "answer": "Land, hop on the quick shuttle, and collect your keys minutes from the terminal. You'll get a hands-on walkthrough of the vehicle before you drive off, with studded tyres and gear already fitted for the season."
+        }
+      ]
+    }
+  },
+  "home": {
+    "hero": {
+      "heading": "Book with the world's leading roadtrip provider!",
+      "subtitle": "Campervans, 4×4s and warm guesthouses — everything you need for the Ring Road, in one booking.",
+      "backgroundImage": "/images/homepage/hero.jpg",
+      "tabs": [
+        {
+          "id": "campervan",
+          "label": "Campervan"
+        },
+        {
+          "id": "cars",
+          "label": "Cars"
+        },
+        {
+          "id": "guesthouses",
+          "label": "Guesthouses"
+        }
+      ],
+      "experienceLabel": "Choose your perfect Icelandic experience",
+      "experiencePlaceholder": "Choose an experience",
+      "datesLabel": "Select dates",
+      "startDateLabel": "Starting date",
+      "endDateLabel": "Final date",
+      "travelersLabel": "Add travelers",
+      "travelersValue": "1 traveler",
+      "searchLabel": "Search Now",
+      "footerHint": "Not sure where to start? Check out",
+      "footerLinkLabel": "Things to do in Iceland",
+      "footerLinkHref": "#discover"
+    },
+    "trustItems": [
+      {
+        "icon": "star",
+        "title": "4.9 / 5",
+        "subtitle": "12,400+ verified reviews",
+        "stars": 5
+      },
+      {
+        "icon": "check",
+        "title": "Free cancellation",
+        "subtitle": "Up to 48 hours before pickup"
+      },
+      {
+        "icon": "shield",
+        "title": "Fully insured",
+        "subtitle": "Gravel & ash cover included"
+      },
+      {
+        "icon": "phone",
+        "title": "Local support, 24/7",
+        "subtitle": "Real people in Reykjavík"
+      }
+    ],
+    "rentSection": {
+      "heading": "Three ways to move through Iceland.",
+      "subtitle": "From a two-berth van for the Ring Road to a warm bed at the end of it.",
+      "cards": [
+        {
+          "image": "/images/homepage/cardcamper.jpg",
+          "alt": "Campervan at dusk on a black-sand beach",
+          "listingCount": "184 listings · from €89/night",
+          "name": "Campervans",
+          "tagline": "Sleep where you drive.",
+          "href": "/campervans"
+        },
+        {
+          "image": "/images/homepage/cardcar.jpg",
+          "alt": "SUV on a winding road below snowy mountains",
+          "listingCount": "96 listings · from €42/night",
+          "name": "Cars & 4×4",
+          "tagline": "Built for the ring road.",
+          "href": "/cars"
+        },
+        {
+          "image": "/images/homepage/cardhouse.jpg",
+          "alt": "Lit guesthouse in the snow at dusk",
+          "listingCount": "73 listings · from €110/night",
+          "name": "Guesthouses",
+          "tagline": "Warm beds between drives.",
+          "href": "/guesthouses"
+        }
+      ]
+    },
+    "whySection": {
+      "heading": "One local platform for every way to explore Iceland.",
+      "subheading": "Campervans, cars, guesthouses — even a way to earn from your own. All checked by a team that actually drives these roads.",
+      "photo": "/images/homepage/why-photo.jpg",
+      "badge": {
+        "rating": "4.9",
+        "reviewBold": "12,400+ travellers",
+        "reviewRest": "who booked with us"
+      },
+      "featuresLeft": [
+        {
+          "icon": "campervan",
+          "title": "Campervans",
+          "description": "Sleep where you stop — kitted out for the Ring Road and beyond.",
+          "expandedText": "Heaters, gas hobs and proper bedding come as standard, and every van is winter-checked before pickup so you can chase the aurora without packing half a house."
+        },
+        {
+          "icon": "car",
+          "title": "Cars & 4×4s",
+          "description": "From city compacts to proper F-road 4×4s with gravel cover.",
+          "expandedText": "Need to reach the highlands? Our 4×4s clear the F-roads and river crossings the rental desks at the airport quietly tell you to avoid."
+        },
+        {
+          "icon": "house",
+          "title": "Guesthouses",
+          "description": "Warm, vetted beds spaced along your route across the island.",
+          "expandedText": "Hand-picked stays in Vík, Höfn, Akureyri and more — each within an easy day's drive of the last, so your itinerary plans itself."
+        }
+      ],
+      "featuresRight": [
+        {
+          "icon": "host",
+          "title": "Become a host",
+          "description": "List your van or guesthouse and earn between trips, hassle-free.",
+          "expandedText": "We handle bookings, payments and insurance, and you keep the calendar. Most hosts cover their winter storage within the first season."
+        },
+        {
+          "icon": "shield",
+          "title": "Fully insured",
+          "description": "Gravel, ash and tyre protection bundled into one clear price.",
+          "expandedText": "Iceland's gravel and volcanic ash wreck more rentals than anything else — so that cover is included up front, not upsold at the counter."
+        },
+        {
+          "icon": "phone",
+          "title": "Local support, 24/7",
+          "description": "Real people in Reykjavík, any season, whenever the road turns.",
+          "expandedText": "Flat tyre at midnight, a road closed by weather, a route rethink — one call reaches a local who knows exactly where you are and what to do."
+        }
+      ]
+    },
+    "picksSection": {
+      "heading": "Hand-picked for Iceland.",
+      "tabs": [
+        {
+          "id": "camper",
+          "label": "Campervans",
+          "allLabel": "See all campervans",
+          "allHref": "/campervans"
+        },
+        {
+          "id": "car",
+          "label": "Cars",
+          "allLabel": "See all cars",
+          "allHref": "/cars"
+        }
+      ],
+      "items": {
+        "camper": [
+          {
+            "name": "Freyja Caratour",
+            "image": "/images/homepage/cardcamper.jpg",
+            "price": "€187",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "MANUAL"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 2"
+              },
+              {
+                "type": "bed",
+                "label": "Sleeps 2"
+              },
+              {
+                "type": "bag",
+                "label": "3 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Saga Voyager XL",
+            "image": "/images/homepage/cardcamper.jpg",
+            "price": "€214",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "AUTO"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 4"
+              },
+              {
+                "type": "bed",
+                "label": "Sleeps 4"
+              },
+              {
+                "type": "bag",
+                "label": "4 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Embla Roamer",
+            "image": "/images/homepage/cardcamper.jpg",
+            "price": "€163",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "MANUAL"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 2"
+              },
+              {
+                "type": "bed",
+                "label": "Sleeps 2"
+              },
+              {
+                "type": "bag",
+                "label": "2 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Vatna Highland",
+            "image": "/images/homepage/cardcamper.jpg",
+            "price": "€242",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "AUTO"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 5"
+              },
+              {
+                "type": "bed",
+                "label": "Sleeps 4"
+              },
+              {
+                "type": "bag",
+                "label": "5 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Bragi Compact",
+            "image": "/images/homepage/cardcamper.jpg",
+            "price": "€139",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "MANUAL"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 2"
+              },
+              {
+                "type": "bed",
+                "label": "Sleeps 2"
+              },
+              {
+                "type": "bag",
+                "label": "2 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Dröfn Trail Van",
+            "image": "/images/homepage/cardcamper.jpg",
+            "price": "€198",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "AUTO"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 3"
+              },
+              {
+                "type": "bed",
+                "label": "Sleeps 3"
+              },
+              {
+                "type": "bag",
+                "label": "3 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Katla Adventure",
+            "image": "/images/homepage/cardcamper.jpg",
+            "price": "€226",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "MANUAL"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 4"
+              },
+              {
+                "type": "bed",
+                "label": "Sleeps 4"
+              },
+              {
+                "type": "bag",
+                "label": "4 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Sól Micro Camper",
+            "image": "/images/homepage/cardcamper.jpg",
+            "price": "€124",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "MANUAL"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 2"
+              },
+              {
+                "type": "bed",
+                "label": "Sleeps 2"
+              },
+              {
+                "type": "bag",
+                "label": "1 Bag"
+              }
+            ]
+          }
+        ],
+        "car": [
+          {
+            "name": "Vík 4×4 Explorer",
+            "image": "/images/homepage/cardcar.jpg",
+            "price": "€96",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "AUTO"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 5"
+              },
+              {
+                "type": "drive",
+                "label": "AWD"
+              },
+              {
+                "type": "bag",
+                "label": "4 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Reykjavík Compact",
+            "image": "/images/homepage/cardcar.jpg",
+            "price": "€48",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "MANUAL"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 5"
+              },
+              {
+                "type": "drive",
+                "label": "FWD"
+              },
+              {
+                "type": "bag",
+                "label": "2 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Þingvellir Wagon",
+            "image": "/images/homepage/cardcar.jpg",
+            "price": "€74",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "AUTO"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 5"
+              },
+              {
+                "type": "drive",
+                "label": "AWD"
+              },
+              {
+                "type": "bag",
+                "label": "3 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Askja Trail SUV",
+            "image": "/images/homepage/cardcar.jpg",
+            "price": "€118",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "AUTO"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 7"
+              },
+              {
+                "type": "drive",
+                "label": "4×4"
+              },
+              {
+                "type": "bag",
+                "label": "5 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Hekla City EV",
+            "image": "/images/homepage/cardcar.jpg",
+            "price": "€62",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "AUTO"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 5"
+              },
+              {
+                "type": "drive",
+                "label": "FWD"
+              },
+              {
+                "type": "bag",
+                "label": "3 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Skógar Pickup",
+            "image": "/images/homepage/cardcar.jpg",
+            "price": "€132",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "MANUAL"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 5"
+              },
+              {
+                "type": "drive",
+                "label": "4×4"
+              },
+              {
+                "type": "bag",
+                "label": "4 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Dyrhólaey Sedan",
+            "image": "/images/homepage/cardcar.jpg",
+            "price": "€58",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "AUTO"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 5"
+              },
+              {
+                "type": "drive",
+                "label": "FWD"
+              },
+              {
+                "type": "bag",
+                "label": "3 Bags"
+              }
+            ]
+          },
+          {
+            "name": "Krafla EV Plus",
+            "image": "/images/homepage/cardcar.jpg",
+            "price": "€71",
+            "per": "day",
+            "badge": "Extras included",
+            "specs": [
+              {
+                "type": "gearbox",
+                "label": "AUTO"
+              },
+              {
+                "type": "seat",
+                "label": "Seats 5"
+              },
+              {
+                "type": "drive",
+                "label": "AWD"
+              },
+              {
+                "type": "bag",
+                "label": "3 Bags"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "howSection": {
+      "heading": "From airport to open road in three steps.",
+      "steps": [
+        {
+          "num": "01",
+          "title": "Find your match",
+          "description": "Tell us your dates and how you like to travel. We surface only the vans, 4×4s and stays that fit your route — every one checked by our Reykjavík team and priced with insurance built in.",
+          "image": "/images/homepage/stay-hofn.jpg",
+          "imageAlt": "Browsing vehicles for an Iceland trip",
+          "tags": [
+            "Search",
+            "Compare",
+            "Instant quote"
+          ]
+        },
+        {
+          "num": "02",
+          "title": "Collect near Keflavík",
+          "description": "Land, grab your keys minutes from the terminal, and get a hands-on walkthrough of the gear. Studded tyres, camping card and gravel cover are already sorted before you pull away.",
+          "image": "/images/homepage/why-photo.jpg",
+          "imageAlt": "Picking up a campervan in Iceland",
+          "tags": [
+            "Fast pickup",
+            "Walkthrough",
+            "Gear ready"
+          ]
+        },
+        {
+          "num": "03",
+          "title": "Drive Iceland, fully backed",
+          "description": "Hit the Ring Road with unlimited mileage and 24/7 local support in your pocket. Anything comes up — weather, a flat, a route change — and a real person in Iceland picks up.",
+          "image": "/images/homepage/hero.jpg",
+          "imageAlt": "Driving the Ring Road in Iceland",
+          "tags": [
+            "Unlimited km",
+            "24/7 support",
+            "Any season"
+          ]
+        }
+      ]
+    },
+    "staySection": {
+      "heading": "A warm bed at the end of the road.",
+      "subtitle": "Hand-picked guesthouses spaced a comfortable day's drive apart — so the only thing left to plan is where to watch the sky.",
+      "allLabel": "Browse all guesthouses",
+      "allHref": "/guesthouses",
+      "cards": [
+        {
+          "name": "Höfn Harbour House",
+          "image": "/images/homepage/cardhouse.jpg",
+          "badge": "Breakfast included",
+          "specs": [
+            "Sleeps 4",
+            "2 Rooms",
+            "Wi-Fi"
+          ],
+          "price": "€128"
+        },
+        {
+          "name": "Mývatn Lodge",
+          "image": "/images/homepage/host-van.jpg",
+          "badge": "Breakfast included",
+          "specs": [
+            "Sleeps 6",
+            "3 Rooms",
+            "Wi-Fi"
+          ],
+          "price": "€164"
+        },
+        {
+          "name": "Vík Cliffside Stay",
+          "image": "/images/homepage/stay-hofn.jpg",
+          "badge": "Breakfast included",
+          "specs": [
+            "Sleeps 2",
+            "1 Room",
+            "Wi-Fi"
+          ],
+          "price": "€112"
+        }
+      ]
+    },
+    "blogSection": {
+      "heading": "Good to Know",
+      "subtitle": "Guides, routes & practical Iceland tips from our Reykjavík team",
+      "allLabel": "View all",
+      "allHref": "/good-to-know",
+      "posts": [
+        {
+          "slug": "driving-the-ring-road-in-7-days",
+          "featured": true,
+          "title": "Driving the Ring Road in 7 days",
+          "description": "A complete loop itinerary with the best stops, fuel points and where to sleep each night.",
+          "meta": "12 min read",
+          "metaExtra": "Updated this week",
+          "image": "/images/homepage/hero.jpg",
+          "imageAlt": "Campervan on the Ring Road"
+        },
+        {
+          "slug": "golden-circle-in-a-day",
+          "kicker": "Day trip",
+          "title": "Golden Circle in a day",
+          "image": "/images/homepage/stay-hofn.jpg",
+          "imageAlt": "Golden Circle"
+        },
+        {
+          "slug": "do-you-need-a-4x4",
+          "kicker": "Gear",
+          "title": "Do you need a 4×4?",
+          "image": "/images/homepage/why-photo.jpg",
+          "imageAlt": "4x4 camper on gravel"
+        },
+        {
+          "slug": "chasing-the-northern-lights",
+          "kicker": "Nature",
+          "title": "Chasing the northern lights",
+          "aurora": true
+        },
+        {
+          "slug": "campervan-vs-guesthouse",
+          "kicker": "Compare",
+          "title": "Campervan vs guesthouse",
+          "image": "/images/homepage/host-van.jpg",
+          "imageAlt": "Guesthouse interior"
+        }
+      ]
+    },
+    "hostCtaSection": {
+      "eyebrow": "For hosts",
+      "heading": "List your car or guesthouse.",
+      "lead": "Your van sits idle between trips and your spare room stays empty. Put them to work on the platform Iceland's travellers already trust.",
+      "earnAmount": "€1,900",
+      "earnNote": "Top campervan hosts clear €3,200+. You keep 85% — we handle bookings, payments and insurance.",
+      "points": [
+        "Free to list",
+        "You set the calendar",
+        "Insurance included"
+      ],
+      "primaryLabel": "Become a host",
+      "primaryHref": "/become-a-host",
+      "secondaryLabel": "See how hosting works",
+      "secondaryHref": "/become-a-host",
+      "houseImage": "/images/homepage/host-van.jpg",
+      "vanImage": "/images/homepage/why-photo.jpg",
+      "chipAmount": "€2.4M+",
+      "chipLabel": "paid to 1,800+ hosts last year"
+    },
+    "reviewsSection": {
+      "eyebrow": "Traveller stories",
+      "heading": "Loved on the Ring Road.",
+      "rating": "4.9 / 5",
+      "ratingCount": "12,400+ travellers",
+      "reviews": [
+        {
+          "quote": "\"Picked up the camper ten minutes from Keflavík and were chasing waterfalls by lunch. Everything just worked.\"",
+          "name": "Marta Lindqvist",
+          "fill": "#a9d4e6",
+          "rot": "-9deg",
+          "ty": "30px"
+        },
+        {
+          "quote": "\"Gravel roads, a river crossing, even a June snow flurry — the 4×4 and the insurance took it all in stride.\"",
+          "name": "Tom Okafor",
+          "fill": "#bcdcab",
+          "rot": "-5.5deg",
+          "ty": "16px"
+        },
+        {
+          "quote": "\"Our guesthouse in Vík was cosier than the photos. After a long day on the Ring Road we slept like rocks.\"",
+          "name": "Sofia Rossi",
+          "fill": "#f1d79a",
+          "rot": "-1.5deg",
+          "ty": "4px"
+        },
+        {
+          "quote": "\"Booking the van, the car days and two stays in one place saved us an entire evening of admin.\"",
+          "name": "Daniel Berg",
+          "fill": "#cdbbea",
+          "rot": "1.5deg",
+          "ty": "4px"
+        },
+        {
+          "quote": "\"Flat tyre near Höfn at midnight. One call, a real person, sorted in twenty minutes. Unreal.\"",
+          "name": "Aiko Tanaka",
+          "fill": "#a4ddcd",
+          "rot": "5.5deg",
+          "ty": "16px"
+        },
+        {
+          "quote": "\"Cleanest van we've ever rented, fair price, and not a single surprise fee at the counter.\"",
+          "name": "Lucas Moreau",
+          "fill": "#f4c1a4",
+          "rot": "9deg",
+          "ty": "30px"
+        }
+      ]
+    },
+    "guestHousesHighlight": {
+      "title": "Guest houses & stays",
+      "subtitle": "Hand-picked homes across Iceland",
+      "featured_slugs": [],
+      "ctaLabel": "View all stays",
+      "ctaHref": "/guesthouses"
+    }
+  },
+  "about": {
+    "hero": {
+      "eyebrow": "Our story",
+      "title": "About MyTerraBook",
+      "lead": "Iceland's locally-run platform for campervans, cars, 4×4s and guesthouses — one booking, one team in Reykjavík behind it.",
+      "primaryLabel": "Talk to the team",
+      "primaryHref": "/contact",
+      "secondaryLabel": "Become a host",
+      "secondaryHref": "/become-a-host",
+      "image": "/images/homepage/why-photo.jpg",
+      "pinTitle": "Reykjavík HQ",
+      "pinSubtitle": "Local team · Iceland time"
+    },
+    "storySection": {
+      "tag": "The journey so far",
+      "heading": "Built for travellers who want the whole island, not just a rental counter."
+    },
+    "body": "<p>MyTerraBook started with a simple idea: travellers should be able to plan an entire Iceland trip in one place, with real people on the other end of the phone when the weather turns.</p>\n<p>We are a Reykjavík-based team working with trusted local hosts and fleet partners across the island. Every listing is hand-checked, every price is transparent, and every booking comes with gravel protection, local support, and clear cancellation terms.</p>\n<p>Whether you are driving the Ring Road in a campervan, adding a 4×4 for the highlands, or booking a guesthouse between adventures, we are here to make it straightforward.</p>",
+    "stats": [
+      {
+        "value": "4.9",
+        "label": "Average rating",
+        "sub": "12,400+ verified reviews"
+      },
+      {
+        "value": "350+",
+        "label": "Hand-checked listings",
+        "sub": "Across the whole island"
+      },
+      {
+        "value": "24/7",
+        "label": "Reykjavík support",
+        "sub": "Real people, any hour"
+      },
+      {
+        "value": "48h",
+        "label": "Free cancellation",
+        "sub": "On most bookings"
+      }
+    ],
+    "valuesSection": {
+      "tag": "What we stand for",
+      "heading": "Local expertise, transparent bookings, support when the weather turns."
+    },
+    "pillars": [
+      {
+        "icon": "shield",
+        "title": "Every listing, checked",
+        "text": "We drive these roads too."
+      },
+      {
+        "icon": "price",
+        "title": "Prices you can trust",
+        "text": "Gravel protection built in."
+      },
+      {
+        "icon": "route",
+        "title": "One trip, one platform",
+        "text": "Book everything in one place."
+      }
+    ],
+    "offeringsSection": {
+      "tag": "Three ways to explore",
+      "heading": "Everything you need for the Ring Road — and the roads off it."
+    },
+    "offerings": [
+      {
+        "href": "/campervans",
+        "image": "/images/homepage/cardcamper.jpg",
+        "label": "Campervans",
+        "tag": "Ring Road ready"
+      },
+      {
+        "href": "/cars",
+        "image": "/images/homepage/cardcar.jpg",
+        "label": "Cars & 4×4",
+        "tag": "F-road capable"
+      },
+      {
+        "href": "/guesthouses",
+        "image": "/images/homepage/cardhouse.jpg",
+        "label": "Guesthouses",
+        "tag": "Warm beds between drives"
+      }
+    ],
+    "cta": {
+      "title": "Planning a trip? We're in Reykjavík when you need us.",
+      "subtitle": "",
+      "primaryLabel": "Contact us",
+      "primaryHref": "/contact",
+      "secondaryLabel": "Read FAQs",
+      "secondaryHref": "/faq"
+    }
+  },
+  "faq": {
+    "hero": {
+      "eyebrow": "Good to know",
+      "title": "Questions & answers",
+      "lead": "Still curious before you book? Our team in Reykjavík is one message away.",
+      "searchPlaceholder": "Search questions — licence, gravel, campsites…"
+    },
+    "items": [
+      {
+        "num": "01",
+        "question": "What do I need to rent and drive in Iceland?",
+        "answer": "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup — that's it.",
+        "open": true
+      },
+      {
+        "num": "02",
+        "question": "Is gravel and ash damage covered?",
+        "answer": "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter — they're the two things that catch most travellers out on Iceland's roads."
+      },
+      {
+        "num": "03",
+        "question": "Where can I sleep in a campervan?",
+        "answer": "At any of Iceland's registered campsites, which line the Ring Road. Wild camping in a vehicle isn't permitted, so we send a campsite map with every van booking to make planning each night easy."
+      },
+      {
+        "num": "04",
+        "question": "What if a road closes or the weather turns?",
+        "answer": "Call our Reykjavík team any hour and we'll help you re-route, find a stay, or rethink the plan. Live road and weather alerts are also pinned inside your booking so nothing catches you off guard."
+      },
+      {
+        "num": "05",
+        "question": "How does pickup near Keflavík work?",
+        "answer": "Land, hop on the quick shuttle, and collect your keys minutes from the terminal. You'll get a hands-on walkthrough of the vehicle before you drive off, with studded tyres and gear already fitted for the season."
+      }
+    ],
+    "categories": [
+      {
+        "id": "booking",
+        "label": "Booking & payment",
+        "nums": [
+          "01",
+          "02",
+          "05"
+        ]
+      },
+      {
+        "id": "insurance",
+        "label": "Insurance & cover",
+        "nums": [
+          "02"
+        ]
+      },
+      {
+        "id": "road",
+        "label": "On the road",
+        "nums": [
+          "03",
+          "04"
+        ]
+      }
+    ],
+    "stats": [
+      {
+        "value": "24/7",
+        "label": "Support"
+      },
+      {
+        "value": "<2h",
+        "label": "Avg. reply"
+      },
+      {
+        "value": "5",
+        "label": "Topics"
+      },
+      {
+        "value": "48h",
+        "label": "Free cancel"
+      }
+    ],
+    "helpCard": {
+      "tag": "Need a human?",
+      "title": "Our Reykjavík team answers seven days a week.",
+      "body": "Route changes, pickup questions, or anything before you book — we're on Iceland time.",
+      "phone": "+354 519 1010",
+      "email": "support@myterrabook.is",
+      "buttonLabel": "Send a message",
+      "buttonHref": "/contact"
+    },
+    "quickLinks": [
+      {
+        "label": "Contact us",
+        "href": "/contact",
+        "icon": "chat"
+      },
+      {
+        "label": "Good to Know",
+        "href": "/good-to-know",
+        "icon": "book"
+      },
+      {
+        "label": "Become a host",
+        "href": "/become-a-host",
+        "icon": "home"
+      }
+    ],
+    "emptyState": {
+      "title": "No matches found",
+      "body": "Try a different search term or browse all questions. Our team can help with anything not listed here.",
+      "buttonLabel": "Show all questions"
+    },
+    "cta": {
+      "title": "Still planning the trip?",
+      "subtitle": "",
+      "primaryLabel": "Good to Know",
+      "primaryHref": "/good-to-know",
+      "secondaryLabel": "Contact us",
+      "secondaryHref": "/contact"
+    }
+  },
+  "contact": {
+    "hero": {
+      "eyebrow": "We are here to help",
+      "title": "Contact us",
+      "lead": "Questions about a booking, a listing, or planning your trip? Reach our Reykjavík team."
+    },
+    "phone": "+354 519 1010",
+    "email": "support@myterrabook.is",
+    "address": "MyTerraBook ehf.\nLaugavegur 178 · 105 Reykjavík · Iceland",
+    "hours": "Mon–Sun · 08:00–22:00 GMT",
+    "show_form": true,
+    "formLabels": {
+      "name": "Your name",
+      "email": "Email address",
+      "message": "Message",
+      "submit": "Send message"
+    }
+  },
+  "terms": {
+    "hero": {
+      "eyebrow": "Legal",
+      "title": "Terms & conditions",
+      "lead": "Rental and stay terms for bookings made through MyTerraBook."
+    },
+    "body": "<h2>1. Bookings</h2>\n<p>By completing a booking on MyTerraBook you enter into an agreement with the listed host or fleet partner, facilitated by MyTerraBook ehf. Prices shown include mandatory insurance bundles unless stated otherwise.</p>\n<h2>2. Driver requirements</h2>\n<p>All drivers must hold a valid licence for at least one year and meet the minimum age for the selected vehicle category. Additional drivers must be declared before pickup.</p>\n<h2>3. Cancellations</h2>\n<p>Free cancellation up to 48 hours before pickup or check-in applies on most listings unless a stricter policy is shown on the listing page. Late cancellations may incur fees set by the host.</p>\n<h2>4. Deposits & payments</h2>\n<p>Security deposits are pre-authorised on your card at pickup or check-in. Final charges are settled according to the booking confirmation and any agreed extras.</p>\n<h2>5. Liability</h2>\n<p>Travellers are responsible for fines, tolls, and damage outside covered insurance events. MyTerraBook acts as booking agent unless otherwise stated on your confirmation.</p>"
+  },
+  "privacy": {
+    "hero": {
+      "eyebrow": "Legal",
+      "title": "Privacy policy",
+      "lead": "How we collect, use, and protect your personal data."
+    },
+    "body": "<h2>Data we collect</h2>\n<p>We collect information you provide when creating an account, making a booking, or contacting support — including name, email, phone, payment details, and travel dates.</p>\n<h2>How we use it</h2>\n<p>Your data is used to process bookings, communicate about your trip, prevent fraud, and improve our services. We share necessary details with hosts and payment providers to fulfil your booking.</p>\n<h2>Retention</h2>\n<p>We retain booking records as required by Icelandic law and for legitimate business purposes. You may request access or deletion where applicable by emailing support@myterrabook.is.</p>\n<h2>Cookies</h2>\n<p>See our <a href=\"/cookies\">cookie policy</a> for details on analytics and preference cookies.</p>"
+  },
+  "cookies": {
+    "hero": {
+      "eyebrow": "Legal",
+      "title": "Cookie policy",
+      "lead": "How MyTerraBook uses cookies and similar technologies."
+    },
+    "body": "<h2>Essential cookies</h2>\n<p>Required for sign-in, checkout, and security. These cannot be disabled while using the site.</p>\n<h2>Analytics cookies</h2>\n<p>Help us understand how visitors use the site so we can improve search, listings, and content. You can opt out via your browser settings.</p>\n<h2>Preference cookies</h2>\n<p>Remember language, currency, and session choices to make return visits smoother.</p>\n<h2>Managing cookies</h2>\n<p>Most browsers let you block or delete cookies. Blocking essential cookies may limit booking functionality.</p>"
+  },
+  "become-a-host": {
+    "topbar": {
+      "text": "Iceland hosts earned €2.4M+ last season — list your van or guesthouse today."
+    },
+    "hero": {
+      "title": "Earn from your van or guesthouse",
+      "lead": "Join 1,800+ Iceland hosts. Free to list, you keep 85%.",
+      "submitLabel": "Start hosting"
+    },
+    "proof": {
+      "chipAmount": "€2.4M+",
+      "chipLabel": "paid to hosts last year",
+      "stats": [
+        {
+          "tall": {
+            "name": "Anna Sigurðar",
+            "role": "Campervan host · Reykjavík",
+            "image": "/images/homepage/why-photo.jpg"
+          },
+          "stack": [
+            {
+              "type": "stat",
+              "variant": "clay",
+              "big": "€2.4M+",
+              "desc": "Paid out to MyTerraBook hosts last year."
+            },
+            {
+              "type": "photo",
+              "name": "Evan Brooks",
+              "role": "Guesthouse host",
+              "image": "/images/homepage/stay-hofn.jpg"
+            }
+          ]
+        },
+        {
+          "tall": {
+            "name": "JónÞór",
+            "role": "4×4 host · Akureyri",
+            "image": "/images/homepage/cardcar.jpg"
+          },
+          "stack": [
+            {
+              "type": "photo",
+              "name": "Tom Reyes",
+              "role": "Van host · Selfoss",
+              "image": "/images/homepage/host-van.jpg"
+            },
+            {
+              "type": "stat",
+              "variant": "moss",
+              "big": "1,800+",
+              "desc": "Active hosts around the Ring Road."
+            }
+          ]
+        },
+        {
+          "tall": {
+            "name": "Eva Magnús",
+            "role": "Cabin host · Vík",
+            "image": "/images/homepage/cardcamper.jpg"
+          },
+          "stack": [
+            {
+              "type": "stat",
+              "variant": "ochre",
+              "big": "€1,900",
+              "desc": "Avg. monthly host earnings."
+            },
+            {
+              "type": "photo",
+              "name": "Rob Mendes",
+              "role": "Car host · Höfn",
+              "image": "/images/homepage/cardcar.jpg"
+            }
+          ]
+        },
+        {
+          "tall": {
+            "name": "Aisha Grant",
+            "role": "Guesthouse host · Egilsstaðir",
+            "image": "/images/homepage/stay-hofn.jpg"
+          },
+          "stack": [
+            {
+              "type": "photo",
+              "name": "Ryan Mitchell",
+              "role": "4×4 host · Ísafjörður",
+              "image": "/images/homepage/cardcamper.jpg"
+            },
+            {
+              "type": "stat",
+              "variant": "espresso",
+              "big": "4.9★",
+              "desc": "Average host rating from travellers."
+            }
+          ]
+        }
+      ]
+    },
+    "howTabs": [
+      {
+        "title": "List it",
+        "image": "/images/homepage/cardhouse.jpg",
+        "imageAlt": "A guesthouse listed on MyTerraBook",
+        "caption": "List your van or guesthouse in minutes, ",
+        "muted": "our team reviews every listing so travellers know it's the real thing."
+      },
+      {
+        "title": "Get discovered",
+        "image": "/images/homepage/host-van.jpg",
+        "imageAlt": "A campervan discovered through MyTerraBook",
+        "caption": "Your listing reaches travellers planning Iceland, ",
+        "muted": "featured across 30,000+ trip searches every month."
+      },
+      {
+        "title": "Welcome travellers",
+        "image": "/images/homepage/cardcamper.jpg",
+        "imageAlt": "A traveller picking up a campervan",
+        "caption": "Insurance, verification and 24/7 roadside support are built in, ",
+        "muted": "you just hand over the keys."
+      },
+      {
+        "title": "Get paid",
+        "image": "/images/homepage/cardcar.jpg",
+        "imageAlt": "A car earning income on MyTerraBook",
+        "caption": "Payouts land within 24 hours of pickup, ",
+        "muted": "you keep 85% of every booking, with no hidden fees."
+      }
+    ],
+    "features": [
+      {
+        "title": "Reach travellers",
+        "text": "Featured across 30,000+ monthly Iceland trip searches."
+      },
+      {
+        "title": "Marketing included",
+        "text": "We promote your listing on search, email and social."
+      },
+      {
+        "title": "Quality guests",
+        "text": "Identity-verified travellers with insurance built in."
+      },
+      {
+        "title": "Earnings dashboard",
+        "text": "Track bookings, payouts and calendar in one place."
+      }
+    ],
+    "reviews": {
+      "up": [
+        {
+          "name": "Anna Sigurðar",
+          "role": "Campervan host · Reykjavík",
+          "quote": "\"My van used to sit in the driveway nine months a year. Now it pays for itself twice over and I've met travellers from all over the world.\"",
+          "fill": "#a9d4e6"
+        },
+        {
+          "name": "Eva Magnús",
+          "role": "4×4 host · Vík",
+          "quote": "\"The insurance and gravel cover took away every worry I had about renting out my 4×4. I just approve dates and the payouts arrive.\"",
+          "fill": "#f1d79a"
+        },
+        {
+          "name": "Katrín Helga",
+          "role": "Cabin host · Egilsstaðir",
+          "quote": "\"Travellers leave my cabin spotless because every guest is verified first. For the first time, hosting actually feels safe.\"",
+          "fill": "#cdbbea"
+        }
+      ],
+      "down": [
+        {
+          "name": "Jón Þór",
+          "role": "Guesthouse host · Akureyri",
+          "quote": "\"Listing the guesthouse took one evening. The booking team handles everything, and a real person picks up when I call. That's rare.\"",
+          "fill": "#bcdcab"
+        },
+        {
+          "name": "Bjarni Ólafsson",
+          "role": "Car host · Selfoss",
+          "quote": "\"I added my second car within a week. Summer demand was far higher than I ever expected, and the dashboard made pricing easy.\"",
+          "fill": "#a4ddcd"
+        },
+        {
+          "name": "Ólafur Garðar",
+          "role": "Van host · Höfn",
+          "quote": "\"Payouts land within a day and the dashboard shows me exactly what's booking. No guesswork, no chasing invoices.\"",
+          "fill": "#f4c1a4"
+        }
+      ]
+    },
+    "faqItems": [
+      {
+        "num": "01",
+        "question": "How much can I actually earn?",
+        "answer": "It depends on what you list and when. Campervan hosts earn €1,900/month on average over the season, and the top earners clear €3,200+. We show you a personalised estimate based on real local demand before you publish."
+      },
+      {
+        "num": "02",
+        "question": "What does it cost to list?",
+        "answer": "Listing is completely free. We only take a 15% service fee on confirmed bookings, which covers payments, marketing, insurance and 24/7 support. No subscriptions, no upfront costs, no surprises."
+      },
+      {
+        "num": "03",
+        "question": "Is my vehicle or property insured?",
+        "answer": "Yes. Every booking is covered by comprehensive insurance including Iceland-specific gravel, sand and ash protection. Guests are identity-verified before pickup, and our team is on call around the clock if anything comes up."
+      },
+      {
+        "num": "04",
+        "question": "How and when do I get paid?",
+        "answer": "Payouts are sent to your bank account within 24 hours of each trip starting. You'll see every booking, payout and upcoming reservation in a single earnings dashboard, so you always know what's coming in."
+      },
+      {
+        "num": "05",
+        "question": "Do I have to accept every booking?",
+        "answer": "Never. You control your own calendar and can block any dates you need the vehicle or room for yourself. Turn on instant booking for convenience, or review each request by hand — it's entirely up to you."
+      }
+    ],
+    "cta": {
+      "title": "Ready to earn from your vehicle?",
+      "submitLabel": "List for free"
+    },
+    "footer": {
+      "tagline": "MyTerraBook host programme",
+      "copyright": "© 2026 MyTerraBook ehf."
+    }
+  },
+  "good-to-know": {
+    "header": {
+      "title": "Guides, routes & Iceland tips",
+      "lead": "Practical advice from our Reykjavík team."
+    }
+  },
+  "search-campervan": {
+    "id": "campervan",
+    "route": "/campervans",
+    "hcatMode": "vehicle",
+    "categoryNames": [
+      "Van",
+      "SUV"
+    ],
+    "breadcrumb": "Campervans",
+    "unitSingular": "van",
+    "unitPlural": "vans",
+    "titleLead": "Campervans for the Ring Road",
+    "subtitle": "Every van is winter-checked by our Reykjavík team, with gravel & ash cover and unlimited mileage built into the price you see.",
+    "loadMoreLabel": "Show more vans",
+    "defaultSeats": 5,
+    "defaultSleeps": 2,
+    "defaultBags": 2
+  },
+  "search-car": {
+    "id": "car",
+    "route": "/cars",
+    "hcatMode": "vehicle",
+    "categoryNames": [
+      "Economy",
+      "Compact",
+      "Mid-size",
+      "Luxury",
+      "Electric",
+      "SUV"
+    ],
+    "breadcrumb": "Cars",
+    "unitSingular": "car",
+    "unitPlural": "cars",
+    "titleLead": "Cars for Iceland’s roads",
+    "subtitle": "Compact runabouts to full-size 4×4s — winter tyres, unlimited mileage and local support included in every price.",
+    "loadMoreLabel": "Show more cars",
+    "defaultSeats": 5,
+    "defaultSleeps": 0,
+    "defaultBags": 2
+  },
+  "search-guesthouse": {
+    "id": "guesthouse",
+    "route": "/guesthouses",
+    "hcatMode": "guesthouse",
+    "categoryNames": [],
+    "breadcrumb": "Guesthouses",
+    "unitSingular": "stay",
+    "unitPlural": "stays",
+    "titleLead": "Guesthouses along the route",
+    "subtitle": "Hand-picked stays spaced a comfortable day’s drive apart — book a warm bed when you want a night off the road.",
+    "loadMoreLabel": "Show more stays",
+    "introLocationDefault": "Iceland"
+  },
+  "listing-campervan": {
+    "id": "campervan",
+    "categoryNames": [
+      "Van",
+      "SUV"
+    ],
+    "archiveRoute": "/campervans",
+    "archiveLabel": "See all campervans",
+    "dateStartLabel": "Pick-up",
+    "dateEndLabel": "Drop-off",
+    "rateUnit": "day",
+    "rateLabelDefault": "Daily rate",
+    "bookCta": "Request to Book",
+    "similarTitle": "Similar rentals available on your dates",
+    "guestPhotosTitle": "Guest photos",
+    "reviewsTitle": "Guest reviews",
+    "bookingModalTitle": "Booking this camper in 4 steps",
+    "bookingModalLead": "Every reservation on MyTerraBook is reviewed by the host before it's confirmed — here's exactly what happens after you hit request.",
+    "tabs": [
+      {
+        "id": "details",
+        "label": "Details"
+      },
+      {
+        "id": "amenities",
+        "label": "Amenities"
+      },
+      {
+        "id": "conditions",
+        "label": "Rental conditions"
+      },
+      {
+        "id": "sleeping",
+        "label": "Sleeping arrangement"
+      },
+      {
+        "id": "addons",
+        "label": "Host add-ons"
+      }
+    ],
+    "trustPoints": [
+      {
+        "html": "<b>Comprehensive insurance</b> and 24/7 roadside assistance"
+      },
+      {
+        "html": "Affordable security deposit with our <b>Excess Insurance</b>"
+      },
+      {
+        "html": "Pay in instalments via a trusted third-party provider"
+      },
+      {
+        "html": "<b>Flexible cancellation</b> in case your plans change"
+      }
+    ],
+    "bookingSteps": [
+      {
+        "title": "Choose your dates & send a request",
+        "text": "Pick your pick-up and drop-off dates and add any extras. Sending a request doesn't charge your card yet."
+      },
+      {
+        "title": "The host confirms availability",
+        "text": "Your host reviews your trip and approves it — usually within an hour. You'll get a message and email the moment it's accepted.",
+        "tag": "Avg. reply under 1 hour"
+      },
+      {
+        "title": "Pay securely & get confirmed",
+        "text": "Once approved, pay in full or in instalments via our trusted payment provider. Your insurance and deposit terms are locked in.",
+        "tag": "Free cancellation up to 48h"
+      },
+      {
+        "title": "Pick up & hit the Ring Road",
+        "text": "Meet your host for a full walkthrough of every system, then you're off. Support is a call away the whole trip."
+      }
+    ],
+    "faqLead": "Everything you need to know before you book this camper. Still unsure? Your host usually replies within the hour."
+  },
+  "listing-car": {
+    "id": "car",
+    "categoryNames": [
+      "Economy",
+      "Compact",
+      "Mid-size",
+      "Luxury",
+      "Electric",
+      "SUV"
+    ],
+    "archiveRoute": "/cars",
+    "archiveLabel": "See all cars",
+    "dateStartLabel": "Pick-up",
+    "dateEndLabel": "Drop-off",
+    "rateUnit": "day",
+    "rateLabelDefault": "Daily rate",
+    "bookCta": "Request to Book",
+    "similarTitle": "Similar cars available on your dates",
+    "guestPhotosTitle": "Guest photos",
+    "reviewsTitle": "Guest reviews",
+    "bookingModalTitle": "Booking this car in 4 steps",
+    "bookingModalLead": "Every reservation on MyTerraBook is reviewed before it's confirmed — here's what happens after you request.",
+    "tabs": [
+      {
+        "id": "details",
+        "label": "Details"
+      },
+      {
+        "id": "amenities",
+        "label": "Features"
+      },
+      {
+        "id": "conditions",
+        "label": "Rental conditions"
+      },
+      {
+        "id": "addons",
+        "label": "Add-ons"
+      }
+    ],
+    "trustPoints": [
+      {
+        "html": "<b>Collision damage waiver</b> included on every booking"
+      },
+      {
+        "html": "24/7 roadside assistance across Iceland"
+      },
+      {
+        "html": "Pay in instalments via a trusted third-party provider"
+      },
+      {
+        "html": "<b>Free cancellation</b> up to 48 hours before pick-up"
+      }
+    ],
+    "bookingSteps": [
+      {
+        "title": "Choose your dates & send a request",
+        "text": "Select pick-up and drop-off times and locations. Your card isn't charged until the booking is confirmed."
+      },
+      {
+        "title": "We confirm availability",
+        "text": "Our team checks the vehicle for your dates and confirms — usually within an hour."
+      },
+      {
+        "title": "Pay securely",
+        "text": "Complete payment online or in instalments. Insurance and deposit terms are locked in."
+      },
+      {
+        "title": "Collect your car",
+        "text": "Pick up at your chosen location with a full handover of the vehicle and paperwork."
+      }
+    ],
+    "faqLead": "Everything you need to know before you rent this car. Questions? Our Reykjavík team is here to help."
+  },
+  "listing-guesthouse": {
+    "id": "guesthouse",
+    "categoryNames": [],
+    "archiveRoute": "/guesthouses",
+    "archiveLabel": "See all guesthouses",
+    "dateStartLabel": "Check-in",
+    "dateEndLabel": "Check-out",
+    "rateUnit": "night",
+    "rateLabelDefault": "Nightly rate",
+    "bookCta": "Request to Book",
+    "similarTitle": "Similar stays on your dates",
+    "guestPhotosTitle": "Guest photos",
+    "reviewsTitle": "Guest reviews",
+    "bookingModalTitle": "Booking this stay in 4 steps",
+    "bookingModalLead": "Every stay on MyTerraBook is confirmed by the host before you're charged — here's how it works.",
+    "tabs": [
+      {
+        "id": "details",
+        "label": "Details"
+      },
+      {
+        "id": "amenities",
+        "label": "Amenities"
+      },
+      {
+        "id": "conditions",
+        "label": "House rules"
+      },
+      {
+        "id": "sleeping",
+        "label": "Rooms & beds"
+      },
+      {
+        "id": "addons",
+        "label": "Extras"
+      }
+    ],
+    "trustPoints": [
+      {
+        "html": "<b>Verified hosts</b> along the Ring Road route"
+      },
+      {
+        "html": "Secure online payment — no hidden fees at check-in"
+      },
+      {
+        "html": "Flexible cancellation on most stays"
+      },
+      {
+        "html": "Local support team based in <b>Reykjavík</b>"
+      }
+    ],
+    "bookingSteps": [
+      {
+        "title": "Choose your dates & send a request",
+        "text": "Select check-in and check-out dates. Sending a request does not charge your card yet."
+      },
+      {
+        "title": "The host confirms",
+        "text": "Your host reviews your stay and accepts — most replies within a few hours."
+      },
+      {
+        "title": "Pay securely",
+        "text": "Pay in full or in instalments once your stay is approved."
+      },
+      {
+        "title": "Check in & enjoy",
+        "text": "Arrive at the agreed time; your host will show you in and answer any questions."
+      }
+    ],
+    "faqLead": "Everything you need to know before you book this guesthouse. Message the host with any questions."
+  },
+  "checkout": {
+    "stepperSteps": [
+      {
+        "num": 1,
+        "sk": "Step 1",
+        "sl": "Trip & times"
+      },
+      {
+        "num": 2,
+        "sk": "Step 2",
+        "sl": "Extras & cover"
+      },
+      {
+        "num": 3,
+        "sk": "Step 3",
+        "sl": "Your details"
+      },
+      {
+        "num": 4,
+        "sk": "Step 4",
+        "sl": "Payment"
+      }
+    ],
+    "prepayPercent": 20,
+    "labels": {
+      "tripTitle": "Your trip",
+      "extrasTitle": "Extras & cover",
+      "detailsTitle": "Your details",
+      "paymentTitle": "Payment"
+    }
+  },
+  "auth-login": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to manage your bookings.",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "rememberLabel": "Remember me",
+    "submitLabel": "Sign in",
+    "registerPrompt": "New here?",
+    "registerLink": "Create an account"
+  },
+  "auth-register": {
+    "title": "Create your account",
+    "subtitle": "Book across Iceland.",
+    "submitLabel": "Create account",
+    "loginPrompt": "Already have an account?",
+    "loginLink": "Sign in"
+  },
+  "auth-host-register": {
+    "title": "Host registration",
+    "subtitle": "List your van or guesthouse.",
+    "submitLabel": "Register as host"
+  },
+  "user-dashboard": {
+    "title": "My account",
+    "sidebarLinks": [
+      {
+        "id": "bookings",
+        "label": "My Bookings"
+      },
+      {
+        "id": "stays",
+        "label": "My Stays"
+      },
+      {
+        "id": "profile",
+        "label": "Profile"
+      },
+      {
+        "id": "settings",
+        "label": "Settings"
+      }
+    ],
+    "emptyBookings": "No bookings yet",
+    "emptyStays": "No stays yet"
+  },
+  "admin-dashboard": {
+    "title": "Admin dashboard",
+    "statsLabels": {
+      "orders": "Total orders",
+      "revenue": "Revenue",
+      "activeRentals": "Active rentals"
+    },
+    "filamentLink": "Open admin panel"
+  },
+  "host-panel": {
+    "eyebrow": "Host panel",
+    "sidebarTitle": "Manage",
+    "navItems": [
+      {
+        "to": "/host",
+        "label": "Dashboard"
+      },
+      {
+        "to": "/host/guesthouses",
+        "label": "Guesthouses"
+      },
+      {
+        "to": "/host/cars",
+        "label": "Cars & vans"
+      },
+      {
+        "to": "/host/bookings",
+        "label": "Bookings"
+      },
+      {
+        "to": "/host/settings",
+        "label": "Settings"
+      }
+    ],
+    "signOutLabel": "Sign out"
+  },
+  "newsletter-unsubscribe": {
+    "title": "Newsletter",
+    "successMessage": "You have been unsubscribed.",
+    "errorMessage": "Invalid link.",
+    "backLabel": "Back to homepage"
+  },
+  "under-construction": {
+    "badge": "Coming soon",
+    "title": "MyTerraBook is almost ready",
+    "subtitle": "Finishing touches on Iceland's road-trip platform.",
+    "hint": "Admins can preview the site.",
+    "footer": "© 2026 MyTerraBook ehf."
+  }
+}

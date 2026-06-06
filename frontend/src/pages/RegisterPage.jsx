@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Car } from 'lucide-react'
+import SiteLogo from '../components/branding/SiteLogo'
 import { useAuth } from '../context/AuthContext'
+import { usePageContent } from '../context/SiteContentContext'
 import { useToast } from '../context/ToastContext'
+import '../styles/auth-pages.css'
 
 export default function RegisterPage() {
+  const { page: copy } = usePageContent('auth-register')
   const { registerAccount } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -51,57 +54,47 @@ export default function RegisterPage() {
     }
   }
 
+  const fields = [
+    { id: 'name', label: 'Full name', type: 'text', key: 'name' },
+    { id: 'email', label: 'Email', type: 'email', key: 'email' },
+    { id: 'phone', label: 'Phone (optional)', type: 'tel', key: 'phone' },
+    { id: 'password', label: 'Password', type: 'password', key: 'password' },
+    { id: 'password_confirmation', label: 'Confirm password', type: 'password', key: 'password_confirmation' },
+  ]
+
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-slate-50 px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2 text-brand-950">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-white">
-              <Car className="h-5 w-5" aria-hidden />
-            </div>
-            <span className="text-xl font-bold">MyTerraBook</span>
-          </Link>
-          <h1 className="mt-6 text-2xl font-bold text-brand-950">Create an account</h1>
-          <p className="mt-2 text-sm text-slate-500">Join MyTerraBook to manage your rentals</p>
+    <div className="auth-page">
+      <div className="wrap auth-shell">
+        <div className="auth-intro">
+          <SiteLogo variant="auth" className="logo-text" />
+          <h1>{copy.title ?? 'Create an account'}</h1>
+          <p>{copy.subtitle ?? 'Book across Iceland in one place.'}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-card">
-          {errors.form && (
-            <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{errors.form}</div>
-          )}
+        <form onSubmit={handleSubmit} className="auth-card">
+          {errors.form && <div className="auth-error">{errors.form}</div>}
 
-          <div className="space-y-4">
-            {[
-              { id: 'name', label: 'Full name', type: 'text', key: 'name' },
-              { id: 'email', label: 'Email', type: 'email', key: 'email' },
-              { id: 'phone', label: 'Phone (optional)', type: 'tel', key: 'phone' },
-              { id: 'password', label: 'Password', type: 'password', key: 'password' },
-              { id: 'password_confirmation', label: 'Confirm password', type: 'password', key: 'password_confirmation' },
-            ].map(({ id, label, type, key }) => (
-              <div key={id}>
-                <label className="label-field" htmlFor={id}>{label}</label>
-                <input
-                  id={id}
-                  type={type}
-                  className={`input-field ${errors[key] ? 'input-field-error' : ''}`}
-                  value={form[key]}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                />
-                {errors[key] && <p className="mt-1 text-xs text-red-600">{errors[key]}</p>}
-              </div>
-            ))}
-          </div>
+          {fields.map(({ id, label, type, key }) => (
+            <div className="auth-field" key={id}>
+              <label htmlFor={id}>{label}</label>
+              <input
+                id={id}
+                type={type}
+                value={form[key]}
+                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+              />
+              {errors[key] && <p className="field-error">{errors[key]}</p>}
+            </div>
+          ))}
 
-          <button type="submit" className="btn-primary mt-6 w-full py-3" disabled={loading}>
-            {loading ? 'Creating account…' : 'Create account'}
+          <button type="submit" className="auth-submit" disabled={loading}>
+            {loading ? 'Creating account…' : (copy.submitLabel ?? 'Create account')}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-accent hover:text-accent-hover">
-            Sign in
-          </Link>
+        <p className="auth-switch">
+          {copy.loginPrompt ?? 'Already have an account?'}{' '}
+          <Link to="/login">{copy.loginLink ?? 'Sign in'}</Link>
         </p>
       </div>
     </div>

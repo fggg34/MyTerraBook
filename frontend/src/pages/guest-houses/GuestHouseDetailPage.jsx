@@ -67,19 +67,18 @@ export default function GuestHouseDetailPage() {
   }
 
   const bookNow = () => {
-    if (!quote) {
-      fetchQuote()
+    if (!checkIn || !checkOut) {
+      toast('Select check-in and check-out dates', 'error')
       return
     }
-    navigate('/guest-houses/checkout', {
-      state: {
-        house,
-        quote,
-        check_in: checkIn.toISOString().slice(0, 10),
-        check_out: checkOut.toISOString().slice(0, 10),
-        guests_count: guests,
-      },
+    const params = new URLSearchParams({
+      type: 'guesthouse',
+      slug: house.slug,
+      check_in: checkIn.toISOString().slice(0, 10),
+      check_out: checkOut.toISOString().slice(0, 10),
+      guests_count: String(guests),
     })
+    navigate(`/checkout?${params}`)
   }
 
   if (loading) {

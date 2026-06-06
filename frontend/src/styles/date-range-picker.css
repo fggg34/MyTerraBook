@@ -1,0 +1,418 @@
+.date-range-picker {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.date-range-picker .date-field {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 13px;
+  padding: 13px 16px;
+  cursor: pointer;
+  background: #fff;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: var(--sans);
+}
+
+.date-range-picker .date-field:hover {
+  border-color: #c9d3e2;
+}
+
+.date-range-picker .date-field.open {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(52, 98, 158, 0.12);
+}
+
+.date-range-picker .date-field svg {
+  width: 20px;
+  height: 20px;
+  color: var(--blue);
+  flex: 0 0 auto;
+}
+
+.date-range-picker .df-segs {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.date-range-picker .df-seg {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.date-range-picker .df-seg.right {
+  padding-left: 14px;
+}
+
+.date-range-picker .df-div {
+  width: 1px;
+  height: 30px;
+  background: var(--line);
+  flex: 0 0 auto;
+}
+
+.date-range-picker .df-lab {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.date-range-picker .df-val {
+  font-size: 15px;
+  color: var(--slate-light);
+}
+
+.date-range-picker .df-val.set {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.date-range-picker.embedded .date-field {
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.date-range-picker.embedded .date-field:hover {
+  border-color: transparent;
+}
+
+.date-range-picker.embedded .date-field.open {
+  border: none;
+  box-shadow: none;
+}
+
+/* ~25% shorter — homepage hero search fields */
+.date-range-picker.compact .date-field {
+  gap: 9px;
+}
+
+.date-range-picker.compact .date-field svg {
+  width: 15px;
+  height: 15px;
+}
+
+.date-range-picker.compact .df-div {
+  height: 23px;
+}
+
+.date-range-picker.compact .df-seg.right {
+  padding-left: 10px;
+}
+
+.date-range-picker.compact .df-lab {
+  font-size: 8px;
+}
+
+.date-range-picker.compact .df-val {
+  font-size: 11px;
+}
+
+.date-range-picker.compact .cal-pop,
+.date-range-picker.cal-pop.compact {
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.date-range-picker.compact .cal-head {
+  margin-bottom: 8px;
+}
+
+.date-range-picker.compact .cal-title {
+  font-size: 12px;
+}
+
+.date-range-picker.compact .cal-nav {
+  width: 24px;
+  height: 24px;
+}
+
+.date-range-picker.compact .cal-nav svg {
+  width: 12px;
+  height: 12px;
+}
+
+.date-range-picker.compact .cal-dows span {
+  font-size: 8px;
+  padding: 2px 0;
+}
+
+.date-range-picker.compact .cal-cell {
+  height: 30px;
+  aspect-ratio: auto;
+  font-size: 10px;
+  border-radius: 7px;
+}
+
+.date-range-picker.compact .cal-cell.today::after {
+  bottom: 4px;
+  width: 3px;
+  height: 3px;
+}
+
+.date-range-picker.compact .cal-foot {
+  margin-top: 9px;
+  padding-top: 9px;
+  gap: 8px;
+}
+
+.date-range-picker.compact .cal-nights {
+  font-size: 10px;
+}
+
+.date-range-picker.compact .cal-clear {
+  font-size: 10px;
+  padding: 3px;
+}
+
+.date-range-picker.compact .cal-done {
+  font-size: 10px;
+  padding: 6px 12px;
+  border-radius: 7px;
+}
+
+.date-range-picker .cal-pop,
+.date-range-picker.cal-pop {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: auto;
+  width: 340px;
+  max-width: min(340px, calc(100vw - 32px));
+  z-index: 1200;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 26px 60px -22px rgba(15, 32, 54, 0.55);
+  padding: 16px;
+  display: none;
+}
+
+.date-range-picker .cal-pop.open,
+.date-range-picker.cal-pop.open {
+  display: block;
+  animation: drpCalIn 0.18s ease;
+}
+
+.date-range-picker .cal-pop.fixed,
+.date-range-picker.cal-pop.fixed {
+  position: fixed;
+  right: auto;
+}
+
+@keyframes drpCalIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.date-range-picker .cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.date-range-picker .cal-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--navy);
+}
+
+.date-range-picker .cal-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  color: var(--navy);
+  display: grid;
+  place-items: center;
+  transition: 0.15s;
+}
+
+.date-range-picker .cal-nav:hover {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+.date-range-picker .cal-nav:disabled {
+  opacity: 0.32;
+  cursor: default;
+  background: #fff;
+  color: var(--navy);
+  border-color: var(--line);
+}
+
+.date-range-picker .cal-nav svg {
+  width: 16px;
+  height: 16px;
+}
+
+.date-range-picker .cal-dows {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 3px;
+}
+
+.date-range-picker .cal-dows span {
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--slate-light);
+  padding: 3px 0;
+}
+
+.date-range-picker .cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.date-range-picker .cal-cell {
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 9px;
+  position: relative;
+  transition: background 0.12s, color 0.12s;
+  font-family: var(--sans);
+}
+
+.date-range-picker .cal-cell.empty {
+  visibility: hidden;
+  cursor: default;
+}
+
+.date-range-picker .cal-cell.past,
+.date-range-picker .cal-cell.disabled {
+  color: #c5ccd8;
+  cursor: default;
+}
+
+.date-range-picker .cal-cell.today::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.date-range-picker .cal-cell:not(.past):not(.disabled):not(.sel):not(.inrange):hover {
+  background: var(--blue-soft);
+}
+
+.date-range-picker .cal-cell.inrange {
+  background: #dfe8f5;
+  color: var(--blue);
+  border-radius: 0;
+}
+
+.date-range-picker .cal-cell.sel {
+  background: var(--blue);
+  color: #fff;
+  z-index: 1;
+}
+
+.date-range-picker .cal-cell.range-start {
+  border-radius: 9px 0 0 9px;
+}
+
+.date-range-picker .cal-cell.range-end {
+  border-radius: 0 9px 9px 0;
+}
+
+.date-range-picker .cal-cell.sel.today::after {
+  background: #fff;
+}
+
+.date-range-picker .cal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.date-range-picker .cal-nights {
+  font-size: 13.5px;
+  color: var(--navy);
+}
+
+.date-range-picker .cal-nights b {
+  font-weight: 700;
+}
+
+.date-range-picker .cal-nights span {
+  color: var(--slate);
+  font-weight: 500;
+}
+
+.date-range-picker .cal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-range-picker .cal-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 4px;
+}
+
+.date-range-picker .cal-clear:hover {
+  color: var(--navy);
+}
+
+.date-range-picker .cal-done {
+  background: var(--navy);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 9px;
+  padding: 8px 16px;
+  transition: 0.15s;
+  font-family: var(--sans);
+}
+
+.date-range-picker .cal-done:hover {
+  background: #1b2f4b;
+}

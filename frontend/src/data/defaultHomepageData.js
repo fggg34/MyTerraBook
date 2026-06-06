@@ -32,9 +32,8 @@ export const defaultHomepageData = {
     navLinks: [
       { label: 'Campervan', href: '/campervans' },
       { label: 'Car', href: '/cars' },
-      { label: 'Guesthouse', href: '#guesthouse' },
-      { label: 'Discover Iceland', href: '#discover' },
-      { label: 'Good to Know', href: '#faq' },
+      { label: 'Guesthouse', href: '/guesthouses' },
+      { label: 'Good to Know', href: '/good-to-know' },
     ],
     ctaLabel: 'Become a host',
     ctaHref: '/become-a-host',
@@ -81,7 +80,7 @@ export const defaultHomepageData = {
         listingCount: '184 listings · from €89/night',
         name: 'Campervans',
         tagline: 'Sleep where you drive.',
-        href: '#campervan',
+        href: '/campervans',
       },
       {
         image: IMG.cardCar,
@@ -97,7 +96,7 @@ export const defaultHomepageData = {
         listingCount: '73 listings · from €110/night',
         name: 'Guesthouses',
         tagline: 'Warm beds between drives.',
-        href: '#guesthouse',
+        href: '/guesthouses',
       },
     ],
   },
@@ -157,7 +156,7 @@ export const defaultHomepageData = {
   picksSection: {
     heading: 'Hand-picked for Iceland.',
     tabs: [
-      { id: 'camper', label: 'Campervans', allLabel: 'See all campervans', allHref: '#' },
+      { id: 'camper', label: 'Campervans', allLabel: 'See all campervans', allHref: '/campervans' },
       { id: 'car', label: 'Cars', allLabel: 'See all cars', allHref: '/cars' },
     ],
     items: {
@@ -279,13 +278,6 @@ export const defaultHomepageData = {
       ],
     },
   },
-  guestHousesHighlight: {
-    title: 'Guest houses & stays',
-    subtitle: 'Hand-picked homes across Iceland — from cosy studios to private villas.',
-    featured_slugs: ['northern-lights-villa', 'harbour-view-apartment', 'moss-cottage'],
-    ctaLabel: 'View all stays',
-    ctaHref: '/guest-houses',
-  },
   howSection: {
     heading: 'From airport to open road in three steps.',
     steps: [
@@ -323,7 +315,7 @@ export const defaultHomepageData = {
     subtitle:
       "Hand-picked guesthouses spaced a comfortable day's drive apart — so the only thing left to plan is where to watch the sky.",
     allLabel: 'Browse all guesthouses',
-    allHref: '#guesthouse',
+    allHref: '/guesthouses',
     cards: [
       {
         name: 'Höfn Harbour House',
@@ -349,12 +341,13 @@ export const defaultHomepageData = {
     ],
   },
   blogSection: {
-    heading: 'Explore Iceland',
-    subtitle: 'Guides, routes & tips — tours coming later',
+    heading: 'Good to Know',
+    subtitle: 'Guides, routes & practical Iceland tips from our Reykjavík team',
     allLabel: 'View all',
-    allHref: '#discover',
+    allHref: '/good-to-know',
     posts: [
       {
+        slug: 'driving-the-ring-road-in-7-days',
         featured: true,
         title: 'Driving the Ring Road in 7 days',
         description:
@@ -365,23 +358,27 @@ export const defaultHomepageData = {
         imageAlt: 'Campervan on the Ring Road',
       },
       {
+        slug: 'golden-circle-in-a-day',
         kicker: 'Day trip',
         title: 'Golden Circle in a day',
         image: IMG.stayHofn,
         imageAlt: 'Golden Circle',
       },
       {
+        slug: 'do-you-need-a-4x4',
         kicker: 'Gear',
         title: 'Do you need a 4×4?',
         image: IMG.whyPhoto,
         imageAlt: '4x4 camper on gravel',
       },
       {
+        slug: 'chasing-the-northern-lights',
         kicker: 'Nature',
         title: 'Chasing the northern lights',
         aurora: true,
       },
       {
+        slug: 'campervan-vs-guesthouse',
         kicker: 'Compare',
         title: 'Campervan vs guesthouse',
         image: IMG.hostVan,
@@ -397,6 +394,7 @@ export const defaultHomepageData = {
     earnNote: 'Top campervan hosts clear €3,200+. You keep 85% — we handle bookings, payments and insurance.',
     points: ['Free to list', 'You set the calendar', 'Insurance included'],
     primaryLabel: 'Become a host',
+    primaryHref: '/become-a-host',
     secondaryLabel: 'See how hosting works',
     secondaryHref: '/become-a-host',
     houseImage: IMG.hostVan,
@@ -511,51 +509,31 @@ export const defaultHomepageData = {
   },
   footer: {
     tagline:
-      "Iceland's locally-run platform for campervans, 4×4s, cars and guesthouses — one booking, one team in Reykjavík behind it.",
-    address: 'MyTerraBook ehf.\nLaugavegur 178 · 105 Reykjavík · Iceland\nKennitala 591284-0119 · VSK 142819',
+      'Campervans, cars and guesthouses across Iceland — booked in minutes, hosted with care.',
+    address: 'MyTerraBook ehf. · Laugavegur 178 · 105 Reykjavík · Iceland',
     columns: [
       {
-        title: 'Rent',
+        title: 'Book',
         links: [
-          { label: 'Campervans', href: '#' },
-          { label: '4×4 SUVs', href: '#' },
+          { label: 'Campervans', href: '/campervans' },
           { label: 'Cars', href: '/cars' },
-          { label: 'Guesthouses', href: '#' },
-          { label: 'Long stays', href: '#', badge: 'NEW' },
-          { label: 'Gift cards', href: '#' },
-        ],
-      },
-      {
-        title: 'Plan',
-        links: [
-          { label: 'Ring Road guide', href: '#' },
-          { label: 'Driving in Iceland', href: '#' },
-          { label: 'Road conditions', href: '#' },
-          { label: 'Weather & aurora', href: '#' },
-          { label: 'Itineraries', href: '#' },
-          { label: 'Travel blog', href: '#' },
-        ],
-      },
-      {
-        title: 'Host',
-        links: [
-          { label: 'Become a host', href: '/become-a-host' },
-          { label: 'Host hub', href: '#' },
-          { label: 'Hosting fees', href: '#' },
-          { label: 'Insurance', href: '#' },
-          { label: 'Host stories', href: '#' },
-          { label: 'Refer a host', href: '#' },
+          { label: 'Guesthouses', href: '/guesthouses' },
         ],
       },
       {
         title: 'Company',
         links: [
-          { label: 'About us', href: '#' },
-          { label: 'Sustainability', href: '#' },
-          { label: 'Press', href: '#' },
-          { label: 'Careers', href: '#' },
-          { label: 'Partnerships', href: '#' },
-          { label: 'Help center', href: '#' },
+          { label: 'Good to Know', href: '/good-to-know' },
+          { label: 'About us', href: '/about' },
+          { label: 'FAQs', href: '/faq' },
+          { label: 'Contact', href: '/contact' },
+        ],
+      },
+      {
+        title: 'Account',
+        links: [
+          { label: 'Sign in', href: '/login' },
+          { label: 'Create account', href: '/register' },
         ],
       },
     ],
@@ -563,11 +541,10 @@ export const defaultHomepageData = {
     locale: 'English (UK)',
     currency: 'EUR €',
     legal: [
-      { label: 'Terms', href: '#' },
-      { label: 'Privacy', href: '#' },
-      { label: 'Cookies', href: '#' },
-      { label: 'Accessibility', href: '#' },
-      { label: 'Sitemap', href: '#' },
+      { label: 'Terms', href: '/terms' },
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Cookies', href: '/cookies' },
     ],
+    social: [],
   },
 }

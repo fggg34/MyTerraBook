@@ -70,8 +70,13 @@ class GuestHouseController extends Controller
     public function show(string $slug): JsonResponse
     {
         $house = GuestHouse::query()
-            ->where('slug', $slug)
             ->where('status', GuestHouseStatus::Active)
+            ->where(function ($query) use ($slug) {
+                $query->where('slug', $slug);
+                if (ctype_digit($slug)) {
+                    $query->orWhere('id', (int) $slug);
+                }
+            })
             ->with([
                 'images',
                 'amenities',

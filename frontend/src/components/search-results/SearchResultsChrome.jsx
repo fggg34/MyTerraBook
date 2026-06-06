@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { QUICK_FILTERS, SORT_OPTIONS, VEHICLE_TYPES } from '../../data/searchResultsConfig'
 
 const CAT_ICONS = {
@@ -20,12 +20,19 @@ const CAT_ICONS = {
       <circle cx="20" cy="12.5" r="2.4" />
     </svg>
   ),
+  house: (
+    <svg viewBox="0 0 24 22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 20V9l8-6 8 6v11" />
+      <path d="M2 20h20" />
+      <rect x="9.5" y="12" width="5" height="8" />
+    </svg>
+  ),
 }
 
-function formatDateRange(pickupAt, dropoffAt) {
-  if (!pickupAt || !dropoffAt) return 'Select dates'
-  const p = new Date(pickupAt)
-  const d = new Date(dropoffAt)
+function formatDateRange(start, end) {
+  if (!start || !end) return 'Select dates'
+  const p = new Date(start)
+  const d = new Date(end)
   if (Number.isNaN(p.getTime()) || Number.isNaN(d.getTime())) return 'Select dates'
   const fmt = (dt) => dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
   return `${fmt(p)} – ${fmt(d)}`
@@ -42,19 +49,28 @@ export default function SearchResultsChrome({
   sort,
   setSort,
   sortLabel,
+  sortOptions = SORT_OPTIONS,
+  quickFilterOptions = QUICK_FILTERS,
   quickFilters,
   toggleQuick,
   clearFilters,
   hasActiveFilters,
   filters,
   setFilters,
+  guestsLabel,
 }) {
   const navigate = useNavigate()
   const [sortOpen, setSortOpen] = useState(false)
   const [openPop, setOpenPop] = useState(null)
+  const isGuesthouse = vehicleType === 'guesthouse'
 
-  const dateLabel = useMemo(() => formatDateRange(query.pickup_at, query.dropoff_at), [query.pickup_at, query.dropoff_at])
+  const dateLabel = useMemo(() => {
+    if (isGuesthouse) return formatDateRange(query.check_in, query.check_out)
+    return formatDateRange(query.pickup_at, query.dropoff_at)
+  }, [isGuesthouse, query.check_in, query.check_out, query.pickup_at, query.dropoff_at])
+
   const drivers = query.drivers || '2'
+  const guests = guestsLabel || query.guests || '2'
 
   const switchVehicle = (type) => {
     const target = VEHICLE_TYPES[type]?.route || '/campervans'
@@ -96,57 +112,95 @@ export default function SearchResultsChrome({
               {CAT_ICONS.car}
               Cars
             </button>
-            <button className="hcat" type="button" data-cat="house" onClick={() => navigate('/#guesthouse')}>
-              <svg viewBox="0 0 24 22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 20V9l8-6 8 6v11" />
-                <path d="M2 20h20" />
-                <rect x="9.5" y="12" width="5" height="8" />
-              </svg>
+            <button
+              className={`hcat ${isGuesthouse ? 'active' : ''}`}
+              type="button"
+              data-cat="house"
+              onClick={() => navigate('/guesthouses')}
+            >
+              {CAT_ICONS.house}
               Guesthouses
             </button>
           </div>
 
           <div className="hsearch-bar">
-            <div className="hfield" data-mode="vehicle">
-              <span className="hf-label">Pick-up location</span>
-              <span className="hf-val">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
-                  <circle cx="12" cy="10" r="2.5" />
-                </svg>
-                {pickupLabel}
-              </span>
-            </div>
-            <div className="hfield" data-mode="vehicle">
-              <span className="hf-label">Drop-off location</span>
-              <span className={`hf-val ${dropoffLabel === 'Same as pick-up' ? 'muted' : ''}`}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
-                  <circle cx="12" cy="10" r="2.5" />
-                </svg>
-                {dropoffLabel}
-              </span>
-            </div>
-            <div className="hfield">
-              <span className="hf-label">Pick-up → Drop-off</span>
-              <span className="hf-val">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
-                  <path d="M3 9h18M8 2.5v4M16 2.5v4" />
-                </svg>
-                {dateLabel}
-              </span>
-            </div>
-            <div className="hfield ppl">
-              <span className="hf-label">Drivers</span>
-              <span className="hf-val">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
-                </svg>
-                {drivers}
-              </span>
-            </div>
+            {isGuesthouse ? (
+              <>
+                <div className="hfield">
+                  <span className="hf-label">City or area</span>
+                  <span className="hf-val">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
+                      <circle cx="12" cy="10" r="2.5" />
+                    </svg>
+                    {pickupLabel}
+                  </span>
+                </div>
+                <div className="hfield">
+                  <span className="hf-label">Check-in → Check-out</span>
+                  <span className="hf-val">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
+                      <path d="M3 9h18M8 2.5v4M16 2.5v4" />
+                    </svg>
+                    {dropoffLabel}
+                  </span>
+                </div>
+                <div className="hfield ppl">
+                  <span className="hf-label">Guests</span>
+                  <span className="hf-val">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="8" r="4" />
+                      <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+                    </svg>
+                    {guests}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="hfield" data-mode="vehicle">
+                  <span className="hf-label">Pick-up location</span>
+                  <span className="hf-val">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
+                      <circle cx="12" cy="10" r="2.5" />
+                    </svg>
+                    {pickupLabel}
+                  </span>
+                </div>
+                <div className="hfield" data-mode="vehicle">
+                  <span className="hf-label">Drop-off location</span>
+                  <span className={`hf-val ${dropoffLabel === 'Same as pick-up' ? 'muted' : ''}`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
+                      <circle cx="12" cy="10" r="2.5" />
+                    </svg>
+                    {dropoffLabel}
+                  </span>
+                </div>
+                <div className="hfield">
+                  <span className="hf-label">Pick-up → Drop-off</span>
+                  <span className="hf-val">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
+                      <path d="M3 9h18M8 2.5v4M16 2.5v4" />
+                    </svg>
+                    {dateLabel}
+                  </span>
+                </div>
+                <div className="hfield ppl">
+                  <span className="hf-label">Drivers</span>
+                  <span className="hf-val">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="8" r="4" />
+                      <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+                    </svg>
+                    {drivers}
+                  </span>
+                </div>
+              </>
+            )}
             <button className="hsearch-btn" type="button" onClick={onUpdate}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="7" />
@@ -171,18 +225,20 @@ export default function SearchResultsChrome({
                 <path d="m6 9 6 6 6-6" />
               </svg>
             </button>
-            <button
-              className={`chip ${openPop === 'trans' ? 'open' : ''} ${filters.transmission ? 'active' : ''}`}
-              type="button"
-              onClick={() => setOpenPop(openPop === 'trans' ? null : 'trans')}
-            >
-              Transmission
-              <svg className="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
+            {!isGuesthouse && (
+              <button
+                className={`chip ${openPop === 'trans' ? 'open' : ''} ${filters.transmission ? 'active' : ''}`}
+                type="button"
+                onClick={() => setOpenPop(openPop === 'trans' ? null : 'trans')}
+              >
+                Transmission
+                <svg className="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            )}
             <span className="chip-div" />
-            {QUICK_FILTERS.map((qf) => (
+            {quickFilterOptions.map((qf) => (
               <button
                 key={qf.id}
                 className={`chip quick ${quickFilters.includes(qf.id) ? 'active' : ''}`}
@@ -210,7 +266,7 @@ export default function SearchResultsChrome({
                 </svg>
               </button>
               <div className={`sortmenu ${sortOpen ? 'show' : ''}`} id="sortMenu">
-                {SORT_OPTIONS.map((opt) => (
+                {sortOptions.map((opt) => (
                   <button
                     key={opt.id}
                     type="button"
@@ -232,7 +288,7 @@ export default function SearchResultsChrome({
 
       {openPop === 'price' && (
         <div className="fpop show" style={{ position: 'absolute', zIndex: 70, left: 40, top: '100%' }}>
-          <h5>Max price per day</h5>
+          <h5>Max price per {isGuesthouse ? 'night' : 'day'}</h5>
           <input
             type="range"
             min={20}
@@ -248,7 +304,7 @@ export default function SearchResultsChrome({
           </div>
         </div>
       )}
-      {openPop === 'trans' && (
+      {!isGuesthouse && openPop === 'trans' && (
         <div className="fpop show" style={{ position: 'absolute', zIndex: 70, left: 140, top: '100%' }}>
           <h5>Transmission</h5>
           {['', 'automatic', 'manual'].map((t) => (

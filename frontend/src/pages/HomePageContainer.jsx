@@ -2,27 +2,44 @@ import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api'
 import { useSiteLayout } from '../context/SiteLayoutContext'
 import { mapCarsToPickCards } from '../utils/mapCarsToPickCards'
+import { mapGuestHousesToStayCards } from '../utils/mapGuestHousesToStayCards'
 import HomePage from './HomePage'
 
-function withBackendCars(pageData, cars = []) {
-  if (!cars.length) return pageData
+function withBackendListings(pageData, cars = [], guesthouses = []) {
+  let next = pageData
 
-  const pickCards = mapCarsToPickCards(cars).slice(0, 8)
-  return {
-    ...pageData,
-    picksSection: {
-      ...pageData.picksSection,
-      items: {
-        ...pageData.picksSection.items,
-        car: pickCards,
+  if (cars.length) {
+    const pickCards = mapCarsToPickCards(cars).slice(0, 8)
+    next = {
+      ...next,
+      picksSection: {
+        ...next.picksSection,
+        items: {
+          ...next.picksSection.items,
+          car: pickCards,
+        },
       },
-    },
+    }
   }
+
+  if (guesthouses.length) {
+    const stayCards = mapGuestHousesToStayCards(guesthouses).slice(0, 8)
+    next = {
+      ...next,
+      staySection: {
+        ...next.staySection,
+        cards: stayCards,
+      },
+    }
+  }
+
+  return next
 }
 
 export default function HomePageContainer() {
   const { siteData } = useSiteLayout()
   const [cars, setCars] = useState([])
+  const [guesthouses, setGuesthouses] = useState([])
 
   useEffect(() => {
     api
@@ -31,7 +48,17 @@ export default function HomePageContainer() {
       .catch(() => setCars([]))
   }, [])
 
-  const pageData = useMemo(() => withBackendCars(siteData, cars), [siteData, cars])
+  useEffect(() => {
+    api
+      .get('/guest-houses', { params: { per_page: 8 } })
+      .then((res) => setGuesthouses(res.data?.data ?? []))
+      .catch(() => setGuesthouses([]))
+  }, [])
+
+  const pageData = useMemo(
+    () => withBackendListings(siteData, cars, guesthouses),
+    [siteData, cars, guesthouses],
+  )
 
   return <HomePage pageData={pageData} />
 }

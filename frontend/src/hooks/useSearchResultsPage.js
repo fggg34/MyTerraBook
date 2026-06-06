@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
+import { usePageContent } from '../context/SiteContentContext'
 import { PAGE_SIZE, QUICK_FILTERS, SORT_OPTIONS, VEHICLE_TYPES } from '../data/searchResultsConfig'
+import { mergePageContent } from '../utils/mergePageContent'
 import { mapCarToResultCard } from '../utils/mapCarToResultCard'
 import { categoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 import { toApiDateTime } from '../utils/format'
@@ -16,8 +18,16 @@ function matchesPrice(car, max) {
   return car.sortPrice <= max
 }
 
+const SEARCH_PAGE_KEYS = {
+  campervan: 'search-campervan',
+  car: 'search-car',
+  guesthouse: 'search-guesthouse',
+}
+
 export default function useSearchResultsPage(vehicleType) {
-  const config = VEHICLE_TYPES[vehicleType] || VEHICLE_TYPES.campervan
+  const staticConfig = VEHICLE_TYPES[vehicleType] || VEHICLE_TYPES.campervan
+  const { page: cmsPage } = usePageContent(SEARCH_PAGE_KEYS[vehicleType] || 'search-campervan', staticConfig)
+  const config = useMemo(() => mergePageContent(staticConfig, cmsPage), [staticConfig, cmsPage])
   const [searchParams, setSearchParams] = useSearchParams()
   const query = Object.fromEntries(searchParams.entries())
   const searchQuery = searchParams.toString()
@@ -37,6 +47,11 @@ export default function useSearchResultsPage(vehicleType) {
   })
 
   useEffect(() => {
+    if (vehicleType === 'guesthouse') {
+      setLoading(false)
+      return undefined
+    }
+
     setLoading(true)
     const params = {}
     if (query.pickup_location_id) params.pickup_location_id = query.pickup_location_id
@@ -51,7 +66,7 @@ export default function useSearchResultsPage(vehicleType) {
         setLocations(locRes.data.data || [])
       })
       .finally(() => setLoading(false))
-  }, [query.pickup_location_id, query.dropoff_location_id, query.pickup_at, query.dropoff_at])
+  }, [vehicleType, query.pickup_location_id, query.dropoff_location_id, query.pickup_at, query.dropoff_at])
 
   const categoryMap = useMemo(() => {
     const m = {}
@@ -158,6 +173,8 @@ export default function useSearchResultsPage(vehicleType) {
     sort,
     setSort,
     sortLabel,
+    sortOptions: SORT_OPTIONS,
+    quickFilterOptions: QUICK_FILTERS,
     filters,
     setFilters,
     quickFilters,
@@ -166,5 +183,7 @@ export default function useSearchResultsPage(vehicleType) {
     hasActiveFilters,
     locations,
     categoryMap,
+    guestsLabel: null,
+    isGuesthouse: false,
   }
 }

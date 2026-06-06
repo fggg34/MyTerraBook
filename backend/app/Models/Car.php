@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\ListingApprovalStatus;
 use App\Models\Concerns\HasListingReviews;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +18,7 @@ class Car extends Model
     use HasListingReviews;
 
     protected $fillable = [
+        'user_id',
         'category_id',
         'name',
         'slug',
@@ -27,6 +30,11 @@ class Car extends Model
         'units_available',
         'ical_import_url',
         'is_active',
+        'listing_status',
+        'submitted_at',
+        'reviewed_at',
+        'reviewed_by',
+        'rejection_reason',
     ];
 
     protected function casts(): array
@@ -35,7 +43,32 @@ class Car extends Model
             'units_available' => 'integer',
             'details_image_paths' => 'array',
             'is_active' => 'boolean',
+            'listing_status' => ListingApprovalStatus::class,
+            'submitted_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
+    }
+
+    public function scopePubliclyVisible(Builder $query): Builder
+    {
+        return $query
+            ->where('is_active', true)
+            ->where(function (Builder $builder): void {
+                $builder
+                    ->whereNull('user_id')
+                    ->orWhere('listing_status', ListingApprovalStatus::Approved);
+            });
+    }
+
+    public function isOwnedByHost(): bool
+    {
+        return $this->user_id !== null;
+    }
+
+    public function isPubliclyVisible(): bool
+    {
+        return $this->is_active
+            && (! $this->isOwnedByHost() || $this->listing_status === ListingApprovalStatus::Approved);
     }
 
     protected static function booted(): void
@@ -70,6 +103,16 @@ class Car extends Model
             $i++;
             $slug = $base.'-'.$i;
         }
+    }
+
+    public function host(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function category(): BelongsTo

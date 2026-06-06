@@ -1,6 +1,7 @@
 import { BarChart3, Car, ExternalLink, TrendingUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { api } from '../api'
+import { usePageContent } from '../context/SiteContentContext'
 import { PageLoader } from '../components/ui/LoadingSpinner'
 import { formatCurrency } from '../utils/format'
 
@@ -12,6 +13,7 @@ function filamentPanelUrl() {
 }
 
 export default function AdminDashboardPage() {
+  const { page: copy } = usePageContent('admin-dashboard')
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -41,15 +43,16 @@ export default function AdminDashboardPage() {
     )
   }
 
+  const statsLabels = copy.statsLabels ?? {}
   const cards = [
-    { label: 'Total Orders', value: stats.total_orders ?? stats.total_bookings, icon: BarChart3 },
-    { label: 'Revenue', value: formatCurrency(stats.revenue), icon: TrendingUp },
-    { label: 'Active Rentals', value: stats.active_rentals, icon: Car },
+    { label: statsLabels.orders ?? 'Total Orders', value: stats.total_orders ?? stats.total_bookings, icon: BarChart3 },
+    { label: statsLabels.revenue ?? 'Revenue', value: formatCurrency(stats.revenue), icon: TrendingUp },
+    { label: statsLabels.activeRentals ?? 'Active Rentals', value: stats.active_rentals, icon: Car },
   ]
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="section-title">Admin Dashboard</h1>
+      <h1 className="section-title">{copy.title ?? 'Admin Dashboard'}</h1>
       <p className="section-subtitle">Overview of your rental business performance.</p>
 
       <div className="mt-8 grid gap-6 sm:grid-cols-3">
@@ -77,7 +80,7 @@ export default function AdminDashboardPage() {
           rel="noreferrer"
           className="btn-primary mt-4 inline-flex"
         >
-          Open Filament Admin
+          {copy.filamentLink ?? 'Open Filament Admin'}
           <ExternalLink className="h-4 w-4" aria-hidden />
         </a>
       </div>

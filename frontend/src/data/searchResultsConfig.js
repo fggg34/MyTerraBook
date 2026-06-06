@@ -14,21 +14,6 @@ export const VEHICLE_TYPES = {
     defaultSeats: 5,
     defaultSleeps: 2,
     defaultBags: 2,
-    promo: {
-      kicker: 'Also on MyTerraBook',
-      title: 'Warm guesthouses along the route',
-      text: 'Book a room for the nights you want a proper bed — same account, same support team.',
-      cta: 'Browse guesthouses',
-      href: '#guesthouse',
-    },
-    midbanner: {
-      kicker: 'Fully covered',
-      title: 'Gravel, ash & ice protection included',
-      text: 'Every campervan booking includes the cover Iceland actually needs — no surprise add-ons at pickup.',
-      cta: 'See what’s included',
-      href: '#faq',
-      image: '/images/homepage/cardcamper.jpg',
-    },
   },
   car: {
     id: 'car',
@@ -45,21 +30,20 @@ export const VEHICLE_TYPES = {
     defaultSeats: 5,
     defaultSleeps: 0,
     defaultBags: 2,
-    promo: {
-      kicker: 'Upgrade your trip',
-      title: 'Need more space? Try a campervan',
-      text: 'Sleep onboard and wake up closer to the next waterfall — hundreds of vans ready near Keflavík.',
-      cta: 'Browse campervans',
-      href: '/campervans',
-    },
-    midbanner: {
-      kicker: 'Local team',
-      title: 'Pick up at KEF, drop off anywhere',
-      text: 'One-way rentals across Iceland when you need them — we’ll confirm availability before you pay.',
-      cta: 'How pick-up works',
-      href: '#faq',
-      image: '/images/homepage/cardcar.jpg',
-    },
+  },
+  guesthouse: {
+    id: 'guesthouse',
+    route: '/guesthouses',
+    hcatMode: 'guesthouse',
+    categoryNames: [],
+    breadcrumb: 'Guesthouses',
+    unitSingular: 'stay',
+    unitPlural: 'stays',
+    titleLead: 'Guesthouses along the route',
+    subtitle:
+      'Hand-picked stays spaced a comfortable day’s drive apart — book a warm bed when you want a night off the road.',
+    loadMoreLabel: 'Show more stays',
+    introLocationDefault: 'Iceland',
   },
 }
 
@@ -79,6 +63,19 @@ export const QUICK_FILTERS = [
     label: 'Winter-ready',
     match: (car) => /suv|van|4x4|awd|4wd/i.test(`${car.categoryName} ${car.name} ${car.fuel_type}`),
   },
+]
+
+export const GUESTHOUSE_SORT_OPTIONS = [
+  { id: 'rec', label: 'Recommended' },
+  { id: 'price-asc', label: 'Price: low to high' },
+  { id: 'price-desc', label: 'Price: high to low' },
+  { id: 'guests', label: 'Most guests' },
+]
+
+export const GUESTHOUSE_QUICK_FILTERS = [
+  { id: 'villa', label: 'Villa', match: (card) => card.houseType === 'villa' },
+  { id: 'apartment', label: 'Apartment', match: (card) => card.houseType === 'apartment' },
+  { id: 'cottage', label: 'Cottage', match: (card) => card.houseType === 'cottage' },
 ]
 
 export const PAGE_SIZE = 9

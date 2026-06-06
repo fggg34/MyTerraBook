@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
 
-export default function useListingEffects(rootRef, { priceFrom = 94, onBook }) {
+export default function useListingEffects(rootRef, { enabled = true }) {
   useEffect(() => {
-    document.body.classList.add('listing-active')
+    if (!enabled) return undefined
 
     const root = rootRef.current
     if (!root) return undefined
+
+    document.body.classList.add('listing-active')
 
     const tabs = [...root.querySelectorAll('.tab')]
     const panels = [...root.querySelectorAll('.tpanel')]
@@ -141,165 +143,10 @@ export default function useListingEffects(rootRef, { priceFrom = 94, onBook }) {
       if (e.target === bpOverlay) bpHide()
     }
     bpOverlay?.addEventListener('click', onBpOverlay)
-    bpCta?.addEventListener('click', () => {
-      bpHide()
-      onBook?.()
-    })
     const onEsc = (e) => {
       if (e.key === 'Escape' && bpOverlay?.classList.contains('open')) bpHide()
     }
     document.addEventListener('keydown', onEsc)
-
-    const calWrap = root.querySelector('#dateWrap')
-    let calCleanup = () => {}
-    if (calWrap) {
-      const field = root.querySelector('#dateField')
-      const pop = root.querySelector('#calPop')
-      const grid = root.querySelector('#calGrid')
-      const calTitle = root.querySelector('#calTitle')
-      const calPrevBtn = root.querySelector('#calPrev')
-      const calNextBtn = root.querySelector('#calNext')
-      const calNights = root.querySelector('#calNights')
-      const calClear = root.querySelector('#calClear')
-      const dfStart = root.querySelector('#dfStart')
-      const dfEnd = root.querySelector('#dfEnd')
-      const rateL = root.querySelector('#rateL')
-      const rateR = root.querySelector('#rateR')
-      const RATE = Number(priceFrom) || 94
-      const MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-      const M3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const view = new Date(today.getFullYear(), today.getMonth(), 1)
-      let dStart = null
-      let dEnd = null
-
-      const same = (a, b) => a && b && a.getTime() === b.getTime()
-      const fmt = (d) => `${d.getDate()} ${M3[d.getMonth()]}`
-      const euro = (n) => `€${n.toLocaleString('en-IE')}`
-
-      const renderCal = () => {
-        if (!grid || !calTitle) return
-        calTitle.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`
-        if (calPrevBtn) {
-          calPrevBtn.disabled = view.getFullYear() === today.getFullYear() && view.getMonth() === today.getMonth()
-        }
-        grid.innerHTML = ''
-        const startDow = (new Date(view.getFullYear(), view.getMonth(), 1).getDay() + 6) % 7
-        const days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate()
-        for (let i = 0; i < startDow; i++) {
-          const e = document.createElement('div')
-          e.className = 'cal-cell empty'
-          grid.appendChild(e)
-        }
-        for (let d = 1; d <= days; d++) {
-          const date = new Date(view.getFullYear(), view.getMonth(), d)
-          const cell = document.createElement('button')
-          cell.type = 'button'
-          cell.className = 'cal-cell'
-          cell.textContent = String(d)
-          if (date < today) cell.classList.add('past')
-          else {
-            if (same(date, today)) cell.classList.add('today')
-            if (same(date, dStart) || same(date, dEnd)) cell.classList.add('sel')
-            if (dStart && dEnd) {
-              if (same(date, dStart)) cell.classList.add('range-start')
-              if (same(date, dEnd)) cell.classList.add('range-end')
-              if (date > dStart && date < dEnd) cell.classList.add('inrange')
-            }
-            cell.addEventListener('click', (ev) => {
-              ev.stopPropagation()
-              if (!dStart || (dStart && dEnd) || date < dStart) {
-                dStart = date
-                dEnd = null
-              } else if (!same(date, dStart)) {
-                dEnd = date
-              }
-              updateCal()
-              renderCal()
-            })
-          }
-          grid.appendChild(cell)
-        }
-      }
-
-      const updateCal = () => {
-        if (dfStart) {
-          dfStart.textContent = dStart ? fmt(dStart) : 'Add date'
-          dfStart.classList.toggle('set', !!dStart)
-        }
-        if (dfEnd) {
-          dfEnd.textContent = dEnd ? fmt(dEnd) : 'Add date'
-          dfEnd.classList.toggle('set', !!dEnd)
-        }
-        if (dStart && dEnd) {
-          const n = Math.round((dEnd - dStart) / 86400000)
-          const total = n * RATE
-          if (calNights) {
-            calNights.innerHTML = `<b>${n} night${n > 1 ? 's' : ''}</b> <span>· ${euro(total)} total</span>`
-          }
-          if (rateL) rateL.textContent = `Total · ${n} night${n > 1 ? 's' : ''}`
-          if (rateR) rateR.innerHTML = `<b>${euro(total)}.00</b>`
-        } else {
-          if (calNights) {
-            calNights.innerHTML = dStart
-              ? '<span>Choose your drop-off date</span>'
-              : '<span>Select your dates</span>'
-          }
-          if (rateL) rateL.textContent = rateL.dataset.default || 'Daily rate'
-          if (rateR) rateR.innerHTML = `From <b>€${RATE.toFixed(2)}</b>`
-        }
-      }
-
-      const openCal = () => {
-        pop?.classList.add('open')
-        field?.classList.add('open')
-      }
-      const closeCal = () => {
-        pop?.classList.remove('open')
-        field?.classList.remove('open')
-      }
-      const onField = (e) => {
-        e.stopPropagation()
-        if (pop?.classList.contains('open')) closeCal()
-        else openCal()
-      }
-      const onDoc = () => {
-        if (pop?.classList.contains('open')) closeCal()
-      }
-      field?.addEventListener('click', onField)
-      pop?.addEventListener('click', (e) => e.stopPropagation())
-      document.addEventListener('click', onDoc)
-      calPrevBtn?.addEventListener('click', (e) => {
-        e.stopPropagation()
-        view.setMonth(view.getMonth() - 1)
-        renderCal()
-      })
-      calNextBtn?.addEventListener('click', (e) => {
-        e.stopPropagation()
-        view.setMonth(view.getMonth() + 1)
-        renderCal()
-      })
-      calClear?.addEventListener('click', (e) => {
-        e.stopPropagation()
-        dStart = null
-        dEnd = null
-        updateCal()
-        renderCal()
-      })
-      if (rateL) rateL.dataset.default = rateL.textContent
-      renderCal()
-      updateCal()
-
-      const bookBtn = root.querySelector('#listingBookBtn')
-      const onBookClick = () => onBook?.({ pickupDate: dStart, dropoffDate: dEnd })
-      bookBtn?.addEventListener('click', onBookClick)
-
-      calCleanup = () => {
-        document.removeEventListener('click', onDoc)
-        bookBtn?.removeEventListener('click', onBookClick)
-      }
-    }
 
     return () => {
       document.body.classList.remove('listing-active')
@@ -312,7 +159,6 @@ export default function useListingEffects(rootRef, { priceFrom = 94, onBook }) {
       showMore?.removeEventListener('click', onShowMore)
       beds.forEach((b) => b.removeEventListener('click', onBedClick))
       ro?.disconnect()
-      calCleanup()
     }
-  }, [rootRef, priceFrom, onBook])
+  }, [enabled, rootRef])
 }

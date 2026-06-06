@@ -31,7 +31,7 @@ class OrderSeeder extends Seeder
         $admin = User::query()->where('role', UserRole::Admin)->first();
         $cars = Car::query()->where('is_active', true)->get();
         $locations = Location::query()->where('is_active', true)->get();
-        $priceType = PriceType::query()->where('name', 'Standard Rate')->firstOrFail();
+        $priceType = PriceType::query()->where('slug', 'basic')->firstOrFail();
         $gpsOption = RentalOption::query()->where('name', 'GPS Device')->first();
         $insuranceOption = RentalOption::query()->where('name', 'Full Insurance')->first();
         $welcomeCoupon = Coupon::query()->where('code', 'WELCOME10')->first();

@@ -8,13 +8,13 @@ use Filament\Support\Icons\Heroicon;
 
 class HomepageCms extends Page
 {
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $navigationLabel = 'Homepage CMS';
 
     protected static ?string $title = 'Homepage CMS';
 
     protected static ?string $slug = 'homepage-cms';
-
-    protected static ?int $navigationSort = -1;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHomeModern;
 
@@ -22,6 +22,6 @@ class HomepageCms extends Page
 
     public function mount(): void
     {
-        $this->redirect(route('admin.homepage.index'));
+        $this->redirect(SiteContentHub::getUrl(['tab' => 'home']));
     }
 }

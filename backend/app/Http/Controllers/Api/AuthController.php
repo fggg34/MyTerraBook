@@ -24,6 +24,38 @@ class AuthController extends Controller
         return response()->json(['token' => $token, 'user' => $user], 201);
     }
 
+    public function registerHost(RegisterRequest $request): JsonResponse
+    {
+        $user = User::query()->create([
+            ...$request->validated(),
+            'role' => UserRole::Host,
+        ]);
+
+        $token = $user->createToken('host-token')->plainTextToken;
+
+        return response()->json(['token' => $token, 'user' => $user], 201);
+    }
+
+    public function applyAsHost(): JsonResponse
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        if ($user->role === UserRole::Admin) {
+            return response()->json(['message' => 'Admins already have full access.', 'user' => $user]);
+        }
+
+        if ($user->role === UserRole::Host) {
+            return response()->json(['message' => 'You are already a host.', 'user' => $user]);
+        }
+
+        $user->update(['role' => UserRole::Host]);
+
+        return response()->json(['message' => 'Host account activated.', 'user' => $user->fresh()]);
+    }
+
     public function login(LoginRequest $request): JsonResponse
     {
         $user = User::query()->where('email', $request->string('email'))->first();

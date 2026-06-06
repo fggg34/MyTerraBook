@@ -1,26 +1,24 @@
-import { useEffect, useRef } from 'react'
-import BecomeHostPageContent from '../components/become-host/BecomeHostPageContent'
-import useBecomeHostEffects from '../hooks/useBecomeHostEffects'
-import '../styles/become-host.css'
+import { usePageContent } from '../context/SiteContentContext'
+import HostLandingHero from '../components/become-host/HostLandingHero'
+import HostProofMarquee from '../components/become-host/HostProofMarquee'
+import HostHowItWorks from '../components/become-host/HostHowItWorks'
+import HostFeaturesSection from '../components/become-host/HostFeaturesSection'
+import HostReviewsSection from '../components/become-host/HostReviewsSection'
+import HostFaqSection from '../components/become-host/HostFaqSection'
+import HostBottomCta from '../components/become-host/HostBottomCta'
 
 export default function BecomeHostPage() {
-  const rootRef = useRef(null)
-
-  useEffect(() => {
-    document.body.classList.remove('homepage-active')
-    document.body.classList.add('become-host-active')
-    document.documentElement.style.scrollBehavior = 'smooth'
-    return () => {
-      document.body.classList.remove('become-host-active')
-      document.documentElement.style.scrollBehavior = ''
-    }
-  }, [])
-
-  useBecomeHostEffects(rootRef)
+  const { page } = usePageContent('become-a-host')
 
   return (
-    <div className="become-host-page" ref={rootRef}>
-      <BecomeHostPageContent />
-    </div>
+    <main className="content-page become-host-page">
+      <HostLandingHero hero={page.hero} />
+      <HostProofMarquee stats={page.proof?.stats} />
+      <HostHowItWorks howTabs={page.howTabs} />
+      <HostFeaturesSection features={page.features} />
+      <HostReviewsSection reviews={page.reviews} />
+      <HostFaqSection faqItems={page.faqItems} />
+      <HostBottomCta cta={page.cta} />
+    </main>
   )
 }

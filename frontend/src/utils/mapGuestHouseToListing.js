@@ -10,10 +10,143 @@ function formatPriceCents(cents, fallback = '89') {
   return String(Math.round(n / 100))
 }
 
+function formatPriceDisplay(house) {
+  if (house.base_price_per_night_formatted) {
+    return house.base_price_per_night_formatted.replace(/\s+/g, '').replace('€', '')
+  }
+  return formatPriceCents(house.base_price_per_night_cents)
+}
+
+function typeLabel(type) {
+  if (!type) return 'Stay'
+  return type.charAt(0).toUpperCase() + type.slice(1)
+}
+
+function policyLabel(policy) {
+  if (!policy) return 'Cancellation policy'
+  return `${policy.charAt(0).toUpperCase()}${policy.slice(1)} cancellation`
+}
+
+function formatTime(value) {
+  if (!value) return null
+  const str = String(value)
+  return str.length >= 5 ? str.slice(0, 5) : str
+}
+
+function buildDetailSpecs(house) {
+  const specs = []
+  if (house.max_guests) specs.push({ label: `Sleeps ${house.max_guests}` })
+  if (house.bedrooms) specs.push({ label: `${house.bedrooms} bedroom${house.bedrooms === 1 ? '' : 's'}` })
+  if (house.bathrooms) specs.push({ label: `${house.bathrooms} bathroom${house.bathrooms === 1 ? '' : 's'}` })
+  if (house.type) specs.push({ label: typeLabel(house.type) })
+  if (house.city) specs.push({ label: house.city })
+  return specs.length ? specs : [{ label: 'Guesthouse stay' }]
+}
+
+function buildAmenities(house) {
+  const flat = (house.amenities || []).flatMap((group) =>
+    (group.items || []).map((item) => item.name).filter(Boolean),
+  )
+  if (!flat.length) return []
+  return flat.map((name, index) => ({ name, featured: index < 4 }))
+}
+
+function buildConditions(house) {
+  const conditions = []
+  const checkIn = formatTime(house.check_in_time)
+  const checkOut = formatTime(house.check_out_time)
+  if (checkIn) {
+    conditions.push({
+      title: `Check-in from ${checkIn}`,
+      desc: 'Contact the host if you need an earlier arrival.',
+    })
+  }
+  if (checkOut) {
+    conditions.push({
+      title: `Check-out by ${checkOut}`,
+      desc: 'Late check-out may be available on request.',
+    })
+  }
+  if (house.min_nights) {
+    conditions.push({
+      title: `Minimum ${house.min_nights} night${house.min_nights === 1 ? '' : 's'}`,
+      desc: 'Shorter stays may not be available in peak season.',
+    })
+  }
+  if (house.max_nights) {
+    conditions.push({
+      title: `Maximum ${house.max_nights} nights`,
+      desc: 'Message the host for longer stays.',
+    })
+  }
+  if (house.max_guests) {
+    conditions.push({
+      title: `Up to ${house.max_guests} guests`,
+      desc: 'Includes all registered guests staying overnight.',
+    })
+  }
+  if (house.cancellation_policy) {
+    conditions.push({
+      title: policyLabel(house.cancellation_policy),
+      desc: 'Refund terms depend on how close to check-in you cancel.',
+    })
+  }
+  return conditions
+}
+
+function buildSleeping(house) {
+  const maxGuests = house.max_guests || 1
+  const bedrooms = house.bedrooms || 1
+  const beds = house.beds || bedrooms
+  const bedsList = []
+
+  if (bedrooms > 0) {
+    bedsList.push({
+      title: `${bedrooms} bedroom${bedrooms === 1 ? '' : 's'}`,
+      text: `${beds} bed${beds === 1 ? '' : 's'} across the property.`,
+      dim: `Up to ${maxGuests} guests`,
+      image: resolveStorageUrl(house.thumbnail) || '/images/homepage/cardhouse.jpg',
+    })
+  }
+
+  if (house.bathrooms) {
+    bedsList.push({
+      title: 'Bathrooms',
+      text: `${house.bathrooms} bathroom${house.bathrooms === 1 ? '' : 's'} available for guests.`,
+      dim: 'Fresh linen included',
+      image: '/images/homepage/cardhouse.jpg',
+    })
+  }
+
+  if (!bedsList.length) {
+    bedsList.push({
+      title: 'Sleeping arrangements',
+      text: house.short_description || 'Comfortable beds for your stay.',
+      dim: `Sleeps ${maxGuests}`,
+      image: resolveStorageUrl(house.thumbnail) || '/images/homepage/cardhouse.jpg',
+    })
+  }
+
+  return {
+    kicker: `Sleeps up to ${maxGuests} guest${maxGuests === 1 ? '' : 's'}`,
+    beds: bedsList,
+  }
+}
+
+function buildRating(house, reviews) {
+  const count = reviews?.length ?? house.listing_reviews?.length ?? 0
+  const score = house.rating != null ? String(house.rating) : count > 0 ? '5.0' : '—'
+  return {
+    score,
+    label: count > 0 ? 'Guest rating' : 'New listing',
+    reviewCount: count,
+    reviewLinkLabel: count === 1 ? '1 review' : `${count} reviews`,
+  }
+}
+
 /** Maps guest-house API detail payload to the shared listing view model. */
 export function mapGuestHouseToListing(house, listingReviews) {
   const listingType = 'guesthouse'
-  const typeConfig = LISTING_TYPES.guesthouse
   const images = (house.images || []).map((img, i) => ({
     url: resolveStorageUrl(img.path || house.thumbnail),
     alt: img.caption || `${house.name} — photo ${i + 1}`,
@@ -27,7 +160,7 @@ export function mapGuestHouseToListing(house, listingReviews) {
     name: house.name,
     slug: house.slug,
     description: house.description || house.short_description || '',
-    category: { name: 'Guesthouse' },
+    category: { name: typeLabel(house.type) },
     main_image_path: house.thumbnail,
     details_image_paths: (house.images || []).map((i) => i.path).filter(Boolean),
     transmission: null,
@@ -36,22 +169,37 @@ export function mapGuestHouseToListing(house, listingReviews) {
     price_types: [
       {
         id: 1,
-        from_price_per_day: formatPriceCents(house.base_price_per_night_cents),
+        from_price_per_day: formatPriceDisplay(house),
       },
     ],
-    characteristics: [],
+    characteristics: buildAmenities(house).map((a) => ({ name: a.name, display_text: a.name })),
     rental_options: [],
   }
 
   const base = mapCarToListing(carShaped, listingType)
   const reviews = listingReviews ?? mapApiListingReviews(house.listing_reviews)
+  const amenities = buildAmenities(house)
+  const conditions = buildConditions(house)
+  const sleeping = buildSleeping(house)
+
+  const desc = house.description || house.short_description || ''
+  const shortDesc = desc.length > 280 ? desc.slice(0, 280).trim() : desc
+  const moreDesc = desc.length > 280 ? desc.slice(280).trim() : ''
 
   return {
     ...base,
     car: house,
     slug: house.slug,
+    categoryName: typeLabel(house.type),
     images: images.length ? images : base.images,
     photoCount: Math.max(images.length, 1),
+    detailSpecs: buildDetailSpecs(house),
+    amenities: amenities.length ? amenities : base.amenities,
+    conditions: conditions.length ? conditions : base.conditions,
+    sleeping,
+    priceFrom: formatPriceDisplay(house),
+    description: { short: shortDesc || 'Description coming soon.', more: moreDesc },
+    rating: buildRating(house, reviews),
     reviews,
     guestPhotoUrls: [],
   }

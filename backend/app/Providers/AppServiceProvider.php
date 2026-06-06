@@ -3,7 +3,16 @@
 namespace App\Providers;
 
 use App\Http\Responses\FilamentLoginResponse;
+use App\Models\Car;
+use App\Models\GuestHouse;
+use App\Models\GuestHouseBooking;
+use App\Models\Order;
+use App\Policies\CarPolicy;
+use App\Policies\GuestHouseBookingPolicy;
+use App\Policies\GuestHousePolicy;
+use App\Policies\OrderPolicy;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as FilamentLoginResponseContract;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(GuestHouse::class, GuestHousePolicy::class);
+        Gate::policy(Car::class, CarPolicy::class);
+        Gate::policy(Order::class, OrderPolicy::class);
+        Gate::policy(GuestHouseBooking::class, GuestHouseBookingPolicy::class);
+
         $this->app->bind(FilamentLoginResponseContract::class, FilamentLoginResponse::class);
 
         if ($this->app->runningInConsole()) {

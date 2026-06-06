@@ -83,7 +83,7 @@ class CatalogController extends Controller
         $dropoffId = $request->query('dropoff_location_id');
 
         $query = Car::query()
-            ->where('is_active', true)
+            ->publiclyVisible()
             ->with('category');
 
         if ($pickupId) {
@@ -133,6 +133,8 @@ class CatalogController extends Controller
 
     public function car(Car $car): JsonResponse
     {
+        abort_unless($car->isPubliclyVisible(), 404);
+
         $car->load([
             'category',
             'characteristics',
