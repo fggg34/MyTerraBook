@@ -13,6 +13,9 @@ class DatabaseSeeder extends Seeder
             TaxRateSeeder::class,
             UserSeeder::class,
             HomepageSectionSeeder::class,
+            SitePageSeeder::class,
+            BlogPostSeeder::class,
+            SearchPromotionSeeder::class,
         ]);
 
         if (! app()->environment('testing')) {
@@ -23,6 +26,7 @@ class DatabaseSeeder extends Seeder
                 DemoExtrasSeeder::class,
                 GuestHouseAmenitySeeder::class,
                 GuestHouseSeeder::class,
+                DemoShowcaseSeeder::class,
             ]);
         }
     }

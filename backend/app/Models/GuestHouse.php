@@ -21,6 +21,7 @@ class GuestHouse extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'user_id',
         'name',
         'slug',
         'description',
@@ -46,6 +47,10 @@ class GuestHouse extends Model
         'cancellation_policy',
         'thumbnail',
         'tax_rate_id',
+        'submitted_at',
+        'reviewed_at',
+        'reviewed_by',
+        'rejection_reason',
     ];
 
     protected function casts(): array
@@ -54,6 +59,8 @@ class GuestHouse extends Model
             'type' => GuestHouseType::class,
             'status' => GuestHouseStatus::class,
             'cancellation_policy' => GuestHouseCancellationPolicy::class,
+            'submitted_at' => 'datetime',
+            'reviewed_at' => 'datetime',
             'max_guests' => 'integer',
             'bedrooms' => 'integer',
             'bathrooms' => 'integer',
@@ -94,6 +101,16 @@ class GuestHouse extends Model
             $i++;
             $slug = $base.'-'.$i;
         }
+    }
+
+    public function host(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function taxRate(): BelongsTo

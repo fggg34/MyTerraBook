@@ -89,30 +89,55 @@ class CatalogSeeder extends Seeder
 
         $airport = $locations->firstWhere('name', 'Tirana Airport (TIA)');
         $city = $locations->firstWhere('name', 'Tirana City Center');
+        $durres = $locations->firstWhere('name', 'Durres Port');
         if ($airport && $city) {
             LocationFee::query()->firstOrCreate(
                 ['pickup_location_id' => $airport->id, 'dropoff_location_id' => $city->id],
-                ['cost_cents' => 2500, 'is_one_way_fee' => true, 'tax_rate_id' => $standardTax->id, 'is_active' => true]
+                ['cost_cents' => 4900, 'is_one_way_fee' => false, 'tax_rate_id' => $standardTax->id, 'is_active' => true]
+            );
+            LocationFee::query()->firstOrCreate(
+                ['pickup_location_id' => $city->id, 'dropoff_location_id' => $airport->id],
+                ['cost_cents' => 4900, 'is_one_way_fee' => false, 'tax_rate_id' => $standardTax->id, 'is_active' => true]
+            );
+        }
+        if ($airport && $durres) {
+            LocationFee::query()->firstOrCreate(
+                ['pickup_location_id' => $airport->id, 'dropoff_location_id' => $durres->id],
+                ['cost_cents' => 2900, 'is_one_way_fee' => true, 'tax_rate_id' => $standardTax->id, 'is_active' => true]
             );
         }
 
-        $priceTypes = collect(['Standard Rate', 'Premium Rate', 'Long-term Rate'])->map(
-            fn (string $name) => PriceType::query()->firstOrCreate(
-                ['name' => $name],
-                ['tax_rate_id' => $standardTax->id, 'is_active' => true]
-            )
-        );
+        collect([
+            ['slug' => 'basic', 'name' => 'Basic', 'attribute_value_per_day' => '€1,500 deposit'],
+            ['slug' => 'plus', 'name' => 'Plus', 'attribute_value_per_day' => '€500 deposit'],
+            ['slug' => 'max', 'name' => 'Max', 'attribute_value_per_day' => '€0 deposit'],
+        ])->each(fn (array $data) => PriceType::query()->updateOrCreate(
+            ['slug' => $data['slug']],
+            [
+                'name' => $data['name'],
+                'attribute_label' => 'Refundable deposit',
+                'attribute_value_per_day' => $data['attribute_value_per_day'],
+                'tax_rate_id' => $standardTax->id,
+                'is_active' => true,
+            ]
+        ));
+
+        PriceType::query()
+            ->whereIn('slug', ['standard-rate', 'premium-rate', 'long-term-rate'])
+            ->update(['is_active' => false]);
 
         $rentalOptions = collect([
-            ['name' => 'Full Insurance', 'cost_cents' => 1500, 'is_daily_cost' => true],
+            ['name' => 'Camping chairs & table', 'description' => 'Foldable set for two', 'cost_cents' => 1500, 'is_daily_cost' => false],
+            ['name' => 'Extra bedding kit', 'description' => 'Duvet, pillow & linen for guest 3', 'cost_cents' => 2500, 'is_daily_cost' => false],
+            ['name' => 'Kitchen kit', 'description' => 'Pots, pans, cutlery & French press', 'cost_cents' => 2000, 'is_daily_cost' => false],
+            ['name' => '4G Wi-Fi hotspot', 'description' => 'Unlimited data', 'cost_cents' => 900, 'is_daily_cost' => true],
+            ['name' => 'Return-clean service', 'description' => 'Skip the cleaning, bring it back as-is', 'cost_cents' => 4500, 'is_daily_cost' => false],
             ['name' => 'GPS Device', 'cost_cents' => 800, 'is_daily_cost' => true],
             ['name' => 'Child Seat', 'cost_cents' => 500, 'is_daily_cost' => false],
-            ['name' => 'Additional Driver', 'cost_cents' => 1000, 'is_daily_cost' => true],
-            ['name' => 'Roadside Assistance Plus', 'cost_cents' => 600, 'is_daily_cost' => true],
         ])->map(fn (array $data) => RentalOption::query()->firstOrCreate(
             ['name' => $data['name']],
             [
-                'description' => fake()->sentence(8),
+                'description' => $data['description'] ?? fake()->sentence(8),
                 'cost_cents' => $data['cost_cents'],
                 'is_daily_cost' => $data['is_daily_cost'],
                 'tax_rate_id' => $standardTax->id,
@@ -190,7 +215,7 @@ class CatalogSeeder extends Seeder
                 'time_from' => '20:00:00',
                 'time_to' => '08:00:00',
                 'applies_to' => 'both',
-                'cost_cents' => 2000,
+                'cost_cents' => 3500,
                 'tax_rate_id' => $standardTax->id,
                 'is_active' => true,
             ]

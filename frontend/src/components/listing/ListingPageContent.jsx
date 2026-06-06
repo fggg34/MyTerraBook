@@ -6,7 +6,19 @@ import ListingGallery from './ListingGallery'
 import ListingReviewsSection from './ListingReviewsSection'
 import ListingTabPanels from './ListingTabPanels'
 
-export default function ListingPageContent({ listing, related, searchQuery, typeConfig, reviewTarget, onReviewsChange, onRequestBook }) {
+export default function ListingPageContent({
+  listing,
+  related,
+  searchQuery,
+  typeConfig,
+  reviewTarget,
+  onReviewsChange,
+  onRequestBook,
+  initialPickup,
+  initialDropoff,
+  bookingDatesRef,
+  openCalendarRef,
+}) {
   const detailBase =
     listing.listingType === 'car' ? '/cars' : listing.listingType === 'guesthouse' ? '/guesthouses' : '/campervans'
   const relatedCards = related.map((item) => {
@@ -54,7 +66,14 @@ export default function ListingPageContent({ listing, related, searchQuery, type
 
       <div className="layout">
         <div className="wrap">
-          <ListingTabPanels listing={listing} onRequestBook={onRequestBook} />
+          <ListingTabPanels
+            listing={listing}
+            onRequestBook={onRequestBook}
+            initialPickup={initialPickup}
+            initialDropoff={initialDropoff}
+            bookingDatesRef={bookingDatesRef}
+            openCalendarRef={openCalendarRef}
+          />
         </div>
       </div>
 
@@ -95,7 +114,6 @@ export default function ListingPageContent({ listing, related, searchQuery, type
       <div className="bp-overlay" id="bpOverlay" aria-hidden="true">
         <div className="bp-modal" role="dialog" aria-modal="true" aria-labelledby="bpTitle">
           <div className="bp-head">
-            <div className="bp-eyebrow">How it works</div>
             <h3 id="bpTitle">{typeConfig.bookingModalTitle}</h3>
             <p>{typeConfig.bookingModalLead}</p>
             <button className="bp-close" id="bpClose" type="button" aria-label="Close">

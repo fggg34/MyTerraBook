@@ -38,6 +38,20 @@ function normalizeFooterColumns(columns = []) {
   }))
 }
 
+function mapFeaturedBlogPost(post) {
+  return {
+    slug: post.slug,
+    featured: post.is_featured,
+    title: post.title,
+    description: post.excerpt,
+    meta: post.read_time,
+    kicker: post.kicker,
+    image: post.featured_image,
+    imageAlt: post.image_alt,
+    aurora: post.aurora,
+  }
+}
+
 export function mergeHomepageData(apiData = {}) {
   const defaults = defaultHomepageData
 
@@ -116,7 +130,15 @@ export function mergeHomepageData(apiData = {}) {
     columns: normalizeFooterColumns(
       apiData.footer?.columns?.length ? apiData.footer.columns : defaults.footer.columns,
     ),
+    legal: normalizeLinkList(
+      apiData.footer?.legal?.length ? apiData.footer.legal : defaults.footer.legal,
+    ),
+    social: apiData.footer?.social?.length ? apiData.footer.social : defaults.footer.social,
   }
+
+  const blogPosts = apiData.featuredBlogPosts?.length
+    ? apiData.featuredBlogPosts.map(mapFeaturedBlogPost)
+    : defaults.blogSection.posts
 
   return {
     topbar,
@@ -132,6 +154,7 @@ export function mergeHomepageData(apiData = {}) {
       ...defaults.blogSection,
       ...apiData.blogSection,
       allHref: normalizeHomepageHref(apiData.blogSection?.allHref ?? defaults.blogSection.allHref),
+      posts: blogPosts,
     },
     hostCtaSection,
     reviewsSection: { ...defaults.reviewsSection, ...apiData.reviewsSection },

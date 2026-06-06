@@ -7,7 +7,7 @@ function FooterLink({ href, children }) {
   return <a href={href || '#'}>{children}</a>
 }
 
-export default function Footer({ tagline, address, columns = [], copyright, locale, currency, legal = [] }) {
+export default function Footer({ tagline, address, columns = [], copyright, locale, currency, legal = [], social = [] }) {
   const addressLines = address?.split('\n') || []
 
   return (
@@ -36,41 +36,19 @@ export default function Footer({ tagline, address, columns = [], copyright, loca
                 ))}
               </div>
             )}
-            <div className="ftr-social">
-              <a href="#" aria-label="Instagram">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="5" />
-                  <circle cx="12" cy="12" r="4" />
-                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-                </svg>
-              </a>
-              <a href="#" aria-label="TikTok">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M16.5 3c.3 2 1.6 3.5 3.5 3.8v2.4c-1.4 0-2.7-.4-3.8-1.1v6.3c0 3.5-2.8 6.3-6.3 6.3S3.6 17.9 3.6 14.4s2.8-6.3 6.3-6.3c.3 0 .6 0 .9.1v2.7a3.7 3.7 0 1 0 2.8 3.6V3h2.9Z" />
-                </svg>
-              </a>
-              <a href="#" aria-label="YouTube">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2.5" y="5.5" width="19" height="13" rx="3" />
-                  <path d="m10.5 9.5 5 2.5-5 2.5z" fill="currentColor" />
-                </svg>
-              </a>
-              <a href="#" aria-label="Facebook">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.7c0-.9.3-1.5 1.5-1.5h1.5V4.6c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.2H8v3h2.6V21h2.9Z" />
-                </svg>
-              </a>
-              <a href="#" aria-label="X / Twitter">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18 3h3l-7 8 8 10h-6l-5-6.3L5 21H2l7.5-8.6L2 3h6l4.5 5.9L18 3Zm-1 16h1.6L7.1 4.8H5.4L17 19Z" />
-                </svg>
-              </a>
-              <a href="#" aria-label="LinkedIn">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M4.5 4.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4ZM3 10h3v11H3zM9 10h3v1.5c.7-1.1 2-1.7 3.3-1.7 2.8 0 3.7 1.7 3.7 4.3V21h-3v-6c0-1.6-.5-2.4-1.7-2.4-1.3 0-2.3.9-2.3 2.6V21H9V10Z" />
-                </svg>
-              </a>
-            </div>
+            {social.length > 0 && (
+              <div className="ftr-social">
+                {social.map((item) => (
+                  <FooterLink key={item.label} href={item.href}>
+                    <span aria-label={item.label}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9" />
+                      </svg>
+                    </span>
+                  </FooterLink>
+                ))}
+              </div>
+            )}
           </div>
 
           {columns.map((column) => (
@@ -128,7 +106,7 @@ export default function Footer({ tagline, address, columns = [], copyright, loca
             {legal.map((item, index) => (
               <span key={item.label}>
                 {index > 0 && <span className="dot" />}
-                <a href={item.href || '#'}>{item.label}</a>
+                <FooterLink href={item.href}>{item.label}</FooterLink>
               </span>
             ))}
           </div>

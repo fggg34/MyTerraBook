@@ -36,6 +36,12 @@ const SPEC_ICONS = {
       <circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none" />
     </svg>
   ),
+  bath: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 12h16a4 4 0 0 1 0 8H4a4 4 0 0 1 0-8Z" />
+      <path d="M6 12V7a2 2 0 0 1 4 0v1M10 8h4" />
+    </svg>
+  ),
 }
 
 function normalizeSpec(spec) {
@@ -44,6 +50,7 @@ function normalizeSpec(spec) {
     let type = 'seat'
     if (lower.includes('sleep') || lower.includes('guest')) type = 'bed'
     if (lower.includes('room')) type = 'room'
+    if (lower.includes('bath')) type = 'bath'
     if (lower.includes('wi-fi') || lower.includes('wifi')) type = 'wifi'
     return { type, label: spec }
   }
@@ -53,7 +60,7 @@ function normalizeSpec(spec) {
 function specIcon(type, label, key) {
   if (type === 'gearbox') {
     return (
-      <span className="spec" key={key}>
+      <span className="spec spec-gearbox" key={key}>
         <span className="gbox">{label}</span>
       </span>
     )

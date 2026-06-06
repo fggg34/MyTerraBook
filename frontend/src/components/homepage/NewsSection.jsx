@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
 export default function NewsSection({
-  eyebrow,
   heading,
   headingAccent,
   lead,
@@ -36,12 +35,6 @@ export default function NewsSection({
       <div className="news-aurora" aria-hidden="true" />
       <div className="wrap">
         <div className="news-copy">
-          {eyebrow && (
-            <span className="news-eyebrow">
-              <span className="ne-rule" />
-              {eyebrow}
-            </span>
-          )}
           {heading && (
             <h2>
               {headingParts ? (

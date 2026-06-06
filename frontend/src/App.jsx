@@ -7,6 +7,7 @@ import { SiteLayoutProvider } from './context/SiteLayoutContext'
 import { ToastProvider } from './context/ToastContext'
 import { getStoredToken } from './auth'
 import SiteLayout from './components/layout/SiteLayout'
+import ContentLayout from './components/layout/ContentLayout'
 import BookingLayout from './components/layout/BookingLayout'
 import SearchResultsLayout from './components/layout/SearchResultsLayout'
 import LoadingSpinner from './components/ui/LoadingSpinner'
@@ -20,7 +21,19 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import UnderConstructionPage from './pages/UnderConstructionPage'
 import UserDashboardPage from './pages/UserDashboardPage'
+import HostLayout from './components/host/HostLayout'
+import HostDashboardPage from './pages/host/HostDashboardPage'
+import HostGuestHousesPage from './pages/host/HostGuestHousesPage'
+import HostGuestHouseEditorPage from './pages/host/HostGuestHouseEditorPage'
+import HostCarsPage from './pages/host/HostCarsPage'
+import HostCarEditorPage from './pages/host/HostCarEditorPage'
+import HostBookingsPage from './pages/host/HostBookingsPage'
+import HostSettingsPage from './pages/host/HostSettingsPage'
+import HostRegisterPage from './pages/host/HostRegisterPage'
 import GuestHouseCheckoutPage from './pages/guest-houses/GuestHouseCheckoutPage'
+import SitePagePage from './pages/SitePagePage'
+import GoodToKnowPage from './pages/GoodToKnowPage'
+import GoodToKnowPostPage from './pages/GoodToKnowPostPage'
 
 function RedirectGuestHouseSlug() {
   const { slug } = useParams()
@@ -104,10 +117,46 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/host"
+          element={
+            <ProtectedRoute role="host">
+              <HostLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<HostDashboardPage />} />
+          <Route path="guesthouses" element={<HostGuestHousesPage />} />
+          <Route path="guesthouses/new" element={<HostGuestHouseEditorPage />} />
+          <Route path="guesthouses/:id/edit" element={<HostGuestHouseEditorPage />} />
+          <Route path="cars" element={<HostCarsPage />} />
+          <Route path="cars/new" element={<HostCarEditorPage />} />
+          <Route path="cars/:id/edit" element={<HostCarEditorPage />} />
+          <Route path="bookings" element={<HostBookingsPage />} />
+          <Route path="settings" element={<HostSettingsPage />} />
+        </Route>
         <Route path="/guest-houses" element={<Navigate to="/guesthouses" replace />} />
         <Route path="/guest-houses/:slug" element={<RedirectGuestHouseSlug />} />
+      </Route>
+      <Route
+        element={
+          <SiteLayoutProvider>
+            <ContentLayout />
+          </SiteLayoutProvider>
+        }
+      >
+        <Route path="/about" element={<SitePagePage forcedSlug="about" />} />
+        <Route path="/faq" element={<SitePagePage forcedSlug="faq" />} />
+        <Route path="/help" element={<Navigate to="/faq" replace />} />
+        <Route path="/contact" element={<SitePagePage forcedSlug="contact" />} />
+        <Route path="/terms" element={<SitePagePage forcedSlug="terms" />} />
+        <Route path="/privacy" element={<SitePagePage forcedSlug="privacy" />} />
+        <Route path="/cookies" element={<SitePagePage forcedSlug="cookies" />} />
+        <Route path="/good-to-know" element={<GoodToKnowPage />} />
+        <Route path="/good-to-know/:slug" element={<GoodToKnowPostPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/host/register" element={<HostRegisterPage />} />
       </Route>
       <Route
         element={

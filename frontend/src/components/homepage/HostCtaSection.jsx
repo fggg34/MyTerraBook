@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import useHostCtaEffects from '../../hooks/useHostCtaEffects'
 
 export default function HostCtaSection({
-  eyebrow,
   heading,
   lead,
   earnAmount = '€1,900',
@@ -56,12 +55,6 @@ export default function HostCtaSection({
           </div>
 
           <div className="host-copy">
-            {eyebrow && (
-              <span className="host-eyebrow">
-                <span className="he-rule" />
-                {eyebrow}
-              </span>
-            )}
             {heading && <h2>{heading}</h2>}
             {lead && <p className="host-lead">{lead}</p>}
             <div className="host-earn">

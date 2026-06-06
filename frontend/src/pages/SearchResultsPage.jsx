@@ -3,44 +3,16 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import ProductCard from '../components/homepage/ProductCard'
 import { SearchResultsChromeProvider } from '../context/SearchResultsChromeContext'
+import PromoTile from '../components/search-results/PromoTile'
 import SearchResultsChrome, { SearchResultsHeaderPill } from '../components/search-results/SearchResultsChrome'
 import useSearchResultsPage from '../hooks/useSearchResultsPage'
 import useGuesthouseSearchPage from '../hooks/useGuesthouseSearchPage'
+import useSearchPromotions from '../hooks/useSearchPromotions'
 import useSearchResultsEffects from '../hooks/useSearchResultsEffects'
 import useSearchResultsIntroEffects from '../hooks/useSearchResultsIntroEffects'
+import { buildSearchGridItems } from '../utils/buildSearchGridItems'
 import { PAGE_SIZE } from '../data/searchResultsConfig'
 import '../styles/search-results.css'
-
-function PromoTile({ promo }) {
-  return (
-    <div className="cell reveal">
-      <div className="promo">
-        <div className="promo-aurora" aria-hidden="true" />
-        <div className="promo-kicker">
-          <span className="pk-dot" />
-          {promo.kicker}
-        </div>
-        <h3>{promo.title}</h3>
-        <p>{promo.text}</p>
-        {promo.href?.startsWith('/') ? (
-          <Link className="promo-cta" to={promo.href}>
-            {promo.cta}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </Link>
-        ) : (
-          <a className="promo-cta" href={promo.href || '#'}>
-            {promo.cta}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </a>
-        )}
-      </div>
-    </div>
-  )
-}
 
 function MidbannerTile({ banner }) {
   return (
@@ -51,10 +23,6 @@ function MidbannerTile({ banner }) {
         </div>
         <div className="mb-overlay" aria-hidden="true" />
         <div className="mb-content" style={{ '--mb-op': 1, '--mb-slide': '0px' }}>
-          <div className="mb-kicker">
-            <span className="mbk-rule" />
-            {banner.kicker}
-          </div>
           <h3>{banner.title}</h3>
           <p>{banner.text}</p>
           <a className="mb-cta" href={banner.href || '#faq'}>
@@ -67,24 +35,6 @@ function MidbannerTile({ banner }) {
       </div>
     </div>
   )
-}
-
-function buildGridItems(cards, config) {
-  const items = []
-  cards.forEach((card, index) => {
-    if (index === 2 && cards.length > 2) {
-      items.push({ type: 'promo', key: 'promo' })
-    }
-    items.push({ type: 'card', key: card.id, card })
-    if (index === 5 && cards.length > 6) {
-      items.push({ type: 'banner', key: 'banner' })
-    }
-  })
-  if (items.length === 0) return items
-  if (!items.some((i) => i.type === 'promo') && cards.length >= 1) {
-    items.splice(Math.min(2, items.length), 0, { type: 'promo', key: 'promo' })
-  }
-  return items
 }
 
 export default function SearchResultsPage({ vehicleType = 'campervan' }) {
@@ -130,7 +80,11 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     return `${loc} · ${dates} · ${query.drivers || 2} drivers`
   }, [isGuesthouse, pickupLabel, query, guestsLabel])
 
-  const gridItems = useMemo(() => buildGridItems(visibleCards, config), [visibleCards, config])
+  const { promotions } = useSearchPromotions(vehicleType)
+  const gridItems = useMemo(
+    () => buildSearchGridItems(visibleCards, promotions, config.promo),
+    [visibleCards, promotions, config.promo],
+  )
 
   const onLoadMore = useCallback(() => {
     setVisibleCount((n) => Math.min(n + PAGE_SIZE, totalCount))
@@ -254,7 +208,14 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
                 <div className="results-grid" id="resultsGrid">
                   {gridItems.map((item, index) => {
                     if (item.type === 'promo') {
-                      return <PromoTile key={item.key} promo={config.promo} />
+                      return (
+                        <PromoTile
+                          key={item.key}
+                          promo={item.promo}
+                          layout={item.layout}
+                          style={{ '--d': `${(index % 9) * 0.05}s` }}
+                        />
+                      )
                     }
                     if (item.type === 'banner') {
                       return <MidbannerTile key={item.key} banner={config.midbanner} />

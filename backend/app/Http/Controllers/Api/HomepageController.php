@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\BlogPostResource;
+use App\Models\BlogPost;
 use App\Models\HomepageSection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
@@ -37,6 +39,13 @@ class HomepageController extends Controller
 
         $guestHousesHighlight = $sections->get('guest_houses_highlight')?->content ?? [];
 
+        $featuredBlogPosts = BlogPost::query()
+            ->published()
+            ->orderBy('sort_order')
+            ->orderByDesc('published_at')
+            ->limit(5)
+            ->get();
+
         return response()->json([
             'topbar' => $sections->get('topbar')?->content ?? [],
             'header' => $sections->get('header')?->content ?? [],
@@ -46,6 +55,7 @@ class HomepageController extends Controller
             'whySection' => $why,
             'guestHousesHighlight' => $guestHousesHighlight,
             'footer' => $sections->get('footer')?->content ?? [],
+            'featuredBlogPosts' => BlogPostResource::collection($featuredBlogPosts)->resolve(),
         ]);
     }
 

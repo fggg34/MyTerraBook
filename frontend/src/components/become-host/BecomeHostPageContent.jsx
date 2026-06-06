@@ -1,4 +1,7 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
 import HostPhoto from './HostPhoto'
 import HostStars, { HostRatingStars } from './HostStars'
 import { becomeHostImages, faqItems, howTabs, proofPairs, reviewColumns } from '../../data/becomeHostData'
@@ -57,6 +60,32 @@ function ReviewCard({ review, duplicate = false }) {
 }
 
 export default function BecomeHostPageContent() {
+  const { registerAsHost } = useAuth()
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  const [signup, setSignup] = useState({ email: '', password: '', password_confirmation: '', name: '' })
+  const [signupLoading, setSignupLoading] = useState(false)
+
+  const handleSignup = async (e) => {
+    e.preventDefault()
+    setSignupLoading(true)
+    try {
+      const name = signup.name || signup.email.split('@')[0] || 'Host'
+      await registerAsHost({
+        name,
+        email: signup.email,
+        password: signup.password,
+        password_confirmation: signup.password_confirmation || signup.password,
+      })
+      toast('Host account created', 'success')
+      navigate('/host/guesthouses/new')
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not create account', 'error')
+    } finally {
+      setSignupLoading(false)
+    }
+  }
+
   return (
     <>
       <div className="topbar">
@@ -174,17 +203,21 @@ export default function BecomeHostPageContent() {
           <div className="signup">
             <h3>Create your host account</h3>
             <p className="su-sub">Free to list. No commitment. Earn on your own schedule.</p>
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form onSubmit={handleSignup}>
+              <div className="su-field">
+                <label htmlFor="su-name">Your name</label>
+                <input id="su-name" type="text" placeholder="Your name" value={signup.name} onChange={(e) => setSignup({ ...signup, name: e.target.value })} />
+              </div>
               <div className="su-field">
                 <label htmlFor="su-email">Email</label>
-                <input id="su-email" type="email" placeholder="your@email.com" autoComplete="email" />
+                <input id="su-email" type="email" placeholder="your@email.com" autoComplete="email" value={signup.email} onChange={(e) => setSignup({ ...signup, email: e.target.value })} required />
               </div>
               <div className="su-field">
                 <label htmlFor="su-pass">Password</label>
-                <input id="su-pass" type="password" placeholder="Create a password" autoComplete="new-password" />
+                <input id="su-pass" type="password" placeholder="Create a password" autoComplete="new-password" value={signup.password} onChange={(e) => setSignup({ ...signup, password: e.target.value })} required />
               </div>
-              <button className="su-btn" type="submit">
-                <span className="cta-spin">Get started</span>
+              <button className="su-btn" type="submit" disabled={signupLoading}>
+                <span className="cta-spin">{signupLoading ? 'Creating…' : 'Get started'}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
@@ -198,7 +231,7 @@ export default function BecomeHostPageContent() {
               Continue with Google
             </button>
             <p className="su-foot">
-              Already a host? <Link to="/login">Log in</Link>
+              Already a host? <Link to="/login?redirect=/host">Log in</Link>
             </p>
           </div>
         </div>
@@ -220,10 +253,6 @@ export default function BecomeHostPageContent() {
       <section className="how" id="how">
         <div className="wrap">
           <div className="how-head">
-            <span className="eyebrow">
-              <span className="rule" />
-              How it works
-            </span>
             <h2 className="reveal-title">
               From idle to earning, <span className="em">in four simple steps.</span>
             </h2>
@@ -255,10 +284,6 @@ export default function BecomeHostPageContent() {
         <div className="wrap">
           <div className="feat-head">
             <div>
-              <span className="eyebrow">
-                <span className="rule" />
-                Why hosts choose us
-              </span>
               <h2 className="reveal-title">Everything you need to earn more.</h2>
             </div>
             <p className="fsub reveal-desc">We bring the travellers, the tools and the protection. You bring the van, the car or the spare room.</p>
@@ -323,10 +348,6 @@ export default function BecomeHostPageContent() {
       <section className="revs" id="revs">
         <div className="wrap">
           <div className="revs-l">
-            <span className="eyebrow">
-              <span className="rule" />
-              Host stories
-            </span>
             <h2 className="reveal-title">
               Our hosts <span className="em">talk about us.</span>
             </h2>
@@ -370,10 +391,6 @@ export default function BecomeHostPageContent() {
       <section className="faq" id="faq">
         <div className="wrap">
           <div className="faq-l">
-            <span className="eyebrow">
-              <span className="rule" />
-              Good to know
-            </span>
             <h2 className="reveal-title">Questions, answered.</h2>
             <p className="reveal-desc">Thinking about hosting but not sure where to start? Our team in Reykjavík is one message away.</p>
             <div className="faq-contact">
@@ -415,10 +432,6 @@ export default function BecomeHostPageContent() {
           <div className="cta-box">
             <div className="cta-topo" />
             <div className="cta-inner">
-              <span className="cta-eyebrow">
-                <span className="cd" />
-                Start hosting
-              </span>
               <h2 className="reveal-title">Got a van or a spare room sitting idle?</h2>
               <p className="reveal-desc">Join 1,800+ Iceland hosts already earning with MyTerraBook. It&apos;s free to list, and you could be booked within the week.</p>
               <div className="cta-actions">
@@ -451,55 +464,41 @@ export default function BecomeHostPageContent() {
                 My<span className="terra">Terra</span>Book
               </div>
               <p className="ftr-tag">Iceland&apos;s locally-run platform for campervans, 4×4s, cars and guesthouses — booked in minutes, hosted with care.</p>
-              <div className="ftr-social">
-                <a href="#" aria-label="Instagram">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="5" />
-                    <circle cx="12" cy="12" r="4" />
-                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-                  </svg>
-                </a>
-                <a href="#" aria-label="Facebook">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.7c0-.9.3-1.5 1.5-1.5h1.5V4.6c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.2H8v3h2.6V21h2.9Z" />
-                  </svg>
-                </a>
-              </div>
             </div>
             <div className="ftr-col">
-              <h4>Host</h4>
+              <h4>Menu</h4>
               <ul>
                 <li>
-                  <a href="#how">How it works</a>
+                  <Link to="/campervans">Campervan</Link>
                 </li>
                 <li>
-                  <a href="#feat">Earnings</a>
+                  <Link to="/cars">Car</Link>
                 </li>
                 <li>
-                  <a href="#signup">List your van</a>
+                  <Link to="/guesthouses">Guesthouse</Link>
                 </li>
                 <li>
-                  <a href="#signup">List your guesthouse</a>
-                </li>
-                <li>
-                  <a href="#faq">Host insurance</a>
+                  <Link to="/good-to-know">Good to Know</Link>
                 </li>
               </ul>
             </div>
             <div className="ftr-col">
-              <h4>Company</h4>
+              <h4>Pages</h4>
               <ul>
                 <li>
-                  <a href="#">About us</a>
+                  <Link to="/about">About us</Link>
                 </li>
                 <li>
-                  <a href="#">Sustainability</a>
+                  <Link to="/faq">FAQs</Link>
                 </li>
                 <li>
-                  <a href="#faq">Help center</a>
+                  <Link to="/contact">Contact</Link>
                 </li>
                 <li>
-                  <a href="#">Contact</a>
+                  <Link to="/login">Sign in</Link>
+                </li>
+                <li>
+                  <Link to="/register">Create account</Link>
                 </li>
               </ul>
             </div>
@@ -521,11 +520,11 @@ export default function BecomeHostPageContent() {
               © 2026 <b>MyTerraBook ehf.</b>
             </span>
             <div className="ftr-legal">
-              <a href="#">Terms &amp; Conditions</a>
+              <Link to="/terms">Terms &amp; Conditions</Link>
               <span className="dot" />
-              <a href="#">Privacy</a>
+              <Link to="/privacy">Privacy</Link>
               <span className="dot" />
-              <a href="#">Cookies</a>
+              <Link to="/cookies">Cookies</Link>
             </div>
           </div>
         </div>

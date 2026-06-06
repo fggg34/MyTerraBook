@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import LangCurrencyMenu from './LangCurrencyMenu'
 
 function NavLink({ href, children, onClick, className = '' }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
@@ -59,15 +60,7 @@ export default function Header({
         </nav>
 
         <div className="nav-right">
-          <button className="lang-cur" type="button" aria-label="Language and currency">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
-            </svg>
-            <span>{langLabel}</span>
-            <span className="lc-div" />
-            <span>{currencyLabel}</span>
-          </button>
+          <LangCurrencyMenu langLabel={langLabel} currencyLabel={currencyLabel} />
           {ctaLabel &&
             (ctaHref?.startsWith('/') ? (
               <Link className="host" to={ctaHref}>

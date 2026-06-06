@@ -19,6 +19,10 @@ export function mapGuestHousesToStayCards(houses = []) {
     const specs = [
       { type: 'bed', label: `Sleeps ${house.max_guests || 1}` },
       { type: 'room', label: `${house.bedrooms || 1} ${house.bedrooms === 1 ? 'room' : 'rooms'}` },
+      {
+        type: 'bath',
+        label: `${house.bathrooms || 1} bath${house.bathrooms === 1 ? '' : 's'}`,
+      },
       { type: 'seat', label: house.city || typeLabel(house.type) },
     ]
 

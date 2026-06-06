@@ -30,6 +30,10 @@ export function mapGuestHouseToResultCard(house, { searchQuery = '' } = {}) {
   const specs = [
     { type: 'bed', label: `Guests ${house.max_guests || 1}` },
     { type: 'room', label: `${house.bedrooms || 1} bedroom${house.bedrooms === 1 ? '' : 's'}` },
+    {
+      type: 'bath',
+      label: `${house.bathrooms || 1} bath${house.bathrooms === 1 ? '' : 's'}`,
+    },
     { type: 'seat', label: house.city || typeLabel(house.type) },
   ]
 

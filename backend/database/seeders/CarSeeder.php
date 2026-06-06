@@ -46,8 +46,9 @@ class CarSeeder extends Seeder
         $locations = Location::query()->where('is_active', true)->get();
         $characteristics = Characteristic::query()->get();
         $rentalOptions = RentalOption::query()->where('is_active', true)->get();
-        $standardPriceType = PriceType::query()->where('name', 'Standard Rate')->firstOrFail();
-        $premiumPriceType = PriceType::query()->where('name', 'Premium Rate')->firstOrFail();
+        $basicPriceType = PriceType::query()->where('slug', 'basic')->firstOrFail();
+        $plusPriceType = PriceType::query()->where('slug', 'plus')->firstOrFail();
+        $maxPriceType = PriceType::query()->where('slug', 'max')->firstOrFail();
 
         foreach ($this->catalog as [$make, $model, $year, $categoryName, $transmission, $fuel, $dailyRateCents]) {
             $name = "{$make} {$model} {$year}";
@@ -79,7 +80,7 @@ class CarSeeder extends Seeder
             DailyFare::query()->firstOrCreate(
                 [
                     'car_id' => $car->id,
-                    'price_type_id' => $standardPriceType->id,
+                    'price_type_id' => $basicPriceType->id,
                     'from_days' => 1,
                     'to_days' => 6,
                 ],
@@ -89,7 +90,7 @@ class CarSeeder extends Seeder
             DailyFare::query()->firstOrCreate(
                 [
                     'car_id' => $car->id,
-                    'price_type_id' => $standardPriceType->id,
+                    'price_type_id' => $basicPriceType->id,
                     'from_days' => 7,
                     'to_days' => 30,
                 ],
@@ -99,15 +100,25 @@ class CarSeeder extends Seeder
             DailyFare::query()->firstOrCreate(
                 [
                     'car_id' => $car->id,
-                    'price_type_id' => $premiumPriceType->id,
+                    'price_type_id' => $plusPriceType->id,
                     'from_days' => 1,
                     'to_days' => 30,
                 ],
                 ['price_per_day_cents' => (int) round($dailyRateCents * 1.2)]
             );
 
+            DailyFare::query()->firstOrCreate(
+                [
+                    'car_id' => $car->id,
+                    'price_type_id' => $maxPriceType->id,
+                    'from_days' => 1,
+                    'to_days' => 30,
+                ],
+                ['price_per_day_cents' => (int) round($dailyRateCents * 1.45)]
+            );
+
             ExtraHourFare::query()->firstOrCreate(
-                ['car_id' => $car->id, 'price_type_id' => $standardPriceType->id],
+                ['car_id' => $car->id, 'price_type_id' => $basicPriceType->id],
                 ['charge_per_extra_hour_cents' => (int) round($dailyRateCents / 8)]
             );
 

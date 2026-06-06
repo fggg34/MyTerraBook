@@ -4,8 +4,11 @@ return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
     'allowed_origins' => array_values(array_unique(array_filter([
-        env('FRONTEND_URL', 'http://127.0.0.1:5173'),
+        env('FRONTEND_URL', 'http://127.0.0.1:5174'),
+        env('APP_ENV') === 'local' ? 'http://localhost:5174' : null,
+        env('APP_ENV') === 'local' ? 'http://127.0.0.1:5174' : null,
         env('APP_ENV') === 'local' ? 'http://localhost:5173' : null,
+        env('APP_ENV') === 'local' ? 'http://127.0.0.1:5173' : null,
     ]))),
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],

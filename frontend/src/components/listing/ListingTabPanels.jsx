@@ -1,5 +1,48 @@
-export default function ListingTabPanels({ listing }) {
+import { useEffect, useState } from 'react'
+import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
+
+function euro(n) {
+  return `€${n.toLocaleString('en-IE')}`
+}
+
+export default function ListingTabPanels({
+  listing,
+  onRequestBook,
+  initialPickup,
+  initialDropoff,
+  bookingDatesRef,
+  openCalendarRef,
+}) {
   const { typeConfig, rating, detailSpecs, description, amenities, conditions, sleeping, addons } = listing
+  const [startDate, setStartDate] = useState(() => parseDateOnly(initialPickup))
+  const [endDate, setEndDate] = useState(() => parseDateOnly(initialDropoff))
+  const priceFrom = Number(listing.priceFrom) || 94
+
+  const syncBookingDates = (start, end) => {
+    if (bookingDatesRef) {
+      bookingDatesRef.current = { pickupDate: start, dropoffDate: end }
+    }
+  }
+
+  useEffect(() => {
+    const start = parseDateOnly(initialPickup)
+    const end = parseDateOnly(initialDropoff)
+    setStartDate(start)
+    setEndDate(end)
+    syncBookingDates(start, end)
+  }, [initialPickup, initialDropoff])
+
+  const handleDateChange = ({ start, end }) => {
+    setStartDate(start)
+    setEndDate(end)
+    syncBookingDates(start, end)
+  }
+
+  const nights =
+    startDate && endDate
+      ? Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86400000))
+      : 0
+  const total = nights * priceFrom
 
   return (
     <>
@@ -78,9 +121,6 @@ export default function ListingTabPanels({ listing }) {
             </div>
 
             <div className="tpanel" data-panel="1">
-              <div className="panel-kicker">
-                Featured amenities<span className="pk-line" />
-              </div>
               <div className="amen-grid">
                 {amenities.map((a) => (
                   <div key={a.name} className={`amen ${a.featured ? 'feat' : ''}`}>
@@ -96,10 +136,6 @@ export default function ListingTabPanels({ listing }) {
             </div>
 
             <div className="tpanel" data-panel="2">
-              <div className="panel-kicker">
-                {listing.listingType === 'guesthouse' ? "What's good to know" : "What's required to book"}
-                <span className="pk-line" />
-              </div>
               <div className="cond-list">
                 {conditions.map((c) => (
                   <div key={c.title} className="cond">
@@ -119,10 +155,6 @@ export default function ListingTabPanels({ listing }) {
 
             {sleeping && (
               <div className="tpanel" data-panel="3">
-                <div className="panel-kicker">
-                  {sleeping.kicker}
-                  <span className="pk-line" />
-                </div>
                 <div className="sleep-grid">
                   {sleeping.beds.map((bed, i) => (
                     <div
@@ -159,9 +191,6 @@ export default function ListingTabPanels({ listing }) {
             )}
 
             <div className="tpanel" data-panel={sleeping ? 4 : 3}>
-              <div className="panel-kicker">
-                Optional extras<span className="pk-line" />
-              </div>
               <div className="addon-list">
                 {addons.map((a) => (
                   <div key={a.name} className="addon">
@@ -185,72 +214,41 @@ export default function ListingTabPanels({ listing }) {
         <aside className="listing-book">
           <div className="listing-bcard">
             <div className="date-wrap" id="dateWrap">
-              <button className="date-field" id="dateField" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
-                  <path d="M3 9h18M8 2.5v4M16 2.5v4" />
-                </svg>
-                <div className="df-segs">
-                  <span className="df-seg">
-                    <span className="df-lab">{typeConfig.dateStartLabel || 'Pick-up'}</span>
-                    <span className="df-val" id="dfStart">
-                      Add date
-                    </span>
-                  </span>
-                  <span className="df-div" />
-                  <span className="df-seg right">
-                    <span className="df-lab">{typeConfig.dateEndLabel || 'Drop-off'}</span>
-                    <span className="df-val" id="dfEnd">
-                      Add date
-                    </span>
-                  </span>
-                </div>
-              </button>
-              <div className="cal-pop" id="calPop">
-                <div className="cal-head">
-                  <button className="cal-nav" id="calPrev" type="button" aria-label="Previous month">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m15 18-6-6 6-6" />
-                    </svg>
-                  </button>
-                  <div className="cal-title" id="calTitle">
-                    Month
-                  </div>
-                  <button className="cal-nav" id="calNext" type="button" aria-label="Next month">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m9 18 6-6-6-6" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="cal-dows">
-                  <span>Mo</span>
-                  <span>Tu</span>
-                  <span>We</span>
-                  <span>Th</span>
-                  <span>Fr</span>
-                  <span>Sa</span>
-                  <span>Su</span>
-                </div>
-                <div className="cal-grid" id="calGrid" />
-                <div className="cal-foot">
-                  <span className="cal-nights" id="calNights">
-                    <span>Select your dates</span>
-                  </span>
-                  <button className="cal-clear" id="calClear" type="button">
-                    Clear
-                  </button>
-                </div>
-              </div>
+              <DateRangePicker
+                ref={openCalendarRef}
+                startLabel={typeConfig.dateStartLabel || 'Pick-up'}
+                endLabel={typeConfig.dateEndLabel || 'Drop-off'}
+                startDate={startDate}
+                endDate={endDate}
+                pricePerDay={priceFrom}
+                onChange={handleDateChange}
+              />
             </div>
             <div className="rate-row">
               <span className="rl" id="rateL">
-                {typeConfig.rateLabelDefault}
+                {startDate && endDate
+                  ? `Total · ${nights} night${nights > 1 ? 's' : ''}`
+                  : typeConfig.rateLabelDefault}
               </span>
               <span className="rr" id="rateR">
-                From <b>€{listing.priceFrom}.00</b>
+                {startDate && endDate ? (
+                  <b>{euro(total)}.00</b>
+                ) : (
+                  <>
+                    From <b>€{listing.priceFrom}.00</b>
+                  </>
+                )}
               </span>
             </div>
-            <button className="book-btn" id="listingBookBtn" type="button">
+            <button
+              className="book-btn"
+              id="listingBookBtn"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onRequestBook?.()
+              }}
+            >
               {typeConfig.bookCta}
             </button>
             <button className="book-link" id="bookProcessLink" type="button">

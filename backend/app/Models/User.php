@@ -59,4 +59,19 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(GuestHouseBooking::class);
     }
+
+    public function guestHouses(): HasMany
+    {
+        return $this->hasMany(GuestHouse::class);
+    }
+
+    public function cars(): HasMany
+    {
+        return $this->hasMany(Car::class);
+    }
+
+    public function isHost(): bool
+    {
+        return $this->role === UserRole::Host || $this->role === UserRole::Admin;
+    }
 }
