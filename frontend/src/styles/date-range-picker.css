@@ -105,20 +105,27 @@
   height: 15px;
 }
 
+.date-range-picker.compact .df-seg {
+  flex-direction: row;
+  align-items: center;
+}
+
 .date-range-picker.compact .df-div {
-  height: 23px;
+  height: 20px;
 }
 
 .date-range-picker.compact .df-seg.right {
   padding-left: 10px;
 }
 
-.date-range-picker.compact .df-lab {
-  font-size: 8px;
+.date-range-picker.compact .df-val {
+  font-size: 15px;
+  line-height: 1.2;
 }
 
-.date-range-picker.compact .df-val {
-  font-size: 11px;
+.date-range-picker.compact .df-val.set {
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .date-range-picker.compact .cal-pop,
@@ -132,7 +139,8 @@
 }
 
 .date-range-picker.compact .cal-title {
-  font-size: 12px;
+  font-size: 15px;
+  letter-spacing: 0.01em;
 }
 
 .date-range-picker.compact .cal-nav {
@@ -146,14 +154,14 @@
 }
 
 .date-range-picker.compact .cal-dows span {
-  font-size: 8px;
+  font-size: 10px;
   padding: 2px 0;
 }
 
 .date-range-picker.compact .cal-cell {
-  height: 30px;
+  height: 32px;
   aspect-ratio: auto;
-  font-size: 10px;
+  font-size: 12px;
   border-radius: 7px;
 }
 

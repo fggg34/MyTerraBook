@@ -145,7 +145,10 @@ export default function ListingPageContent({
                 overlay?.classList.remove('open')
                 overlay?.setAttribute('aria-hidden', 'true')
                 document.body.style.overflow = ''
-                onRequestBook?.()
+                onRequestBook?.({
+                  pickupDate: bookingDatesRef?.current?.pickupDate,
+                  dropoffDate: bookingDatesRef?.current?.dropoffDate,
+                })
               }}
             >
               {typeConfig.bookCta}

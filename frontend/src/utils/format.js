@@ -28,6 +28,23 @@ export function formatDateTimeLocal(iso) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+/** Calendar date in local time (avoids UTC day-shift from toISOString). */
+export function formatDateOnly(value) {
+  if (!value) return ''
+  const d = value instanceof Date ? value : new Date(String(value).slice(0, 10))
+  if (Number.isNaN(d.getTime())) return ''
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+export function formatDateTimeAt(value, hours = 10, minutes = 0) {
+  if (!value) return ''
+  const d = value instanceof Date ? new Date(value) : new Date(String(value).slice(0, 10))
+  if (Number.isNaN(d.getTime())) return ''
+  d.setHours(hours, minutes, 0, 0)
+  return formatDateTimeLocal(d)
+}
+
 export function parseDateTimeLocal(value) {
   if (!value) return null
   const d = new Date(value)

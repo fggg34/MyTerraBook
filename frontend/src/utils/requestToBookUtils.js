@@ -16,8 +16,10 @@ export function nightsBetween(start, end) {
 
 export function toDateOnlyString(d) {
   if (!d) return ''
-  const date = d instanceof Date ? d : new Date(d)
-  return date.toISOString().slice(0, 10)
+  const date = d instanceof Date ? d : new Date(String(d).slice(0, 10))
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
 export function combineDateAndTime(dateStr, timeStr) {

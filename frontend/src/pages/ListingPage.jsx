@@ -7,15 +7,8 @@ import { PageLoader } from '../components/ui/LoadingSpinner'
 import { useToast } from '../context/ToastContext'
 import useListingEffects from '../hooks/useListingEffects'
 import useListingPage from '../hooks/useListingPage'
+import { formatDateOnly, formatDateTimeAt } from '../utils/format'
 import '../styles/listing.css'
-
-function toDateTimeLocal(date) {
-  if (!date) return ''
-  const d = new Date(date)
-  d.setHours(10, 0, 0, 0)
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
 
 export default function ListingPage({ listingType = 'campervan' }) {
   const rootRef = useRef(null)
@@ -39,8 +32,8 @@ export default function ListingPage({ listingType = 'campervan' }) {
 
       if (listingType === 'guesthouse') {
         const slug = car.slug || car.id
-        const checkIn = queryDefaults.check_in || (selectedPickup ? selectedPickup.toISOString().slice(0, 10) : '')
-        const checkOut = queryDefaults.check_out || (selectedDropoff ? selectedDropoff.toISOString().slice(0, 10) : '')
+        const checkIn = formatDateOnly(selectedPickup) || queryDefaults.check_in || ''
+        const checkOut = formatDateOnly(selectedDropoff) || queryDefaults.check_out || ''
         if (!checkIn || !checkOut) {
           openDatePicker()
           toast('Select check-in and check-out dates to continue', 'info')
@@ -57,12 +50,17 @@ export default function ListingPage({ listingType = 'campervan' }) {
         return
       }
 
-      const priceTypeId = car.price_types?.[0]?.id || queryDefaults.price_type_id
-      const pickup_at = queryDefaults.pickup_at || (selectedPickup ? toDateTimeLocal(selectedPickup) : '')
-      const dropoff_at = queryDefaults.dropoff_at || (selectedDropoff ? toDateTimeLocal(selectedDropoff) : '')
-      if (!pickup_at || !dropoff_at || !priceTypeId) {
+      const priceTypeId =
+        car.price_types?.[0]?.id || listing?.priceTypes?.[0]?.id || queryDefaults.price_type_id
+      const pickup_at = formatDateTimeAt(selectedPickup, 11, 0) || queryDefaults.pickup_at || ''
+      const dropoff_at = formatDateTimeAt(selectedDropoff, 10, 0) || queryDefaults.dropoff_at || ''
+      if (!pickup_at || !dropoff_at) {
         openDatePicker()
         toast('Select pick-up and drop-off dates to continue', 'info')
+        return
+      }
+      if (!priceTypeId) {
+        toast('Pricing is not set up for this listing yet. Please contact support.', 'error')
         return
       }
       const params = buildCheckoutParams({
@@ -76,7 +74,7 @@ export default function ListingPage({ listingType = 'campervan' }) {
       })
       navigate(`/checkout?${params}`)
     },
-    [car, listingType, queryDefaults, navigate, toast, openDatePicker],
+    [car, listing, listingType, queryDefaults, navigate, toast, openDatePicker],
   )
 
   useListingEffects(rootRef, {

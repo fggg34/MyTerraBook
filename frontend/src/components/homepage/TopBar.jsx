@@ -1,16 +1,18 @@
 import { Link } from 'react-router-dom'
 
-export default function TopBar({ linkLabel, linkHref }) {
+export default function TopBar({ text, linkLabel, linkHref }) {
   const isInternal = linkHref?.startsWith('/') && !linkHref.startsWith('//')
   const LinkTag = isInternal ? Link : 'a'
   const linkProps = isInternal ? { to: linkHref } : { href: linkHref || '#' }
 
+  if (!text && !linkLabel) {
+    return null
+  }
+
   return (
     <div className="topbar">
       <div className="wrap">
-        <span>
-          <strong>Become a Host</strong> and start earning money!
-        </span>
+        {text && <span>{text}</span>}
         {linkLabel && (
           <LinkTag className="bannerlink" {...linkProps}>
             {linkLabel}

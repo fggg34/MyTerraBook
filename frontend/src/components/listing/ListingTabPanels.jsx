@@ -246,7 +246,7 @@ export default function ListingTabPanels({
               type="button"
               onClick={(e) => {
                 e.stopPropagation()
-                onRequestBook?.()
+                onRequestBook?.({ pickupDate: startDate, dropoffDate: endDate })
               }}
             >
               {typeConfig.bookCta}

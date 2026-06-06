@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { getSitePreviewUrl, setAuthToken } from './api'
-import { AuthProvider, useAuth } from './context/AuthContext'
+import { AuthProvider, getLoginPathForRole, normalizeUserRole, useAuth } from './context/AuthContext'
+import { getStoredUser } from './auth'
 import { SiteContentProvider } from './context/SiteContentContext'
 import { SiteLayoutProvider } from './context/SiteLayoutContext'
 import { ToastProvider } from './context/ToastContext'
@@ -42,10 +43,21 @@ function RedirectGuestHouseSlug() {
   return <Navigate to={`/guesthouses/${slug}`} replace />
 }
 
-function ProtectedRoute({ children, role }) {
-  const { user } = useAuth()
-  if (!user) return <Navigate to="/login" replace />
-  if (role && user.role !== role) return <Navigate to="/" replace />
+function ProtectedRoute({ children, role, customerOnly = false }) {
+  const { user: contextUser } = useAuth()
+  const user = contextUser ?? getStoredUser()
+  const userRole = normalizeUserRole(user)
+
+  if (!user) {
+    return <Navigate to={getLoginPathForRole(role)} replace />
+  }
+
+  if (customerOnly) {
+    if (userRole === 'admin') return <Navigate to="/admin" replace />
+    if (userRole === 'host') return <Navigate to="/host" replace />
+  }
+
+  if (role && userRole !== role) return <Navigate to="/" replace />
   return children
 }
 
@@ -105,7 +117,7 @@ function AppRoutes() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute customerOnly>
               <UserDashboardPage />
             </ProtectedRoute>
           }
@@ -158,6 +170,7 @@ function AppRoutes() {
         <Route path="/good-to-know/:slug" element={<GoodToKnowPostPage />} />
         <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/host/login" element={<LoginPage hostIntent />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/host/register" element={<HostRegisterPage />} />
       </Route>

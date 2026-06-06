@@ -51,7 +51,7 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     }
     const loc = pickupLabel.includes('(') ? pickupLabel.match(/\(([^)]+)\)/)?.[1] || 'KEF' : 'KEF'
     const dates = query.pickup_at && query.dropoff_at ? formatShortRange(query.pickup_at, query.dropoff_at) : 'Dates'
-    return `${loc} · ${dates} · ${query.drivers || 2} drivers`
+    return `${loc} · ${dates}`
   }, [isGuesthouse, pickupLabel, query, guestsLabel])
 
   const onLoadMore = useCallback(() => {

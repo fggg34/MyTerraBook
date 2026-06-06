@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import DateRangePicker from '../ui/DateRangePicker'
+import FieldSelect from '../ui/FieldSelect'
+import PredictiveSearchField from '../ui/PredictiveSearchField'
+import useSearchChromeDraft from '../../hooks/useSearchChromeDraft'
 import { QUICK_FILTERS, SORT_OPTIONS, VEHICLE_TYPES } from '../../data/searchResultsConfig'
 
 const CAT_ICONS = {
@@ -29,19 +33,22 @@ const CAT_ICONS = {
   ),
 }
 
-function formatDateRange(start, end) {
-  if (!start || !end) return 'Select dates'
-  const p = new Date(start)
-  const d = new Date(end)
-  if (Number.isNaN(p.getTime()) || Number.isNaN(d.getTime())) return 'Select dates'
-  const fmt = (dt) => dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-  return `${fmt(p)} – ${fmt(d)}`
-}
+const PIN_ICON = (
+  <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+)
+
+const PERSON_ICON = (
+  <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+  </svg>
+)
 
 export default function SearchResultsChrome({
   vehicleType,
-  pickupLabel,
-  dropoffLabel,
   query,
   updateSearch,
   totalCount,
@@ -62,32 +69,58 @@ export default function SearchResultsChrome({
   const navigate = useNavigate()
   const [sortOpen, setSortOpen] = useState(false)
   const [openPop, setOpenPop] = useState(null)
-  const isGuesthouse = vehicleType === 'guesthouse'
 
-  const dateLabel = useMemo(() => {
-    if (isGuesthouse) return formatDateRange(query.check_in, query.check_out)
-    return formatDateRange(query.pickup_at, query.dropoff_at)
-  }, [isGuesthouse, query.check_in, query.check_out, query.pickup_at, query.dropoff_at])
-
-  const drivers = query.drivers || '2'
-  const guests = guestsLabel || query.guests || '2'
+  const {
+    isGuesthouse,
+    vehicleDraft,
+    setVehicleDraft,
+    guestDraft,
+    setGuestDraft,
+    guestCityLabel,
+    setGuestCityLabel,
+    pickupLocations,
+    dropoffLocations,
+    handleVehicleDates,
+    handleGuestDates,
+    applyDraft,
+    buildQueryParams,
+    guestPeopleOptions,
+    minRentalDays,
+    maxRentalDays,
+    vehicleStartDate,
+    vehicleEndDate,
+    guestStartDate,
+    guestEndDate,
+  } = useSearchChromeDraft({ vehicleType, query, updateSearch })
 
   const switchVehicle = (type) => {
     const target = VEHICLE_TYPES[type]?.route || '/campervans'
-    const params = new URLSearchParams()
-    Object.entries(query).forEach(([k, v]) => {
-      if (v) params.set(k, v)
-    })
+    const draftQuery = type === 'guesthouse'
+      ? {
+          city: guestDraft.city,
+          check_in: guestDraft.check_in,
+          check_out: guestDraft.check_out,
+          guests: guestDraft.guests,
+        }
+      : {
+          pickup_location_id: vehicleDraft.pickup_location_id,
+          dropoff_location_id: vehicleDraft.dropoff_location_id,
+          pickup_at: vehicleDraft.pickup_at,
+          dropoff_at: vehicleDraft.dropoff_at,
+        }
+    const params = buildQueryParams(draftQuery)
     navigate(`${target}?${params.toString()}`)
   }
 
-  const onUpdate = () => {
-    const params = new URLSearchParams()
-    Object.entries(query).forEach(([k, v]) => {
-      if (v) params.set(k, v)
-    })
-    navigate(`${config.route}?${params.toString()}`)
-  }
+  const pickupOptions = useMemo(
+    () => pickupLocations.map((loc) => ({ value: loc.value, label: loc.label, subtitle: loc.subtitle })),
+    [pickupLocations],
+  )
+
+  const dropoffOptions = useMemo(
+    () => dropoffLocations.map((loc) => ({ value: loc.value, label: loc.label, subtitle: loc.subtitle })),
+    [dropoffLocations],
+  )
 
   return (
     <>
@@ -116,7 +149,7 @@ export default function SearchResultsChrome({
               className={`hcat ${isGuesthouse ? 'active' : ''}`}
               type="button"
               data-cat="house"
-              onClick={() => navigate('/guesthouses')}
+              onClick={() => switchVehicle('guesthouse')}
             >
               {CAT_ICONS.house}
               Guesthouses
@@ -126,82 +159,98 @@ export default function SearchResultsChrome({
           <div className="hsearch-bar">
             {isGuesthouse ? (
               <>
-                <div className="hfield">
+                <div className="hfield hfield--control">
                   <span className="hf-label">City or area</span>
-                  <span className="hf-val">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
-                      <circle cx="12" cy="10" r="2.5" />
-                    </svg>
-                    {pickupLabel}
-                  </span>
+                  <PredictiveSearchField
+                    scope="guesthouse"
+                    allowFreeText
+                    value={guestDraft.city}
+                    displayValue={guestCityLabel}
+                    placeholder="e.g. Reykjavík"
+                    icon={PIN_ICON}
+                    ariaLabel="City or area"
+                    onChange={({ value, label }) => {
+                      setGuestCityLabel(label)
+                      setGuestDraft((prev) => ({ ...prev, city: value }))
+                    }}
+                  />
                 </div>
-                <div className="hfield">
+                <div className="hfield hfield--control hfield--dates">
                   <span className="hf-label">Check-in → Check-out</span>
-                  <span className="hf-val">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
-                      <path d="M3 9h18M8 2.5v4M16 2.5v4" />
-                    </svg>
-                    {dropoffLabel}
-                  </span>
+                  <DateRangePicker
+                    variant="embedded compact"
+                    fixedPopper
+                    startLabel="Check-in"
+                    endLabel="Check-out"
+                    startDate={guestStartDate}
+                    endDate={guestEndDate}
+                    minNights={1}
+                    onChange={handleGuestDates}
+                  />
                 </div>
-                <div className="hfield ppl">
+                <div className="hfield hfield--control hfield--guests">
                   <span className="hf-label">Guests</span>
-                  <span className="hf-val">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="8" r="4" />
-                      <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
-                    </svg>
-                    {guests}
-                  </span>
+                  <FieldSelect
+                    value={guestDraft.guests}
+                    onChange={(value) => setGuestDraft((prev) => ({ ...prev, guests: value }))}
+                    options={guestPeopleOptions.map((n) => ({
+                      value: String(n),
+                      label: `${n} ${n === 1 ? 'guest' : 'guests'}`,
+                    }))}
+                    icon={PERSON_ICON}
+                    ariaLabel="Number of guests"
+                  />
                 </div>
               </>
             ) : (
               <>
-                <div className="hfield" data-mode="vehicle">
+                <div className="hfield hfield--control">
                   <span className="hf-label">Pick-up location</span>
-                  <span className="hf-val">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
-                      <circle cx="12" cy="10" r="2.5" />
-                    </svg>
-                    {pickupLabel}
-                  </span>
+                  <FieldSelect
+                    value={vehicleDraft.pickup_location_id}
+                    onChange={(value) => {
+                      const sameAsPickup = vehicleDraft.dropoff_location_id === vehicleDraft.pickup_location_id
+                      setVehicleDraft((prev) => ({
+                        ...prev,
+                        pickup_location_id: value,
+                        dropoff_location_id: sameAsPickup ? value : prev.dropoff_location_id,
+                      }))
+                    }}
+                    options={pickupOptions}
+                    placeholder="Select location"
+                    icon={PIN_ICON}
+                    ariaLabel="Pick-up location"
+                  />
                 </div>
-                <div className="hfield" data-mode="vehicle">
+                <div className="hfield hfield--control">
                   <span className="hf-label">Drop-off location</span>
-                  <span className={`hf-val ${dropoffLabel === 'Same as pick-up' ? 'muted' : ''}`}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" />
-                      <circle cx="12" cy="10" r="2.5" />
-                    </svg>
-                    {dropoffLabel}
-                  </span>
+                  <FieldSelect
+                    value={vehicleDraft.dropoff_location_id}
+                    onChange={(value) => setVehicleDraft((prev) => ({ ...prev, dropoff_location_id: value }))}
+                    options={dropoffOptions}
+                    placeholder="Select location"
+                    icon={PIN_ICON}
+                    ariaLabel="Drop-off location"
+                    disabled={!vehicleDraft.pickup_location_id}
+                  />
                 </div>
-                <div className="hfield">
+                <div className="hfield hfield--control hfield--dates">
                   <span className="hf-label">Pick-up → Drop-off</span>
-                  <span className="hf-val">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
-                      <path d="M3 9h18M8 2.5v4M16 2.5v4" />
-                    </svg>
-                    {dateLabel}
-                  </span>
-                </div>
-                <div className="hfield ppl">
-                  <span className="hf-label">Drivers</span>
-                  <span className="hf-val">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="8" r="4" />
-                      <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
-                    </svg>
-                    {drivers}
-                  </span>
+                  <DateRangePicker
+                    variant="embedded compact"
+                    fixedPopper
+                    startLabel="Pick-up"
+                    endLabel="Drop-off"
+                    startDate={vehicleStartDate}
+                    endDate={vehicleEndDate}
+                    minNights={minRentalDays}
+                    maxNights={maxRentalDays}
+                    onChange={handleVehicleDates}
+                  />
                 </div>
               </>
             )}
-            <button className="hsearch-btn" type="button" onClick={onUpdate}>
+            <button className="hsearch-btn" type="button" onClick={applyDraft}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="7" />
                 <path d="m20 20-3.2-3.2" />

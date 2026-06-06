@@ -13,7 +13,11 @@ export default function ContentLayout() {
       <TopBar {...(siteData.topbar || {})} />
       <Header {...(siteData.header || {})} />
       <Outlet />
-      <Footer {...(siteData.footer || {})} />
+      <Footer
+        {...(siteData.footer || {})}
+        hostCtaLabel={siteData.header?.ctaLabel}
+        hostCtaHref={siteData.header?.ctaHref}
+      />
       <BackToTop />
     </>
   )

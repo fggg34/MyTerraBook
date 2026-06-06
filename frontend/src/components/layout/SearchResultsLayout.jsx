@@ -25,7 +25,11 @@ export default function SearchResultsLayout() {
       <Outlet />
       <FaqSection {...(siteData.faqSection || {})} />
       <NewsSection {...(siteData.newsSection || {})} />
-      <Footer {...(siteData.footer || {})} />
+      <Footer
+        {...(siteData.footer || {})}
+        hostCtaLabel={siteData.header?.ctaLabel}
+        hostCtaHref={siteData.header?.ctaHref}
+      />
       <BackToTop />
     </>
   )

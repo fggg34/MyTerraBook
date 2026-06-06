@@ -38,6 +38,30 @@ export function SiteContentProvider({ children }) {
 
   const global = useMemo(() => pages.global ?? defaultSiteContentData.global ?? {}, [pages])
 
+  const branding = useMemo(() => global.branding ?? {}, [global])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    const favicon = branding.favicon
+    if (favicon) {
+      let link = document.querySelector("link[rel~='icon']")
+      if (!link) {
+        link = document.createElement('link')
+        link.rel = 'icon'
+        document.head.appendChild(link)
+      }
+      const ext = String(favicon).split('.').pop()?.toLowerCase()
+      const typeMap = { svg: 'image/svg+xml', png: 'image/png', ico: 'image/x-icon' }
+      if (ext && typeMap[ext]) {
+        link.type = typeMap[ext]
+      } else {
+        link.removeAttribute('type')
+      }
+      link.href = favicon
+    }
+  }, [branding.favicon])
+
   const value = useMemo(
     () => ({
       pages,
@@ -46,9 +70,9 @@ export function SiteContentProvider({ children }) {
       loading,
       getPage,
       getSection,
-      branding: global.branding ?? {},
+      branding,
     }),
-    [pages, siteData, global, loading, getPage, getSection],
+    [pages, siteData, global, branding, loading, getPage, getSection],
   )
 
   return <SiteContentContext.Provider value={value}>{children}</SiteContentContext.Provider>

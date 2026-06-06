@@ -22,7 +22,7 @@ class SiteContentController extends Controller
 
         return response()
             ->json(['data' => $payload])
-            ->header('Cache-Control', 'public, max-age=3600');
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function show(string $pageKey): JsonResponse
@@ -40,6 +40,6 @@ class SiteContentController extends Controller
 
         return response()
             ->json(['data' => ['page_key' => $pageKey, 'content' => $content]])
-            ->header('Cache-Control', 'public, max-age=3600');
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 }

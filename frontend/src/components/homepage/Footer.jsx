@@ -34,6 +34,11 @@ function findColumnLinks(columns, titles) {
   return col?.links?.length ? col.links : null
 }
 
+const ACCOUNT_LINKS = [
+  { label: 'Sign in', href: '/login' },
+  { label: 'Create account', href: '/register' },
+]
+
 export default function Footer({
   tagline,
   address,
@@ -43,9 +48,12 @@ export default function Footer({
   currency,
   legal = [],
   social = [],
+  hostCtaLabel,
+  hostCtaHref,
 }) {
   const bookLinks = findColumnLinks(columns, ['book', 'menu']) ?? BOOK_LINKS
   const companyLinks = findColumnLinks(columns, ['company', 'pages', 'explore']) ?? COMPANY_LINKS
+  const accountLinks = findColumnLinks(columns, ['account']) ?? ACCOUNT_LINKS
   const addressLine = address?.split('\n').filter(Boolean)[0]
 
   return (
@@ -99,19 +107,20 @@ export default function Footer({
             <div className="ftr-host">
               <h4>Account</h4>
               <ul className="ftr-host-links">
-                <li>
-                  <FooterLink href="/login">Sign in</FooterLink>
-                </li>
-                <li>
-                  <FooterLink href="/register">Create account</FooterLink>
-                </li>
+                {accountLinks.map((link) => (
+                  <li key={link.label}>
+                    <FooterLink href={link.href}>{link.label}</FooterLink>
+                  </li>
+                ))}
               </ul>
-              <FooterLink href="/become-a-host" className="ftr-host-cta">
-                Become a host
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </FooterLink>
+              {hostCtaLabel && (
+                <FooterLink href={hostCtaHref || '/become-a-host'} className="ftr-host-cta">
+                  {hostCtaLabel}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </FooterLink>
+              )}
             </div>
           </div>
 

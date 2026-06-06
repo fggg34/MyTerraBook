@@ -4,11 +4,25 @@ import { clearAuth, getStoredToken, getStoredUser, storeAuth } from '../auth'
 
 const AuthContext = createContext(null)
 
+/** API may return role as a string or enum-shaped object depending on serializer. */
+export function normalizeUserRole(user) {
+  const role = user?.role
+  if (typeof role === 'string') return role
+  if (role && typeof role === 'object' && role.value) return role.value
+  return null
+}
+
 export function getPostLoginPath(user, redirect) {
   if (redirect) return redirect
-  if (user?.role === 'admin') return '/admin'
-  if (user?.role === 'host') return '/host'
+  const role = normalizeUserRole(user)
+  if (role === 'admin') return '/admin'
+  if (role === 'host') return '/host'
   return '/dashboard'
+}
+
+export function getLoginPathForRole(role) {
+  if (role === 'host') return '/login?redirect=/host'
+  return '/login'
 }
 
 export function AuthProvider({ children }) {
@@ -19,8 +33,9 @@ export function AuthProvider({ children }) {
     if (!token) return
     setAuthToken(token)
     api.get('/user').then((res) => {
-      storeAuth(token, res.data)
-      setUser(res.data)
+      const nextUser = res.data?.data ?? res.data
+      storeAuth(token, nextUser)
+      setUser(nextUser)
     }).catch(() => {})
   }, [])
 

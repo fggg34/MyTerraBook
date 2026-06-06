@@ -107,8 +107,41 @@ class SiteContentService
         }
 
         $content = $this->normalizeUploadFields($content);
+        $content = $this->stripEmptyArrayKeys($content);
 
         return $this->fillEmptyRepeatersFromDefaults($pageKey, $content);
+    }
+
+    /**
+     * Filament repeaters occasionally persist blank-string keys on nested rows.
+     *
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function stripEmptyArrayKeys(array $content): array
+    {
+        $result = [];
+
+        foreach ($content as $key => $value) {
+            if ($key === '' || $key === null) {
+                continue;
+            }
+
+            if (is_array($value)) {
+                $result[$key] = array_is_list($value)
+                    ? array_map(
+                        fn (mixed $item): mixed => is_array($item) ? $this->stripEmptyArrayKeys($item) : $item,
+                        $value,
+                    )
+                    : $this->stripEmptyArrayKeys($value);
+
+                continue;
+            }
+
+            $result[$key] = $value;
+        }
+
+        return $result;
     }
 
     /**

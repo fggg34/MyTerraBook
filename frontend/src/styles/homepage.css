@@ -216,7 +216,7 @@ body.homepage-active { margin: 0; }
     gap:14px;align-items:stretch;
   }
   .search-row.mode-vehicle{
-    grid-template-columns:1.1fr 1.1fr 1.35fr 0.85fr auto;
+    grid-template-columns:1.1fr 1.1fr 1.35fr auto;
   }
   .search-row.mode-guesthouse{
     grid-template-columns:1.25fr 1.45fr 0.85fr auto;
