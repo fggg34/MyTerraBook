@@ -19,7 +19,6 @@ export default function HostLandingHero({ hero = {} }) {
   const title = hero.title ?? 'Earn from your van or guesthouse'
   const lead = hero.lead ?? 'Join 1,800+ Iceland hosts. Free to list, you keep 85%.'
   const submitLabel = hero.submitLabel ?? 'Start hosting'
-  const eyebrow = hero.eyebrow ?? 'Become a host'
   const earnAmount = hero.earnAmount ?? '€1,900'
   const bgImage = hero.image ?? '/images/homepage/host-van.jpg'
 
@@ -51,7 +50,6 @@ export default function HostLandingHero({ hero = {} }) {
       </div>
       <div className="wrap host-landing-hero-grid">
         <div className="host-landing-hero-copy">
-          <span className="host-landing-eyebrow">{eyebrow}</span>
           <h1>{title}</h1>
           <p className="host-landing-lead">{lead}</p>
           <div className="host-landing-earn">

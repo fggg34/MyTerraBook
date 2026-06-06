@@ -55,7 +55,6 @@ export default function FaqPageContent() {
     ...link,
     icon: link.icon ?? ['chat', 'book', 'home'][index] ?? 'chat',
   }))
-  const stats = page.stats ?? []
   const cta = page.cta ?? {}
   const phone = helpCard.phone ?? page.phone
   const email = helpCard.email ?? page.email
@@ -63,27 +62,19 @@ export default function FaqPageContent() {
 
   const defaultOpen = items.findIndex((item) => item.open)
   const [openIndex, setOpenIndex] = useState(defaultOpen >= 0 ? defaultOpen : 0)
-  const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
 
   useSectionReveal(mainRef, { revealDoneMs: 1400, threshold: 0.08 })
 
   const filteredItems = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase()
     const category = categories.find((entry) => entry.id === activeCategory)
 
-    return items.filter((item) => {
-      const matchesCategory =
-        activeCategory === 'all' ||
-        !category?.nums ||
-        category.nums.includes(item.num)
-
-      if (!normalizedQuery) return matchesCategory
-
-      const haystack = `${item.question} ${item.answer}`.toLowerCase()
-      return matchesCategory && haystack.includes(normalizedQuery)
-    })
-  }, [items, query, activeCategory])
+    return items.filter((item) => (
+      activeCategory === 'all' ||
+      !category?.nums ||
+      category.nums.includes(item.num)
+    ))
+  }, [items, activeCategory])
 
   const handleToggle = (index) => {
     setOpenIndex((current) => (current === index ? -1 : index))
@@ -102,50 +93,8 @@ export default function FaqPageContent() {
           <div className="faq-hero-grid-lines" />
         </div>
         <div className="wrap faq-hero-inner">
-          {hero.eyebrow && <span className="faq-eyebrow">{hero.eyebrow}</span>}
           <h1>{hero.title}</h1>
           {hero.lead && <p className="faq-hero-lead">{hero.lead}</p>}
-          <div className="faq-hero-search">
-            <label className="faq-search" htmlFor="faq-search-input">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
-              <input
-                id="faq-search-input"
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={hero.searchPlaceholder ?? 'Search questions — licence, gravel, campsites…'}
-                autoComplete="off"
-              />
-              {query && (
-                <button
-                  type="button"
-                  className="faq-search-clear"
-                  onClick={() => setQuery('')}
-                  aria-label="Clear search"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-                    <path d="M18 6 6 18M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </label>
-          </div>
-        </div>
-      </section>
-
-      <section className="faq-stats" aria-label="Support highlights">
-        <div className="wrap">
-          <div className="faq-stats-grid">
-            {stats.map((stat) => (
-              <div className="faq-stat" key={stat.label}>
-                <span className="faq-stat-value">{stat.value}</span>
-                <span className="faq-stat-label">{stat.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -230,8 +179,8 @@ export default function FaqPageContent() {
               {filteredItems.length === 0 ? (
                 <div className="faq-empty faq-rise" style={{ '--d': '0.1s' }}>
                   <h2>{emptyState.title ?? 'No matches found'}</h2>
-                  <p>{emptyState.body ?? 'Try a different search term or browse all questions. Our team can help with anything not listed here.'}</p>
-                  <button type="button" className="faq-empty-btn" onClick={() => { setQuery(''); setActiveCategory('all') }}>
+                  <p>{emptyState.body ?? 'Browse all questions or contact our team for anything not listed here.'}</p>
+                  <button type="button" className="faq-empty-btn" onClick={() => setActiveCategory('all')}>
                     {emptyState.buttonLabel ?? 'Show all questions'}
                   </button>
                 </div>

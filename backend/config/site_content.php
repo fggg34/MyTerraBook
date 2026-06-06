@@ -32,6 +32,22 @@ $ctaFields = [
     ['key' => 'secondaryHref', 'type' => 'text', 'label' => 'Secondary link'],
 ];
 
+$globalSeoFields = [
+    ['key' => 'siteName', 'type' => 'text', 'label' => 'Site name'],
+    ['key' => 'titleSuffix', 'type' => 'text', 'label' => 'Title suffix', 'helperText' => 'Appended to page titles, e.g. " | MyTerraBook"'],
+    ['key' => 'defaultDescription', 'type' => 'textarea', 'label' => 'Default meta description', 'rows' => 3, 'columnSpanFull' => true],
+    ['key' => 'defaultOgImage', 'type' => 'image', 'label' => 'Default share image (OG)'],
+];
+
+$seoFields = [
+    ['key' => 'title', 'type' => 'text', 'label' => 'Meta title', 'helperText' => 'Leave empty to use page default', 'columnSpanFull' => true],
+    ['key' => 'description', 'type' => 'textarea', 'label' => 'Meta description', 'rows' => 3, 'columnSpanFull' => true],
+    ['key' => 'ogImage', 'type' => 'image', 'label' => 'Share image (OG)'],
+    ['key' => 'robots', 'type' => 'select', 'label' => 'Search indexing', 'options' => ['index' => 'Allow indexing', 'noindex' => 'Hide from search']],
+];
+
+$pageSeoSection = ['label' => 'SEO', 'fields' => $seoFields];
+
 $trustIconOptions = ['star' => 'Star rating', 'check' => 'Check', 'shield' => 'Shield', 'phone' => 'Phone'];
 $whyFeatureIconOptions = ['campervan' => 'Campervan', 'car' => 'Car', 'house' => 'Guesthouse', 'host' => 'Host', 'shield' => 'Shield', 'phone' => 'Phone'];
 $specTypeOptions = ['gearbox' => 'Gearbox', 'seat' => 'Seats', 'bed' => 'Beds', 'bag' => 'Bags', 'drive' => 'Drive', 'wifi' => 'Wi-Fi', 'room' => 'Rooms', 'bath' => 'Bath'];
@@ -258,6 +274,7 @@ return [
                         ['key' => 'items', 'type' => 'repeater', 'label' => 'FAQ items', 'fields' => $faqItemRepeater, 'columnSpanFull' => true],
                     ],
                 ],
+                'seo' => ['label' => 'SEO defaults', 'fields' => $globalSeoFields],
             ],
         ],
         'home' => [
@@ -388,9 +405,11 @@ return [
                     'fields' => [
                         ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
                         ['key' => 'heading', 'type' => 'text', 'label' => 'Heading'],
-                        ['key' => 'rating', 'type' => 'text', 'label' => 'Rating'],
-                        ['key' => 'ratingCount', 'type' => 'text', 'label' => 'Rating count'],
-                        ['key' => 'reviews', 'type' => 'repeater', 'label' => 'Review cards', 'fields' => $reviewCardFields, 'columnSpanFull' => true],
+                        ['key' => 'googleEnabled', 'type' => 'toggle', 'label' => 'Connect Google Reviews', 'helperText' => 'Pull live rating and reviews from your Google Business profile. Requires a Google Maps API key in Global Configuration.'],
+                        ['key' => 'googlePlaceId', 'type' => 'text', 'label' => 'Google Place ID', 'helperText' => 'Find this in Google Maps → your business → Share → Embed a map, or use the Place ID finder.', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => true], 'columnSpanFull' => true],
+                        ['key' => 'rating', 'type' => 'text', 'label' => 'Rating (demo)', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false]],
+                        ['key' => 'ratingCount', 'type' => 'text', 'label' => 'Rating count (demo)', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false]],
+                        ['key' => 'reviews', 'type' => 'repeater', 'label' => 'Demo review cards', 'helperText' => 'Shown when Google Reviews is off or cannot be loaded.', 'fields' => $reviewCardFields, 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false], 'columnSpanFull' => true],
                     ],
                 ],
                 'guestHousesHighlight' => [
@@ -403,6 +422,7 @@ return [
                         ['key' => 'ctaHref', 'type' => 'text', 'label' => 'CTA link'],
                     ],
                 ],
+                'seo' => $pageSeoSection,
             ],
         ],
         'about' => [
@@ -449,6 +469,7 @@ return [
                     ]],
                 ]],
                 'cta' => ['label' => 'Bottom CTA', 'fields' => $ctaFields],
+                'seo' => $pageSeoSection,
             ],
         ],
         'faq' => [
@@ -498,6 +519,7 @@ return [
                     ['key' => 'buttonLabel', 'type' => 'text', 'label' => 'Button label'],
                 ]],
                 'cta' => ['label' => 'Bottom CTA', 'fields' => $ctaFields],
+                'seo' => $pageSeoSection,
             ],
         ],
         'contact' => [
@@ -520,6 +542,7 @@ return [
                     ['key' => 'message', 'type' => 'text', 'label' => 'Message field'],
                     ['key' => 'submit', 'type' => 'text', 'label' => 'Submit button'],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'terms' => [
@@ -532,6 +555,7 @@ return [
                 'body' => ['label' => 'Body', 'fields' => [
                     ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'privacy' => [
@@ -544,6 +568,7 @@ return [
                 'body' => ['label' => 'Body', 'fields' => [
                     ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'cookies' => [
@@ -556,6 +581,7 @@ return [
                 'body' => ['label' => 'Body', 'fields' => [
                     ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'become-a-host' => [
@@ -607,6 +633,7 @@ return [
                     ['key' => 'tagline', 'type' => 'text', 'label' => 'Tagline'],
                     ['key' => 'copyright', 'type' => 'text', 'label' => 'Copyright'],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'good-to-know' => [
@@ -619,6 +646,7 @@ return [
                     ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
                     ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'search-campervan' => [
@@ -629,6 +657,7 @@ return [
             'sections' => [
                 'routing' => ['label' => 'Routing & defaults', 'isRootSection' => true, 'fields' => $searchRoutingFields],
                 'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => $searchCopyFields],
+                'seo' => $pageSeoSection,
             ],
         ],
         'search-car' => [
@@ -639,6 +668,7 @@ return [
             'sections' => [
                 'routing' => ['label' => 'Routing & defaults', 'isRootSection' => true, 'fields' => $searchRoutingFields],
                 'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => $searchCopyFields],
+                'seo' => $pageSeoSection,
             ],
         ],
         'search-guesthouse' => [
@@ -651,6 +681,7 @@ return [
                     ['key' => 'introLocationDefault', 'type' => 'text', 'label' => 'Default location intro'],
                 ])],
                 'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => $searchCopyFields],
+                'seo' => $pageSeoSection,
             ],
         ],
         'listing-campervan' => [
@@ -729,6 +760,7 @@ return [
                 'settings' => ['label' => 'Settings', 'isRootSection' => true, 'fields' => [
                     ['key' => 'prepayPercent', 'type' => 'number', 'label' => 'Prepay percent'],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'auth-login' => [
@@ -747,6 +779,7 @@ return [
                     ['key' => 'registerPrompt', 'type' => 'text', 'label' => 'Register prompt'],
                     ['key' => 'registerLink', 'type' => 'text', 'label' => 'Register link text'],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'auth-register' => [
@@ -762,6 +795,7 @@ return [
                     ['key' => 'loginPrompt', 'type' => 'text', 'label' => 'Login prompt'],
                     ['key' => 'loginLink', 'type' => 'text', 'label' => 'Login link text'],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'auth-host-register' => [
@@ -775,6 +809,7 @@ return [
                     ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
                     ['key' => 'submitLabel', 'type' => 'text', 'label' => 'Submit label'],
                 ]],
+                'seo' => $pageSeoSection,
             ],
         ],
         'user-dashboard' => [

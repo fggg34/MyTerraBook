@@ -1,12 +1,14 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { buildCheckoutParams } from '../components/cars/BookingForm'
 import ListingPageContent from '../components/listing/ListingPageContent'
+import PageHead from '../components/seo/PageHead'
 import EmptyState from '../components/ui/EmptyState'
 import { PageLoader } from '../components/ui/LoadingSpinner'
 import { useToast } from '../context/ToastContext'
 import useListingEffects from '../hooks/useListingEffects'
 import useListingPage from '../hooks/useListingPage'
+import usePageSeo from '../hooks/usePageSeo'
 import { formatDateOnly, formatDateTimeAt } from '../utils/format'
 import '../styles/listing.css'
 
@@ -18,6 +20,22 @@ export default function ListingPage({ listingType = 'campervan' }) {
   const { toast } = useToast()
   const { listing, related, loadState, queryDefaults, searchQuery, typeConfig, car, reviewTarget, refetchReviews } =
     useListingPage(listingType)
+
+  const listingSource = useMemo(
+    () => ({
+      name: car?.name || listing?.name,
+      description: car?.description || listing?.description,
+      short_description: car?.short_description || listing?.short_description,
+      meta_title: car?.meta_title,
+      meta_description: car?.meta_description,
+      og_image: car?.og_image,
+      main_image_path: car?.main_image_path || listing?.main_image_path,
+      thumbnail: car?.thumbnail || listing?.thumbnail,
+      listingType,
+    }),
+    [car, listing, listingType],
+  )
+  const seo = usePageSeo(null, { skipPageSeo: true, source: listingSource })
 
   const openDatePicker = useCallback(() => {
     openCalendarRef.current?.open?.()
@@ -82,12 +100,19 @@ export default function ListingPage({ listingType = 'campervan' }) {
   })
 
   if (loadState === 'loading') {
-    return <PageLoader message="Loading listing…" />
+    return (
+      <>
+        <PageHead {...seo} />
+        <PageLoader message="Loading listing…" />
+      </>
+    )
   }
 
   if (loadState === 'error' || !listing) {
     return (
-      <div className="wrap" style={{ padding: '4rem 0' }}>
+      <>
+        <PageHead {...seo} robots="noindex" />
+        <div className="wrap" style={{ padding: '4rem 0' }}>
         <EmptyState
           title="Listing not found"
           description="This listing may no longer be available."
@@ -97,12 +122,15 @@ export default function ListingPage({ listingType = 'campervan' }) {
             </Link>
           }
         />
-      </div>
+        </div>
+      </>
     )
   }
 
   return (
-    <div className="listing-page" ref={rootRef}>
+    <>
+      <PageHead {...seo} />
+      <div className="listing-page" ref={rootRef}>
       <ListingPageContent
         listing={listing}
         related={related}
@@ -116,6 +144,7 @@ export default function ListingPage({ listingType = 'campervan' }) {
         bookingDatesRef={bookingDatesRef}
         openCalendarRef={openCalendarRef}
       />
-    </div>
+      </div>
+    </>
   )
 }

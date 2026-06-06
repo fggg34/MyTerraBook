@@ -18,6 +18,9 @@ class BlogPostResource extends JsonResource
             'id' => $this->id,
             'slug' => $this->slug,
             'title' => $this->title,
+            'meta_title' => $this->meta_title,
+            'meta_description' => $this->meta_description,
+            'og_image' => $this->resolveImageUrl($this->og_image),
             'kicker' => $this->kicker,
             'excerpt' => $this->excerpt,
             'body' => $this->when(

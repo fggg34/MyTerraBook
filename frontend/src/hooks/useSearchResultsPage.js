@@ -2,9 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { usePageContent } from '../context/SiteContentContext'
-import { PAGE_SIZE, QUICK_FILTERS, SORT_OPTIONS, VEHICLE_TYPES } from '../data/searchResultsConfig'
+import { PAGE_SIZE, SORT_OPTIONS, VEHICLE_TYPES } from '../data/searchResultsConfig'
 import { mergePageContent } from '../utils/mergePageContent'
 import { mapCarToResultCard } from '../utils/mapCarToResultCard'
+import {
+  applyQuickFilters,
+  buildVehicleQuickFilters,
+  pruneQuickFilters,
+  toggleQuickFilter,
+} from '../utils/searchQuickFilters'
 import { categoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 import { toApiDateTime } from '../utils/format'
 
@@ -84,8 +90,8 @@ export default function useSearchResultsPage(vehicleType) {
     return m
   }, [locations])
 
-  const cards = useMemo(() => {
-    let list = cars
+  const vehicleCards = useMemo(() => {
+    return cars
       .filter((car) => {
         const name = car.category_name || categoryMap[car.category_id]
         return categoryMatchesVehicleType(name, config.categoryNames)
@@ -97,17 +103,25 @@ export default function useSearchResultsPage(vehicleType) {
           { searchQuery, config, categoryName },
         )
       })
+  }, [cars, categoryMap, config, searchQuery])
+
+  const quickFilterOptions = useMemo(
+    () => buildVehicleQuickFilters(vehicleCards),
+    [vehicleCards],
+  )
+
+  useEffect(() => {
+    setQuickFilters((prev) => pruneQuickFilters(prev, quickFilterOptions))
+  }, [quickFilterOptions])
+
+  const cards = useMemo(() => {
+    let list = vehicleCards
 
     list = list.filter((car) => matchesTransmission(car, filters.transmission))
     list = list.filter((car) => matchesPrice(car, filters.maxPrice))
     if (filters.minSeats) list = list.filter((car) => car.sortSeats >= filters.minSeats)
     if (filters.minSleeps) list = list.filter((car) => car.sortSleeps >= filters.minSleeps)
-
-    QUICK_FILTERS.forEach((qf) => {
-      if (quickFilters.includes(qf.id)) {
-        list = list.filter((car) => qf.match({ ...car, categoryName: car.categoryName }))
-      }
-    })
+    list = applyQuickFilters(list, quickFilters, quickFilterOptions)
 
     list.sort((a, b) => {
       if (sort === 'price-asc') return a.sortPrice - b.sortPrice
@@ -118,7 +132,7 @@ export default function useSearchResultsPage(vehicleType) {
     })
 
     return list
-  }, [cars, categoryMap, config, filters, quickFilters, searchQuery, sort])
+  }, [vehicleCards, filters, quickFilters, quickFilterOptions, sort])
 
   const visibleCards = cards.slice(0, visibleCount)
   const pickupLabel = locationMap[query.pickup_location_id] || 'Keflavík Airport (KEF)'
@@ -138,7 +152,7 @@ export default function useSearchResultsPage(vehicleType) {
   }
 
   const toggleQuick = (id) => {
-    setQuickFilters((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+    setQuickFilters((prev) => toggleQuickFilter(prev, id, quickFilterOptions))
     setVisibleCount(PAGE_SIZE)
   }
 
@@ -174,7 +188,7 @@ export default function useSearchResultsPage(vehicleType) {
     setSort,
     sortLabel,
     sortOptions: SORT_OPTIONS,
-    quickFilterOptions: QUICK_FILTERS,
+    quickFilterOptions,
     filters,
     setFilters,
     quickFilters,

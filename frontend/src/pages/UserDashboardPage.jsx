@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom'
 import { usePageContent } from '../context/SiteContentContext'
 import { api } from '../api'
 import Modal from '../components/ui/Modal'
+import PageHead from '../components/seo/PageHead'
 import StatusBadge from '../components/ui/StatusBadge'
 import EmptyState from '../components/ui/EmptyState'
 import { PageLoader } from '../components/ui/LoadingSpinner'
 import { useToast } from '../context/ToastContext'
+import usePageSeo from '../hooks/usePageSeo'
 import { formatCurrency, formatDate } from '../utils/format'
 
 const SIDEBAR_ICONS = {
@@ -19,6 +21,11 @@ const SIDEBAR_ICONS = {
 
 export default function UserDashboardPage() {
   const { page: copy } = usePageContent('user-dashboard')
+  const seo = usePageSeo(null, {
+    skipPageSeo: true,
+    robots: 'noindex',
+    source: { title: copy.title ?? 'My account' },
+  })
   const sidebarLinks = (copy.sidebarLinks?.length ? copy.sidebarLinks : [
     { id: 'bookings', label: 'My Bookings' },
     { id: 'stays', label: 'My Stays' },
@@ -85,10 +92,19 @@ export default function UserDashboardPage() {
   )
   const pastOrders = orders.filter((o) => !activeOrders.includes(o))
 
-  if (loading) return <PageLoader message="Loading your bookings…" />
+  if (loading) {
+    return (
+      <>
+        <PageHead {...seo} />
+        <PageLoader message="Loading your bookings…" />
+      </>
+    )
+  }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <>
+      <PageHead {...seo} />
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="section-title">My Dashboard</h1>
 
       <div className="mt-8 flex flex-col gap-8 lg:flex-row">
@@ -206,6 +222,7 @@ export default function UserDashboardPage() {
         )}
       </Modal>
     </div>
+    </>
   )
 }
 

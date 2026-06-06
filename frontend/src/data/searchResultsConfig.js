@@ -55,27 +55,11 @@ export const SORT_OPTIONS = [
   { id: 'sleeps', label: 'Sleeps the most' },
 ]
 
-export const QUICK_FILTERS = [
-  { id: '4x4', label: '4×4', match: (car) => /suv|4x4|4wd/i.test(`${car.categoryName} ${car.name}`) },
-  { id: 'auto', label: 'Automatic', match: (car) => /auto/i.test(car.transmission || '') },
-  {
-    id: 'winter',
-    label: 'Winter-ready',
-    match: (car) => /suv|van|4x4|awd|4wd/i.test(`${car.categoryName} ${car.name} ${car.fuel_type}`),
-  },
-]
-
 export const GUESTHOUSE_SORT_OPTIONS = [
   { id: 'rec', label: 'Recommended' },
   { id: 'price-asc', label: 'Price: low to high' },
   { id: 'price-desc', label: 'Price: high to low' },
   { id: 'guests', label: 'Most guests' },
-]
-
-export const GUESTHOUSE_QUICK_FILTERS = [
-  { id: 'villa', label: 'Villa', match: (card) => card.houseType === 'villa' },
-  { id: 'apartment', label: 'Apartment', match: (card) => card.houseType === 'apartment' },
-  { id: 'cottage', label: 'Cottage', match: (card) => card.houseType === 'cottage' },
 ]
 
 export const PAGE_SIZE = 9

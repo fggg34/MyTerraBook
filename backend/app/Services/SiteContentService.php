@@ -77,7 +77,7 @@ class SiteContentService
             'staySection' => $home['staySection'] ?? [],
             'blogSection' => $home['blogSection'] ?? [],
             'hostCtaSection' => $home['hostCtaSection'] ?? [],
-            'reviewsSection' => $home['reviewsSection'] ?? [],
+            'reviewsSection' => $this->resolveReviewsSection($home['reviewsSection'] ?? []),
             'faqSection' => $global['faqSection'] ?? [],
             'newsSection' => $global['newsSection'] ?? [],
             'footer' => $global['footer'] ?? [],
@@ -89,6 +89,45 @@ class SiteContentService
     public function clearCache(): void
     {
         Cache::forget('site_content.all');
+    }
+
+    /**
+     * @param  array<string, mixed>  $section
+     * @return array<string, mixed>
+     */
+    public function resolveReviewsSection(array $section): array
+    {
+        $defaults = SiteContentDefaults::forPage('home')['reviewsSection'] ?? [];
+        $demo = array_replace_recursive($defaults, $section);
+
+        $googleEnabled = (bool) ($section['googleEnabled'] ?? false);
+        $placeId = trim((string) ($section['googlePlaceId'] ?? ''));
+
+        if ($googleEnabled && $placeId !== '') {
+            $google = app(GoogleReviewsService::class)->fetchForPlace($placeId);
+
+            if ($google !== null) {
+                return [
+                    'eyebrow' => $section['eyebrow'] ?? $defaults['eyebrow'] ?? '',
+                    'heading' => $section['heading'] ?? $defaults['heading'] ?? '',
+                    'rating' => $google['rating'] ?: ($demo['rating'] ?? ''),
+                    'ratingCount' => $google['ratingCount'] ?: ($demo['ratingCount'] ?? ''),
+                    'reviews' => $google['reviews'],
+                    'source' => 'google',
+                    'isDemo' => false,
+                ];
+            }
+        }
+
+        return [
+            'eyebrow' => $demo['eyebrow'] ?? '',
+            'heading' => $demo['heading'] ?? '',
+            'rating' => $demo['rating'] ?? '',
+            'ratingCount' => $demo['ratingCount'] ?? '',
+            'reviews' => is_array($demo['reviews'] ?? null) ? $demo['reviews'] : [],
+            'source' => 'demo',
+            'isDemo' => true,
+        ];
     }
 
     /**

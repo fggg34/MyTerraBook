@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import SiteLogo from '../../components/branding/SiteLogo'
+import PageHead from '../../components/seo/PageHead'
 import { getPostLoginPath, useAuth } from '../../context/AuthContext'
 import { usePageContent } from '../../context/SiteContentContext'
 import { useToast } from '../../context/ToastContext'
+import usePageSeo from '../../hooks/usePageSeo'
 import '../../styles/auth-pages.css'
 
 export default function HostRegisterPage() {
   const { page: copy } = usePageContent('auth-host-register')
+  const seo = usePageSeo('auth-host-register', { source: copy, robots: 'noindex' })
   const { registerAsHost } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -29,7 +32,9 @@ export default function HostRegisterPage() {
   }
 
   return (
-    <div className="auth-page">
+    <>
+      <PageHead {...seo} />
+      <div className="auth-page">
       <div className="wrap auth-shell">
         <div className="auth-intro">
           <SiteLogo variant="auth" className="logo-text" />
@@ -47,5 +52,6 @@ export default function HostRegisterPage() {
         </form>
       </div>
     </div>
+    </>
   )
 }

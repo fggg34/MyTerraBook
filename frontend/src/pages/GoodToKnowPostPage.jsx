@@ -1,7 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
 import ContentProse from '../components/content/ContentProse'
+import PageHead from '../components/seo/PageHead'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import useBlogPosts from '../hooks/useBlogPosts'
+import usePageSeo from '../hooks/usePageSeo'
 import '../styles/content-pages.css'
 
 const FALLBACK_IMAGE = '/images/homepage/hero.jpg'
@@ -22,23 +24,33 @@ function formatDate(iso) {
 export default function GoodToKnowPostPage() {
   const { slug } = useParams()
   const { post, loading, error } = useBlogPosts({ slug })
+  const seo = usePageSeo(null, {
+    skipPageSeo: true,
+    source: post || {},
+  })
 
   if (loading) {
     return (
-      <div className="content-page content-state">
-        <LoadingSpinner />
-      </div>
+      <>
+        <PageHead {...seo} />
+        <div className="content-page content-state">
+          <LoadingSpinner />
+        </div>
+      </>
     )
   }
 
   if (error || !post) {
     return (
-      <div className="content-page content-state">
+      <>
+        <PageHead {...seo} robots="noindex" />
+        <div className="content-page content-state">
         <h1>Article not found</h1>
         <p className="content-not-found-link">
           <Link to="/good-to-know">← Back to Good to Know</Link>
         </p>
       </div>
+      </>
     )
   }
 
@@ -46,7 +58,9 @@ export default function GoodToKnowPostPage() {
   const publishedLabel = formatDate(post.published_at)
 
   return (
-    <div className="content-page gtk-article-page">
+    <>
+      <PageHead {...seo} />
+      <div className="content-page gtk-article-page">
       <article className="gtk-article">
         <div className="wrap gtk-article-wrap">
           <Link to="/good-to-know" className="gtk-article-back">
@@ -94,5 +108,6 @@ export default function GoodToKnowPostPage() {
         </div>
       </article>
     </div>
+    </>
   )
 }

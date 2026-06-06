@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthPageLayout from '../components/auth/AuthPageLayout'
 import PasswordInput from '../components/auth/PasswordInput'
+import PageHead from '../components/seo/PageHead'
 import { getPostLoginPath, useAuth } from '../context/AuthContext'
 import { usePageContent } from '../context/SiteContentContext'
 import { useToast } from '../context/ToastContext'
+import usePageSeo from '../hooks/usePageSeo'
 import '../styles/auth-pages.css'
 
 const REGISTER_FEATURES = [
@@ -41,6 +43,7 @@ const REGISTER_FEATURES = [
 
 export default function RegisterPage() {
   const { page: copy } = usePageContent('auth-register')
+  const seo = usePageSeo('auth-register', { source: copy, robots: 'noindex' })
   const { registerAccount } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -90,7 +93,9 @@ export default function RegisterPage() {
   const update = (key) => (e) => setForm({ ...form, [key]: e.target.value })
 
   return (
-    <AuthPageLayout
+    <>
+      <PageHead {...seo} />
+      <AuthPageLayout
       variant="register"
       features={REGISTER_FEATURES}
       heroTitle={copy.heroTitle ?? 'Create your account'}
@@ -195,5 +200,6 @@ export default function RegisterPage() {
         </p>
       </footer>
     </AuthPageLayout>
+    </>
   )
 }

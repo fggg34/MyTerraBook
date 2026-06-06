@@ -367,7 +367,11 @@ body.search-results-active .chrome{
 body.search-results-active .chrome.stuck{box-shadow:0 14px 30px -22px rgba(15,32,54,.5);}
 body.search-results-active .search-chrome-bar{position:relative;padding-top:14px;}
 body.search-results-active .filterbar{position:relative;}
-body.search-results-active .wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px;}
+body.search-results-active .search-results-page .wrap,
+body.search-results-active .topbar .wrap,
+body.search-results-active header.nav .wrap,
+body.search-results-active .chrome .wrap,
+body.search-results-active .ftr .wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px;}
 body.search-results-active .hsearch-pill{display:none;}
 body.search-results-active .chrome.condensed .hsearch-pill{display:inline-flex;animation:pillIn .4s cubic-bezier(.34,1.4,.64,1) both;}
 body.search-results-active .chrome.condensed nav.main a.nav-collapsible{

@@ -180,4 +180,79 @@ class SiteContentApiTest extends TestCase
         $response->assertJsonPath('data.slug', 'about');
         $this->assertNotEmpty($response->json('data.title'));
     }
+
+    public function test_site_content_defaults_include_seo_sections(): void
+    {
+        $this->seed(\Database\Seeders\SiteContentSeeder::class);
+
+        $response = $this->getJson('/api/site-content');
+
+        $response->assertOk();
+        $data = $response->json('data');
+
+        $this->assertArrayHasKey('seo', $data['global']);
+        $this->assertSame('MyTerraBook', $data['global']['seo']['siteName']);
+        $this->assertArrayHasKey('seo', $data['home']);
+        $this->assertArrayHasKey('title', $data['home']['seo']);
+        $this->assertArrayHasKey('description', $data['home']['seo']);
+        $this->assertSame('index', $data['about']['seo']['robots']);
+        $this->assertSame('noindex', $data['auth-login']['seo']['robots']);
+    }
+
+    public function test_homepage_reviews_section_returns_demo_when_google_not_connected(): void
+    {
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => SiteContentDefaults::forPage('home'),
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $response = $this->getJson('/api/homepage');
+
+        $response->assertOk();
+        $response->assertJsonPath('reviewsSection.isDemo', true);
+        $response->assertJsonPath('reviewsSection.source', 'demo');
+        $this->assertNotEmpty($response->json('reviewsSection.reviews'));
+    }
+
+    public function test_homepage_reviews_section_falls_back_to_demo_when_google_enabled_but_unconfigured(): void
+    {
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => array_replace_recursive(SiteContentDefaults::forPage('home'), [
+                'reviewsSection' => [
+                    'googleEnabled' => true,
+                    'googlePlaceId' => 'ChIJinvalid',
+                ],
+            ]),
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $response = $this->getJson('/api/homepage');
+
+        $response->assertOk();
+        $response->assertJsonPath('reviewsSection.isDemo', true);
+        $response->assertJsonPath('reviewsSection.source', 'demo');
+        $this->assertNotEmpty($response->json('reviewsSection.reviews'));
+    }
 }

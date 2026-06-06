@@ -11,6 +11,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class BlogPostForm
@@ -45,6 +46,26 @@ class BlogPostForm
             TextInput::make('read_time')->label('Read time label')->placeholder('12 min read'),
             Toggle::make('is_featured')->label('Featured on homepage'),
             Toggle::make('aurora')->label('Aurora card style'),
+            Section::make('SEO')
+                ->schema([
+                    TextInput::make('meta_title')
+                        ->label('Meta title')
+                        ->maxLength(255)
+                        ->helperText('Leave empty to use the post title.'),
+                    Textarea::make('meta_description')
+                        ->label('Meta description')
+                        ->rows(3)
+                        ->helperText('Leave empty to use the excerpt.'),
+                    FileUpload::make('og_image')
+                        ->label('Share image (OG)')
+                        ->disk('public')
+                        ->directory('blog/og')
+                        ->image()
+                        ->maxSize(8192)
+                        ->helperText('Leave empty to use the featured image.'),
+                ])
+                ->columns(1)
+                ->collapsible(),
             Select::make('status')
                 ->options(collect(BlogPostStatus::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)]))
                 ->required()

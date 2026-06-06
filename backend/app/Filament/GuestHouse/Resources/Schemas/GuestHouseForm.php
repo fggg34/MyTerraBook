@@ -206,6 +206,26 @@ class GuestHouseForm
                         ->options(fn () => GuestHouseAmenity::query()->orderBy('group')->orderBy('name')->pluck('name', 'id'))
                         ->columns(3),
                 ]),
+
+            Section::make('SEO')
+                ->schema([
+                    TextInput::make('meta_title')
+                        ->label('Meta title')
+                        ->maxLength(255)
+                        ->helperText('Leave empty to auto-generate from the listing name.'),
+                    Textarea::make('meta_description')
+                        ->label('Meta description')
+                        ->rows(3)
+                        ->helperText('Leave empty to use the short description or full description.'),
+                    FileUpload::make('og_image')
+                        ->label('Share image (OG)')
+                        ->disk('public')
+                        ->directory('guesthouses/og')
+                        ->image()
+                        ->maxSize(8192)
+                        ->helperText('Leave empty to use the cover photo.'),
+                ])
+                ->collapsible(),
         ]);
     }
 }

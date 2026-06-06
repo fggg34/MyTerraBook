@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import AuthPageLayout from '../components/auth/AuthPageLayout'
 import PasswordInput from '../components/auth/PasswordInput'
+import PageHead from '../components/seo/PageHead'
 import { getPostLoginPath, useAuth } from '../context/AuthContext'
 import { usePageContent } from '../context/SiteContentContext'
 import { useToast } from '../context/ToastContext'
+import usePageSeo from '../hooks/usePageSeo'
 import '../styles/auth-pages.css'
 
 export default function LoginPage({ hostIntent = false }) {
@@ -21,6 +23,10 @@ export default function LoginPage({ hostIntent = false }) {
       }
     : {}
   const mergedCopy = { ...copy, ...loginCopy }
+  const seo = usePageSeo('auth-login', {
+    source: mergedCopy,
+    robots: 'noindex',
+  })
   const { loginWithCredentials } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -53,7 +59,9 @@ export default function LoginPage({ hostIntent = false }) {
   }
 
   return (
-    <AuthPageLayout
+    <>
+      <PageHead {...seo} />
+      <AuthPageLayout
       variant="login"
       heroTitle={mergedCopy.heroTitle ?? 'Sign in to MyTerraBook'}
       heroText={mergedCopy.heroText ?? 'Pick up where you left off. Your bookings, saved listings and trip details are waiting.'}
@@ -130,5 +138,6 @@ export default function LoginPage({ hostIntent = false }) {
         )}
       </footer>
     </AuthPageLayout>
+    </>
   )
 }

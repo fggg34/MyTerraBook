@@ -157,7 +157,13 @@ export function mergeHomepageData(apiData = {}) {
       posts: blogPosts,
     },
     hostCtaSection,
-    reviewsSection: { ...defaults.reviewsSection, ...apiData.reviewsSection },
+    reviewsSection: {
+      ...defaults.reviewsSection,
+      ...apiData.reviewsSection,
+      reviews: apiData.reviewsSection?.reviews?.length
+        ? apiData.reviewsSection.reviews
+        : defaults.reviewsSection.reviews,
+    },
     faqSection: { ...defaults.faqSection, ...apiData.faqSection },
     newsSection: {
       ...defaults.newsSection,

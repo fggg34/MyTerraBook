@@ -9,6 +9,7 @@
     "build:prod": "vite build",
     "deploy:build": "bash deploy.sh",
     "lint": "eslint .",
+    "test:seo": "node src/utils/resolveSeo.test.js",
     "preview": "vite preview"
   },
   "dependencies": {

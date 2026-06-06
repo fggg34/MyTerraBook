@@ -4,7 +4,7 @@ import DateRangePicker from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
 import useSearchChromeDraft from '../../hooks/useSearchChromeDraft'
-import { QUICK_FILTERS, SORT_OPTIONS, VEHICLE_TYPES } from '../../data/searchResultsConfig'
+import { SORT_OPTIONS } from '../../data/searchResultsConfig'
 
 const CAT_ICONS = {
   camper: (
@@ -57,7 +57,7 @@ export default function SearchResultsChrome({
   setSort,
   sortLabel,
   sortOptions = SORT_OPTIONS,
-  quickFilterOptions = QUICK_FILTERS,
+  quickFilterOptions = [],
   quickFilters,
   toggleQuick,
   clearFilters,
@@ -286,7 +286,7 @@ export default function SearchResultsChrome({
                 </svg>
               </button>
             )}
-            <span className="chip-div" />
+            {quickFilterOptions.length > 0 && <span className="chip-div" />}
             {quickFilterOptions.map((qf) => (
               <button
                 key={qf.id}

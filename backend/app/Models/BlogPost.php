@@ -12,6 +12,9 @@ class BlogPost extends Model
     protected $fillable = [
         'slug',
         'title',
+        'meta_title',
+        'meta_description',
+        'og_image',
         'kicker',
         'excerpt',
         'body',
