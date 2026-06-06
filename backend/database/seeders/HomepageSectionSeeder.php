@@ -16,7 +16,7 @@ class HomepageSectionSeeder extends Seeder
                 'content' => [
                     'text' => 'Become a Host and start earning money!',
                     'linkLabel' => 'List your van or guesthouse',
-                    'linkHref' => '#host',
+                    'linkHref' => '/become-a-host',
                     'isVisible' => true,
                 ],
             ],
@@ -25,14 +25,14 @@ class HomepageSectionSeeder extends Seeder
                 'sort_order' => 2,
                 'content' => [
                     'navLinks' => [
-                        ['label' => 'Campervan', 'href' => '#campervan'],
+                        ['label' => 'Campervan', 'href' => '/campervans'],
                         ['label' => 'Car', 'href' => '/cars'],
-                        ['label' => 'Guesthouse', 'href' => '#guesthouse'],
+                        ['label' => 'Guesthouse', 'href' => '/guesthouses'],
                         ['label' => 'Discover Iceland', 'href' => '#discover'],
                         ['label' => 'Good to Know', 'href' => '#faq'],
                     ],
                     'ctaLabel' => 'Become a host',
-                    'ctaHref' => '#host',
+                    'ctaHref' => '/become-a-host',
                     'langLabel' => 'EN',
                     'currencyLabel' => '€ EUR',
                     'signInLabel' => 'Sign in',
@@ -107,7 +107,7 @@ class HomepageSectionSeeder extends Seeder
                             'listingCount' => '184 listings · from €89/night',
                             'name' => 'Campervans',
                             'tagline' => 'Sleep where you drive.',
-                            'href' => '#campervan',
+                            'href' => '/campervans',
                         ],
                         [
                             'image' => '/images/homepage/cardcar.jpg',
@@ -123,7 +123,7 @@ class HomepageSectionSeeder extends Seeder
                             'listingCount' => '73 listings · from €110/night',
                             'name' => 'Guesthouses',
                             'tagline' => 'Warm beds between drives.',
-                            'href' => '#guesthouse',
+                            'href' => '/guesthouses',
                         ],
                     ],
                 ],
@@ -192,10 +192,10 @@ class HomepageSectionSeeder extends Seeder
                         [
                             'title' => 'Rent',
                             'links' => [
-                                ['label' => 'Campervans', 'href' => '#'],
-                                ['label' => '4×4 SUVs', 'href' => '#'],
+                                ['label' => 'Campervans', 'href' => '/campervans'],
+                                ['label' => '4×4 SUVs', 'href' => '/cars'],
                                 ['label' => 'Cars', 'href' => '/cars'],
-                                ['label' => 'Guesthouses', 'href' => '#'],
+                                ['label' => 'Guesthouses', 'href' => '/guesthouses'],
                                 ['label' => 'Long stays', 'href' => '#'],
                                 ['label' => 'Gift cards', 'href' => '#'],
                             ],
@@ -214,7 +214,7 @@ class HomepageSectionSeeder extends Seeder
                         [
                             'title' => 'Host',
                             'links' => [
-                                ['label' => 'Become a host', 'href' => '#host'],
+                                ['label' => 'Become a host', 'href' => '/become-a-host'],
                                 ['label' => 'Host hub', 'href' => '#'],
                                 ['label' => 'Hosting fees', 'href' => '#'],
                                 ['label' => 'Insurance', 'href' => '#'],
@@ -264,7 +264,7 @@ class HomepageSectionSeeder extends Seeder
                         'moss-cottage',
                     ],
                     'ctaLabel' => 'View all stays',
-                    'ctaHref' => '/guest-houses',
+                    'ctaHref' => '/guesthouses',
                 ],
             ],
         ];

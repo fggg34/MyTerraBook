@@ -8,7 +8,6 @@ import StaySection from '../components/homepage/StaySection'
 import BlogSection from '../components/homepage/BlogSection'
 import HostCtaSection from '../components/homepage/HostCtaSection'
 import ReviewsSection from '../components/homepage/ReviewsSection'
-import GuestHousesHighlight from '../components/guest-houses/GuestHousesHighlight'
 
 export default function HomePage({ pageData = {} }) {
   return (
@@ -18,7 +17,6 @@ export default function HomePage({ pageData = {} }) {
       <WhatWeRentSection {...(pageData.rentSection || {})} />
       <WhyMyTerraSection {...(pageData.whySection || {})} />
       <PicksSection {...(pageData.picksSection || {})} />
-      <GuestHousesHighlight {...(pageData.guestHousesHighlight || {})} />
       <HowItWorksSection {...(pageData.howSection || {})} />
       <StaySection {...(pageData.staySection || {})} />
       <BlogSection {...(pageData.blogSection || {})} />

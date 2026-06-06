@@ -37,6 +37,11 @@ export default function useSearchResultsPage(vehicleType) {
   })
 
   useEffect(() => {
+    if (vehicleType === 'guesthouse') {
+      setLoading(false)
+      return undefined
+    }
+
     setLoading(true)
     const params = {}
     if (query.pickup_location_id) params.pickup_location_id = query.pickup_location_id
@@ -51,7 +56,7 @@ export default function useSearchResultsPage(vehicleType) {
         setLocations(locRes.data.data || [])
       })
       .finally(() => setLoading(false))
-  }, [query.pickup_location_id, query.dropoff_location_id, query.pickup_at, query.dropoff_at])
+  }, [vehicleType, query.pickup_location_id, query.dropoff_location_id, query.pickup_at, query.dropoff_at])
 
   const categoryMap = useMemo(() => {
     const m = {}
@@ -158,6 +163,8 @@ export default function useSearchResultsPage(vehicleType) {
     sort,
     setSort,
     sortLabel,
+    sortOptions: SORT_OPTIONS,
+    quickFilterOptions: QUICK_FILTERS,
     filters,
     setFilters,
     quickFilters,
@@ -166,5 +173,7 @@ export default function useSearchResultsPage(vehicleType) {
     hasActiveFilters,
     locations,
     categoryMap,
+    guestsLabel: null,
+    isGuesthouse: false,
   }
 }

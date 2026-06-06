@@ -1,27 +1,31 @@
 import { Link } from 'react-router-dom'
 import ProductCard from '../homepage/ProductCard'
 import { mapCarToResultCard } from '../../utils/mapCarToResultCard'
+import { mapGuestHouseToResultCard } from '../../utils/mapGuestHouseToResultCard'
 import ListingGallery from './ListingGallery'
 import ListingReviewsSection from './ListingReviewsSection'
 import ListingTabPanels from './ListingTabPanels'
 
-export default function ListingPageContent({ listing, related, searchQuery, typeConfig, reviewTarget, onReviewsChange }) {
+export default function ListingPageContent({ listing, related, searchQuery, typeConfig, reviewTarget, onReviewsChange, onRequestBook }) {
   const detailBase =
     listing.listingType === 'car' ? '/cars' : listing.listingType === 'guesthouse' ? '/guesthouses' : '/campervans'
-  const relatedCards = related.map((car) => {
+  const relatedCards = related.map((item) => {
+    if (listing.listingType === 'guesthouse') {
+      return mapGuestHouseToResultCard(item, { searchQuery })
+    }
     const card = mapCarToResultCard(
-      { ...car, categoryName: car.category_name },
+      { ...item, categoryName: item.category_name },
       {
         searchQuery,
         config: {
           defaultSeats: 5,
-          defaultSleeps: listing.listingType === 'guesthouse' ? 0 : 2,
+          defaultSleeps: 2,
           defaultBags: 2,
         },
-        categoryName: car.category_name,
+        categoryName: item.category_name,
       },
     )
-    return { ...card, href: `${detailBase}/${car.id}${searchQuery ? `?${searchQuery}` : ''}` }
+    return { ...card, href: `${detailBase}/${item.id}${searchQuery ? `?${searchQuery}` : ''}` }
   })
 
   return (
@@ -50,7 +54,7 @@ export default function ListingPageContent({ listing, related, searchQuery, type
 
       <div className="layout">
         <div className="wrap">
-          <ListingTabPanels listing={listing} />
+          <ListingTabPanels listing={listing} onRequestBook={onRequestBook} />
         </div>
       </div>
 
@@ -113,10 +117,22 @@ export default function ListingPageContent({ listing, related, searchQuery, type
             ))}
           </div>
           <div className="bp-foot">
-            <button className="bp-cta" id="bpCta" type="button">
+            <button
+              className="bp-cta"
+              id="bpCta"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                const overlay = document.getElementById('bpOverlay')
+                overlay?.classList.remove('open')
+                overlay?.setAttribute('aria-hidden', 'true')
+                document.body.style.overflow = ''
+                onRequestBook?.()
+              }}
+            >
               {typeConfig.bookCta}
             </button>
-            <span className="bp-note">No charge until the booking is confirmed.</span>
+            <span className="bp-note">20% prepayment on approval · balance due on pick-up.</span>
           </div>
         </div>
       </div>

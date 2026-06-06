@@ -33,24 +33,36 @@ const SPEC_ICONS = {
   room: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M5 21V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v17M3 21h18" />
-      <circle cx="15" cy="12" r="1" />
+      <circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none" />
     </svg>
   ),
 }
 
-function specIcon(type, label) {
+function normalizeSpec(spec) {
+  if (typeof spec === 'string') {
+    const lower = spec.toLowerCase()
+    let type = 'seat'
+    if (lower.includes('sleep') || lower.includes('guest')) type = 'bed'
+    if (lower.includes('room')) type = 'room'
+    if (lower.includes('wi-fi') || lower.includes('wifi')) type = 'wifi'
+    return { type, label: spec }
+  }
+  return spec
+}
+
+function specIcon(type, label, key) {
   if (type === 'gearbox') {
     return (
-      <span className="spec">
+      <span className="spec" key={key}>
         <span className="gbox">{label}</span>
       </span>
     )
   }
   const icon = SPEC_ICONS[type] || SPEC_ICONS.seat
   return (
-    <span className="spec">
+    <span className="spec" key={key}>
       {icon}
-      {label}
+      <span className="spec-lbl">{label}</span>
     </span>
   )
 }
@@ -63,49 +75,21 @@ export default function ProductCard({
   specs = [],
   price,
   per = 'night',
-  simpleSpecs = false,
   href,
 }) {
-  const openIcon = (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M7 17 17 7M9 7h8v8" />
-    </svg>
-  )
-
   return (
     <article className="pcard">
       <div className="pcard-media">
         {badge && <span className="pbadge">{badge}</span>}
-        {href ? (
-          <Link className="pcard-open" to={href} aria-label={`View ${name}`}>
-            {openIcon}
-          </Link>
-        ) : (
-          <button className="pcard-open" type="button" aria-label="View">
-            {openIcon}
-          </button>
-        )}
         <img src={image} alt={imageAlt || name} />
       </div>
       <div className="pcard-foot">
         <h3>{name}</h3>
         <div className="specs">
-          {simpleSpecs
-            ? specs.map((label) => {
-                const lower = label.toLowerCase()
-                let type = 'seat'
-                if (lower.includes('room')) type = 'room'
-                if (lower.includes('wi-fi') || lower.includes('wifi')) type = 'wifi'
-                return (
-                  <span className="spec" key={label}>
-                    {SPEC_ICONS[type]}
-                    {label}
-                  </span>
-                )
-              })
-            : specs.map((spec) => (
-                <span key={`${spec.type}-${spec.label}`}>{specIcon(spec.type, spec.label)}</span>
-              ))}
+          {specs.map((spec) => {
+            const { type, label } = normalizeSpec(spec)
+            return specIcon(type, label, `${type}-${label}`)
+          })}
         </div>
         {price && (
           <div className="pcard-cta">

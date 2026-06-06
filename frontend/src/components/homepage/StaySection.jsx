@@ -1,4 +1,20 @@
+import { Link } from 'react-router-dom'
 import ProductCard from './ProductCard'
+
+function SectionLink({ href, className, children }) {
+  if (href?.startsWith('/') && !href.startsWith('//')) {
+    return (
+      <Link to={href} className={className}>
+        {children}
+      </Link>
+    )
+  }
+  return (
+    <a className={className} href={href || '#'}>
+      {children}
+    </a>
+  )
+}
 
 export default function StaySection({ heading, subtitle, allLabel, allHref, cards = [] }) {
   return (
@@ -10,25 +26,25 @@ export default function StaySection({ heading, subtitle, allLabel, allHref, card
             {subtitle && <p className="stay-sub">{subtitle}</p>}
           </div>
           {allLabel && (
-            <a className="stay-all" href={allHref || '#'}>
+            <SectionLink className="stay-all" href={allHref}>
               {allLabel}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
-            </a>
+            </SectionLink>
           )}
         </div>
         <div className="stay-grid">
           {cards.map((card) => (
             <ProductCard
-              key={card.name}
+              key={card.slug || card.id || card.name}
               name={card.name}
               image={card.image}
               badge={card.badge}
               specs={card.specs}
               price={card.price}
-              per="night"
-              simpleSpecs
+              per={card.per || 'night'}
+              href={card.href}
             />
           ))}
         </div>

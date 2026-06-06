@@ -32,7 +32,7 @@ export const defaultHomepageData = {
     navLinks: [
       { label: 'Campervan', href: '/campervans' },
       { label: 'Car', href: '/cars' },
-      { label: 'Guesthouse', href: '#guesthouse' },
+      { label: 'Guesthouse', href: '/guesthouses' },
       { label: 'Discover Iceland', href: '#discover' },
       { label: 'Good to Know', href: '#faq' },
     ],
@@ -81,7 +81,7 @@ export const defaultHomepageData = {
         listingCount: '184 listings · from €89/night',
         name: 'Campervans',
         tagline: 'Sleep where you drive.',
-        href: '#campervan',
+        href: '/campervans',
       },
       {
         image: IMG.cardCar,
@@ -97,7 +97,7 @@ export const defaultHomepageData = {
         listingCount: '73 listings · from €110/night',
         name: 'Guesthouses',
         tagline: 'Warm beds between drives.',
-        href: '#guesthouse',
+        href: '/guesthouses',
       },
     ],
   },
@@ -157,7 +157,7 @@ export const defaultHomepageData = {
   picksSection: {
     heading: 'Hand-picked for Iceland.',
     tabs: [
-      { id: 'camper', label: 'Campervans', allLabel: 'See all campervans', allHref: '#' },
+      { id: 'camper', label: 'Campervans', allLabel: 'See all campervans', allHref: '/campervans' },
       { id: 'car', label: 'Cars', allLabel: 'See all cars', allHref: '/cars' },
     ],
     items: {
@@ -279,13 +279,6 @@ export const defaultHomepageData = {
       ],
     },
   },
-  guestHousesHighlight: {
-    title: 'Guest houses & stays',
-    subtitle: 'Hand-picked homes across Iceland — from cosy studios to private villas.',
-    featured_slugs: ['northern-lights-villa', 'harbour-view-apartment', 'moss-cottage'],
-    ctaLabel: 'View all stays',
-    ctaHref: '/guest-houses',
-  },
   howSection: {
     heading: 'From airport to open road in three steps.',
     steps: [
@@ -323,7 +316,7 @@ export const defaultHomepageData = {
     subtitle:
       "Hand-picked guesthouses spaced a comfortable day's drive apart — so the only thing left to plan is where to watch the sky.",
     allLabel: 'Browse all guesthouses',
-    allHref: '#guesthouse',
+    allHref: '/guesthouses',
     cards: [
       {
         name: 'Höfn Harbour House',
@@ -397,6 +390,7 @@ export const defaultHomepageData = {
     earnNote: 'Top campervan hosts clear €3,200+. You keep 85% — we handle bookings, payments and insurance.',
     points: ['Free to list', 'You set the calendar', 'Insurance included'],
     primaryLabel: 'Become a host',
+    primaryHref: '/become-a-host',
     secondaryLabel: 'See how hosting works',
     secondaryHref: '/become-a-host',
     houseImage: IMG.hostVan,
@@ -517,10 +511,10 @@ export const defaultHomepageData = {
       {
         title: 'Rent',
         links: [
-          { label: 'Campervans', href: '#' },
-          { label: '4×4 SUVs', href: '#' },
+          { label: 'Campervans', href: '/campervans' },
+          { label: '4×4 SUVs', href: '/cars' },
           { label: 'Cars', href: '/cars' },
-          { label: 'Guesthouses', href: '#' },
+          { label: 'Guesthouses', href: '/guesthouses' },
           { label: 'Long stays', href: '#', badge: 'NEW' },
           { label: 'Gift cards', href: '#' },
         ],

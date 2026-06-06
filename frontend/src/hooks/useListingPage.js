@@ -72,10 +72,20 @@ export default function useListingPage(listingType) {
   }, [id, listingType, typeConfig.categoryNames])
 
   useEffect(() => {
-    if (!entity?.id || listingType === 'guesthouse') {
+    if (!entity?.id) {
       setRelated([])
       return undefined
     }
+
+    if (listingType === 'guesthouse') {
+      api.get('/guest-houses', { params: { per_page: 12 } }).then((res) => {
+        const all = res.data?.data || []
+        const filtered = all.filter((h) => h.slug !== entity.slug && h.id !== entity.id).slice(0, 6)
+        setRelated(filtered)
+      })
+      return undefined
+    }
+
     api.get('/cars').then((res) => {
       const all = res.data.data || []
       const filtered = all

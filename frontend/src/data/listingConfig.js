@@ -77,7 +77,7 @@ export const LISTING_TYPES = {
   guesthouse: {
     id: 'guesthouse',
     categoryNames: [],
-    archiveRoute: '/#guesthouse',
+    archiveRoute: '/guesthouses',
     archiveLabel: 'See all guesthouses',
     dateStartLabel: 'Check-in',
     dateEndLabel: 'Check-out',

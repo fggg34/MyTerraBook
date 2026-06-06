@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { Link } from 'react-router-dom'
 import useHostCtaEffects from '../../hooks/useHostCtaEffects'
 
 export default function HostCtaSection({
@@ -8,6 +9,7 @@ export default function HostCtaSection({
   earnAmount = '€1,900',
   points = [],
   primaryLabel,
+  primaryHref = '/become-a-host',
   secondaryLabel,
   secondaryHref,
   houseImage,
@@ -82,20 +84,38 @@ export default function HostCtaSection({
               ))}
             </div>
             <div className="host-actions">
-              <button className="host-btn primary" type="button">
-                {primaryLabel}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </button>
-              {secondaryLabel && (
-                <a className="host-link" href={secondaryHref || '#'}>
-                  {secondaryLabel}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </a>
-              )}
+              {primaryLabel &&
+                (primaryHref?.startsWith('/') ? (
+                  <Link className="host-btn primary" to={primaryHref}>
+                    {primaryLabel}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </Link>
+                ) : (
+                  <a className="host-btn primary" href={primaryHref || '#host'}>
+                    {primaryLabel}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </a>
+                ))}
+              {secondaryLabel &&
+                (secondaryHref?.startsWith('/') ? (
+                  <Link className="host-link" to={secondaryHref}>
+                    {secondaryLabel}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </Link>
+                ) : (
+                  <a className="host-link" href={secondaryHref || '#'}>
+                    {secondaryLabel}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </a>
+                ))}
             </div>
           </div>
         </div>

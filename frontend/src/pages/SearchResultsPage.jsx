@@ -5,6 +5,7 @@ import ProductCard from '../components/homepage/ProductCard'
 import { SearchResultsChromeProvider } from '../context/SearchResultsChromeContext'
 import SearchResultsChrome, { SearchResultsHeaderPill } from '../components/search-results/SearchResultsChrome'
 import useSearchResultsPage from '../hooks/useSearchResultsPage'
+import useGuesthouseSearchPage from '../hooks/useGuesthouseSearchPage'
 import useSearchResultsEffects from '../hooks/useSearchResultsEffects'
 import useSearchResultsIntroEffects from '../hooks/useSearchResultsIntroEffects'
 import { PAGE_SIZE } from '../data/searchResultsConfig'
@@ -88,7 +89,10 @@ function buildGridItems(cards, config) {
 
 export default function SearchResultsPage({ vehicleType = 'campervan' }) {
   const rootRef = useRef(null)
-  const state = useSearchResultsPage(vehicleType)
+  const isGuesthouse = vehicleType === 'guesthouse'
+  const vehicleState = useSearchResultsPage(vehicleType)
+  const guesthouseState = useGuesthouseSearchPage(isGuesthouse)
+  const state = isGuesthouse ? guesthouseState : vehicleState
   const {
     config,
     loading,
@@ -109,13 +113,22 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     hasActiveFilters,
     filters,
     setFilters,
+    sortOptions,
+    quickFilterOptions,
+    guestsLabel,
   } = state
 
   const pillText = useMemo(() => {
+    if (isGuesthouse) {
+      const city = query.city || 'Iceland'
+      const dates =
+        query.check_in && query.check_out ? formatShortRange(query.check_in, query.check_out) : 'Dates'
+      return `${city} · ${dates} · ${guestsLabel || query.guests || 2} guests`
+    }
     const loc = pickupLabel.includes('(') ? pickupLabel.match(/\(([^)]+)\)/)?.[1] || 'KEF' : 'KEF'
     const dates = query.pickup_at && query.dropoff_at ? formatShortRange(query.pickup_at, query.dropoff_at) : 'Dates'
     return `${loc} · ${dates} · ${query.drivers || 2} drivers`
-  }, [pickupLabel, query])
+  }, [isGuesthouse, pickupLabel, query, guestsLabel])
 
   const gridItems = useMemo(() => buildGridItems(visibleCards, config), [visibleCards, config])
 
@@ -132,7 +145,9 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
 
   useSearchResultsIntroEffects(rootRef)
 
-  const locationShort = pickupLabel.split('(').pop()?.replace(')', '').trim() || 'Keflavík'
+  const locationShort = isGuesthouse
+    ? config.introLocationDefault || pickupLabel || 'Iceland'
+    : pickupLabel.split('(').pop()?.replace(')', '').trim() || 'Keflavík'
 
   return (
     <SearchResultsChromeProvider pillText={pillText}>
@@ -153,6 +168,9 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
               sort={sort}
               setSort={setSort}
               sortLabel={sortLabel}
+              sortOptions={sortOptions}
+              quickFilterOptions={quickFilterOptions}
+              guestsLabel={guestsLabel}
               quickFilters={quickFilters}
               toggleQuick={toggleQuick}
               clearFilters={clearFilters}
@@ -188,20 +206,41 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
                   </p>
                 </div>
                 <div className="ri-tags reveal-tags">
-                  <span className="ri-tag">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11Z" />
-                      <path d="m8.5 11.5 2.5 2.5L16 8.5" />
-                    </svg>
-                    Insurance included
-                  </span>
-                  <span className="ri-tag">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
-                      <path d="M12 7v5l3 2" />
-                    </svg>
-                    Free cancellation
-                  </span>
+                  {isGuesthouse ? (
+                    <>
+                      <span className="ri-tag">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M4 20V9l8-6 8 6v11" />
+                          <path d="M2 20h20" />
+                        </svg>
+                        Verified hosts
+                      </span>
+                      <span className="ri-tag">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
+                          <path d="M12 7v5l3 2" />
+                        </svg>
+                        Flexible cancellation
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="ri-tag">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11Z" />
+                          <path d="m8.5 11.5 2.5 2.5L16 8.5" />
+                        </svg>
+                        Insurance included
+                      </span>
+                      <span className="ri-tag">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
+                          <path d="M12 7v5l3 2" />
+                        </svg>
+                        Free cancellation
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </section>

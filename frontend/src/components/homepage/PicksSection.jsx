@@ -1,5 +1,21 @@
 import { useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ProductCard from './ProductCard'
+
+function SectionLink({ href, className, children }) {
+  if (href?.startsWith('/') && !href.startsWith('//')) {
+    return (
+      <Link to={href} className={className}>
+        {children}
+      </Link>
+    )
+  }
+  return (
+    <a className={className} href={href || '#'}>
+      {children}
+    </a>
+  )
+}
 
 export default function PicksSection({ heading, tabs = [], items = {} }) {
   const trackRef = useRef(null)
@@ -54,12 +70,12 @@ export default function PicksSection({ heading, tabs = [], items = {} }) {
 
         {activeTabMeta?.allLabel && (
           <div className="picks-foot">
-            <a className="picks-all" href={activeTabMeta.allHref || '#'}>
+            <SectionLink className="picks-all" href={activeTabMeta.allHref}>
               {activeTabMeta.allLabel}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
-            </a>
+            </SectionLink>
           </div>
         )}
       </div>
