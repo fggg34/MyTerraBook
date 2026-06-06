@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
+import { usePageContent } from '../context/SiteContentContext'
 import { PAGE_SIZE, QUICK_FILTERS, SORT_OPTIONS, VEHICLE_TYPES } from '../data/searchResultsConfig'
+import { mergePageContent } from '../utils/mergePageContent'
 import { mapCarToResultCard } from '../utils/mapCarToResultCard'
 import { categoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 import { toApiDateTime } from '../utils/format'
@@ -16,8 +18,16 @@ function matchesPrice(car, max) {
   return car.sortPrice <= max
 }
 
+const SEARCH_PAGE_KEYS = {
+  campervan: 'search-campervan',
+  car: 'search-car',
+  guesthouse: 'search-guesthouse',
+}
+
 export default function useSearchResultsPage(vehicleType) {
-  const config = VEHICLE_TYPES[vehicleType] || VEHICLE_TYPES.campervan
+  const staticConfig = VEHICLE_TYPES[vehicleType] || VEHICLE_TYPES.campervan
+  const { page: cmsPage } = usePageContent(SEARCH_PAGE_KEYS[vehicleType] || 'search-campervan', staticConfig)
+  const config = useMemo(() => mergePageContent(staticConfig, cmsPage), [staticConfig, cmsPage])
   const [searchParams, setSearchParams] = useSearchParams()
   const query = Object.fromEntries(searchParams.entries())
   const searchQuery = searchParams.toString()

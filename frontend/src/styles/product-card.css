@@ -247,8 +247,7 @@
   min-width: 0;
 }
 
-.results-grid .cell > .pcard,
-.results-grid .promo-cell > .promo {
+.results-grid .cell > .pcard {
   flex: 1;
   width: 100%;
 }

@@ -2,17 +2,27 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { fetchListingReviews } from '../api/listingReviews'
+import { usePageContent } from '../context/SiteContentContext'
 import { LISTING_TYPES } from '../data/listingConfig'
+import { mergePageContent } from '../utils/mergePageContent'
 import { mapCarToListing } from '../utils/mapCarToListing'
 import { mapGuestHouseToListing } from '../utils/mapGuestHouseToListing'
 import { mapApiListingReviews } from '../utils/mapListingReviews'
 import { categoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 
+const LISTING_PAGE_KEYS = {
+  campervan: 'listing-campervan',
+  car: 'listing-car',
+  guesthouse: 'listing-guesthouse',
+}
+
 export default function useListingPage(listingType) {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const queryDefaults = Object.fromEntries(searchParams.entries())
-  const typeConfig = LISTING_TYPES[listingType] || LISTING_TYPES.campervan
+  const staticConfig = LISTING_TYPES[listingType] || LISTING_TYPES.campervan
+  const { page: cmsPage } = usePageContent(LISTING_PAGE_KEYS[listingType] || 'listing-campervan', staticConfig)
+  const typeConfig = useMemo(() => mergePageContent(staticConfig, cmsPage), [staticConfig, cmsPage])
 
   const [entity, setEntity] = useState(null)
   const [reviews, setReviews] = useState([])

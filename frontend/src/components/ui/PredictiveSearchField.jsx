@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import useSearchSuggestions from '../../hooks/useSearchSuggestions'
 
 export default function PredictiveSearchField({
@@ -19,6 +20,7 @@ export default function PredictiveSearchField({
   const listId = useId()
   const rootRef = useRef(null)
   const inputRef = useRef(null)
+  const menuRef = useRef(null)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState(displayValue || '')
   const [highlight, setHighlight] = useState(-1)
@@ -65,7 +67,9 @@ export default function PredictiveSearchField({
   useEffect(() => {
     if (!open) return undefined
     const onPointerDown = (event) => {
-      if (!rootRef.current?.contains(event.target)) {
+      const inRoot = rootRef.current?.contains(event.target)
+      const inMenu = menuRef.current?.contains(event.target)
+      if (!inRoot && !inMenu) {
         setOpen(false)
         setHighlight(-1)
         setQuery(displayValue || '')
@@ -130,6 +134,43 @@ export default function PredictiveSearchField({
 
   const showMenu = open && (loading || suggestions.length > 0 || query.trim())
 
+  const menu = showMenu && menuStyle && (
+    <ul
+      ref={menuRef}
+      id={listId}
+      className="predictive-search-menu"
+      style={menuStyle}
+      role="listbox"
+    >
+      {loading && !suggestions.length && (
+        <li className="predictive-search-status" role="presentation">
+          Searching…
+        </li>
+      )}
+      {!loading && !suggestions.length && query.trim() && (
+        <li className="predictive-search-status" role="presentation">
+          No matches found
+        </li>
+      )}
+      {suggestions.map((item, index) => (
+        <li key={item.id} role="presentation">
+          <button
+            type="button"
+            className={`predictive-search-item ${highlight === index ? 'highlighted' : ''}`}
+            role="option"
+            aria-selected={value === item.value && displayValue === item.label}
+            onMouseEnter={() => setHighlight(index)}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => selectSuggestion(item)}
+          >
+            <span className="predictive-search-label">{item.label}</span>
+            {item.subtitle && <span className="predictive-search-sub">{item.subtitle}</span>}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+
   return (
     <div className={`predictive-search ${className}`} ref={rootRef}>
       <div className="field-control-wrap">
@@ -155,41 +196,7 @@ export default function PredictiveSearchField({
         />
       </div>
 
-      {showMenu && menuStyle && (
-        <ul
-          id={listId}
-          className="predictive-search-menu"
-          style={menuStyle}
-          role="listbox"
-        >
-          {loading && !suggestions.length && (
-            <li className="predictive-search-status" role="presentation">
-              Searching…
-            </li>
-          )}
-          {!loading && !suggestions.length && query.trim() && (
-            <li className="predictive-search-status" role="presentation">
-              No matches found
-            </li>
-          )}
-          {suggestions.map((item, index) => (
-            <li key={item.id} role="presentation">
-              <button
-                type="button"
-                className={`predictive-search-item ${highlight === index ? 'highlighted' : ''}`}
-                role="option"
-                aria-selected={value === item.value && displayValue === item.label}
-                onMouseEnter={() => setHighlight(index)}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => selectSuggestion(item)}
-              >
-                <span className="predictive-search-label">{item.label}</span>
-                {item.subtitle && <span className="predictive-search-sub">{item.subtitle}</span>}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {menu && createPortal(menu, document.body)}
     </div>
   )
 }

@@ -1,29 +1,6 @@
 @php
     $path = request()->path();
-    $currentUrlPath = ltrim((string) (parse_url(url()->current(), PHP_URL_PATH) ?? ''), '/');
-    $refererPath = ltrim((string) (parse_url((string) request()->headers->get('referer'), PHP_URL_PATH) ?? ''), '/');
-    $inImpactRent = str_starts_with($path, 'admin/impact-rent')
-        || str_starts_with($currentUrlPath, 'admin/impact-rent')
-        || str_starts_with($refererPath, 'admin/impact-rent');
-
-    // #region agent log
-    @file_put_contents(
-        '/Users/anxhelo/Desktop/MyTerraRental/.cursor/debug-89c176.log',
-        json_encode([
-            'sessionId' => '89c176',
-            'runId' => 'initial',
-            'hypothesisId' => 'H6',
-            'location' => 'impact-rent-editor-quick-access.blade.php:php-header',
-            'message' => 'Quick access Blade rendered',
-            'data' => [
-                'path' => $path,
-                'inImpactRent' => $inImpactRent,
-            ],
-            'timestamp' => (int) round(microtime(true) * 1000),
-        ], JSON_UNESCAPED_SLASHES) . PHP_EOL,
-        FILE_APPEND
-    );
-    // #endregion
+    $inImpactRent = str_starts_with($path, 'admin/impact-rent');
 
     /*
      * Each top-level item can be:
@@ -444,3 +421,21 @@
     })();
     </script>
 @endif
+
+<script>
+(function () {
+    if (window.__irTabsNavCleanup) {
+        return;
+    }
+
+    window.__irTabsNavCleanup = true;
+
+    document.addEventListener('livewire:navigated', function () {
+        if (window.location.pathname.includes('/admin/impact-rent')) {
+            return;
+        }
+
+        document.querySelectorAll('[data-ir-quick-access]').forEach((el) => el.remove());
+    });
+})();
+</script>

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { api } from '../../api'
+import { useToast } from '../../context/ToastContext'
 
 export default function NewsSection({
   heading,
@@ -8,11 +10,23 @@ export default function NewsSection({
   placeholder,
   successMessage,
 }) {
+  const { toast } = useToast()
+  const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    setSubmitted(true)
+    setLoading(true)
+    try {
+      await api.post('/newsletter/subscribe', { email, source: 'homepage' })
+      setSubmitted(true)
+      setEmail('')
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not subscribe right now', 'error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -57,9 +71,17 @@ export default function NewsSection({
               <rect x="3" y="5" width="18" height="14" rx="2.5" />
               <path d="m4 7 8 6 8-6" />
             </svg>
-            <input type="email" id="newsEmail" placeholder={placeholder} autoComplete="email" required />
-            <button type="submit">
-              Subscribe
+            <input
+              type="email"
+              id="newsEmail"
+              placeholder={placeholder}
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <button type="submit" disabled={loading}>
+              {loading ? 'Subscribing…' : 'Subscribe'}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>

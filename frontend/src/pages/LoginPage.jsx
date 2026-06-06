@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import SiteLogo from '../components/branding/SiteLogo'
 import { getPostLoginPath, useAuth } from '../context/AuthContext'
+import { usePageContent } from '../context/SiteContentContext'
 import { useToast } from '../context/ToastContext'
 import '../styles/auth-pages.css'
 
 export default function LoginPage() {
+  const { page: copy } = usePageContent('auth-login')
   const { loginWithCredentials } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -40,24 +43,16 @@ export default function LoginPage() {
     <div className="auth-page">
       <div className="wrap auth-shell">
         <div className="auth-intro">
-          <Link to="/" className="logo-text">
-            <span className="logo-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 19h18" />
-                <path d="m4 17 5-9 4 7 3-4 4 6" />
-              </svg>
-            </span>
-            MyTerraBook
-          </Link>
-          <h1>Welcome back</h1>
-          <p>Sign in to manage your Iceland bookings and saved trips.</p>
+          <SiteLogo variant="auth" className="logo-text" />
+          <h1>{copy.title ?? 'Welcome back'}</h1>
+          <p>{copy.subtitle ?? 'Sign in to manage your bookings.'}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-card">
           {errors.form && <div className="auth-error">{errors.form}</div>}
 
           <div className="auth-field">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{copy.emailLabel ?? 'Email'}</label>
             <input
               id="email"
               type="email"
@@ -68,7 +63,7 @@ export default function LoginPage() {
           </div>
 
           <div className="auth-field">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{copy.passwordLabel ?? 'Password'}</label>
             <input
               id="password"
               type="password"
@@ -85,17 +80,18 @@ export default function LoginPage() {
                 checked={form.remember}
                 onChange={(e) => setForm({ ...form, remember: e.target.checked })}
               />{' '}
-              Remember me
+              {copy.rememberLabel ?? 'Remember me'}
             </label>
           </div>
 
           <button type="submit" className="auth-submit" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Signing in…' : (copy.submitLabel ?? 'Sign in')}
           </button>
         </form>
 
         <p className="auth-switch">
-          New to MyTerraBook? <Link to="/register">Create an account</Link>
+          {copy.registerPrompt ?? 'New here?'}{' '}
+          <Link to="/register">{copy.registerLink ?? 'Create an account'}</Link>
         </p>
       </div>
     </div>

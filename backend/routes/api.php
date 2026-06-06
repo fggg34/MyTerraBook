@@ -12,8 +12,10 @@ use App\Http\Controllers\Api\BlogPostController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\HomepageController;
+use App\Http\Controllers\Api\SiteContentController;
 use App\Http\Controllers\Api\SitePageController;
 use App\Http\Controllers\Api\MeOrderController;
+use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\MeOrderIcalController;
 use App\Http\Controllers\Api\Admin\AdminGuestHouseBookingController;
 use App\Http\Controllers\Api\Admin\AdminGuestHouseController;
@@ -29,7 +31,6 @@ use App\Http\Controllers\Api\Host\HostDashboardController;
 use App\Http\Controllers\Api\Host\HostGuestHouseController;
 use App\Http\Controllers\Api\MeGuestHouseBookingController;
 use App\Http\Controllers\Api\PublicOrderController;
-use App\Http\Controllers\Api\SearchPromotionController;
 use App\Http\Controllers\Api\SearchSuggestionsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -67,10 +68,14 @@ Route::get('/health', function () {
 });
 
 Route::get('/homepage', [HomepageController::class, 'show']);
+Route::get('/site-content', [SiteContentController::class, 'index']);
+Route::get('/site-content/{pageKey}', [SiteContentController::class, 'show']);
 Route::get('/site-pages/{slug}', [SitePageController::class, 'show']);
 Route::get('/blog-posts', [BlogPostController::class, 'index'])->name('api.blog-posts.index');
 Route::get('/blog-posts/{slug}', [BlogPostController::class, 'show'])->name('api.blog-posts.show');
 Route::post('/contact', [ContactController::class, 'store']);
+Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe']);
+Route::post('/newsletter/unsubscribe', [NewsletterController::class, 'unsubscribe']);
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -82,7 +87,6 @@ Route::prefix('auth')->group(function () {
 Route::get('/categories', [CatalogController::class, 'categories']);
 Route::get('/locations', [CatalogController::class, 'locations']);
 Route::get('/search/suggestions', [SearchSuggestionsController::class, 'index']);
-Route::get('/search-promotions', [SearchPromotionController::class, 'index']);
 Route::get('/booking-restrictions', [CatalogController::class, 'bookingRestrictions']);
 Route::get('/cars', [CatalogController::class, 'cars']);
 Route::get('/cars/{car}', [CatalogController::class, 'car']);

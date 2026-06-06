@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import SiteLogo from '../components/branding/SiteLogo'
 import { useAuth } from '../context/AuthContext'
+import { usePageContent } from '../context/SiteContentContext'
 import { useToast } from '../context/ToastContext'
 import '../styles/auth-pages.css'
 
 export default function RegisterPage() {
+  const { page: copy } = usePageContent('auth-register')
   const { registerAccount } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -63,17 +66,9 @@ export default function RegisterPage() {
     <div className="auth-page">
       <div className="wrap auth-shell">
         <div className="auth-intro">
-          <Link to="/" className="logo-text">
-            <span className="logo-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 19h18" />
-                <path d="m4 17 5-9 4 7 3-4 4 6" />
-              </svg>
-            </span>
-            MyTerraBook
-          </Link>
-          <h1>Create an account</h1>
-          <p>Book campervans, cars and guesthouses across Iceland in one place.</p>
+          <SiteLogo variant="auth" className="logo-text" />
+          <h1>{copy.title ?? 'Create an account'}</h1>
+          <p>{copy.subtitle ?? 'Book across Iceland in one place.'}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-card">
@@ -93,12 +88,13 @@ export default function RegisterPage() {
           ))}
 
           <button type="submit" className="auth-submit" disabled={loading}>
-            {loading ? 'Creating account…' : 'Create account'}
+            {loading ? 'Creating account…' : (copy.submitLabel ?? 'Create account')}
           </button>
         </form>
 
         <p className="auth-switch">
-          Already have an account? <Link to="/login">Sign in</Link>
+          {copy.loginPrompt ?? 'Already have an account?'}{' '}
+          <Link to="/login">{copy.loginLink ?? 'Sign in'}</Link>
         </p>
       </div>
     </div>

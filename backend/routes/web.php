@@ -11,9 +11,9 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin/homepage')->name('admin.homepage.')->group(function (): void {
-    Route::get('/', [AdminHomepageController::class, 'index'])->name('index');
+    Route::get('/', fn () => redirect()->to(\App\Filament\Pages\SiteContentHub::getUrl(['tab' => 'home'])))->name('index');
     Route::post('/reorder', [AdminHomepageController::class, 'reorder'])->name('reorder');
-    Route::get('/{section}', [AdminHomepageController::class, 'edit'])->name('edit');
+    Route::get('/{section}', fn () => redirect()->to(\App\Filament\Pages\SiteContentHub::getUrl(['tab' => 'home'])))->name('edit');
     Route::put('/{section}', [AdminHomepageController::class, 'update'])->name('update');
     Route::post('/{section}/image', [AdminHomepageController::class, 'uploadImage'])->name('image');
 });

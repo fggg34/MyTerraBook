@@ -1,25 +1,3 @@
-@php
-    // #region agent log
-    @file_put_contents(
-        '/Users/anxhelo/Desktop/MyTerraRental/.cursor/debug-89c176.log',
-        json_encode([
-            'sessionId' => '89c176',
-            'runId' => 'initial',
-            'hypothesisId' => 'H2',
-            'location' => 'body-end-scripts.blade.php:render',
-            'message' => 'Body-end scripts view rendered',
-            'data' => [
-                'path' => request()->path(),
-                'isCreateLocation' => request()->is('admin/impact-rent/locations/create'),
-                'isEditLocation' => request()->is('admin/impact-rent/locations/*/edit'),
-            ],
-            'timestamp' => (int) round(microtime(true) * 1000),
-        ], JSON_UNESCAPED_SLASHES) . PHP_EOL,
-        FILE_APPEND
-    );
-    // #endregion
-@endphp
-
 <style>
     /* ── Location form layout (scoped to create/edit pages only) ─────────── */
     .ir-location-form-page .fi-main {

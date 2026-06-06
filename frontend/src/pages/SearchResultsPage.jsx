@@ -3,39 +3,13 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import ProductCard from '../components/homepage/ProductCard'
 import { SearchResultsChromeProvider } from '../context/SearchResultsChromeContext'
-import PromoTile from '../components/search-results/PromoTile'
 import SearchResultsChrome, { SearchResultsHeaderPill } from '../components/search-results/SearchResultsChrome'
 import useSearchResultsPage from '../hooks/useSearchResultsPage'
 import useGuesthouseSearchPage from '../hooks/useGuesthouseSearchPage'
-import useSearchPromotions from '../hooks/useSearchPromotions'
 import useSearchResultsEffects from '../hooks/useSearchResultsEffects'
 import useSearchResultsIntroEffects from '../hooks/useSearchResultsIntroEffects'
-import { buildSearchGridItems } from '../utils/buildSearchGridItems'
 import { PAGE_SIZE } from '../data/searchResultsConfig'
 import '../styles/search-results.css'
-
-function MidbannerTile({ banner }) {
-  return (
-    <div className="cell banner reveal">
-      <div className="midbanner">
-        <div className="mb-bg">
-          <img src={banner.image} alt="" />
-        </div>
-        <div className="mb-overlay" aria-hidden="true" />
-        <div className="mb-content" style={{ '--mb-op': 1, '--mb-slide': '0px' }}>
-          <h3>{banner.title}</h3>
-          <p>{banner.text}</p>
-          <a className="mb-cta" href={banner.href || '#faq'}>
-            {banner.cta}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function SearchResultsPage({ vehicleType = 'campervan' }) {
   const rootRef = useRef(null)
@@ -79,12 +53,6 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     const dates = query.pickup_at && query.dropoff_at ? formatShortRange(query.pickup_at, query.dropoff_at) : 'Dates'
     return `${loc} · ${dates} · ${query.drivers || 2} drivers`
   }, [isGuesthouse, pickupLabel, query, guestsLabel])
-
-  const { promotions } = useSearchPromotions(vehicleType)
-  const gridItems = useMemo(
-    () => buildSearchGridItems(visibleCards, promotions, config.promo),
-    [visibleCards, promotions, config.promo],
-  )
 
   const onLoadMore = useCallback(() => {
     setVisibleCount((n) => Math.min(n + PAGE_SIZE, totalCount))
@@ -206,26 +174,11 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
                 <p className="results-progress-text">Loading {config.unitPlural}…</p>
               ) : (
                 <div className="results-grid" id="resultsGrid">
-                  {gridItems.map((item, index) => {
-                    if (item.type === 'promo') {
-                      return (
-                        <PromoTile
-                          key={item.key}
-                          promo={item.promo}
-                          layout={item.layout}
-                          style={{ '--d': `${(index % 9) * 0.05}s` }}
-                        />
-                      )
-                    }
-                    if (item.type === 'banner') {
-                      return <MidbannerTile key={item.key} banner={config.midbanner} />
-                    }
-                    return (
-                      <div key={item.key} className="cell reveal" style={{ '--d': `${(index % 9) * 0.05}s` }}>
-                        <ProductCard {...item.card} />
-                      </div>
-                    )
-                  })}
+                  {visibleCards.map((card, index) => (
+                    <div key={card.id} className="cell reveal" style={{ '--d': `${(index % 9) * 0.05}s` }}>
+                      <ProductCard {...card} />
+                    </div>
+                  ))}
                 </div>
               )}
 

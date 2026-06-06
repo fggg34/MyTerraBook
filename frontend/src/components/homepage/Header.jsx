@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import SiteLogo from '../branding/SiteLogo'
 import LangCurrencyMenu from './LangCurrencyMenu'
 
 function NavLink({ href, children, onClick, className = '' }) {
@@ -38,17 +39,7 @@ export default function Header({
   return (
     <header className="nav">
       <div className="wrap">
-        <Link to="/" className="logo">
-          <span className="mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
-              <path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
-            </svg>
-          </span>
-          <span>
-            My<span className="terra">Terra</span>Book
-          </span>
-        </Link>
+        <SiteLogo variant="header" className="logo" />
 
         <nav className="main" aria-label="Main">
           {navLinks.map((link) => (

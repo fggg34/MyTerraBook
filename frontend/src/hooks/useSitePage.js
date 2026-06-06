@@ -1,17 +1,24 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
+import { getDefaultSitePage } from '../data/defaultSitePageData'
 
 export default function useSitePage(slug) {
-  const [page, setPage] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const fallback = slug ? getDefaultSitePage(slug) : null
+  const [page, setPage] = useState(fallback)
+  const [loading, setLoading] = useState(!fallback)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!slug) return undefined
 
     let cancelled = false
-    setLoading(true)
-    setError(null)
+    const defaultPage = getDefaultSitePage(slug)
+
+    if (!defaultPage) {
+      setLoading(true)
+      setError(null)
+      setPage(null)
+    }
 
     api
       .get(`/site-pages/${slug}`)
@@ -19,7 +26,14 @@ export default function useSitePage(slug) {
         if (!cancelled) setPage(res.data?.data ?? res.data)
       })
       .catch((err) => {
-        if (!cancelled) setError(err.response?.status === 404 ? 'not_found' : 'error')
+        if (!cancelled) {
+          if (defaultPage) {
+            setPage(defaultPage)
+            setError(null)
+          } else {
+            setError(err.response?.status === 404 ? 'not_found' : 'error')
+          }
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)

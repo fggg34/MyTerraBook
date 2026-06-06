@@ -1,7 +1,8 @@
 import { Link, useParams } from 'react-router-dom'
+import AboutPageContent from '../components/content/AboutPageContent'
 import ContentPageHero from '../components/content/ContentPageHero'
 import ContentProse from '../components/content/ContentProse'
-import FaqAccordion from '../components/content/FaqAccordion'
+import FaqPageContent from '../components/content/FaqPageContent'
 import ContactForm from '../components/content/ContactForm'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import useSitePage from '../hooks/useSitePage'
@@ -42,19 +43,17 @@ export default function SitePagePage({ forcedSlug }) {
 
   const content = page.content || {}
 
+  if (slug === 'about') {
+    return <AboutPageContent page={page} />
+  }
+
+  if (slug === 'faq') {
+    return <FaqPageContent page={page} />
+  }
+
   return (
     <div className="content-page">
-      <ContentPageHero title={page.title} lead={page.lead} />
-
-      {slug === 'faq' && (
-        <section className="content-body content-faq-page">
-          <div className="wrap">
-            <section className="faq">
-              <FaqAccordion phone={content.phone} email={content.email} items={content.items || []} />
-            </section>
-          </div>
-        </section>
-      )}
+      <ContentPageHero eyebrow={page.eyebrow} title={page.title} lead={page.lead} />
 
       {slug === 'contact' && (
         <section className="content-body">
@@ -90,7 +89,7 @@ export default function SitePagePage({ forcedSlug }) {
         </section>
       )}
 
-      {slug !== 'faq' && slug !== 'contact' && (
+      {slug !== 'contact' && (
         <section className="content-body">
           <div className="wrap">
             <ContentProse html={page.body} />

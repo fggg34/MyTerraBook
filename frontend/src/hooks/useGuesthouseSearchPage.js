@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
+import { usePageContent } from '../context/SiteContentContext'
 import {
   GUESTHOUSE_QUICK_FILTERS,
   GUESTHOUSE_SORT_OPTIONS,
   PAGE_SIZE,
   VEHICLE_TYPES,
 } from '../data/searchResultsConfig'
+import { mergePageContent } from '../utils/mergePageContent'
 import { mapGuestHouseToResultCard } from '../utils/mapGuestHouseToResultCard'
 
 function matchesPrice(card, maxEuros) {
@@ -24,7 +26,9 @@ function formatDateRange(checkIn, checkOut) {
 }
 
 export default function useGuesthouseSearchPage(enabled = true) {
-  const config = VEHICLE_TYPES.guesthouse
+  const staticConfig = VEHICLE_TYPES.guesthouse
+  const { page: cmsPage } = usePageContent('search-guesthouse', staticConfig)
+  const config = useMemo(() => mergePageContent(staticConfig, cmsPage), [staticConfig, cmsPage])
   const [searchParams, setSearchParams] = useSearchParams()
   const query = Object.fromEntries(searchParams.entries())
   const searchQuery = searchParams.toString()

@@ -14,8 +14,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             HomepageSectionSeeder::class,
             SitePageSeeder::class,
+            SiteContentSeeder::class,
             BlogPostSeeder::class,
-            SearchPromotionSeeder::class,
         ]);
 
         if (! app()->environment('testing')) {

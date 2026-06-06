@@ -3,6 +3,7 @@ import axios from 'axios'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { getSitePreviewUrl, setAuthToken } from './api'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { SiteContentProvider } from './context/SiteContentContext'
 import { SiteLayoutProvider } from './context/SiteLayoutContext'
 import { ToastProvider } from './context/ToastContext'
 import { getStoredToken } from './auth'
@@ -33,6 +34,7 @@ import HostRegisterPage from './pages/host/HostRegisterPage'
 import GuestHouseCheckoutPage from './pages/guest-houses/GuestHouseCheckoutPage'
 import SitePagePage from './pages/SitePagePage'
 import GoodToKnowPage from './pages/GoodToKnowPage'
+import NewsletterUnsubscribePage from './pages/NewsletterUnsubscribePage'
 import GoodToKnowPostPage from './pages/GoodToKnowPostPage'
 
 function RedirectGuestHouseSlug() {
@@ -88,7 +90,6 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/become-a-host" element={<BecomeHostPage />} />
       <Route
         element={
           <SiteLayoutProvider>
@@ -145,6 +146,7 @@ function AppRoutes() {
           </SiteLayoutProvider>
         }
       >
+        <Route path="/become-a-host" element={<BecomeHostPage />} />
         <Route path="/about" element={<SitePagePage forcedSlug="about" />} />
         <Route path="/faq" element={<SitePagePage forcedSlug="faq" />} />
         <Route path="/help" element={<Navigate to="/faq" replace />} />
@@ -154,6 +156,7 @@ function AppRoutes() {
         <Route path="/cookies" element={<SitePagePage forcedSlug="cookies" />} />
         <Route path="/good-to-know" element={<GoodToKnowPage />} />
         <Route path="/good-to-know/:slug" element={<GoodToKnowPostPage />} />
+        <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/host/register" element={<HostRegisterPage />} />
@@ -188,7 +191,9 @@ function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <AppRoutes />
+        <SiteContentProvider>
+          <AppRoutes />
+        </SiteContentProvider>
       </AuthProvider>
     </ToastProvider>
   )

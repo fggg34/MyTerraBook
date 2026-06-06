@@ -14,21 +14,6 @@ export const VEHICLE_TYPES = {
     defaultSeats: 5,
     defaultSleeps: 2,
     defaultBags: 2,
-    promo: {
-      kicker: 'Also on MyTerraBook',
-      title: 'Warm guesthouses along the route',
-      text: 'Book a room for the nights you want a proper bed — same account, same support team.',
-      cta: 'Browse guesthouses',
-      href: '/guesthouses',
-    },
-    midbanner: {
-      kicker: 'Fully covered',
-      title: 'Gravel, ash & ice protection included',
-      text: 'Every campervan booking includes the cover Iceland actually needs — no surprise add-ons at pickup.',
-      cta: 'See what’s included',
-      href: '#faq',
-      image: '/images/homepage/cardcamper.jpg',
-    },
   },
   car: {
     id: 'car',
@@ -45,21 +30,6 @@ export const VEHICLE_TYPES = {
     defaultSeats: 5,
     defaultSleeps: 0,
     defaultBags: 2,
-    promo: {
-      kicker: 'Upgrade your trip',
-      title: 'Need more space? Try a campervan',
-      text: 'Sleep onboard and wake up closer to the next waterfall — hundreds of vans ready near Keflavík.',
-      cta: 'Browse campervans',
-      href: '/campervans',
-    },
-    midbanner: {
-      kicker: 'Local team',
-      title: 'Pick up at KEF, drop off anywhere',
-      text: 'One-way rentals across Iceland when you need them — we’ll confirm availability before you pay.',
-      cta: 'How pick-up works',
-      href: '#faq',
-      image: '/images/homepage/cardcar.jpg',
-    },
   },
   guesthouse: {
     id: 'guesthouse',
@@ -74,21 +44,6 @@ export const VEHICLE_TYPES = {
       'Hand-picked stays spaced a comfortable day’s drive apart — book a warm bed when you want a night off the road.',
     loadMoreLabel: 'Show more stays',
     introLocationDefault: 'Iceland',
-    promo: {
-      kicker: 'Also on MyTerraBook',
-      title: 'Explore campervans & cars',
-      text: 'Wake up closer to the next waterfall — winter-checked vans and 4×4s ready near Keflavík.',
-      cta: 'Browse campervans',
-      href: '/campervans',
-    },
-    midbanner: {
-      kicker: 'Verified hosts',
-      title: 'Local hosts along the Ring Road',
-      text: 'Every stay is confirmed before you’re charged — same support team as your vehicle booking.',
-      cta: 'How booking works',
-      href: '#faq',
-      image: '/images/homepage/cardhouse.jpg',
-    },
   },
 }
 

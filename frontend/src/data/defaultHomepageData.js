@@ -509,25 +509,29 @@ export const defaultHomepageData = {
   },
   footer: {
     tagline:
-      "Iceland's locally-run platform for campervans, 4×4s, cars and guesthouses — one booking, one team in Reykjavík behind it.",
-    address: 'MyTerraBook ehf.\nLaugavegur 178 · 105 Reykjavík · Iceland\nKennitala 591284-0119 · VSK 142819',
+      'Campervans, cars and guesthouses across Iceland — booked in minutes, hosted with care.',
+    address: 'MyTerraBook ehf. · Laugavegur 178 · 105 Reykjavík · Iceland',
     columns: [
       {
-        title: 'Menu',
+        title: 'Book',
         links: [
-          { label: 'Campervan', href: '/campervans' },
-          { label: 'Car', href: '/cars' },
-          { label: 'Guesthouse', href: '/guesthouses' },
-          { label: 'Good to Know', href: '/good-to-know' },
-          { label: 'Become a host', href: '/become-a-host' },
+          { label: 'Campervans', href: '/campervans' },
+          { label: 'Cars', href: '/cars' },
+          { label: 'Guesthouses', href: '/guesthouses' },
         ],
       },
       {
-        title: 'Pages',
+        title: 'Company',
         links: [
+          { label: 'Good to Know', href: '/good-to-know' },
           { label: 'About us', href: '/about' },
           { label: 'FAQs', href: '/faq' },
           { label: 'Contact', href: '/contact' },
+        ],
+      },
+      {
+        title: 'Account',
+        links: [
           { label: 'Sign in', href: '/login' },
           { label: 'Create account', href: '/register' },
         ],

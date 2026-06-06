@@ -25,7 +25,7 @@ class BlogPostSeeder extends Seeder
 <h2>Day 5–7: North → West</h2>
 <p>Akureyri, optional highland detours if your vehicle allows, then return via Borgarnes to Reykjavík.</p>
 HTML,
-                'featured_image' => null,
+                'featured_image' => '/images/homepage/hero.jpg',
                 'image_alt' => 'Campervan on the Ring Road',
                 'read_time' => '12 min read',
                 'is_featured' => true,
@@ -41,7 +41,7 @@ HTML,
 <p>The Golden Circle is the easiest introduction to Iceland if you are short on time. Start early to beat coach crowds at Þingvellir National Park.</p>
 <p>Pair with a soak at a local pool or Secret Lagoon near Flúðir if you want a relaxed finish before driving back to the capital.</p>
 HTML,
-                'featured_image' => null,
+                'featured_image' => '/images/homepage/stay-hofn.jpg',
                 'image_alt' => 'Golden Circle',
                 'read_time' => '6 min read',
                 'is_featured' => false,
@@ -57,7 +57,7 @@ HTML,
 <p>For the Ring Road in summer, many travellers are fine in a 2WD car or standard campervan. You need a 4×4 if you plan to drive F-roads (mountain tracks) or visit the highlands.</p>
 <p>Check road.is daily — closures change quickly. Gravel protection is included on MyTerraBook rentals either way.</p>
 HTML,
-                'featured_image' => null,
+                'featured_image' => '/images/homepage/why-photo.jpg',
                 'image_alt' => '4x4 camper on gravel',
                 'read_time' => '5 min read',
                 'is_featured' => false,
@@ -89,7 +89,7 @@ HTML,
 <p>Campervans offer freedom and campsite culture; guesthouses give you a warm bed, kitchen access, and local hosts. Many travellers book both: van for the loop, stays in Vík or Akureyri for recovery nights.</p>
 <p>MyTerraBook lets you manage cars, vans, and guesthouses in one account.</p>
 HTML,
-                'featured_image' => null,
+                'featured_image' => '/images/homepage/cardhouse.jpg',
                 'image_alt' => 'Guesthouse interior',
                 'read_time' => '4 min read',
                 'is_featured' => false,

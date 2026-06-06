@@ -6,6 +6,19 @@ import '../styles/content-pages.css'
 
 const FALLBACK_IMAGE = '/images/homepage/hero.jpg'
 
+function formatDate(iso) {
+  if (!iso) return null
+  try {
+    return new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(iso))
+  } catch {
+    return null
+  }
+}
+
 export default function GoodToKnowPostPage() {
   const { slug } = useParams()
   const { post, loading, error } = useBlogPosts({ slug })
@@ -22,37 +35,64 @@ export default function GoodToKnowPostPage() {
     return (
       <div className="content-page content-state">
         <h1>Article not found</h1>
-        <p className="mt-4">
-          <Link to="/good-to-know">Back to Good to Know</Link>
+        <p className="content-not-found-link">
+          <Link to="/good-to-know">← Back to Good to Know</Link>
         </p>
       </div>
     )
   }
 
   const heroImage = post.featured_image || FALLBACK_IMAGE
+  const publishedLabel = formatDate(post.published_at)
 
   return (
-    <div className="content-page">
-      <section
-        className="content-post-hero"
-        style={{ backgroundImage: post.aurora ? undefined : `url(${heroImage})` }}
-      >
-        {post.aurora && <div className="bcard-aurora" style={{ position: 'absolute', inset: 0 }}><span className="stars" /></div>}
-        <div className="wrap content-post-hero-inner">
-          <Link to="/good-to-know" className="content-post-back">
-            ← Good to Know
+    <div className="content-page gtk-article-page">
+      <article className="gtk-article">
+        <div className="wrap gtk-article-wrap">
+          <Link to="/good-to-know" className="gtk-article-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            All articles
           </Link>
-          <h1 className="content-post-title">{post.title}</h1>
-          {post.read_time && <div className="content-post-meta">{post.read_time}</div>}
-        </div>
-      </section>
 
-      <section className="content-body">
-        <div className="wrap">
-          {post.excerpt && <p className="content-lead" style={{ color: 'inherit', maxWidth: '52ch', marginBottom: '24px' }}>{post.excerpt}</p>}
-          <ContentProse html={post.body} />
+          <header className="gtk-article-header">
+            {post.kicker && <span className="gtk-article-tag">{post.kicker}</span>}
+            <h1>{post.title}</h1>
+            {(post.read_time || publishedLabel) && (
+              <div className="gtk-article-meta">
+                {post.read_time && <span>{post.read_time}</span>}
+                {post.read_time && publishedLabel && <span className="gtk-article-meta-dot" aria-hidden="true" />}
+                {publishedLabel && <time dateTime={post.published_at}>{publishedLabel}</time>}
+              </div>
+            )}
+          </header>
+
+          <figure className="gtk-article-cover">
+            {post.aurora ? (
+              <div className="gtk-card-aurora gtk-article-aurora" aria-hidden="true">
+                <span className="stars" />
+              </div>
+            ) : (
+              <img src={heroImage} alt={post.image_alt || post.title} />
+            )}
+          </figure>
+
+          <div className="gtk-article-content">
+            {post.excerpt && <p className="gtk-article-lead">{post.excerpt}</p>}
+            <ContentProse html={post.body} />
+          </div>
+
+          <footer className="gtk-article-footer">
+            <Link to="/good-to-know" className="gtk-article-more">
+              <span>More Iceland guides</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </Link>
+          </footer>
         </div>
-      </section>
+      </article>
     </div>
   )
 }

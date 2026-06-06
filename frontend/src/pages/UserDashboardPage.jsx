@@ -1,6 +1,7 @@
 import { Calendar, Car, Home, Settings, User, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { usePageContent } from '../context/SiteContentContext'
 import { api } from '../api'
 import Modal from '../components/ui/Modal'
 import StatusBadge from '../components/ui/StatusBadge'
@@ -9,14 +10,24 @@ import { PageLoader } from '../components/ui/LoadingSpinner'
 import { useToast } from '../context/ToastContext'
 import { formatCurrency, formatDate } from '../utils/format'
 
-const sidebarLinks = [
-  { id: 'bookings', label: 'My Bookings', icon: Calendar },
-  { id: 'stays', label: 'My Stays', icon: Home },
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'settings', label: 'Settings', icon: Settings },
-]
+const SIDEBAR_ICONS = {
+  bookings: Calendar,
+  stays: Home,
+  profile: User,
+  settings: Settings,
+}
 
 export default function UserDashboardPage() {
+  const { page: copy } = usePageContent('user-dashboard')
+  const sidebarLinks = (copy.sidebarLinks?.length ? copy.sidebarLinks : [
+    { id: 'bookings', label: 'My Bookings' },
+    { id: 'stays', label: 'My Stays' },
+    { id: 'profile', label: 'Profile' },
+    { id: 'settings', label: 'Settings' },
+  ]).map((link) => ({
+    ...link,
+    icon: SIDEBAR_ICONS[link.id] ?? User,
+  }))
   const { toast } = useToast()
   const [orders, setOrders] = useState([])
   const [stays, setStays] = useState([])
@@ -107,7 +118,7 @@ export default function UserDashboardPage() {
               {orders.length === 0 ? (
                 <EmptyState
                   icon={Car}
-                  title="No bookings yet"
+                  title={copy.emptyBookings ?? 'No bookings yet'}
                   description="When you rent a car, your reservations will appear here."
                   action={
                     <Link to="/cars" className="btn-primary">
@@ -141,7 +152,7 @@ export default function UserDashboardPage() {
               ) : stays.length === 0 ? (
                 <EmptyState
                   icon={Home}
-                  title="No stays yet"
+                  title={copy.emptyStays ?? 'No stays yet'}
                   description="When you book a guest house, it will appear here."
                   action={
                     <Link to="/guest-houses" className="btn-primary">

@@ -1,0 +1,243 @@
+import { useRef } from 'react'
+import { Link } from 'react-router-dom'
+import { usePageContent } from '../../context/SiteContentContext'
+import useSectionReveal from '../../hooks/useSectionReveal'
+
+const FALLBACK_IMAGES = {
+  hero: '/images/homepage/why-photo.jpg',
+  camper: '/images/homepage/cardcamper.jpg',
+  car: '/images/homepage/cardcar.jpg',
+  house: '/images/homepage/cardhouse.jpg',
+}
+
+function parseParagraphs(html) {
+  if (!html) return []
+  const matches = html.match(/<p[^>]*>([\s\S]*?)<\/p>/gi)
+  if (!matches) return []
+  return matches.map((block) =>
+    block
+      .replace(/<\/?p[^>]*>/gi, '')
+      .replace(/<[^>]+>/g, '')
+      .trim(),
+  ).filter(Boolean)
+}
+
+function PillarIcon({ type }) {
+  const icons = {
+    shield: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11Z" />
+        <path d="m8.5 11.5 2.5 2.5L16 8.5" />
+      </svg>
+    ),
+    price: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </svg>
+    ),
+    route: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="6" cy="19" r="3" />
+        <path d="M9 19h8.5a3.5 3.5 0 1 0 0-7h-11a3.5 3.5 0 1 1 0-7H15" />
+        <circle cx="18" cy="5" r="3" />
+      </svg>
+    ),
+  }
+  return icons[type] || icons.shield
+}
+
+export default function AboutPageContent() {
+  const { page } = usePageContent('about')
+  const storyRef = useRef(null)
+  const valuesRef = useRef(null)
+  const offerRef = useRef(null)
+
+  useSectionReveal(storyRef, { revealDoneMs: 1400, threshold: 0.1 })
+  useSectionReveal(valuesRef, { revealDoneMs: 1200, threshold: 0.12 })
+  useSectionReveal(offerRef, { revealDoneMs: 1200, threshold: 0.12 })
+
+  const hero = page.hero ?? {}
+  const storySection = page.storySection ?? {}
+  const valuesSection = page.valuesSection ?? {}
+  const offeringsSection = page.offeringsSection ?? {}
+  const stats = page.stats ?? []
+  const pillars = page.pillars ?? []
+  const offerings = page.offerings ?? []
+  const cta = page.cta ?? {}
+  const paragraphs = parseParagraphs(page.body)
+  const chapterImages = [FALLBACK_IMAGES.camper, FALLBACK_IMAGES.car, FALLBACK_IMAGES.house]
+  const heroImage = hero.image || FALLBACK_IMAGES.hero
+
+  return (
+    <div className="content-page about-page">
+      <section className="about-hero">
+        <div className="about-hero-bg" aria-hidden="true">
+          <div className="about-hero-aurora" />
+          <div className="about-hero-topo" />
+        </div>
+        <div className="wrap about-hero-grid">
+          <div className="about-hero-copy">
+            {hero.eyebrow && <span className="about-eyebrow">{hero.eyebrow}</span>}
+            <h1>{hero.title}</h1>
+            {hero.lead && <p className="about-lead">{hero.lead}</p>}
+            {(hero.primaryLabel || hero.secondaryLabel) && (
+              <div className="about-hero-actions">
+                {hero.primaryLabel && (
+                  <Link to={hero.primaryHref ?? '/contact'} className="about-btn about-btn--primary">
+                    {hero.primaryLabel}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </Link>
+                )}
+                {hero.secondaryLabel && (
+                  <Link to={hero.secondaryHref ?? '/become-a-host'} className="about-btn about-btn--ghost">
+                    {hero.secondaryLabel}
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="about-hero-visual">
+            <div className="about-hero-frame">
+              <img src={heroImage} alt="Iceland landscape seen from the road" />
+            </div>
+            {(hero.pinTitle || hero.pinSubtitle) && (
+              <div className="about-hero-pin">
+                <span className="about-hero-pin-dot" aria-hidden="true" />
+                <div>
+                  {hero.pinTitle && <strong>{hero.pinTitle}</strong>}
+                  {hero.pinSubtitle && <span>{hero.pinSubtitle}</span>}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="about-stats" aria-label="Key figures">
+        <div className="wrap">
+          <div className="about-stats-grid">
+            {stats.map((stat) => (
+              <div className="about-stat" key={stat.label}>
+                <div className="about-stat-value">{stat.value}</div>
+                <div className="about-stat-label">{stat.label}</div>
+                <div className="about-stat-sub">{stat.sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {paragraphs.length > 0 && (
+        <section ref={storyRef} className="about-story">
+          <div className="wrap">
+            <header className="about-section-head about-rise" style={{ '--d': '0s' }}>
+              {storySection.tag && <span className="about-section-tag">{storySection.tag}</span>}
+              {storySection.heading && <h2>{storySection.heading}</h2>}
+            </header>
+            <div className="about-chapters">
+              {paragraphs.map((text, index) => (
+                <article
+                  key={text.slice(0, 24)}
+                  className={`about-chapter about-chapter--${index % 2 === 0 ? 'left' : 'right'} about-rise`}
+                  style={{ '--d': `${0.08 + index * 0.1}s` }}
+                >
+                  <div className="about-chapter-media">
+                    <img
+                      src={chapterImages[index % chapterImages.length]}
+                      alt=""
+                      loading="lazy"
+                    />
+                    <span className="about-chapter-num" aria-hidden="true">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <div className="about-chapter-body">
+                    <p>{text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section ref={valuesRef} className="about-values">
+        <div className="wrap">
+          <header className="about-section-head about-rise" style={{ '--d': '0s' }}>
+            {valuesSection.tag && <span className="about-section-tag">{valuesSection.tag}</span>}
+            {valuesSection.heading && <h2>{valuesSection.heading}</h2>}
+          </header>
+          <div className="about-pillars">
+            {pillars.map((pillar, index) => (
+              <div
+                key={pillar.title}
+                className="about-pillar about-rise"
+                style={{ '--d': `${0.06 + index * 0.08}s` }}
+              >
+                <span className="about-pillar-icon">
+                  <PillarIcon type={pillar.icon} />
+                </span>
+                <h3>{pillar.title}</h3>
+                <p>{pillar.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section ref={offerRef} className="about-offerings">
+        <div className="wrap">
+          <header className="about-section-head about-rise" style={{ '--d': '0s' }}>
+            {offeringsSection.tag && <span className="about-section-tag">{offeringsSection.tag}</span>}
+            {offeringsSection.heading && <h2>{offeringsSection.heading}</h2>}
+          </header>
+          <div className="about-offer-grid">
+            {offerings.map((item, index) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className="about-offer-card about-rise"
+                style={{ '--d': `${0.06 + index * 0.08}s` }}
+              >
+                <div className="about-offer-media">
+                  <img src={item.image || chapterImages[index % chapterImages.length]} alt="" loading="lazy" />
+                </div>
+                <div className="about-offer-body">
+                  <span className="about-offer-tag">{item.tag}</span>
+                  <h3>{item.label}</h3>
+                  <span className="about-offer-link">
+                    Browse listings
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="about-cta">
+        <div className="wrap">
+          <div className="about-cta-panel">
+            <div className="about-cta-copy">
+              <h2>{cta.title ?? "Planning a trip? We're in Reykjavík when you need us."}</h2>
+              {cta.subtitle && <p>{cta.subtitle}</p>}
+            </div>
+            <div className="about-cta-actions">
+              <Link to={cta.primaryHref ?? '/contact'} className="about-btn about-btn--light">
+                {cta.primaryLabel ?? 'Contact us'}
+              </Link>
+              <Link to={cta.secondaryHref ?? '/faq'} className="about-btn about-btn--outline-light">
+                {cta.secondaryLabel ?? 'Read FAQs'}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}

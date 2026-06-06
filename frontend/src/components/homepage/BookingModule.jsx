@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../api'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
+import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
 import { useBookingRules } from '../../hooks/useBookingRules'
 import { ensureValidDropoff } from '../../utils/bookingRules'
@@ -116,8 +117,8 @@ export default function BookingModule({
     dropoff_at: '',
     drivers: '2',
   })
-  const [pickupLabel, setPickupLabel] = useState('')
-  const [dropoffLabel, setDropoffLabel] = useState('')
+  const [pickupLocations, setPickupLocations] = useState([])
+  const [dropoffLocations, setDropoffLocations] = useState([])
   const [guestForm, setGuestForm] = useState({
     city: '',
     check_in: defaultCheckIn(),
@@ -129,9 +130,11 @@ export default function BookingModule({
   useEffect(() => {
     if (isGuesthouse) return undefined
     api
-      .get('/search/suggestions', { params: { scope: 'location', role: 'pickup', limit: 1 } })
+      .get('/search/suggestions', { params: { scope: 'location', role: 'pickup', limit: 50 } })
       .then((res) => {
-        const first = res.data?.data?.[0]
+        const locations = res.data?.data ?? []
+        setPickupLocations(locations)
+        const first = locations[0]
         if (!first) return
         setVehicleForm((prev) => {
           if (prev.pickup_location_id) return prev
@@ -141,12 +144,42 @@ export default function BookingModule({
             dropoff_location_id: prev.dropoff_location_id || first.value,
           }
         })
-        setPickupLabel((prev) => prev || first.label)
-        setDropoffLabel((prev) => prev || first.label)
       })
       .catch(() => {})
     return undefined
   }, [isGuesthouse])
+
+  useEffect(() => {
+    if (isGuesthouse || !vehicleForm.pickup_location_id) {
+      setDropoffLocations([])
+      return undefined
+    }
+    api
+      .get('/search/suggestions', {
+        params: {
+          scope: 'location',
+          role: 'dropoff',
+          pickup_location_id: vehicleForm.pickup_location_id,
+          limit: 50,
+        },
+      })
+      .then((res) => setDropoffLocations(res.data?.data ?? []))
+      .catch(() => setDropoffLocations([]))
+    return undefined
+  }, [isGuesthouse, vehicleForm.pickup_location_id])
+
+  useEffect(() => {
+    if (!dropoffLocations.length) return undefined
+    setVehicleForm((prev) => {
+      if (!prev.dropoff_location_id) return prev
+      const stillValid = dropoffLocations.some((loc) => loc.value === prev.dropoff_location_id)
+      if (stillValid) return prev
+      const fallback =
+        dropoffLocations.find((loc) => loc.value === prev.pickup_location_id) || dropoffLocations[0]
+      return { ...prev, dropoff_location_id: fallback?.value || '' }
+    })
+    return undefined
+  }, [dropoffLocations])
 
   const pickupDate = useMemo(() => parseDateTimeLocal(vehicleForm.pickup_at), [vehicleForm.pickup_at])
   const dropoffDate = useMemo(() => parseDateTimeLocal(vehicleForm.dropoff_at), [vehicleForm.dropoff_at])
@@ -195,42 +228,41 @@ export default function BookingModule({
     <>
       <div className="field">
         <span className="flabel">Pick-up location</span>
-        <PredictiveSearchField
-          scope="location"
-          role="pickup"
+        <FieldSelect
           value={vehicleForm.pickup_location_id}
-          displayValue={pickupLabel}
-          placeholder="Search pick-up location"
-          icon={PIN_ICON}
-          ariaLabel="Pick-up location"
-          onChange={({ value, label }) => {
+          onChange={(value) => {
             const sameAsPickup = vehicleForm.dropoff_location_id === vehicleForm.pickup_location_id
-            setPickupLabel(label)
             setVehicleForm((prev) => ({
               ...prev,
               pickup_location_id: value,
               dropoff_location_id: sameAsPickup ? value : prev.dropoff_location_id,
             }))
-            if (sameAsPickup) setDropoffLabel(label)
           }}
+          options={pickupLocations.map((loc) => ({
+            value: loc.value,
+            label: loc.label,
+            subtitle: loc.subtitle,
+          }))}
+          placeholder="Select location"
+          icon={PIN_ICON}
+          ariaLabel="Pick-up location"
         />
       </div>
 
       <div className="field">
         <span className="flabel">Drop-off location</span>
-        <PredictiveSearchField
-          scope="location"
-          role="dropoff"
-          pickupLocationId={vehicleForm.pickup_location_id}
+        <FieldSelect
           value={vehicleForm.dropoff_location_id}
-          displayValue={dropoffLabel}
-          placeholder="Search drop-off location"
+          onChange={(value) => setVehicleForm((prev) => ({ ...prev, dropoff_location_id: value }))}
+          options={dropoffLocations.map((loc) => ({
+            value: loc.value,
+            label: loc.label,
+            subtitle: loc.subtitle,
+          }))}
+          placeholder="Select location"
           icon={PIN_ICON}
           ariaLabel="Drop-off location"
-          onChange={({ value, label }) => {
-            setDropoffLabel(label)
-            setVehicleForm((prev) => ({ ...prev, dropoff_location_id: value }))
-          }}
+          disabled={!vehicleForm.pickup_location_id}
         />
       </div>
 
@@ -251,21 +283,16 @@ export default function BookingModule({
 
       <div className="field travelers">
         <span className="flabel">Drivers</span>
-        <div className="field-control-wrap filled">
-          {PERSON_ICON}
-          <select
-            className="field-control"
-            value={vehicleForm.drivers}
-            onChange={(e) => setVehicleForm({ ...vehicleForm, drivers: e.target.value })}
-            aria-label="Number of drivers"
-          >
-            {PEOPLE_OPTIONS.map((n) => (
-              <option key={n} value={String(n)}>
-                {n} {n === 1 ? 'driver' : 'drivers'}
-              </option>
-            ))}
-          </select>
-        </div>
+        <FieldSelect
+          value={vehicleForm.drivers}
+          onChange={(value) => setVehicleForm((prev) => ({ ...prev, drivers: value }))}
+          options={PEOPLE_OPTIONS.map((n) => ({
+            value: String(n),
+            label: `${n} ${n === 1 ? 'driver' : 'drivers'}`,
+          }))}
+          icon={PERSON_ICON}
+          ariaLabel="Number of drivers"
+        />
       </div>
     </>
   )
@@ -305,21 +332,16 @@ export default function BookingModule({
 
       <div className="field travelers">
         <span className="flabel">Guests</span>
-        <div className="field-control-wrap filled">
-          {PERSON_ICON}
-          <select
-            className="field-control"
-            value={guestForm.guests}
-            onChange={(e) => setGuestForm({ ...guestForm, guests: e.target.value })}
-            aria-label="Number of guests"
-          >
-            {PEOPLE_OPTIONS.map((n) => (
-              <option key={n} value={String(n)}>
-                {n} {n === 1 ? 'guest' : 'guests'}
-              </option>
-            ))}
-          </select>
-        </div>
+        <FieldSelect
+          value={guestForm.guests}
+          onChange={(value) => setGuestForm((prev) => ({ ...prev, guests: value }))}
+          options={PEOPLE_OPTIONS.map((n) => ({
+            value: String(n),
+            label: `${n} ${n === 1 ? 'guest' : 'guests'}`,
+          }))}
+          icon={PERSON_ICON}
+          ariaLabel="Number of guests"
+        />
       </div>
     </>
   )

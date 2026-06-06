@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { api, resolveStorageUrl } from '../api'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { usePageContent } from '../context/SiteContentContext'
 import { getRequestToBookConfig, resolveBookingType } from '../data/requestToBookConfig'
 import { formatCurrency, formatCurrencyFromCents } from '../utils/format'
 import { combineDateAndTime, nightsBetween, toDateOnlyString } from '../utils/requestToBookUtils'
@@ -65,7 +66,14 @@ export default function useRequestToBook() {
   const { user } = useAuth()
   const { toast } = useToast()
   const bookingType = resolveBookingType(searchParams)
-  const config = useMemo(() => getRequestToBookConfig(bookingType || 'car'), [bookingType])
+  const { page: checkoutPage } = usePageContent('checkout')
+  const config = useMemo(() => {
+    const base = getRequestToBookConfig(bookingType || 'car')
+    if (checkoutPage?.stepperSteps?.length) {
+      return { ...base, stepperSteps: checkoutPage.stepperSteps }
+    }
+    return base
+  }, [bookingType, checkoutPage])
 
   const [step, setStep] = useState(1)
   const [confirmed, setConfirmed] = useState(null)
