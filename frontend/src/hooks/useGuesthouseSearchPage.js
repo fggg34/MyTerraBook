@@ -3,13 +3,18 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { usePageContent } from '../context/SiteContentContext'
 import {
-  GUESTHOUSE_QUICK_FILTERS,
   GUESTHOUSE_SORT_OPTIONS,
   PAGE_SIZE,
   VEHICLE_TYPES,
 } from '../data/searchResultsConfig'
 import { mergePageContent } from '../utils/mergePageContent'
 import { mapGuestHouseToResultCard } from '../utils/mapGuestHouseToResultCard'
+import {
+  applyQuickFilters,
+  buildGuesthouseQuickFilters,
+  pruneQuickFilters,
+  toggleQuickFilter,
+} from '../utils/searchQuickFilters'
 
 function matchesPrice(card, maxEuros) {
   if (!maxEuros) return true
@@ -75,17 +80,21 @@ export default function useGuesthouseSearchPage(enabled = true) {
     query.max_price,
   ])
 
+  const quickFilterOptions = useMemo(
+    () => buildGuesthouseQuickFilters(houses),
+    [houses],
+  )
+
+  useEffect(() => {
+    setQuickFilters((prev) => pruneQuickFilters(prev, quickFilterOptions))
+  }, [quickFilterOptions])
+
   const cards = useMemo(() => {
     let list = houses.map((house) => mapGuestHouseToResultCard(house, { searchQuery }))
 
     list = list.filter((card) => matchesPrice(card, filters.maxPrice))
     if (filters.minGuests) list = list.filter((card) => card.sortGuests >= filters.minGuests)
-
-    GUESTHOUSE_QUICK_FILTERS.forEach((qf) => {
-      if (quickFilters.includes(qf.id)) {
-        list = list.filter((card) => qf.match(card))
-      }
-    })
+    list = applyQuickFilters(list, quickFilters, quickFilterOptions)
 
     list.sort((a, b) => {
       if (sort === 'price-asc') return a.sortPrice - b.sortPrice
@@ -95,7 +104,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
     })
 
     return list
-  }, [houses, filters, quickFilters, searchQuery, sort])
+  }, [houses, filters, quickFilters, quickFilterOptions, searchQuery, sort])
 
   const visibleCards = cards.slice(0, visibleCount)
   const cityLabel = query.city || 'Iceland'
@@ -113,7 +122,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
   }
 
   const toggleQuick = (id) => {
-    setQuickFilters((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+    setQuickFilters((prev) => toggleQuickFilter(prev, id, quickFilterOptions))
     setVisibleCount(PAGE_SIZE)
   }
 
@@ -145,7 +154,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
     setSort,
     sortLabel,
     sortOptions: GUESTHOUSE_SORT_OPTIONS,
-    quickFilterOptions: GUESTHOUSE_QUICK_FILTERS,
+    quickFilterOptions,
     filters,
     setFilters,
     quickFilters,

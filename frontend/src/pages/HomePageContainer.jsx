@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api'
 import { useSiteLayout } from '../context/SiteLayoutContext'
+import PageHead from '../components/seo/PageHead'
+import usePageSeo from '../hooks/usePageSeo'
 import { mapCarsToPickCards } from '../utils/mapCarsToPickCards'
 import { mapGuestHousesToStayCards } from '../utils/mapGuestHousesToStayCards'
 import HomePage from './HomePage'
@@ -38,6 +40,13 @@ function withBackendListings(pageData, cars = [], guesthouses = []) {
 
 export default function HomePageContainer() {
   const { siteData } = useSiteLayout()
+  const seo = usePageSeo('home', {
+    source: {
+      heading: siteData?.hero?.heading,
+      subtitle: siteData?.hero?.subtitle,
+      backgroundImage: siteData?.hero?.backgroundImage,
+    },
+  })
   const [cars, setCars] = useState([])
   const [guesthouses, setGuesthouses] = useState([])
 
@@ -60,5 +69,10 @@ export default function HomePageContainer() {
     [siteData, cars, guesthouses],
   )
 
-  return <HomePage pageData={pageData} />
+  return (
+    <>
+      <PageHead {...seo} />
+      <HomePage pageData={pageData} />
+    </>
+  )
 }

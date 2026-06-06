@@ -2,11 +2,18 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import SiteLogo from '../components/branding/SiteLogo'
+import PageHead from '../components/seo/PageHead'
 import { usePageContent } from '../context/SiteContentContext'
+import usePageSeo from '../hooks/usePageSeo'
 import '../styles/auth-pages.css'
 
 export default function NewsletterUnsubscribePage() {
   const { page: copy } = usePageContent('newsletter-unsubscribe')
+  const seo = usePageSeo(null, {
+    skipPageSeo: true,
+    robots: 'noindex',
+    source: { title: copy.title ?? 'Newsletter unsubscribe' },
+  })
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') ?? ''
   const [status, setStatus] = useState(token ? 'loading' : 'missing')
@@ -35,7 +42,9 @@ export default function NewsletterUnsubscribePage() {
   }, [token])
 
   return (
-    <div className="auth-page">
+    <>
+      <PageHead {...seo} />
+      <div className="auth-page">
       <div className="wrap auth-shell">
         <div className="auth-intro">
           <SiteLogo variant="auth" className="logo-text" />
@@ -49,5 +58,6 @@ export default function NewsletterUnsubscribePage() {
         </p>
       </div>
     </div>
+    </>
   )
 }

@@ -2,7 +2,9 @@ import { BarChart3, Car, ExternalLink, TrendingUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { usePageContent } from '../context/SiteContentContext'
+import PageHead from '../components/seo/PageHead'
 import { PageLoader } from '../components/ui/LoadingSpinner'
+import usePageSeo from '../hooks/usePageSeo'
 import { formatCurrency } from '../utils/format'
 
 function filamentPanelUrl() {
@@ -14,6 +16,11 @@ function filamentPanelUrl() {
 
 export default function AdminDashboardPage() {
   const { page: copy } = usePageContent('admin-dashboard')
+  const seo = usePageSeo(null, {
+    skipPageSeo: true,
+    robots: 'noindex',
+    source: { title: copy.title ?? 'Admin dashboard' },
+  })
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -31,15 +38,25 @@ export default function AdminDashboardPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <PageLoader message="Loading admin dashboard…" />
+  if (loading) {
+    return (
+      <>
+        <PageHead {...seo} />
+        <PageLoader message="Loading admin dashboard…" />
+      </>
+    )
+  }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-16">
+      <>
+        <PageHead {...seo} />
+        <div className="mx-auto max-w-lg px-4 py-16">
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
           <p className="text-red-700">{error}</p>
         </div>
       </div>
+      </>
     )
   }
 
@@ -51,7 +68,9 @@ export default function AdminDashboardPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <>
+      <PageHead {...seo} />
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="section-title">{copy.title ?? 'Admin Dashboard'}</h1>
       <p className="section-subtitle">Overview of your rental business performance.</p>
 
@@ -85,5 +104,6 @@ export default function AdminDashboardPage() {
         </a>
       </div>
     </div>
+    </>
   )
 }

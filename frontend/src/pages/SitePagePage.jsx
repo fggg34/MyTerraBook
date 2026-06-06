@@ -4,7 +4,9 @@ import ContentPageHero from '../components/content/ContentPageHero'
 import ContentProse from '../components/content/ContentProse'
 import FaqPageContent from '../components/content/FaqPageContent'
 import ContactForm from '../components/content/ContactForm'
+import PageHead from '../components/seo/PageHead'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
+import usePageSeo from '../hooks/usePageSeo'
 import useSitePage from '../hooks/useSitePage'
 import '../styles/content-pages.css'
 
@@ -20,40 +22,66 @@ const SLUG_ALIASES = {
 export default function SitePagePage({ forcedSlug }) {
   const { slug: routeSlug } = useParams()
   const slug = forcedSlug || routeSlug
-  const { page, loading, error } = useSitePage(SLUG_ALIASES[slug] || slug)
+  const pageKey = SLUG_ALIASES[slug] || slug
+  const { page, loading, error } = useSitePage(pageKey)
+  const seo = usePageSeo(pageKey, {
+    source: {
+      title: page?.title,
+      lead: page?.lead,
+      hero: { title: page?.title, lead: page?.lead },
+    },
+  })
 
   if (loading) {
     return (
-      <div className="content-page content-state">
-        <LoadingSpinner />
-      </div>
+      <>
+        <PageHead {...seo} />
+        <div className="content-page content-state">
+          <LoadingSpinner />
+        </div>
+      </>
     )
   }
 
   if (error || !page) {
     return (
-      <div className="content-page content-state">
-        <h1>Page not found</h1>
-        <p className="mt-4">
-          <Link to="/">Back to home</Link>
-        </p>
-      </div>
+      <>
+        <PageHead {...seo} robots="noindex" />
+        <div className="content-page content-state">
+          <h1>Page not found</h1>
+          <p className="mt-4">
+            <Link to="/">Back to home</Link>
+          </p>
+        </div>
+      </>
     )
   }
 
   const content = page.content || {}
 
   if (slug === 'about') {
-    return <AboutPageContent page={page} />
+    return (
+      <>
+        <PageHead {...seo} />
+        <AboutPageContent page={page} />
+      </>
+    )
   }
 
   if (slug === 'faq') {
-    return <FaqPageContent page={page} />
+    return (
+      <>
+        <PageHead {...seo} />
+        <FaqPageContent page={page} />
+      </>
+    )
   }
 
   return (
-    <div className="content-page">
-      <ContentPageHero eyebrow={page.eyebrow} title={page.title} lead={page.lead} />
+    <>
+      <PageHead {...seo} />
+      <div className="content-page">
+      <ContentPageHero title={page.title} lead={page.lead} />
 
       {slug === 'contact' && (
         <section className="content-body">
@@ -96,6 +124,7 @@ export default function SitePagePage({ forcedSlug }) {
           </div>
         </section>
       )}
-    </div>
+      </div>
+    </>
   )
 }

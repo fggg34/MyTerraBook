@@ -10,24 +10,35 @@ import Step3YourDetails from '../components/request-to-book/Step3YourDetails'
 import Step4Payment from '../components/request-to-book/Step4Payment'
 import BookingConfirmation from '../components/request-to-book/BookingConfirmation'
 import { PageLoader } from '../components/ui/LoadingSpinner'
+import PageHead from '../components/seo/PageHead'
 import { useToast } from '../context/ToastContext'
+import usePageSeo from '../hooks/usePageSeo'
 
 export default function CheckoutPage() {
   const { toast } = useToast()
+  const seo = usePageSeo('checkout', { robots: 'noindex' })
   const rtb = useRequestToBook()
 
   if (rtb.loadState === 'loading') {
-    return <PageLoader message="Loading checkout…" />
+    return (
+      <>
+        <PageHead {...seo} />
+        <PageLoader message="Loading checkout…" />
+      </>
+    )
   }
 
   if (rtb.loadState === 'error' || !rtb.bookingType) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-16 text-center">
+      <>
+        <PageHead {...seo} />
+        <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <p className="text-slate-600">No booking in progress.</p>
         <Link to="/" className="btn-primary mt-4 inline-flex">
           Browse listings
         </Link>
-      </div>
+        </div>
+      </>
     )
   }
 
@@ -40,7 +51,9 @@ export default function CheckoutPage() {
 
   if (rtb.confirmed) {
     return (
-      <div className="rtb-page">
+      <>
+        <PageHead {...seo} />
+        <div className="rtb-page">
         <RequestToBookSubbar backHref={backHref} />
         <div className="rtb-page-inner">
           <div className="rtb-wrap">
@@ -58,6 +71,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      </>
     )
   }
 
@@ -79,7 +93,9 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="rtb-page">
+    <>
+      <PageHead {...seo} />
+      <div className="rtb-page">
       <RequestToBookSubbar backHref={backHref} />
       <RequestToBookStepper
         steps={rtb.config.stepperSteps}
@@ -126,5 +142,6 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

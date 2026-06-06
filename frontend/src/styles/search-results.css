@@ -25,7 +25,7 @@
 }
 .chrome.stuck{box-shadow:0 14px 30px -22px rgba(15,32,54,.5);}
 /* the nav loses its own border + sticky — the chrome owns those now */
-.chrome header.nav{position:static;top:auto;border-bottom:1px solid var(--line);z-index:auto;}
+.chrome header.nav{position:static;top:auto;border-bottom:none;z-index:auto;}
 .chrome.condensed header.nav{height:64px;}
 .chrome header.nav{transition:height .35s cubic-bezier(.33,1,.68,1);}
 
@@ -36,6 +36,7 @@
   border-radius:0 3px 3px 0;
   box-shadow:0 0 12px rgba(69,160,106,.5);
   transition:width .12s linear;z-index:3;
+  pointer-events:none;
 }
 
 /* condensed summary pill that replaces the nav links when scrolled deep */
@@ -69,6 +70,7 @@ nav.main a.nav-collapsible{
 @keyframes pillIn{from{opacity:0;transform:translateY(-8px) scale(.94);}to{opacity:1;transform:none;}}
 
 /* ---------- Search command bar ---------- */
+.search-chrome-bar{padding-top:14px;}
 .hsearch{
   background:#fff;
   overflow:hidden;
@@ -101,12 +103,41 @@ nav.main a.nav-collapsible{
 }
 .hfield{
   display:flex;flex-direction:column;gap:2px;justify-content:center;
-  padding:8px 16px;border-radius:11px;cursor:pointer;min-width:0;
+  padding:8px 16px;border-radius:11px;min-width:0;
   transition:background .15s;flex:1 1 0;
 }
-.hfield:hover{background:#f6f8fb;}
+.hfield--control{cursor:default;position:relative;}
+.hfield--control:has(.field-select.is-open),
+.hfield--control:has(.predictive-search input:focus),
+.hfield--control:has(.date-range-picker .cal-pop.open){z-index:5;}
+.hfield--control:hover{background:#f6f8fb;}
 .hfield + .hfield{border-left:1px solid var(--line);}
-.hfield.ppl{flex:0 0 auto;}
+.hfield.ppl,
+.hfield--guests{flex:0 0 auto;min-width:120px;}
+.hfield--dates{min-width:200px;}
+.hfield--control .field-select,
+.hfield--control .predictive-search{width:100%;min-width:0;}
+.hfield--control .field-control-wrap{
+  display:flex;align-items:center;gap:8px;min-width:0;
+}
+.hfield--control .field-select-trigger,
+.hfield--control .field-control{
+  border:none;background:transparent;
+  font-size:14.5px;color:var(--ink);width:100%;
+  padding:0;font-family:var(--sans);outline:none;
+  min-width:0;text-align:left;cursor:pointer;
+}
+.hfield--control .field-select-trigger:not(.filled),
+.hfield--control .field-control::placeholder{color:var(--slate-light);}
+.hfield--control .field-select-value{
+  display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.hfield--control .field-select-chevron{width:14px;height:14px;color:var(--slate);flex:0 0 auto;}
+.hfield--control svg.ic{width:16px;height:16px;color:var(--blue);flex:0 0 auto;}
+.hfield--control .date-range-picker{margin-top:0;}
+.hfield--control .date-range-picker.embedded.compact .cal-trigger{
+  font-size:14.5px;font-weight:600;color:var(--ink);padding:0;
+}
 .hf-label{font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--navy);text-transform:none;white-space:nowrap;}
 .hf-val{
   display:flex;align-items:center;gap:8px;font-size:14.5px;color:var(--ink);font-weight:600;
@@ -126,9 +157,9 @@ nav.main a.nav-collapsible{
 [data-mode][hidden]{display:none !important;}
 
 /* ---------- Filter bar (chips + sort) ---------- */
-.filterbar{background:#fff;border-top:1px solid var(--line);}
+.filterbar{background:#fff;border-top:none;margin-top:6px;}
 .filterbar-inner{
-  max-width:var(--maxw);margin:0 auto;padding:14px 40px;
+  max-width:var(--maxw);margin:0 auto;padding:16px 40px;
   display:flex;align-items:center;gap:14px;
 }
 .chips{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1 1 auto;min-width:0;}
@@ -334,9 +365,13 @@ body.search-results-active .chrome{
   transition:box-shadow .3s ease;
 }
 body.search-results-active .chrome.stuck{box-shadow:0 14px 30px -22px rgba(15,32,54,.5);}
-body.search-results-active .search-chrome-bar{position:relative;}
+body.search-results-active .search-chrome-bar{position:relative;padding-top:14px;}
 body.search-results-active .filterbar{position:relative;}
-body.search-results-active .wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px;}
+body.search-results-active .search-results-page .wrap,
+body.search-results-active .topbar .wrap,
+body.search-results-active header.nav .wrap,
+body.search-results-active .chrome .wrap,
+body.search-results-active .ftr .wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px;}
 body.search-results-active .hsearch-pill{display:none;}
 body.search-results-active .chrome.condensed .hsearch-pill{display:inline-flex;animation:pillIn .4s cubic-bezier(.34,1.4,.64,1) both;}
 body.search-results-active .chrome.condensed nav.main a.nav-collapsible{

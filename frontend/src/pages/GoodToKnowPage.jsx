@@ -1,13 +1,17 @@
 import GoodToKnowSection from '../components/content/GoodToKnowSection'
+import PageHead from '../components/seo/PageHead'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import useBlogPosts from '../hooks/useBlogPosts'
+import usePageSeo from '../hooks/usePageSeo'
 import '../styles/content-pages.css'
 
 export default function GoodToKnowPage() {
   const { posts, loading, error } = useBlogPosts()
+  const seo = usePageSeo('good-to-know')
 
   return (
     <div className="content-page gtk-page">
+      <PageHead {...seo} />
       {loading && (
         <div className="content-state">
           <LoadingSpinner />

@@ -2,6 +2,8 @@ import { Car, Calendar, Home, LayoutDashboard, LogOut, Settings } from 'lucide-r
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { usePageContent } from '../../context/SiteContentContext'
+import PageHead from '../seo/PageHead'
+import usePageSeo from '../../hooks/usePageSeo'
 import '../../styles/host-panel.css'
 
 const ICONS = {
@@ -29,6 +31,11 @@ export default function HostLayout() {
   }))
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const seo = usePageSeo(null, {
+    skipPageSeo: true,
+    robots: 'noindex',
+    source: { title: copy.sidebarTitle ?? 'Host panel' },
+  })
 
   const handleLogout = async () => {
     await logout()
@@ -36,7 +43,9 @@ export default function HostLayout() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <>
+      <PageHead {...seo} />
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-slate-500">{copy.eyebrow ?? 'Host panel'}</p>
@@ -64,5 +73,6 @@ export default function HostLayout() {
         </main>
       </div>
     </div>
+    </>
   )
 }

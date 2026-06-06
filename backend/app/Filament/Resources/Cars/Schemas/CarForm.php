@@ -196,26 +196,30 @@ class CarForm
                                             ->directory('cars/tags')
                                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'])
                                             ->dehydrated(false),
-                                        TextInput::make('custom_page_title')
-                                            ->label('Custom Page Title')
-                                            ->dehydrated(false),
-                                        Select::make('custom_page_title_mode')
-                                            ->label('Custom Page Title option')
-                                            ->options([
-                                                'before' => 'Add it Before the Current Page Title',
-                                                'replace' => 'Replace the Current Page Title',
-                                            ])
-                                            ->default('before')
-                                            ->dehydrated(false),
-                                        Textarea::make('keywords_meta_tag')
-                                            ->label('Keywords Meta Tag')
-                                            ->rows(3)
-                                            ->dehydrated(false),
-                                        Textarea::make('description_meta_tag')
-                                            ->label('Description Meta Tag')
-                                            ->rows(3)
-                                            ->dehydrated(false),
                                     ]),
+                            ]),
+
+                        Section::make('SEO')
+                            ->columnSpan([
+                                'default' => 1,
+                                'xl' => 6,
+                            ])
+                            ->schema([
+                                TextInput::make('meta_title')
+                                    ->label('Meta title')
+                                    ->maxLength(255)
+                                    ->helperText('Leave empty to auto-generate from the listing name.'),
+                                Textarea::make('meta_description')
+                                    ->label('Meta description')
+                                    ->rows(3)
+                                    ->helperText('Leave empty to use the listing description.'),
+                                FileUpload::make('og_image')
+                                    ->label('Share image (OG)')
+                                    ->disk('public')
+                                    ->directory('cars/og')
+                                    ->image()
+                                    ->maxSize(8192)
+                                    ->helperText('Leave empty to use the main listing photo.'),
                             ]),
 
                         Section::make('Import Calendars')

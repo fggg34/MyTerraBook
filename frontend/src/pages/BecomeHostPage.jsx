@@ -6,12 +6,22 @@ import HostFeaturesSection from '../components/become-host/HostFeaturesSection'
 import HostReviewsSection from '../components/become-host/HostReviewsSection'
 import HostFaqSection from '../components/become-host/HostFaqSection'
 import HostBottomCta from '../components/become-host/HostBottomCta'
+import PageHead from '../components/seo/PageHead'
+import usePageSeo from '../hooks/usePageSeo'
 
 export default function BecomeHostPage() {
   const { page } = usePageContent('become-a-host')
+  const seo = usePageSeo('become-a-host', {
+    source: {
+      title: page.hero?.title,
+      lead: page.hero?.lead,
+      hero: page.hero,
+    },
+  })
 
   return (
     <main className="content-page become-host-page">
+      <PageHead {...seo} />
       <HostLandingHero hero={page.hero} />
       <HostProofMarquee stats={page.proof?.stats} />
       <HostHowItWorks howTabs={page.howTabs} />

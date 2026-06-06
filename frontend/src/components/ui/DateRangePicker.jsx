@@ -35,8 +35,9 @@ function sameDay(a, b) {
   return a && b && a.getTime() === b.getTime()
 }
 
-function fmtShort(d) {
-  return `${d.getDate()} ${M3[d.getMonth()]}`
+function fmtDisplay(d, useFullMonth = false) {
+  const month = useFullMonth ? MON[d.getMonth()] : M3[d.getMonth()]
+  return `${d.getDate()} ${month}`
 }
 
 function euro(n) {
@@ -82,6 +83,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
   })
 
   const isCompact = variant.includes('compact')
+  const showLabels = !isCompact
 
   const measurePopper = useCallback(() => {
     if (!fixedPopper || !fieldRef.current) return null
@@ -350,13 +352,17 @@ const DateRangePicker = forwardRef(function DateRangePicker(
         {CALENDAR_ICON}
         <div className="df-segs">
           <span className="df-seg">
-            <span className="df-lab">{startLabel}</span>
-            <span className={`df-val ${dStart ? 'set' : ''}`}>{dStart ? fmtShort(dStart) : 'Add date'}</span>
+            {showLabels && <span className="df-lab">{startLabel}</span>}
+            <span className={`df-val ${dStart ? 'set' : ''}`}>
+              {dStart ? fmtDisplay(dStart, isCompact) : 'Add date'}
+            </span>
           </span>
           <span className="df-div" />
           <span className="df-seg right">
-            <span className="df-lab">{endLabel}</span>
-            <span className={`df-val ${dEnd ? 'set' : ''}`}>{dEnd ? fmtShort(dEnd) : 'Add date'}</span>
+            {showLabels && <span className="df-lab">{endLabel}</span>}
+            <span className={`df-val ${dEnd ? 'set' : ''}`}>
+              {dEnd ? fmtDisplay(dEnd, isCompact) : 'Add date'}
+            </span>
           </span>
         </div>
       </button>

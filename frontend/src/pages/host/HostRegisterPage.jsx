@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import SiteLogo from '../../components/branding/SiteLogo'
-import { useAuth } from '../../context/AuthContext'
+import PageHead from '../../components/seo/PageHead'
+import { getPostLoginPath, useAuth } from '../../context/AuthContext'
 import { usePageContent } from '../../context/SiteContentContext'
 import { useToast } from '../../context/ToastContext'
+import usePageSeo from '../../hooks/usePageSeo'
 import '../../styles/auth-pages.css'
 
 export default function HostRegisterPage() {
   const { page: copy } = usePageContent('auth-host-register')
+  const seo = usePageSeo('auth-host-register', { source: copy, robots: 'noindex' })
   const { registerAsHost } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -18,9 +21,9 @@ export default function HostRegisterPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      await registerAsHost(form)
+      const user = await registerAsHost(form)
       toast('Host account created', 'success')
-      navigate('/host')
+      navigate(getPostLoginPath(user, '/host'))
     } catch (err) {
       toast(err.response?.data?.message || 'Registration failed', 'error')
     } finally {
@@ -29,7 +32,9 @@ export default function HostRegisterPage() {
   }
 
   return (
-    <div className="auth-page">
+    <>
+      <PageHead {...seo} />
+      <div className="auth-page">
       <div className="wrap auth-shell">
         <div className="auth-intro">
           <SiteLogo variant="auth" className="logo-text" />
@@ -43,9 +48,10 @@ export default function HostRegisterPage() {
           <div className="auth-field"><label>Password</label><input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required /></div>
           <div className="auth-field"><label>Confirm password</label><input type="password" value={form.password_confirmation} onChange={(e) => setForm({ ...form, password_confirmation: e.target.value })} required /></div>
           <button type="submit" className="auth-submit" disabled={loading}>{loading ? 'Creating…' : (copy.submitLabel ?? 'Register as host')}</button>
-          <p className="auth-foot">Already a host? <Link to="/login?redirect=/host">Sign in</Link></p>
+          <p className="auth-foot">Already a host? <Link to="/host/login">Sign in</Link></p>
         </form>
       </div>
     </div>
+    </>
   )
 }

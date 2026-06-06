@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import ProductCard from '../components/homepage/ProductCard'
 import { SearchResultsChromeProvider } from '../context/SearchResultsChromeContext'
 import SearchResultsChrome, { SearchResultsHeaderPill } from '../components/search-results/SearchResultsChrome'
+import PageHead from '../components/seo/PageHead'
+import usePageSeo from '../hooks/usePageSeo'
 import useSearchResultsPage from '../hooks/useSearchResultsPage'
 import useGuesthouseSearchPage from '../hooks/useGuesthouseSearchPage'
 import useSearchResultsEffects from '../hooks/useSearchResultsEffects'
@@ -14,6 +16,11 @@ import '../styles/search-results.css'
 export default function SearchResultsPage({ vehicleType = 'campervan' }) {
   const rootRef = useRef(null)
   const isGuesthouse = vehicleType === 'guesthouse'
+  const searchPageKey = useMemo(() => {
+    if (isGuesthouse) return 'search-guesthouse'
+    if (vehicleType === 'car') return 'search-car'
+    return 'search-campervan'
+  }, [isGuesthouse, vehicleType])
   const vehicleState = useSearchResultsPage(vehicleType)
   const guesthouseState = useGuesthouseSearchPage(isGuesthouse)
   const state = isGuesthouse ? guesthouseState : vehicleState
@@ -51,7 +58,7 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     }
     const loc = pickupLabel.includes('(') ? pickupLabel.match(/\(([^)]+)\)/)?.[1] || 'KEF' : 'KEF'
     const dates = query.pickup_at && query.dropoff_at ? formatShortRange(query.pickup_at, query.dropoff_at) : 'Dates'
-    return `${loc} · ${dates} · ${query.drivers || 2} drivers`
+    return `${loc} · ${dates}`
   }, [isGuesthouse, pickupLabel, query, guestsLabel])
 
   const onLoadMore = useCallback(() => {
@@ -71,8 +78,16 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     ? config.introLocationDefault || pickupLabel || 'Iceland'
     : pickupLabel.split('(').pop()?.replace(')', '').trim() || 'Keflavík'
 
+  const seo = usePageSeo(searchPageKey, {
+    source: {
+      titleLead: config?.titleLead,
+      subtitle: config?.subtitle,
+    },
+  })
+
   return (
     <SearchResultsChromeProvider pillText={pillText}>
+      <PageHead {...seo} />
       <div className="search-results-page" ref={rootRef}>
         {typeof document !== 'undefined' &&
           createPortal(<SearchResultsHeaderPill pillText={pillText} />, document.getElementById('headerSearchSlot') || document.body)}

@@ -23,6 +23,9 @@ class GuestHouse extends Model
     protected $fillable = [
         'user_id',
         'name',
+        'meta_title',
+        'meta_description',
+        'og_image',
         'slug',
         'description',
         'short_description',

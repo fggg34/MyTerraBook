@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { usePageContent } from '../../context/SiteContentContext'
 import useSectionReveal from '../../hooks/useSectionReveal'
@@ -68,6 +68,48 @@ export default function AboutPageContent() {
   const chapterImages = [FALLBACK_IMAGES.camper, FALLBACK_IMAGES.car, FALLBACK_IMAGES.house]
   const heroImage = hero.image || FALLBACK_IMAGES.hero
 
+  useEffect(() => {
+    const root = storyRef.current
+    if (!root || !paragraphs.length) return undefined
+
+    const chapters = root.querySelectorAll('.about-chapter')
+    if (!chapters.length) return undefined
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduceMotion) {
+      chapters.forEach((chapter) => chapter.classList.add('is-revealed'))
+      return undefined
+    }
+
+    const reveal = (chapter) => {
+      chapter.classList.add('is-revealed')
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            reveal(entry.target)
+            io.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.22, rootMargin: '0px 0px -8% 0px' },
+    )
+
+    chapters.forEach((chapter) => {
+      const rect = chapter.getBoundingClientRect()
+      const vh = window.innerHeight || document.documentElement.clientHeight
+      if (rect.top < vh * 0.9 && rect.bottom > 0) {
+        reveal(chapter)
+      } else {
+        io.observe(chapter)
+      }
+    })
+
+    return () => io.disconnect()
+  }, [paragraphs.length])
+
   return (
     <div className="content-page about-page">
       <section className="about-hero">
@@ -77,7 +119,6 @@ export default function AboutPageContent() {
         </div>
         <div className="wrap about-hero-grid">
           <div className="about-hero-copy">
-            {hero.eyebrow && <span className="about-eyebrow">{hero.eyebrow}</span>}
             <h1>{hero.title}</h1>
             {hero.lead && <p className="about-lead">{hero.lead}</p>}
             {(hero.primaryLabel || hero.secondaryLabel) && (
@@ -132,16 +173,16 @@ export default function AboutPageContent() {
       {paragraphs.length > 0 && (
         <section ref={storyRef} className="about-story">
           <div className="wrap">
-            <header className="about-section-head about-rise" style={{ '--d': '0s' }}>
-              {storySection.tag && <span className="about-section-tag">{storySection.tag}</span>}
-              {storySection.heading && <h2>{storySection.heading}</h2>}
-            </header>
+            {storySection.heading && (
+              <header className="about-section-head about-rise" style={{ '--d': '0s' }}>
+                <h2>{storySection.heading}</h2>
+              </header>
+            )}
             <div className="about-chapters">
               {paragraphs.map((text, index) => (
                 <article
                   key={text.slice(0, 24)}
-                  className={`about-chapter about-chapter--${index % 2 === 0 ? 'left' : 'right'} about-rise`}
-                  style={{ '--d': `${0.08 + index * 0.1}s` }}
+                  className={`about-chapter about-chapter--${index % 2 === 0 ? 'left' : 'right'}`}
                 >
                   <div className="about-chapter-media">
                     <img

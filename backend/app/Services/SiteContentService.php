@@ -77,7 +77,7 @@ class SiteContentService
             'staySection' => $home['staySection'] ?? [],
             'blogSection' => $home['blogSection'] ?? [],
             'hostCtaSection' => $home['hostCtaSection'] ?? [],
-            'reviewsSection' => $home['reviewsSection'] ?? [],
+            'reviewsSection' => $this->resolveReviewsSection($home['reviewsSection'] ?? []),
             'faqSection' => $global['faqSection'] ?? [],
             'newsSection' => $global['newsSection'] ?? [],
             'footer' => $global['footer'] ?? [],
@@ -89,6 +89,45 @@ class SiteContentService
     public function clearCache(): void
     {
         Cache::forget('site_content.all');
+    }
+
+    /**
+     * @param  array<string, mixed>  $section
+     * @return array<string, mixed>
+     */
+    public function resolveReviewsSection(array $section): array
+    {
+        $defaults = SiteContentDefaults::forPage('home')['reviewsSection'] ?? [];
+        $demo = array_replace_recursive($defaults, $section);
+
+        $googleEnabled = (bool) ($section['googleEnabled'] ?? false);
+        $placeId = trim((string) ($section['googlePlaceId'] ?? ''));
+
+        if ($googleEnabled && $placeId !== '') {
+            $google = app(GoogleReviewsService::class)->fetchForPlace($placeId);
+
+            if ($google !== null) {
+                return [
+                    'eyebrow' => $section['eyebrow'] ?? $defaults['eyebrow'] ?? '',
+                    'heading' => $section['heading'] ?? $defaults['heading'] ?? '',
+                    'rating' => $google['rating'] ?: ($demo['rating'] ?? ''),
+                    'ratingCount' => $google['ratingCount'] ?: ($demo['ratingCount'] ?? ''),
+                    'reviews' => $google['reviews'],
+                    'source' => 'google',
+                    'isDemo' => false,
+                ];
+            }
+        }
+
+        return [
+            'eyebrow' => $demo['eyebrow'] ?? '',
+            'heading' => $demo['heading'] ?? '',
+            'rating' => $demo['rating'] ?? '',
+            'ratingCount' => $demo['ratingCount'] ?? '',
+            'reviews' => is_array($demo['reviews'] ?? null) ? $demo['reviews'] : [],
+            'source' => 'demo',
+            'isDemo' => true,
+        ];
     }
 
     /**
@@ -107,8 +146,41 @@ class SiteContentService
         }
 
         $content = $this->normalizeUploadFields($content);
+        $content = $this->stripEmptyArrayKeys($content);
 
         return $this->fillEmptyRepeatersFromDefaults($pageKey, $content);
+    }
+
+    /**
+     * Filament repeaters occasionally persist blank-string keys on nested rows.
+     *
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function stripEmptyArrayKeys(array $content): array
+    {
+        $result = [];
+
+        foreach ($content as $key => $value) {
+            if ($key === '' || $key === null) {
+                continue;
+            }
+
+            if (is_array($value)) {
+                $result[$key] = array_is_list($value)
+                    ? array_map(
+                        fn (mixed $item): mixed => is_array($item) ? $this->stripEmptyArrayKeys($item) : $item,
+                        $value,
+                    )
+                    : $this->stripEmptyArrayKeys($value);
+
+                continue;
+            }
+
+            $result[$key] = $value;
+        }
+
+        return $result;
     }
 
     /**

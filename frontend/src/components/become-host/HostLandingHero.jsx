@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { getPostLoginPath, useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 
 const TRUST_POINTS = [
@@ -19,7 +19,6 @@ export default function HostLandingHero({ hero = {} }) {
   const title = hero.title ?? 'Earn from your van or guesthouse'
   const lead = hero.lead ?? 'Join 1,800+ Iceland hosts. Free to list, you keep 85%.'
   const submitLabel = hero.submitLabel ?? 'Start hosting'
-  const eyebrow = hero.eyebrow ?? 'Become a host'
   const earnAmount = hero.earnAmount ?? '€1,900'
   const bgImage = hero.image ?? '/images/homepage/host-van.jpg'
 
@@ -28,14 +27,14 @@ export default function HostLandingHero({ hero = {} }) {
     setSignupLoading(true)
     try {
       const name = signup.name || signup.email.split('@')[0] || 'Host'
-      await registerAsHost({
+      const user = await registerAsHost({
         name,
         email: signup.email,
         password: signup.password,
         password_confirmation: signup.password_confirmation || signup.password,
       })
       toast('Host account created', 'success')
-      navigate('/host/guesthouses/new')
+      navigate(getPostLoginPath(user, '/host/guesthouses/new'))
     } catch (err) {
       toast(err.response?.data?.message || 'Could not create account', 'error')
     } finally {
@@ -51,7 +50,6 @@ export default function HostLandingHero({ hero = {} }) {
       </div>
       <div className="wrap host-landing-hero-grid">
         <div className="host-landing-hero-copy">
-          <span className="host-landing-eyebrow">{eyebrow}</span>
           <h1>{title}</h1>
           <p className="host-landing-lead">{lead}</p>
           <div className="host-landing-earn">
@@ -115,7 +113,7 @@ export default function HostLandingHero({ hero = {} }) {
             </button>
           </form>
           <p className="host-landing-signup-foot">
-            Already a host? <Link to="/login?redirect=/host">Log in</Link>
+            Already a host? <Link to="/host/login">Log in</Link>
           </p>
         </div>
       </div>

@@ -115,7 +115,6 @@ export default function BookingModule({
     dropoff_location_id: '',
     pickup_at: '',
     dropoff_at: '',
-    drivers: '2',
   })
   const [pickupLocations, setPickupLocations] = useState([])
   const [dropoffLocations, setDropoffLocations] = useState([])
@@ -217,7 +216,6 @@ export default function BookingModule({
       if (vehicleForm.dropoff_location_id) params.set('dropoff_location_id', vehicleForm.dropoff_location_id)
       if (vehicleForm.pickup_at) params.set('pickup_at', vehicleForm.pickup_at)
       if (vehicleForm.dropoff_at) params.set('dropoff_at', vehicleForm.dropoff_at)
-      if (vehicleForm.drivers) params.set('drivers', vehicleForm.drivers)
     }
 
     const qs = params.toString()
@@ -278,20 +276,6 @@ export default function BookingModule({
           minNights={minRentalDays}
           maxNights={rules.max_rental_days}
           onChange={handleVehicleDates}
-        />
-      </div>
-
-      <div className="field travelers">
-        <span className="flabel">Drivers</span>
-        <FieldSelect
-          value={vehicleForm.drivers}
-          onChange={(value) => setVehicleForm((prev) => ({ ...prev, drivers: value }))}
-          options={PEOPLE_OPTIONS.map((n) => ({
-            value: String(n),
-            label: `${n} ${n === 1 ? 'driver' : 'drivers'}`,
-          }))}
-          icon={PERSON_ICON}
-          ariaLabel="Number of drivers"
         />
       </div>
     </>
