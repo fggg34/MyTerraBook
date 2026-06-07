@@ -12,6 +12,9 @@ class MainCategory extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /** @var list<string> */
+    public const CORE_SLUGS = ['car', 'campervan'];
+
     protected $fillable = [
         'name',
         'slug',
@@ -43,6 +46,11 @@ class MainCategory extends Model
         });
     }
 
+    public function isCore(): bool
+    {
+        return in_array($this->slug, self::CORE_SLUGS, true);
+    }
+
     public static function uniqueSlugFromName(string $name, ?int $exceptId = null): string
     {
         $base = Str::slug($name);
@@ -50,7 +58,7 @@ class MainCategory extends Model
         $i = 0;
 
         while (true) {
-            $query = static::query()->where('slug', $slug);
+            $query = static::withTrashed()->where('slug', $slug);
             if ($exceptId !== null) {
                 $query->whereKeyNot($exceptId);
             }
@@ -60,6 +68,29 @@ class MainCategory extends Model
             $i++;
             $slug = $base.'-'.$i;
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     */
+    public static function ensureBySlug(string $slug, array $values = []): static
+    {
+        $existing = static::withTrashed()->where('slug', $slug)->first();
+
+        if ($existing !== null) {
+            if ($existing->trashed()) {
+                $existing->restore();
+            }
+
+            $existing->update(array_merge($values, ['is_active' => true]));
+
+            return $existing;
+        }
+
+        return static::create(array_merge($values, [
+            'slug' => $slug,
+            'is_active' => true,
+        ]));
     }
 
     public function subCategories(): HasMany

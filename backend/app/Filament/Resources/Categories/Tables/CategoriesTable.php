@@ -10,8 +10,10 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Notifications\Notification;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 
 class CategoriesTable
 {
@@ -82,8 +84,32 @@ class CategoriesTable
             ->defaultSort('sort_order')
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->action(function (Collection $records): void {
+                            if ($records->contains(fn (MainCategory $record): bool => $record->isCore())) {
+                                Notification::make()
+                                    ->title('Car and Campervan cannot be deleted')
+                                    ->warning()
+                                    ->send();
+                            }
+
+                            $records
+                                ->reject(fn (MainCategory $record): bool => $record->isCore())
+                                ->each->delete();
+                        }),
+                    ForceDeleteBulkAction::make()
+                        ->action(function (Collection $records): void {
+                            if ($records->contains(fn (MainCategory $record): bool => $record->isCore())) {
+                                Notification::make()
+                                    ->title('Car and Campervan cannot be permanently deleted')
+                                    ->warning()
+                                    ->send();
+                            }
+
+                            $records
+                                ->reject(fn (MainCategory $record): bool => $record->isCore())
+                                ->each->forceDelete();
+                        }),
                     RestoreBulkAction::make(),
                 ]),
             ]);

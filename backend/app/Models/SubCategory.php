@@ -54,7 +54,7 @@ class SubCategory extends Model
         $i = 0;
 
         while (true) {
-            $query = static::query()->where('slug', $slug);
+            $query = static::withTrashed()->where('slug', $slug);
             if ($exceptId !== null) {
                 $query->whereKeyNot($exceptId);
             }
@@ -64,6 +64,30 @@ class SubCategory extends Model
             $i++;
             $slug = $base.'-'.$i;
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     */
+    public static function ensureBySlug(string $slug, int $mainCategoryId, array $values = []): static
+    {
+        $existing = static::withTrashed()->where('slug', $slug)->first();
+
+        if ($existing !== null) {
+            if ($existing->trashed()) {
+                $existing->restore();
+            }
+
+            $existing->update(array_merge($values, ['is_active' => true]));
+
+            return $existing;
+        }
+
+        return static::create(array_merge($values, [
+            'main_category_id' => $mainCategoryId,
+            'slug' => $slug,
+            'is_active' => true,
+        ]));
     }
 
     public function mainCategory(): BelongsTo

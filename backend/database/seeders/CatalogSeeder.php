@@ -19,6 +19,7 @@ use App\Models\SpecialPrice;
 use App\Models\SubCategory;
 use App\Models\TaxRate;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CatalogSeeder extends Seeder
 {
@@ -26,15 +27,17 @@ class CatalogSeeder extends Seeder
     {
         $standardTax = TaxRate::query()->where('name', 'Standard VAT (10%)')->firstOrFail();
 
-        $carMain = MainCategory::query()->firstOrCreate(
-            ['slug' => 'car'],
-            ['name' => 'Car', 'description' => 'Passenger cars and 4×4s.', 'sort_order' => 1, 'is_active' => true],
-        );
+        $carMain = MainCategory::ensureBySlug('car', [
+            'name' => 'Car',
+            'description' => 'Passenger cars and 4×4s.',
+            'sort_order' => 1,
+        ]);
 
-        $campervanMain = MainCategory::query()->firstOrCreate(
-            ['slug' => 'campervan'],
-            ['name' => 'Campervan', 'description' => 'Campervans and motorhomes.', 'sort_order' => 2, 'is_active' => true],
-        );
+        $campervanMain = MainCategory::ensureBySlug('campervan', [
+            'name' => 'Campervan',
+            'description' => 'Campervans and motorhomes.',
+            'sort_order' => 2,
+        ]);
 
         $carSubCategories = [
             ['name' => 'Hatchback', 'sort_order' => 1],
@@ -50,15 +53,12 @@ class CatalogSeeder extends Seeder
         ];
 
         foreach ($carSubCategories as $data) {
-            SubCategory::query()->firstOrCreate(
-                ['main_category_id' => $carMain->id, 'name' => $data['name']],
-                [
-                    'description' => fake()->sentence(10),
-                    'sort_order' => $data['sort_order'],
-                    'is_active' => true,
-                    'is_search_filter' => true,
-                ],
-            );
+            SubCategory::ensureBySlug(Str::slug($data['name']), $carMain->id, [
+                'name' => $data['name'],
+                'description' => fake()->sentence(10),
+                'sort_order' => $data['sort_order'],
+                'is_search_filter' => true,
+            ]);
         }
 
         $campervanSubCategories = [
@@ -69,15 +69,12 @@ class CatalogSeeder extends Seeder
         ];
 
         foreach ($campervanSubCategories as $data) {
-            SubCategory::query()->firstOrCreate(
-                ['main_category_id' => $campervanMain->id, 'name' => $data['name']],
-                [
-                    'description' => fake()->sentence(10),
-                    'sort_order' => $data['sort_order'],
-                    'is_active' => true,
-                    'is_search_filter' => true,
-                ],
-            );
+            SubCategory::ensureBySlug(Str::slug($data['name']), $campervanMain->id, [
+                'name' => $data['name'],
+                'description' => fake()->sentence(10),
+                'sort_order' => $data['sort_order'],
+                'is_search_filter' => true,
+            ]);
         }
 
         $characteristics = collect([

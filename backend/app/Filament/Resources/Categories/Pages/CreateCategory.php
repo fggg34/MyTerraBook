@@ -6,6 +6,8 @@ use App\Filament\Resources\Categories\CategoryResource;
 use App\Models\MainCategory;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Enums\Width;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class CreateCategory extends CreateRecord
 {
@@ -16,12 +18,35 @@ class CreateCategory extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $name = trim((string) ($data['name'] ?? ''));
+        $baseSlug = Str::slug($name);
+        $trashed = MainCategory::onlyTrashed()->where('slug', $baseSlug)->first();
 
-        $data['slug'] = MainCategory::uniqueSlugFromName($name);
+        $data['slug'] = $trashed?->slug ?? MainCategory::uniqueSlugFromName($name);
         $data['is_active'] = true;
-        $data['sort_order'] = ((int) MainCategory::query()->max('sort_order')) + 1;
+        $data['sort_order'] = ((int) MainCategory::withTrashed()->max('sort_order')) + 1;
 
         return $data;
+    }
+
+    protected function handleRecordCreation(array $data): Model
+    {
+        $name = trim((string) ($data['name'] ?? ''));
+        $baseSlug = Str::slug($name);
+        $trashed = MainCategory::onlyTrashed()->where('slug', $baseSlug)->first();
+
+        if ($trashed !== null) {
+            $trashed->restore();
+            $trashed->update([
+                'name' => $data['name'],
+                'description' => $data['description'] ?? $trashed->description,
+                'is_active' => true,
+                'sort_order' => $data['sort_order'] ?? $trashed->sort_order,
+            ]);
+
+            return $trashed;
+        }
+
+        return parent::handleRecordCreation($data);
     }
 
     public function getPageClasses(): array
