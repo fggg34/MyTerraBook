@@ -1,6 +1,7 @@
 import { Check, ChevronLeft, Clock, CreditCard, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { COUNTRIES, PREPAY_PERCENT } from '../../data/requestToBookConfig'
+import CountrySelect from '../forms/CountrySelect'
+import { PREPAY_PERCENT } from '../../data/requestToBookConfig'
 import { groupCardNumber, formatCardExpiry } from '../../utils/requestToBookUtils'
 import LoadingSpinner from '../ui/LoadingSpinner'
 
@@ -180,12 +181,12 @@ export default function Step4Payment({
           </div>
           <div className="field">
             <label>Country <span className="req">*</span></label>
-            <select className="sel" value={form.billingCountry} onChange={(e) => updateForm({ billingCountry: e.target.value })}>
-              <option value="">Select</option>
-              {COUNTRIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+            <CountrySelect
+              className="sel"
+              value={form.billingCountry}
+              onChange={(e) => updateForm({ billingCountry: e.target.value })}
+              placeholder="Select"
+            />
           </div>
         </div>
       </div>

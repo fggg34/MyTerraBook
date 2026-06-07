@@ -183,8 +183,4 @@ export function formatOohTimeOption(feeDisplay = OOH_FEE_DISPLAY) {
   return `${OOH_TIME_VALUE} — out of hours (+${feeDisplay})`
 }
 
-export const DIAL_CODES = ['+354', '+44', '+49', '+33', '+1', '+355']
-
-export const COUNTRIES = [
-  'Iceland', 'United Kingdom', 'Germany', 'France', 'United States', 'Albania', 'Other',
-]
+export { COUNTRY_NAMES as COUNTRIES } from './countries'

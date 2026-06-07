@@ -1,5 +1,6 @@
 import { ChevronLeft, Mail } from 'lucide-react'
-import { COUNTRIES, DIAL_CODES } from '../../data/requestToBookConfig'
+import CountrySelect from '../forms/CountrySelect'
+import PhoneField from '../forms/PhoneField'
 
 export default function Step3YourDetails({
   config,
@@ -50,16 +51,12 @@ export default function Step3YourDetails({
           {config.step3.showCountry && (
             <div className="field">
               <label>Country of residence <span className="req">*</span></label>
-              <select
+              <CountrySelect
                 className="sel"
                 value={form.customer_country}
                 onChange={(e) => updateForm({ customer_country: e.target.value })}
-              >
-                <option value="">Select country</option>
-                {COUNTRIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                placeholder="Select country"
+              />
             </div>
           )}
         </div>
@@ -78,20 +75,17 @@ export default function Step3YourDetails({
             </div>
           </div>
           <div className="field">
-            <label>Phone number <span className="req">*</span></label>
-            <div className="phone-grp">
-              <select className="sel" value={form.dialCode} onChange={(e) => updateForm({ dialCode: e.target.value })}>
-                {DIAL_CODES.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-              <input
-                className="inp"
-                placeholder="123 4567"
-                value={form.customer_phone}
-                onChange={(e) => updateForm({ customer_phone: e.target.value })}
-              />
-            </div>
+            <PhoneField
+              id="rtb-customer-phone"
+              label="Phone number"
+              variant="rtb"
+              required
+              requiredMarkClassName="req"
+              value={form.customer_phone}
+              onChange={(customer_phone) => updateForm({ customer_phone })}
+              placeholder="123 4567"
+            />
+            {errors.customer_phone && <span className="hint" style={{ color: 'var(--rtb-red)' }}>{errors.customer_phone}</span>}
           </div>
         </div>
         {config.step3.showDob && (
@@ -146,16 +140,12 @@ export default function Step3YourDetails({
             </div>
             <div className="field">
               <label>Issuing country <span className="req">*</span></label>
-              <select
+              <CountrySelect
                 className="sel"
                 value={form.licenceCountry}
                 onChange={(e) => updateForm({ licenceCountry: e.target.value })}
-              >
-                <option value="">Select country</option>
-                {COUNTRIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                placeholder="Select country"
+              />
             </div>
           </div>
           <div className="frow">

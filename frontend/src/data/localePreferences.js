@@ -1,9 +1,24 @@
-export const CURRENCIES = [
-  { code: 'EUR', label: '€ EUR' },
-  { code: 'USD', label: '$ USD' },
-  { code: 'GBP', label: '£ GBP' },
-  { code: 'ISK', label: 'kr ISK' },
-]
+import cc from 'currency-codes'
+
+const SUPPORTED_CURRENCY_CODES = ['EUR', 'USD', 'GBP', 'ISK']
+
+function currencySymbol(code) {
+  try {
+    const parts = new Intl.NumberFormat('en', { style: 'currency', currency: code }).formatToParts(0)
+    return parts.find((part) => part.type === 'currency')?.value || code
+  } catch {
+    return code
+  }
+}
+
+export const CURRENCIES = SUPPORTED_CURRENCY_CODES.map((code) => {
+  const info = cc.code(code)
+  return {
+    code,
+    label: `${currencySymbol(code)} ${code}`,
+    name: info?.currency || code,
+  }
+})
 
 export const CUR_STORAGE_KEY = 'terrabook_currency'
 

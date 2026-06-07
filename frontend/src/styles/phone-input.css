@@ -1,0 +1,227 @@
+.form-req {
+  color: #c0392b;
+}
+
+.phone-field {
+  display: grid;
+  gap: 7px;
+}
+
+.phone-field label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--auth-ink, #1d2b40);
+  letter-spacing: 0.01em;
+}
+
+/* Unified composite control — one border, country prefix inside */
+.phone-field .PhoneInput {
+  --phone-border: var(--auth-line, #e2e7ef);
+  --phone-focus: var(--auth-green, #45a06a);
+  --phone-focus-ring: rgba(69, 160, 106, 0.14);
+  --phone-radius: 14px;
+  --phone-pad-y: 13px;
+  --phone-pad-x: 16px;
+  --phone-font-size: 0.95rem;
+  --phone-prefix-bg: #f6f8fb;
+
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: 48px;
+  border: 1.5px solid var(--phone-border);
+  border-radius: var(--phone-radius);
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.phone-field .PhoneInput:focus-within {
+  border-color: var(--phone-focus);
+  box-shadow: 0 0 0 3px var(--phone-focus-ring);
+}
+
+.phone-field .PhoneInputCountry {
+  position: relative;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  margin: 0;
+  padding: 0 12px 0 14px;
+  gap: 8px;
+  border-right: 1px solid var(--phone-border);
+  background: var(--phone-prefix-bg);
+  flex-shrink: 0;
+  min-width: 118px;
+}
+
+.phone-field .PhoneInputCountrySelect {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.phone-field .PhoneInputCountryIcon {
+  width: 22px;
+  height: 16px;
+  flex-shrink: 0;
+  display: block;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.phone-field .phone-dial-code {
+  font-size: 0.92em;
+  font-weight: 600;
+  color: var(--auth-slate, #5a6b82);
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.phone-field .PhoneInputCountryIcon--border {
+  background: transparent;
+  box-shadow: none;
+}
+
+.phone-field .PhoneInputCountryIconImg,
+.phone-field .PhoneInputCountryIconUnicode {
+  width: 22px;
+  height: 16px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(15, 32, 54, 0.1);
+  display: block;
+}
+
+.phone-field .PhoneInputCountrySelectArrow {
+  display: block;
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  opacity: 0.5;
+  border-color: var(--auth-slate, #5a6b82);
+}
+
+.phone-field .PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-radius: 0;
+  padding: var(--phone-pad-y) var(--phone-pad-x);
+  font: inherit;
+  font-size: var(--phone-font-size);
+  color: var(--auth-ink, #1d2b40);
+  background: transparent;
+  transition: none;
+}
+
+.phone-field .PhoneInputInput::placeholder {
+  color: var(--auth-slate-light, #8090a4);
+}
+
+.phone-field .PhoneInputInput:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.phone-field--error .PhoneInput {
+  border-color: #f0a8a8;
+  background: var(--auth-red-soft, #fef2f2);
+}
+
+.phone-field--error .PhoneInputCountry {
+  background: #fde8e8;
+}
+
+.phone-field--error .PhoneInput:focus-within {
+  box-shadow: 0 0 0 3px rgba(197, 48, 48, 0.12);
+}
+
+/* Host landing signup */
+.phone-field--host label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--slate, #5a6b82);
+  margin-bottom: 0;
+}
+
+.phone-field--host .PhoneInput {
+  --phone-border: var(--line, #e2e7ef);
+  --phone-focus: var(--green, #45a06a);
+  --phone-focus-ring: rgba(69, 160, 106, 0.12);
+  --phone-radius: 10px;
+  --phone-pad-y: 9px;
+  --phone-pad-x: 12px;
+  --phone-font-size: 14px;
+  --phone-prefix-bg: #f8fafc;
+  min-height: 40px;
+}
+
+.phone-field--host .PhoneInputCountry {
+  padding: 0 10px 0 12px;
+  gap: 6px;
+  min-width: 108px;
+}
+
+.phone-field--host .form-req,
+.phone-field--host .host-landing-req {
+  color: #c0392b;
+}
+
+/* Client settings */
+.phone-field--client label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--client-ink-muted, #5a6b82);
+  margin-bottom: 0;
+}
+
+.phone-field--client .PhoneInput {
+  --phone-border: var(--client-line, #e2e7ef);
+  --phone-focus: var(--client-accent, #e36414);
+  --phone-focus-ring: rgba(227, 100, 20, 0.15);
+  --phone-radius: 10px;
+  --phone-pad-y: 11px;
+  --phone-pad-x: 14px;
+  --phone-font-size: 0.9375rem;
+  --phone-prefix-bg: #fafbfc;
+  min-height: 44px;
+}
+
+/* Request to book */
+.phone-field--rtb label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--rtb-navy, #0f2036);
+}
+
+.phone-field--rtb .PhoneInput {
+  --phone-border: var(--rtb-line, #e2e7ef);
+  --phone-focus: var(--rtb-blue, #34629e);
+  --phone-focus-ring: rgba(52, 98, 158, 0.12);
+  --phone-radius: 12px;
+  --phone-pad-y: 13px;
+  --phone-pad-x: 15px;
+  --phone-font-size: 15px;
+  --phone-prefix-bg: #f7f9fc;
+  min-height: 50px;
+  font-family: var(--rtb-sans, 'Open Sans', sans-serif);
+}
+
+.phone-field--rtb .PhoneInputInput {
+  font-family: var(--rtb-sans, 'Open Sans', sans-serif);
+}
+
+.phone-field--rtb .form-req,
+.phone-field--rtb .req {
+  color: var(--rtb-red, #c53030);
+}

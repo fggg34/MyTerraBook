@@ -2,11 +2,14 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthPageLayout from '../components/auth/AuthPageLayout'
 import PasswordInput from '../components/auth/PasswordInput'
+import PhoneField from '../components/forms/PhoneField'
+import RequiredMark from '../components/forms/RequiredMark'
 import PageHead from '../components/seo/PageHead'
 import { getPostLoginPath, useAuth } from '../context/AuthContext'
 import { usePageContent } from '../context/SiteContentContext'
 import { useToast } from '../context/ToastContext'
 import usePageSeo from '../hooks/usePageSeo'
+import { formatPhoneForApi, validatePhone } from '../utils/phone'
 import '../styles/auth-pages.css'
 
 const REGISTER_FEATURES = [
@@ -62,7 +65,8 @@ export default function RegisterPage() {
     const e2 = {}
     if (!form.name.trim()) e2.name = 'Name is required'
     if (!form.email) e2.email = 'Email is required'
-    if (!form.phone.trim()) e2.phone = 'Phone is required'
+    const phoneError = validatePhone(form.phone)
+    if (phoneError) e2.phone = phoneError
     if (!form.password) e2.password = 'Password is required'
     else if (form.password.length < 8) e2.password = 'At least 8 characters'
     if (form.password !== form.password_confirmation) e2.password_confirmation = 'Passwords do not match'
@@ -71,7 +75,10 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      const user = await registerAccount(form)
+      const user = await registerAccount({
+        ...form,
+        phone: formatPhoneForApi(form.phone),
+      })
       toast('Account created successfully!', 'success')
       navigate(getPostLoginPath(user))
     } catch (err) {
@@ -111,7 +118,7 @@ export default function RegisterPage() {
         {errors.form && <div className="auth-form-error" role="alert">{errors.form}</div>}
 
         <div className="auth-field">
-          <label htmlFor="name">Full name</label>
+          <label htmlFor="name">Full name <RequiredMark /></label>
           <div className={`auth-input-wrap${errors.name ? ' auth-input-wrap--error' : ''}`}>
             <input
               id="name"
@@ -127,7 +134,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="auth-field">
-          <label htmlFor="email">Email address</label>
+          <label htmlFor="email">Email address <RequiredMark /></label>
           <div className={`auth-input-wrap${errors.email ? ' auth-input-wrap--error' : ''}`}>
             <input
               id="email"
@@ -143,24 +150,21 @@ export default function RegisterPage() {
         </div>
 
         <div className="auth-field">
-          <label htmlFor="phone">Phone</label>
-          <div className={`auth-input-wrap${errors.phone ? ' auth-input-wrap--error' : ''}`}>
-            <input
-              id="phone"
-              type="tel"
-              className="auth-input"
-              placeholder="+354 555 1234"
-              autoComplete="tel"
-              required
-              value={form.phone}
-              onChange={update('phone')}
-            />
-          </div>
+          <PhoneField
+            id="phone"
+            label="Phone"
+            variant="auth"
+            required
+            value={form.phone}
+            onChange={(phone) => setForm({ ...form, phone })}
+            hasError={!!errors.phone}
+            placeholder="555 1234"
+          />
           {errors.phone && <p className="auth-field-error">{errors.phone}</p>}
         </div>
 
         <div className="auth-field">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">Password <RequiredMark /></label>
           <PasswordInput
             id="password"
             value={form.password}
@@ -174,7 +178,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="auth-field">
-          <label htmlFor="password_confirmation">Confirm password</label>
+          <label htmlFor="password_confirmation">Confirm password <RequiredMark /></label>
           <PasswordInput
             id="password_confirmation"
             value={form.password_confirmation}

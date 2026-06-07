@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext'
 import { usePageContent } from '../context/SiteContentContext'
 import { getRequestToBookConfig, resolveBookingType } from '../data/requestToBookConfig'
 import { formatCurrency, formatCurrencyFromCents } from '../utils/format'
+import { formatPhoneForApi, validatePhone } from '../utils/phone'
 import { combineDateAndTime, nightsBetween, toDateOnlyString } from '../utils/requestToBookUtils'
 import { toApiDateTime, parseDateTimeLocal } from '../utils/format'
 import { useBookingRules } from './useBookingRules'
@@ -27,7 +28,6 @@ const DEFAULT_FORM = {
   customer_email: '',
   customer_phone: '',
   customer_country: '',
-  dialCode: '+354',
   dobYear: '',
   dobMonth: '',
   dobDay: '',
@@ -299,7 +299,8 @@ export default function useRequestToBook() {
         if (!form.customer_name.trim()) e.customer_name = 'Required'
         if (!form.customer_email.trim()) e.customer_email = 'Required'
         else if (!/\S+@\S+\.\S+/.test(form.customer_email)) e.customer_email = 'Invalid email'
-        if (bookingType === 'guesthouse' && !form.customer_phone.trim()) e.customer_phone = 'Required'
+        const phoneError = validatePhone(form.customer_phone, { required: bookingType === 'guesthouse' })
+        if (phoneError) e.customer_phone = phoneError
         if (bookingType !== 'guesthouse') {
           if (!form.customer_country) e.customer_country = 'Required'
           if (!form.licenceNumber.trim()) e.licenceNumber = 'Required'
@@ -388,7 +389,7 @@ export default function useRequestToBook() {
           guests_count: form.guests_count,
           guest_name: form.customer_name,
           guest_email: form.customer_email,
-          guest_phone: `${form.dialCode} ${form.customer_phone}`.trim(),
+          guest_phone: formatPhoneForApi(form.customer_phone),
           special_requests: form.special_requests || form.notes || undefined,
           coupon_code: form.coupon_code.trim() || undefined,
         })
@@ -408,7 +409,7 @@ export default function useRequestToBook() {
           dropoff_at: toApiDateTime(dropoffAt),
           customer_name: form.customer_name,
           customer_email: form.customer_email,
-          customer_phone: `${form.dialCode} ${form.customer_phone}`.trim() || undefined,
+          customer_phone: formatPhoneForApi(form.customer_phone) || undefined,
           customer_country: form.customer_country || undefined,
           rental_options: form.rental_option_ids.map(Number),
           coupon_code: form.coupon_code.trim() || undefined,

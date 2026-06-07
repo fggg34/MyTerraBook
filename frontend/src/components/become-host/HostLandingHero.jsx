@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import PhoneField from '../forms/PhoneField'
 import { getPostLoginPath, useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
+import { formatPhoneForApi } from '../../utils/phone'
 
 const TRUST_POINTS = [
   'Free to list — no upfront costs',
@@ -13,7 +15,13 @@ export default function HostLandingHero({ hero = {} }) {
   const { registerAsHost } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
-  const [signup, setSignup] = useState({ name: '', email: '', phone: '', password: '', password_confirmation: '' })
+  const [signup, setSignup] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    password_confirmation: '',
+  })
   const [signupLoading, setSignupLoading] = useState(false)
 
   const title = hero.title ?? 'Earn from your van or guesthouse'
@@ -34,7 +42,7 @@ export default function HostLandingHero({ hero = {} }) {
       const user = await registerAsHost({
         name,
         email: signup.email,
-        phone: signup.phone,
+        phone: formatPhoneForApi(signup.phone),
         password: signup.password,
         password_confirmation: signup.password_confirmation,
       })
@@ -77,17 +85,18 @@ export default function HostLandingHero({ hero = {} }) {
           <p className="host-landing-signup-sub">Free to list. No commitment. Earn on your own schedule.</p>
           <form onSubmit={handleSignup}>
             <div className="host-landing-field">
-              <label htmlFor="host-su-name">Your name</label>
+              <label htmlFor="host-su-name">Your name <span className="host-landing-req">*</span></label>
               <input
                 id="host-su-name"
                 type="text"
                 placeholder="Your name"
                 value={signup.name}
                 onChange={(e) => setSignup({ ...signup, name: e.target.value })}
+                required
               />
             </div>
             <div className="host-landing-field">
-              <label htmlFor="host-su-email">Email</label>
+              <label htmlFor="host-su-email">Email <span className="host-landing-req">*</span></label>
               <input
                 id="host-su-email"
                 type="email"
@@ -99,19 +108,19 @@ export default function HostLandingHero({ hero = {} }) {
               />
             </div>
             <div className="host-landing-field">
-              <label htmlFor="host-su-phone">Phone</label>
-              <input
+              <PhoneField
                 id="host-su-phone"
-                type="tel"
-                placeholder="+354 555 1234"
-                autoComplete="tel"
-                value={signup.phone}
-                onChange={(e) => setSignup({ ...signup, phone: e.target.value })}
+                label="Phone"
+                variant="host"
                 required
+                requiredMarkClassName="host-landing-req"
+                value={signup.phone}
+                onChange={(phone) => setSignup({ ...signup, phone })}
+                placeholder="555 1234"
               />
             </div>
             <div className="host-landing-field">
-              <label htmlFor="host-su-pass">Password</label>
+              <label htmlFor="host-su-pass">Password <span className="host-landing-req">*</span></label>
               <input
                 id="host-su-pass"
                 type="password"
@@ -124,7 +133,7 @@ export default function HostLandingHero({ hero = {} }) {
               />
             </div>
             <div className="host-landing-field">
-              <label htmlFor="host-su-pass-confirm">Confirm password</label>
+              <label htmlFor="host-su-pass-confirm">Confirm password <span className="host-landing-req">*</span></label>
               <input
                 id="host-su-pass-confirm"
                 type="password"
