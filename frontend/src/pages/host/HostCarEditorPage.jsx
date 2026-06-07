@@ -20,6 +20,8 @@ import {
   getHostCarSpecialPrices,
   getHostCarUnits,
   getHostCatalog,
+  getPublicMainCategories,
+  getPublicSubCategories,
   removeHostCarAvailability,
   removeHostCarSpecialPrice,
   resolveStorageUrl,
@@ -87,24 +89,38 @@ export default function HostCarEditorPage() {
   const [recordId, setRecordId] = useState(isNew ? null : Number(id))
 
   useEffect(() => {
-    Promise.all([
-      getHostCatalog('main-categories'),
-      getHostCatalog('categories'),
+    const unwrap = (result, fallback = []) => (
+      result.status === 'fulfilled' ? (result.value.data?.data || []) : fallback
+    )
+
+    const loadMainCategories = () => getHostCatalog('main-categories').catch(() => getPublicMainCategories())
+    const loadSubCategories = () => getHostCatalog('categories').catch(() => getPublicSubCategories())
+
+    Promise.allSettled([
+      loadMainCategories(),
+      loadSubCategories(),
       getHostCatalog('locations'),
       getHostCatalog('characteristics'),
       getHostCatalog('rental-options'),
       getHostCatalog('price-types'),
     ]).then(([mc, sc, l, ch, ro, pt]) => {
+      const mainCategories = unwrap(mc)
+      const subCategories = unwrap(sc)
+
       setCatalog({
-        mainCategories: mc.data.data || [],
-        subCategories: sc.data.data || [],
-        locations: l.data.data || [],
-        characteristics: ch.data.data || [],
-        rentalOptions: ro.data.data || [],
-        priceTypes: pt.data.data || [],
+        mainCategories,
+        subCategories,
+        locations: unwrap(l),
+        characteristics: unwrap(ch),
+        rentalOptions: unwrap(ro),
+        priceTypes: unwrap(pt),
       })
+
+      if (mainCategories.length === 0) {
+        toast('Could not load vehicle categories. Please refresh or contact support.', 'error')
+      }
     })
-  }, [])
+  }, [toast])
 
   const loadPricing = (carId) => {
     getHostCarUnits(carId).then((res) => setUnits(res.data.data || []))
