@@ -250,6 +250,10 @@
   color: var(--auth-slate-light);
 }
 
+.auth-field label .form-req {
+  color: var(--auth-red);
+}
+
 .auth-input-wrap {
   position: relative;
 }

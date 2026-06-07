@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import PasswordInput from '../auth/PasswordInput'
+import PhoneField from '../forms/PhoneField'
+import RequiredMark from '../forms/RequiredMark'
 import { getStoredToken, storeAuth } from '../../auth'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { updatePassword, updateProfile } from '../../api/me'
+import { formatPhoneForApi, validatePhone } from '../../utils/phone'
 
 export default function AccountSettingsForms({
   requirePhone = false,
@@ -43,7 +46,10 @@ export default function AccountSettingsForms({
     const errors = {}
     if (!profile.name.trim()) errors.name = 'Name is required'
     if (!profile.email.trim()) errors.email = 'Email is required'
-    if (requirePhone && !profile.phone.trim()) errors.phone = 'Phone is required'
+    if (requirePhone) {
+      const phoneError = validatePhone(profile.phone)
+      if (phoneError) errors.phone = phoneError
+    }
     if (profile.email !== user?.email && !profile.current_password) {
       errors.current_password = 'Current password is required to change email'
     }
@@ -55,7 +61,7 @@ export default function AccountSettingsForms({
       const payload = {
         name: profile.name.trim(),
         email: profile.email.trim(),
-        phone: profile.phone.trim(),
+        phone: formatPhoneForApi(profile.phone),
       }
       if (profile.current_password) {
         payload.current_password = profile.current_password
@@ -125,7 +131,7 @@ export default function AccountSettingsForms({
         <p className="client-settings-desc">{profileDescription}</p>
         <form onSubmit={handleProfileSubmit} className="client-settings-form">
           <div className="client-field">
-            <label htmlFor="settings-name">Full name</label>
+            <label htmlFor="settings-name">Full name <RequiredMark className="client-req" /></label>
             <input
               id="settings-name"
               type="text"
@@ -136,7 +142,7 @@ export default function AccountSettingsForms({
             {profileErrors.name && <p className="client-field-error">{profileErrors.name}</p>}
           </div>
           <div className="client-field">
-            <label htmlFor="settings-email">Email address</label>
+            <label htmlFor="settings-email">Email address <RequiredMark className="client-req" /></label>
             <input
               id="settings-email"
               type="email"
@@ -147,14 +153,16 @@ export default function AccountSettingsForms({
             {profileErrors.email && <p className="client-field-error">{profileErrors.email}</p>}
           </div>
           <div className="client-field">
-            <label htmlFor="settings-phone">Phone</label>
-            <input
+            <PhoneField
               id="settings-phone"
-              type="tel"
-              value={profile.phone}
-              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-              placeholder="+354 555 1234"
+              label="Phone"
+              variant="client"
               required={requirePhone}
+              requiredMarkClassName="client-req"
+              value={profile.phone}
+              onChange={(phone) => setProfile({ ...profile, phone })}
+              hasError={!!profileErrors.phone}
+              placeholder="555 1234"
             />
             {profileErrors.phone && <p className="client-field-error">{profileErrors.phone}</p>}
           </div>
