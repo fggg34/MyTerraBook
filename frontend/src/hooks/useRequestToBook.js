@@ -70,7 +70,13 @@ export default function useRequestToBook() {
   const config = useMemo(() => {
     const base = getRequestToBookConfig(bookingType || 'car')
     if (checkoutPage?.stepperSteps?.length) {
-      return { ...base, stepperSteps: checkoutPage.stepperSteps }
+      return {
+        ...base,
+        stepperSteps: checkoutPage.stepperSteps.map((stp) => ({
+          ...stp,
+          num: Number(stp.num),
+        })),
+      }
     }
     return base
   }, [bookingType, checkoutPage])
@@ -307,13 +313,36 @@ export default function useRequestToBook() {
         }
       }
       setErrors(e)
-      return Object.keys(e).length === 0
+      return e
     },
     [form, bookingType, dropoffLocationId],
   )
 
+  const stepValidationMessage = useCallback(
+    (s, e) => {
+      if (s === 1) {
+        if (e.startDate || e.endDate) {
+          return bookingType === 'guesthouse'
+            ? 'Select your check-in and check-out dates to continue'
+            : 'Select your pick-up and drop-off dates to continue'
+        }
+        if (e.pickup_location_id || e.dropoff_location_id) {
+          return 'Select your pick-up and drop-off locations to continue'
+        }
+      }
+      if (s === 2 && e.price_type_id) return 'Choose a protection plan to continue'
+      if (s === 3) return 'Complete the required fields to continue'
+      return 'Complete the required fields to continue'
+    },
+    [bookingType],
+  )
+
   const nextStep = useCallback(() => {
-    if (!validateStep(step)) return
+    const validationErrors = validateStep(step)
+    if (Object.keys(validationErrors).length) {
+      toast(stepValidationMessage(step, validationErrors), 'error')
+      return
+    }
     const next = Math.min(step + 1, 4)
     if (next === 2 && bookingType !== 'guesthouse' && item?.price_types?.length) {
       setForm((prev) => {
@@ -322,7 +351,7 @@ export default function useRequestToBook() {
       })
     }
     goStep(next)
-  }, [validateStep, step, goStep, bookingType, item])
+  }, [validateStep, step, goStep, bookingType, item, stepValidationMessage, toast])
 
   const prevStep = useCallback(() => {
     goStep(Math.max(step - 1, 1))
@@ -339,8 +368,10 @@ export default function useRequestToBook() {
   }, [])
 
   const submit = useCallback(async () => {
-    if (!validateStep(4)) {
-      if (!form.agreed) toast('Please confirm the terms', 'error')
+    const validationErrors = validateStep(4)
+    if (Object.keys(validationErrors).length) {
+      if (validationErrors.agreed) toast('Please confirm the terms', 'error')
+      else toast('Complete the required payment fields to continue', 'error')
       return
     }
     if (!quote) {

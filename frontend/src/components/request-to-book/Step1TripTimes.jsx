@@ -16,6 +16,7 @@ export default function Step1TripTimes({
   item,
   locationName,
   locationFeeLabel,
+  errors = {},
   onNext,
 }) {
   const pickupRef = useRef(null)
@@ -52,6 +53,15 @@ export default function Step1TripTimes({
           onChange={(start, end) => updateForm({ startDate: start, endDate: end })}
           onRangeComplete={handleRangeComplete}
         />
+        {(errors.startDate || errors.endDate) && (
+          <p className="hint" style={{ color: 'var(--rtb-red)', marginTop: 10 }}>
+            {errors.startDate && errors.endDate
+              ? `Select your ${config.step1.dateStartLabel.toLowerCase()} and ${config.step1.dateEndLabel.toLowerCase()} dates`
+              : errors.startDate
+                ? `Select your ${config.step1.dateStartLabel.toLowerCase()} date`
+                : `Select your ${config.step1.dateEndLabel.toLowerCase()} date`}
+          </p>
+        )}
       </div>
 
       {config.step1.showPropertyAddress && item && (
@@ -68,6 +78,11 @@ export default function Step1TripTimes({
 
       {config.step1.showLocations && (
         <div className="block" ref={pickupRef}>
+          {(errors.pickup_location_id || errors.dropoff_location_id) && (
+            <p className="hint" style={{ color: 'var(--rtb-red)', marginBottom: 12 }}>
+              Select your pick-up and drop-off locations to continue
+            </p>
+          )}
           <div className="block-head">
             <span className="bnum">2</span>
             <h3>Pick-up</h3>

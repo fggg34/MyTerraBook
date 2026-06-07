@@ -80,24 +80,11 @@ nav.main a.nav-collapsible{
 .chrome.condensed .hsearch{max-height:0;opacity:0;}
 .hsearch-inner{
   max-width:var(--maxw);margin:0 auto;padding:18px 40px 20px;
-  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  display:flex;align-items:center;justify-content:flex-start;
 }
-/* category switch */
-.hcats{display:flex;gap:6px;background:#f1f4f9;border-radius:999px;padding:5px;flex:0 0 auto;}
-.hcat{
-  display:inline-flex;align-items:center;gap:8px;
-  border:none;cursor:pointer;background:none;border-radius:999px;
-  font-family:var(--sans);font-weight:700;font-size:14px;color:var(--slate);
-  padding:9px 16px;white-space:nowrap;transition:background .18s,color .18s,box-shadow .18s;
-}
-.hcat svg{width:18px;height:18px;}
-.hcat:hover{color:var(--navy);}
-.hcat.active{background:#fff;color:var(--navy);box-shadow:0 6px 16px -8px rgba(15,32,54,.4);}
-.hcat.active svg{color:var(--blue);}
-
-/* the editable fields bar */
+/* pick-up / drop-off / dates search bar */
 .hsearch-bar{
-  flex:1 1 520px;display:flex;align-items:stretch;gap:10px;
+  flex:1 1 100%;width:100%;display:flex;align-items:stretch;gap:10px;
   border:1.5px solid var(--line);border-radius:16px;padding:8px;background:#fff;
   min-width:0;
 }
@@ -160,9 +147,9 @@ nav.main a.nav-collapsible{
 .filterbar{background:#fff;border-top:none;margin-top:6px;}
 .filterbar-inner{
   max-width:var(--maxw);margin:0 auto;padding:16px 40px;
-  display:flex;align-items:center;gap:14px;
+  display:flex;align-items:center;justify-content:flex-start;gap:14px;
 }
-.chips{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1 1 auto;min-width:0;}
+.chips{display:flex;align-items:center;justify-content:flex-start;gap:10px;flex-wrap:wrap;flex:1 1 auto;min-width:0;}
 .chip{
   display:inline-flex;align-items:center;gap:8px;cursor:pointer;
   background:#fff;border:1.5px solid var(--line);border-radius:999px;
@@ -335,8 +322,6 @@ nav.main a.nav-collapsible{
 }
 @media(max-width:680px){
   .results-intro h1{font-size:32px;}
-  .hcats{width:100%;}
-  .hcat{flex:1 1 0;justify-content:center;}
   .hsearch-btn{flex:1 1 100%;justify-content:center;padding:14px;}
   .resfloat{left:16px;right:16px;transform:translateY(24px);width:auto;}
   .resfloat.show{transform:translateY(0);}
@@ -380,7 +365,6 @@ body.search-results-active .chrome.condensed nav.main a.nav-collapsible{
 body.search-results-active .chrome.condensed .hsearch{max-height:0;opacity:0;}
 @keyframes dotpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.55;transform:scale(.82);}}
 body.search-results-active .chip,
-body.search-results-active .hcat,
 body.search-results-active .hsearch-btn,
 body.search-results-active .sortbtn,
 body.search-results-active .loadmore,

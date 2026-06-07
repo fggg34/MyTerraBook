@@ -2,12 +2,11 @@ import {
   ArrowRight,
   CalendarCheck,
   Check,
-  CreditCard,
   Gauge,
   Tag,
 } from 'lucide-react'
 import { formatCurrency, formatCurrencyFromCents } from '../../utils/format'
-import { getProtectionPresentation, PREPAY_PERCENT } from '../../data/requestToBookConfig'
+import { PREPAY_PERCENT } from '../../data/requestToBookConfig'
 import { fmtDisplayDate } from '../../utils/requestToBookUtils'
 
 export default function BookingSummarySidebar({
@@ -40,12 +39,6 @@ export default function BookingSummarySidebar({
   const dropDetail = bookingType === 'guesthouse'
     ? item?.check_out_time || 'By 11:00'
     : `${form.dropoffTime} · ${locationName(form.sameReturn ? form.pickup_location_id : form.dropoff_location_id)}`
-
-  const depositDisplay = () => {
-    if (!isVehicle || !selectedPriceType) return null
-    const pres = getProtectionPresentation(selectedPriceType)
-    return selectedPriceType.attribute_value_per_day || pres.deposit
-  }
 
   const totalAmount = () => {
     if (!quote) return null
@@ -241,7 +234,7 @@ export default function BookingSummarySidebar({
               <b>{formatCurrency(balanceAmount(), quote.currency || 'EUR')}</b>
             </div>
             <p className="prepay-note">
-              A {PREPAY_PERCENT}% prepayment secures your booking once the host approves. The balance is paid {isVehicle ? 'when you collect the vehicle' : 'at check-in'}.
+              A {PREPAY_PERCENT}% prepayment secures your booking once the host approves and is non-refundable. The remaining balance is paid {isVehicle ? 'when you collect the vehicle' : 'at check-in'}.
             </p>
           </div>
         )}
@@ -254,12 +247,6 @@ export default function BookingSummarySidebar({
             <div className="ff">
               <span className="fl"><Gauge aria-hidden />Mileage</span>
               <span className="fv">Unlimited · included</span>
-            </div>
-          )}
-          {isVehicle && depositDisplay() && (
-            <div className="ff">
-              <span className="fl"><CreditCard aria-hidden />Refundable deposit</span>
-              <span className="fv">{depositDisplay()}</span>
             </div>
           )}
         </div>
