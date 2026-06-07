@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Me;
 
-use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,11 +19,7 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'phone' => [
-                $user->role === UserRole::Host ? 'required' : 'nullable',
-                'string',
-                'max:32',
-            ],
+            'phone' => ['required', 'string', 'max:32'],
             'current_password' => [
                 Rule::requiredIf(fn () => $this->string('email')->toString() !== $user->email),
                 'current_password',

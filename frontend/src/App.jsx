@@ -24,8 +24,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import UnderConstructionPage from './pages/UnderConstructionPage'
 import ClientLayout from './components/client/ClientLayout'
-import ClientBookingsPage from './pages/client/ClientBookingsPage'
-import ClientStaysPage from './pages/client/ClientStaysPage'
+import ClientHistoryPage from './pages/client/ClientHistoryPage'
 import ClientSettingsPage from './pages/client/ClientSettingsPage'
 import HostLayout from './components/host/HostLayout'
 import HostDashboardPage from './pages/host/HostDashboardPage'
@@ -126,8 +125,8 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<ClientBookingsPage />} />
-          <Route path="stays" element={<ClientStaysPage />} />
+          <Route index element={<ClientHistoryPage />} />
+          <Route path="stays" element={<Navigate to="/dashboard?type=guesthouse" replace />} />
           <Route path="settings" element={<ClientSettingsPage />} />
         </Route>
         <Route

@@ -9,6 +9,7 @@ use App\Enums\UserRole;
 use App\Models\Car;
 use App\Models\Category;
 use App\Models\GuestHouse;
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -152,6 +153,72 @@ class HostPanelTest extends TestCase
         ]);
 
         $this->getJson("/api/cars/{$car->id}")->assertOk();
+    }
+
+    public function test_host_car_persists_seo_and_pickup_dropoff_locations(): void
+    {
+        $category = Category::query()->create(['name' => 'Camper', 'is_active' => true]);
+        $pickup = Location::query()->create(['name' => 'Airport', 'slug' => 'airport', 'is_active' => true]);
+        $dropoff = Location::query()->create(['name' => 'Downtown', 'slug' => 'downtown', 'is_active' => true]);
+        $host = User::factory()->host()->create();
+
+        Sanctum::actingAs($host);
+
+        $created = $this->postJson('/api/host/cars', [
+            'name' => 'SEO Van',
+            'category_id' => $category->id,
+            'meta_title' => 'Best Van',
+            'meta_description' => 'A great van to rent.',
+        ])->assertCreated()->json('data');
+
+        $carId = $created['id'];
+
+        $this->patchJson("/api/host/cars/{$carId}/relations", [
+            'pickup_location_ids' => [$pickup->id],
+            'dropoff_location_ids' => [$dropoff->id],
+        ])->assertOk();
+
+        $response = $this->getJson("/api/host/cars/{$carId}")->assertOk();
+        $response->assertJsonPath('data.meta_title', 'Best Van');
+        $response->assertJsonPath('data.meta_description', 'A great van to rent.');
+        $response->assertJsonPath('data.pickup_location_ids', [$pickup->id]);
+        $response->assertJsonPath('data.dropoff_location_ids', [$dropoff->id]);
+    }
+
+    public function test_host_guesthouse_persists_seo_and_seasonal_prices(): void
+    {
+        $host = User::factory()->host()->create();
+
+        $house = GuestHouse::query()->create([
+            'user_id' => $host->id,
+            'name' => 'Seasonal House',
+            'slug' => 'seasonal-house',
+            'type' => GuestHouseType::Apartment,
+            'status' => GuestHouseStatus::Draft,
+            'city' => 'Reykjavík',
+            'max_guests' => 2,
+            'bedrooms' => 1,
+            'bathrooms' => 1,
+            'beds' => 1,
+            'min_nights' => 1,
+            'base_price_per_night' => 10000,
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->patchJson("/api/host/guest-houses/{$house->id}", [
+            'meta_title' => 'Cozy Stay',
+            'meta_description' => 'Cozy place near the centre.',
+            'seasonal_prices' => [
+                ['name' => 'Summer', 'date_from' => '2026-06-01', 'date_to' => '2026-08-31', 'price_per_night_euros' => 200, 'minimum_nights' => 3],
+            ],
+        ])->assertOk();
+
+        $response = $this->getJson("/api/host/guest-houses/{$house->id}")->assertOk();
+        $response->assertJsonPath('data.meta_title', 'Cozy Stay');
+        $response->assertJsonPath('data.meta_description', 'Cozy place near the centre.');
+        $response->assertJsonPath('data.seasonal_prices.0.name', 'Summer');
+        $response->assertJsonPath('data.seasonal_prices.0.price_per_night', 20000);
     }
 
     public function test_customer_cannot_access_host_dashboard(): void

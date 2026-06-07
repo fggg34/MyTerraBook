@@ -2,6 +2,15 @@ import AccountSettingsForms from '../../components/account/AccountSettingsForms'
 
 export default function ClientSettingsPage() {
   return (
-    <AccountSettingsForms profileDescription="Update the contact details on your account." />
+    <div>
+      <div className="client-page-head">
+        <h2>Settings</h2>
+        <p>Update your profile and password.</p>
+      </div>
+      <AccountSettingsForms
+        requirePhone
+        profileDescription="Keep your contact details up to date for booking confirmations and trip support."
+      />
+    </div>
   )
 }

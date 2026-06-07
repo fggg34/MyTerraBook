@@ -1820,21 +1820,27 @@
   },
   "user-dashboard": {
     "title": "My account",
+    "historyTitle": "Trip history",
+    "historySubtitle": "Cars, campervans and guesthouses you have booked with MyTerraBook.",
     "emptyBookings": "No bookings yet",
-    "emptyStays": "No stays yet"
+    "emptyStays": "No stays yet",
+    "emptyHistory": "No trips yet",
+    "emptyHistoryText": "When you book a car, campervan or guesthouse, it will appear here.",
+    "exportLabel": "Export CSV",
+    "downloadPdfLabel": "Download PDF",
+    "addToCalendarLabel": "Add to calendar",
+    "cancelBookingLabel": "Cancel booking",
+    "viewListingLabel": "View listing"
   },
   "client-panel": {
     "eyebrow": "My account",
     "sidebarTitle": "Account",
     "signOutLabel": "Sign out",
+    "heroText": "Your cars, campervans and guesthouse stays — all in one place.",
     "navItems": [
       {
         "to": "/dashboard",
-        "label": "My bookings"
-      },
-      {
-        "to": "/dashboard/stays",
-        "label": "My stays"
+        "label": "Trip history"
       },
       {
         "to": "/dashboard/settings",

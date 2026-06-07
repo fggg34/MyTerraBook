@@ -112,6 +112,7 @@ class HostCarController extends Controller
 
         $request->validate([
             'main_image' => ['nullable', 'image', 'max:8192'],
+            'og_image' => ['nullable', 'image', 'max:8192'],
             'details_images' => ['nullable', 'array'],
             'details_images.*' => ['image', 'max:8192'],
             'details_image_paths' => ['nullable', 'array'],
@@ -123,6 +124,11 @@ class HostCarController extends Controller
             $car->update(['main_image_path' => $path]);
         }
 
+        if ($request->hasFile('og_image')) {
+            $path = $request->file('og_image')->store('cars/og', 'public');
+            $car->update(['og_image' => $path]);
+        }
+
         if ($request->hasFile('details_images')) {
             $paths = $car->details_image_paths ?? [];
             foreach ($request->file('details_images') as $file) {
@@ -132,7 +138,11 @@ class HostCarController extends Controller
         }
 
         if ($request->has('details_image_paths')) {
-            $car->update(['details_image_paths' => $request->input('details_image_paths', [])]);
+            $paths = array_values(array_filter(
+                $request->input('details_image_paths', []),
+                fn ($path) => filled($path),
+            ));
+            $car->update(['details_image_paths' => $paths]);
         }
 
         return response()->json(['data' => new HostCarResource($car->fresh())]);
@@ -421,8 +431,14 @@ class HostCarController extends Controller
             'fuel_type' => ['nullable', 'string', 'max:50'],
             'units_available' => ['nullable', 'integer', 'min:1'],
             'ical_import_url' => ['nullable', 'url', 'max:500'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:1000'],
             'location_ids' => ['nullable', 'array'],
             'location_ids.*' => ['integer', 'exists:locations,id'],
+            'pickup_location_ids' => ['nullable', 'array'],
+            'pickup_location_ids.*' => ['integer', 'exists:locations,id'],
+            'dropoff_location_ids' => ['nullable', 'array'],
+            'dropoff_location_ids.*' => ['integer', 'exists:locations,id'],
             'characteristic_ids' => ['nullable', 'array'],
             'characteristic_ids.*' => ['integer', 'exists:characteristics,id'],
             'rental_option_ids' => ['nullable', 'array'],
@@ -432,7 +448,19 @@ class HostCarController extends Controller
 
     private function syncRelations(Request $request, Car $car): void
     {
-        if ($request->has('location_ids')) {
+        if ($request->has('pickup_location_ids') || $request->has('dropoff_location_ids')) {
+            $pickupIds = array_map('intval', $request->input('pickup_location_ids', []));
+            $dropoffIds = array_map('intval', $request->input('dropoff_location_ids', []));
+
+            $sync = [];
+            foreach (array_unique(array_merge($pickupIds, $dropoffIds)) as $locationId) {
+                $sync[$locationId] = [
+                    'allows_pickup' => in_array($locationId, $pickupIds, true),
+                    'allows_dropoff' => in_array($locationId, $dropoffIds, true),
+                ];
+            }
+            $car->locations()->sync($sync);
+        } elseif ($request->has('location_ids')) {
             $sync = [];
             foreach ($request->input('location_ids', []) as $locationId) {
                 $sync[$locationId] = ['allows_pickup' => true, 'allows_dropoff' => true];
