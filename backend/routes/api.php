@@ -14,6 +14,9 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\HomepageController;
 use App\Http\Controllers\Api\SiteContentController;
 use App\Http\Controllers\Api\SitePageController;
+use App\Http\Controllers\Api\MeGuestHouseBookingPdfController;
+use App\Http\Controllers\Api\MeHistoryController;
+use App\Http\Controllers\Api\MeOrderContractPdfController;
 use App\Http\Controllers\Api\MeOrderController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\MeOrderIcalController;
@@ -111,13 +114,19 @@ Route::prefix('guest-houses')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn (Request $request) => $request->user());
     Route::post('/host/apply', [AuthController::class, 'applyAsHost']);
+    Route::get('/me/history', [MeHistoryController::class, 'index']);
+    Route::get('/me/history/export.csv', [MeHistoryController::class, 'export']);
     Route::get('/me/orders', [MeOrderController::class, 'index']);
     Route::get('/me/orders/{order}/calendar.ics', [MeOrderIcalController::class, 'show'])
         ->name('api.me.orders.ical');
+    Route::get('/me/orders/{order}/contract.pdf', [MeOrderContractPdfController::class, 'show'])
+        ->name('api.me.orders.contract-pdf');
 
     Route::get('/me/guest-house-bookings', [MeGuestHouseBookingController::class, 'index']);
     Route::get('/me/guest-house-bookings/{ref}', [MeGuestHouseBookingController::class, 'show']);
     Route::post('/me/guest-house-bookings/{ref}/cancel', [MeGuestHouseBookingController::class, 'cancel']);
+    Route::get('/me/guest-house-bookings/{ref}/contract.pdf', [MeGuestHouseBookingPdfController::class, 'show'])
+        ->name('api.me.guest-house-bookings.contract-pdf');
     Route::patch('/me/profile', [MeProfileController::class, 'update']);
     Route::patch('/me/password', [MeProfileController::class, 'updatePassword']);
 });

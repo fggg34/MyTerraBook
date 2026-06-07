@@ -40,6 +40,10 @@ export function uploadHostGuestHouseImages(id, formData) {
   })
 }
 
+export function deleteHostGuestHouseImage(id, imageId) {
+  return api.delete(`/host/guest-houses/${id}/images/${imageId}`)
+}
+
 export function getHostGuestHouseAvailability(id) {
   return api.get(`/host/guest-houses/${id}/availability-blocks`)
 }
@@ -106,6 +110,10 @@ export function createHostCarDailyFare(id, payload) {
   return api.post(`/host/cars/${id}/daily-fares`, payload)
 }
 
+export function updateHostCarDailyFare(carId, fareId, payload) {
+  return api.patch(`/host/cars/${carId}/daily-fares/${fareId}`, payload)
+}
+
 export function deleteHostCarDailyFare(carId, fareId) {
   return api.delete(`/host/cars/${carId}/daily-fares/${fareId}`)
 }
@@ -118,6 +126,10 @@ export function createHostCarHourlyFare(id, payload) {
   return api.post(`/host/cars/${id}/hourly-fares`, payload)
 }
 
+export function deleteHostCarHourlyFare(carId, fareId) {
+  return api.delete(`/host/cars/${carId}/hourly-fares/${fareId}`)
+}
+
 export function getHostCarExtraHourFares(id) {
   return api.get(`/host/cars/${id}/extra-hour-fares`)
 }
@@ -126,12 +138,32 @@ export function createHostCarExtraHourFare(id, payload) {
   return api.post(`/host/cars/${id}/extra-hour-fares`, payload)
 }
 
+export function deleteHostCarExtraHourFare(carId, fareId) {
+  return api.delete(`/host/cars/${carId}/extra-hour-fares/${fareId}`)
+}
+
 export function getHostCarAvailability(id) {
   return api.get(`/host/cars/${id}/availability-blocks`)
 }
 
 export function addHostCarAvailability(id, payload) {
   return api.post(`/host/cars/${id}/availability-blocks`, payload)
+}
+
+export function removeHostCarAvailability(id, blockId) {
+  return api.delete(`/host/cars/${id}/availability-blocks/${blockId}`)
+}
+
+export function getHostCarSpecialPrices(id) {
+  return api.get(`/host/cars/${id}/special-prices`)
+}
+
+export function addHostCarSpecialPrice(id, payload) {
+  return api.post(`/host/cars/${id}/special-prices`, payload)
+}
+
+export function removeHostCarSpecialPrice(id, priceId) {
+  return api.delete(`/host/cars/${id}/special-prices/${priceId}`)
 }
 
 export function getHostCarBookings(params) {

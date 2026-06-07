@@ -24,6 +24,10 @@ export default function HostLandingHero({ hero = {} }) {
 
   const handleSignup = async (e) => {
     e.preventDefault()
+    if (signup.password !== signup.password_confirmation) {
+      toast('Passwords do not match', 'error')
+      return
+    }
     setSignupLoading(true)
     try {
       const name = signup.name || signup.email.split('@')[0] || 'Host'

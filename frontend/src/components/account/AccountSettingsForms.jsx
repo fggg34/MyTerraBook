@@ -1,22 +1,32 @@
 import { useEffect, useState } from 'react'
-import { updatePassword, updateProfile } from '../../api/me'
+import PasswordInput from '../auth/PasswordInput'
 import { getStoredToken, storeAuth } from '../../auth'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
-
-const emptyProfile = { name: '', email: '', phone: '', current_password: '' }
-const emptyPassword = { current_password: '', password: '', password_confirmation: '' }
+import { updatePassword, updateProfile } from '../../api/me'
 
 export default function AccountSettingsForms({
   requirePhone = false,
-  profileDescription = 'Update your contact details.',
+  profileDescription = 'Update your account details.',
 }) {
   const { user, setUser } = useAuth()
   const { toast } = useToast()
-  const [profile, setProfile] = useState(emptyProfile)
-  const [passwordForm, setPasswordForm] = useState(emptyPassword)
-  const [savingProfile, setSavingProfile] = useState(false)
-  const [savingPassword, setSavingPassword] = useState(false)
+
+  const [profile, setProfile] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    current_password: '',
+  })
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: '',
+    password: '',
+    password_confirmation: '',
+  })
+  const [profileErrors, setProfileErrors] = useState({})
+  const [passwordErrors, setPasswordErrors] = useState({})
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [passwordLoading, setPasswordLoading] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -28,157 +38,195 @@ export default function AccountSettingsForms({
     })
   }, [user])
 
-  const emailChanged = profile.email !== (user?.email || '')
-
   const handleProfileSubmit = async (e) => {
     e.preventDefault()
-    setSavingProfile(true)
+    const errors = {}
+    if (!profile.name.trim()) errors.name = 'Name is required'
+    if (!profile.email.trim()) errors.email = 'Email is required'
+    if (requirePhone && !profile.phone.trim()) errors.phone = 'Phone is required'
+    if (profile.email !== user?.email && !profile.current_password) {
+      errors.current_password = 'Current password is required to change email'
+    }
+    setProfileErrors(errors)
+    if (Object.keys(errors).length) return
+
+    setProfileLoading(true)
     try {
       const payload = {
-        name: profile.name,
-        email: profile.email,
-        phone: requirePhone ? profile.phone : profile.phone || null,
+        name: profile.name.trim(),
+        email: profile.email.trim(),
+        phone: profile.phone.trim(),
       }
-      if (emailChanged) {
+      if (profile.current_password) {
         payload.current_password = profile.current_password
       }
       const res = await updateProfile(payload)
-      const nextUser = res.data.user
-      const token = getStoredToken()
-      if (token) storeAuth(token, nextUser)
-      setUser(nextUser)
+      const nextUser = res.data?.user ?? res.data?.data
+      if (nextUser) {
+        setUser(nextUser)
+        const token = getStoredToken()
+        if (token) storeAuth(token, nextUser)
+      }
       setProfile((prev) => ({ ...prev, current_password: '' }))
       toast('Profile updated', 'success')
     } catch (err) {
-      toast(err.response?.data?.message || 'Could not update profile', 'error')
+      const apiErrors = err.response?.data?.errors
+      if (apiErrors) {
+        const mapped = {}
+        Object.entries(apiErrors).forEach(([k, v]) => {
+          mapped[k] = Array.isArray(v) ? v[0] : v
+        })
+        setProfileErrors(mapped)
+      } else {
+        toast(err.response?.data?.message || 'Could not update profile', 'error')
+      }
     } finally {
-      setSavingProfile(false)
+      setProfileLoading(false)
     }
   }
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault()
-    setSavingPassword(true)
+    const errors = {}
+    if (!passwordForm.current_password) errors.current_password = 'Current password is required'
+    if (!passwordForm.password) errors.password = 'New password is required'
+    else if (passwordForm.password.length < 8) errors.password = 'At least 8 characters'
+    if (passwordForm.password !== passwordForm.password_confirmation) {
+      errors.password_confirmation = 'Passwords do not match'
+    }
+    setPasswordErrors(errors)
+    if (Object.keys(errors).length) return
+
+    setPasswordLoading(true)
     try {
       await updatePassword(passwordForm)
-      setPasswordForm(emptyPassword)
+      setPasswordForm({ current_password: '', password: '', password_confirmation: '' })
       toast('Password updated', 'success')
     } catch (err) {
-      toast(err.response?.data?.message || 'Could not update password', 'error')
+      const apiErrors = err.response?.data?.errors
+      if (apiErrors) {
+        const mapped = {}
+        Object.entries(apiErrors).forEach(([k, v]) => {
+          mapped[k] = Array.isArray(v) ? v[0] : v
+        })
+        setPasswordErrors(mapped)
+      } else {
+        toast(err.response?.data?.message || 'Could not update password', 'error')
+      }
     } finally {
-      setSavingPassword(false)
+      setPasswordLoading(false)
     }
   }
 
   return (
-    <div className="host-wizard space-y-6">
-      <form onSubmit={handleProfileSubmit} className="host-form-card">
-        <h2 className="mb-1 text-xl font-bold text-brand-950">Profile</h2>
-        <p className="mb-5 text-sm text-slate-600">{profileDescription}</p>
-
-        <div className="host-field">
-          <label htmlFor="account-name">Name</label>
-          <input
-            id="account-name"
-            value={profile.name}
-            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-            required
-          />
-        </div>
-
-        <div className="host-field">
-          <label htmlFor="account-email">Email</label>
-          <input
-            id="account-email"
-            type="email"
-            value={profile.email}
-            onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-            required
-          />
-        </div>
-
-        <div className="host-field">
-          <label htmlFor="account-phone">Phone</label>
-          <input
-            id="account-phone"
-            type="tel"
-            value={profile.phone}
-            onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-            placeholder="+354 555 1234"
-            required={requirePhone}
-          />
-        </div>
-
-        {emailChanged && (
-          <div className="host-field">
-            <label htmlFor="account-current-password">Current password</label>
+    <div className="client-settings">
+      <section className="client-settings-section">
+        <h2>Profile</h2>
+        <p className="client-settings-desc">{profileDescription}</p>
+        <form onSubmit={handleProfileSubmit} className="client-settings-form">
+          <div className="client-field">
+            <label htmlFor="settings-name">Full name</label>
             <input
-              id="account-current-password"
-              type="password"
-              autoComplete="current-password"
-              value={profile.current_password}
-              onChange={(e) => setProfile({ ...profile, current_password: e.target.value })}
+              id="settings-name"
+              type="text"
+              value={profile.name}
+              onChange={(e) => setProfile({ ...profile, name: e.target.value })}
               required
             />
-            <p className="mt-1 text-xs text-slate-500">Required when changing your email address.</p>
+            {profileErrors.name && <p className="client-field-error">{profileErrors.name}</p>}
           </div>
-        )}
-
-        <div className="host-actions">
-          <button type="submit" className="host-btn primary" disabled={savingProfile}>
-            {savingProfile ? 'Saving…' : 'Save profile'}
+          <div className="client-field">
+            <label htmlFor="settings-email">Email address</label>
+            <input
+              id="settings-email"
+              type="email"
+              value={profile.email}
+              onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+              required
+            />
+            {profileErrors.email && <p className="client-field-error">{profileErrors.email}</p>}
+          </div>
+          <div className="client-field">
+            <label htmlFor="settings-phone">Phone</label>
+            <input
+              id="settings-phone"
+              type="tel"
+              value={profile.phone}
+              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+              placeholder="+354 555 1234"
+              required={requirePhone}
+            />
+            {profileErrors.phone && <p className="client-field-error">{profileErrors.phone}</p>}
+          </div>
+          {profile.email !== user?.email && (
+            <div className="client-field">
+              <label htmlFor="settings-current-for-email">Current password</label>
+              <PasswordInput
+                id="settings-current-for-email"
+                value={profile.current_password}
+                onChange={(e) => setProfile({ ...profile, current_password: e.target.value })}
+                autoComplete="current-password"
+                hasError={!!profileErrors.current_password}
+              />
+              {profileErrors.current_password && (
+                <p className="client-field-error">{profileErrors.current_password}</p>
+              )}
+            </div>
+          )}
+          <button type="submit" className="client-btn primary" disabled={profileLoading}>
+            {profileLoading ? 'Saving…' : 'Save profile'}
           </button>
-        </div>
-      </form>
+        </form>
+      </section>
 
-      <form onSubmit={handlePasswordSubmit} className="host-form-card">
-        <h2 className="mb-1 text-xl font-bold text-brand-950">Password</h2>
-        <p className="mb-5 text-sm text-slate-600">Choose a strong password with at least 8 characters.</p>
-
-        <div className="host-field">
-          <label htmlFor="account-password-current">Current password</label>
-          <input
-            id="account-password-current"
-            type="password"
-            autoComplete="current-password"
-            value={passwordForm.current_password}
-            onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
-            required
-          />
-        </div>
-
-        <div className="host-field">
-          <label htmlFor="account-password-new">New password</label>
-          <input
-            id="account-password-new"
-            type="password"
-            autoComplete="new-password"
-            value={passwordForm.password}
-            onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
-            required
-            minLength={8}
-          />
-        </div>
-
-        <div className="host-field">
-          <label htmlFor="account-password-confirm">Confirm new password</label>
-          <input
-            id="account-password-confirm"
-            type="password"
-            autoComplete="new-password"
-            value={passwordForm.password_confirmation}
-            onChange={(e) => setPasswordForm({ ...passwordForm, password_confirmation: e.target.value })}
-            required
-            minLength={8}
-          />
-        </div>
-
-        <div className="host-actions">
-          <button type="submit" className="host-btn primary" disabled={savingPassword}>
-            {savingPassword ? 'Updating…' : 'Update password'}
+      <section className="client-settings-section">
+        <h2>Password</h2>
+        <p className="client-settings-desc">Choose a strong password with at least 8 characters.</p>
+        <form onSubmit={handlePasswordSubmit} className="client-settings-form">
+          <div className="client-field">
+            <label htmlFor="settings-current-password">Current password</label>
+            <PasswordInput
+              id="settings-current-password"
+              value={passwordForm.current_password}
+              onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
+              autoComplete="current-password"
+              hasError={!!passwordErrors.current_password}
+            />
+            {passwordErrors.current_password && (
+              <p className="client-field-error">{passwordErrors.current_password}</p>
+            )}
+          </div>
+          <div className="client-field">
+            <label htmlFor="settings-new-password">New password</label>
+            <PasswordInput
+              id="settings-new-password"
+              value={passwordForm.password}
+              onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
+              autoComplete="new-password"
+              hasError={!!passwordErrors.password}
+            />
+            {passwordErrors.password && (
+              <p className="client-field-error">{passwordErrors.password}</p>
+            )}
+          </div>
+          <div className="client-field">
+            <label htmlFor="settings-confirm-password">Confirm new password</label>
+            <PasswordInput
+              id="settings-confirm-password"
+              value={passwordForm.password_confirmation}
+              onChange={(e) => setPasswordForm({ ...passwordForm, password_confirmation: e.target.value })}
+              autoComplete="new-password"
+              hasError={!!passwordErrors.password_confirmation}
+            />
+            {passwordErrors.password_confirmation && (
+              <p className="client-field-error">{passwordErrors.password_confirmation}</p>
+            )}
+          </div>
+          <button type="submit" className="client-btn primary" disabled={passwordLoading}>
+            {passwordLoading ? 'Updating…' : 'Update password'}
           </button>
-        </div>
-      </form>
+        </form>
+      </section>
     </div>
   )
 }

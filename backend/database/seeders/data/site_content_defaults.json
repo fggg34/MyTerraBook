@@ -1821,7 +1821,10 @@
   "user-dashboard": {
     "title": "My account",
     "emptyBookings": "No bookings yet",
-    "emptyStays": "No stays yet"
+    "emptyStays": "No stays yet",
+    "addToCalendarLabel": "Add to calendar",
+    "cancelBookingLabel": "Cancel booking",
+    "viewListingLabel": "View listing"
   },
   "client-panel": {
     "eyebrow": "My account",

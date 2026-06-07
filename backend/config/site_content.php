@@ -819,8 +819,17 @@ return [
             'sections' => [
                 'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => [
                     ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
+                    ['key' => 'historyTitle', 'type' => 'text', 'label' => 'History title'],
+                    ['key' => 'historySubtitle', 'type' => 'text', 'label' => 'History subtitle'],
                     ['key' => 'emptyBookings', 'type' => 'text', 'label' => 'Empty bookings message'],
                     ['key' => 'emptyStays', 'type' => 'text', 'label' => 'Empty stays message'],
+                    ['key' => 'emptyHistory', 'type' => 'text', 'label' => 'Empty history message'],
+                    ['key' => 'emptyHistoryText', 'type' => 'text', 'label' => 'Empty history description'],
+                    ['key' => 'exportLabel', 'type' => 'text', 'label' => 'Export CSV label'],
+                    ['key' => 'downloadPdfLabel', 'type' => 'text', 'label' => 'Download PDF label'],
+                    ['key' => 'addToCalendarLabel', 'type' => 'text', 'label' => 'Add to calendar label'],
+                    ['key' => 'cancelBookingLabel', 'type' => 'text', 'label' => 'Cancel booking label'],
+                    ['key' => 'viewListingLabel', 'type' => 'text', 'label' => 'View listing label'],
                     ['key' => 'sidebarLinks', 'type' => 'repeater', 'label' => 'Sidebar links', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
                         ['key' => 'id', 'type' => 'text', 'label' => 'ID'],
                         ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
@@ -854,6 +863,7 @@ return [
                 'content' => ['label' => 'Shell copy', 'isRootSection' => true, 'fields' => [
                     ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
                     ['key' => 'sidebarTitle', 'type' => 'text', 'label' => 'Sidebar title'],
+                    ['key' => 'heroText', 'type' => 'text', 'label' => 'Hero subtitle'],
                     ['key' => 'signOutLabel', 'type' => 'text', 'label' => 'Sign out label'],
                     ['key' => 'navItems', 'type' => 'repeater', 'label' => 'Nav items', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
                         ['key' => 'to', 'type' => 'text', 'label' => 'Route'],

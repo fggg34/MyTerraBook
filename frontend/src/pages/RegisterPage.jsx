@@ -62,6 +62,7 @@ export default function RegisterPage() {
     const e2 = {}
     if (!form.name.trim()) e2.name = 'Name is required'
     if (!form.email) e2.email = 'Email is required'
+    if (!form.phone.trim()) e2.phone = 'Phone is required'
     if (!form.password) e2.password = 'Password is required'
     else if (form.password.length < 8) e2.password = 'At least 8 characters'
     if (form.password !== form.password_confirmation) e2.password_confirmation = 'Passwords do not match'
@@ -142,50 +143,48 @@ export default function RegisterPage() {
         </div>
 
         <div className="auth-field">
-          <label htmlFor="phone">
-            Phone <span className="auth-optional">(optional)</span>
-          </label>
-          <div className="auth-input-wrap">
+          <label htmlFor="phone">Phone</label>
+          <div className={`auth-input-wrap${errors.phone ? ' auth-input-wrap--error' : ''}`}>
             <input
               id="phone"
               type="tel"
               className="auth-input"
               placeholder="+354 555 1234"
               autoComplete="tel"
+              required
               value={form.phone}
               onChange={update('phone')}
             />
           </div>
+          {errors.phone && <p className="auth-field-error">{errors.phone}</p>}
         </div>
 
-        <div className="auth-form-row">
-          <div className="auth-field">
-            <label htmlFor="password">Password</label>
-            <PasswordInput
-              id="password"
-              value={form.password}
-              onChange={update('password')}
-              autoComplete="new-password"
-              hasError={!!errors.password}
-            />
-            {errors.password
-              ? <p className="auth-field-error">{errors.password}</p>
-              : <p className="auth-password-hint">At least 8 characters</p>}
-          </div>
+        <div className="auth-field">
+          <label htmlFor="password">Password</label>
+          <PasswordInput
+            id="password"
+            value={form.password}
+            onChange={update('password')}
+            autoComplete="new-password"
+            hasError={!!errors.password}
+          />
+          {errors.password
+            ? <p className="auth-field-error">{errors.password}</p>
+            : <p className="auth-password-hint">At least 8 characters</p>}
+        </div>
 
-          <div className="auth-field">
-            <label htmlFor="password_confirmation">Confirm password</label>
-            <PasswordInput
-              id="password_confirmation"
-              value={form.password_confirmation}
-              onChange={update('password_confirmation')}
-              autoComplete="new-password"
-              hasError={!!errors.password_confirmation}
-            />
-            {errors.password_confirmation && (
-              <p className="auth-field-error">{errors.password_confirmation}</p>
-            )}
-          </div>
+        <div className="auth-field">
+          <label htmlFor="password_confirmation">Confirm password</label>
+          <PasswordInput
+            id="password_confirmation"
+            value={form.password_confirmation}
+            onChange={update('password_confirmation')}
+            autoComplete="new-password"
+            hasError={!!errors.password_confirmation}
+          />
+          {errors.password_confirmation && (
+            <p className="auth-field-error">{errors.password_confirmation}</p>
+          )}
         </div>
 
         <button type="submit" className="auth-submit" disabled={loading}>

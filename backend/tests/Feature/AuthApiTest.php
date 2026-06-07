@@ -15,6 +15,7 @@ class AuthApiTest extends TestCase
         $register = $this->postJson('/api/auth/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'phone' => '+354 555 1234',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
@@ -27,6 +28,18 @@ class AuthApiTest extends TestCase
         ]);
 
         $login->assertOk()->assertJsonStructure(['token', 'user']);
+    }
+
+    public function test_register_requires_phone(): void
+    {
+        $this->postJson('/api/auth/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['phone']);
     }
 
     public function test_authenticated_user_route(): void

@@ -128,6 +128,7 @@ class HostGuestHouseController extends Controller
 
         $request->validate([
             'thumbnail' => ['nullable', 'image', 'max:8192'],
+            'og_image' => ['nullable', 'image', 'max:8192'],
             'gallery' => ['nullable', 'array'],
             'gallery.*' => ['image', 'max:8192'],
             'gallery_order' => ['nullable', 'array'],
@@ -137,6 +138,11 @@ class HostGuestHouseController extends Controller
         if ($request->hasFile('thumbnail')) {
             $path = $request->file('thumbnail')->store('guesthouses/thumbnails', 'public');
             $guestHouse->update(['thumbnail' => $path]);
+        }
+
+        if ($request->hasFile('og_image')) {
+            $path = $request->file('og_image')->store('guesthouses/og', 'public');
+            $guestHouse->update(['og_image' => $path]);
         }
 
         if ($request->hasFile('gallery')) {
@@ -244,6 +250,8 @@ class HostGuestHouseController extends Controller
             'check_out_time' => ['nullable', 'date_format:H:i'],
             'cancellation_policy' => ['nullable', Rule::enum(GuestHouseCancellationPolicy::class)],
             'tax_rate_id' => ['nullable', 'exists:tax_rates,id'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:1000'],
             'amenity_ids' => ['nullable', 'array'],
             'amenity_ids.*' => ['integer', 'exists:guest_house_amenities,id'],
             'seasonal_prices' => ['nullable', 'array'],
