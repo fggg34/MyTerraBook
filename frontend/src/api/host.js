@@ -10,6 +10,15 @@ export function getHostCatalog(type) {
   return api.get(`/host/catalog/${type}`)
 }
 
+/** Public catalog — no auth required; used as fallback for host vehicle editor. */
+export function getPublicMainCategories() {
+  return api.get('/main-categories')
+}
+
+export function getPublicSubCategories() {
+  return api.get('/sub-categories')
+}
+
 export function listHostGuestHouses(params) {
   return api.get('/host/guest-houses', { params })
 }

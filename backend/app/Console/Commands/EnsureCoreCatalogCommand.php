@@ -25,7 +25,9 @@ class EnsureCoreCatalogCommand extends Command
             'sort_order' => 2,
         ]);
 
-        $this->info('Core main categories are active: car, campervan');
+        $this->call('db:seed', ['--class' => 'Database\\Seeders\\CatalogSeeder', '--force' => true]);
+
+        $this->info('Core main categories and sub-categories are active.');
 
         return self::SUCCESS;
     }
