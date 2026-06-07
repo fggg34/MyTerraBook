@@ -2,19 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Category;
+use App\Models\MainCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/** @extends Factory<Category> */
-class CategoryFactory extends Factory
+/** @extends Factory<MainCategory> */
+class MainCategoryFactory extends Factory
 {
-    protected $model = Category::class;
+    protected $model = MainCategory::class;
 
     public function definition(): array
     {
-        $name = fake()->unique()->randomElement([
-            'Economy', 'Compact', 'Mid-size', 'SUV', 'Luxury', 'Van', 'Electric', 'Convertible',
-        ]);
+        $name = fake()->unique()->randomElement(['Car', 'Campervan']);
 
         return [
             'name' => $name,

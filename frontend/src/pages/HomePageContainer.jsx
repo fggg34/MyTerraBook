@@ -6,7 +6,7 @@ import usePageSeo from '../hooks/usePageSeo'
 import { VEHICLE_TYPES } from '../data/searchResultsConfig'
 import { mapCarsToPickCards } from '../utils/mapCarsToPickCards'
 import { mapGuestHousesToStayCards } from '../utils/mapGuestHousesToStayCards'
-import { categoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
+import { mainCategoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 import HomePage from './HomePage'
 
 function splitCarsIntoPickTabs(cars = []) {
@@ -14,12 +14,11 @@ function splitCarsIntoPickTabs(cars = []) {
   const car = []
 
   for (const item of cars) {
-    const categoryName = item.category_name
-    if (categoryMatchesVehicleType(categoryName, VEHICLE_TYPES.campervan.categoryNames)) {
+    if (mainCategoryMatchesVehicleType(item.main_category_slug, 'campervan')) {
       camper.push(
         mapCarsToPickCards([item], { detailBase: VEHICLE_TYPES.campervan.route })[0],
       )
-    } else if (categoryMatchesVehicleType(categoryName, VEHICLE_TYPES.car.categoryNames)) {
+    } else if (mainCategoryMatchesVehicleType(item.main_category_slug, 'car')) {
       car.push(mapCarsToPickCards([item], { detailBase: VEHICLE_TYPES.car.route })[0])
     }
   }

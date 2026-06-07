@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-class Category extends Model
+class MainCategory extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -30,13 +30,13 @@ class Category extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (Category $category): void {
+        static::creating(function (MainCategory $category): void {
             if ($category->slug === null || $category->slug === '') {
                 $category->slug = static::uniqueSlugFromName($category->name);
             }
         });
 
-        static::updating(function (Category $category): void {
+        static::updating(function (MainCategory $category): void {
             if ($category->slug === null || $category->slug === '') {
                 $category->slug = static::uniqueSlugFromName($category->name, $category->getKey());
             }
@@ -62,8 +62,8 @@ class Category extends Model
         }
     }
 
-    public function cars(): HasMany
+    public function subCategories(): HasMany
     {
-        return $this->hasMany(Car::class);
+        return $this->hasMany(SubCategory::class);
     }
 }

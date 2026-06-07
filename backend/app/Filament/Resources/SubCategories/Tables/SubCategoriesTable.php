@@ -1,33 +1,36 @@
 <?php
 
-namespace App\Filament\Resources\Categories\Tables;
+namespace App\Filament\Resources\SubCategories\Tables;
 
-use App\Models\MainCategory;
+use App\Models\SubCategory;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class CategoriesTable
+class SubCategoriesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('name')
+                TextColumn::make('mainCategory.name')
                     ->label('Main Category')
+                    ->sortable()
                     ->searchable(),
-                TextColumn::make('slug')
-                    ->label('Slug')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('sub_categories_count')
-                    ->label('Sub-categories')
-                    ->counts('subCategories')
+                TextColumn::make('name')
+                    ->label('Sub Category')
+                    ->searchable(),
+                IconColumn::make('is_search_filter')
+                    ->label('Search filter')
+                    ->boolean()
                     ->alignCenter(),
                 TextColumn::make('description')
                     ->label('Description')
@@ -38,6 +41,9 @@ class CategoriesTable
                     ->sortable(),
             ])
             ->filters([
+                SelectFilter::make('main_category_id')
+                    ->label('Main Category')
+                    ->relationship('mainCategory', 'name'),
                 TrashedFilter::make(),
             ])
             ->recordActions([
@@ -45,8 +51,9 @@ class CategoriesTable
                     ->label('')
                     ->tooltip('Move up')
                     ->icon('heroicon-o-arrow-up')
-                    ->action(function (MainCategory $record): void {
-                        $previous = MainCategory::query()
+                    ->action(function (SubCategory $record): void {
+                        $previous = SubCategory::query()
+                            ->where('main_category_id', $record->main_category_id)
                             ->where('sort_order', '<', $record->sort_order)
                             ->orderByDesc('sort_order')
                             ->first();
@@ -63,8 +70,9 @@ class CategoriesTable
                     ->label('')
                     ->tooltip('Move down')
                     ->icon('heroicon-o-arrow-down')
-                    ->action(function (MainCategory $record): void {
-                        $next = MainCategory::query()
+                    ->action(function (SubCategory $record): void {
+                        $next = SubCategory::query()
+                            ->where('main_category_id', $record->main_category_id)
                             ->where('sort_order', '>', $record->sort_order)
                             ->orderBy('sort_order')
                             ->first();

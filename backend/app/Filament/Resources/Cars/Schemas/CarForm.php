@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Cars\Schemas;
 use App\Models\Characteristic;
 use App\Models\Location;
 use App\Models\RentalOption;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -73,9 +75,37 @@ class CarForm
                                     ->label('Resize image')
                                     ->dehydrated(false),
 
-                                Select::make('category_id')
-                                    ->label('Category')
-                                    ->relationship('category', 'name')
+                                Select::make('main_category_id')
+                                    ->label('Main Category')
+                                    ->options(fn (): array => MainCategory::query()
+                                        ->orderBy('sort_order')
+                                        ->pluck('name', 'id')
+                                        ->all())
+                                    ->searchable()
+                                    ->preload()
+                                    ->dehydrated(false)
+                                    ->afterStateHydrated(function ($component, $record): void {
+                                        if (! $record?->subCategory) {
+                                            return;
+                                        }
+
+                                        $component->state((string) $record->subCategory->main_category_id);
+                                    })
+                                    ->live(),
+
+                                Select::make('sub_category_id')
+                                    ->label('Sub Category')
+                                    ->options(function (callable $get): array {
+                                        $mainCategoryId = $get('main_category_id');
+
+                                        $query = SubCategory::query()->orderBy('name');
+
+                                        if ($mainCategoryId) {
+                                            $query->where('main_category_id', $mainCategoryId);
+                                        }
+
+                                        return $query->pluck('name', 'id')->all();
+                                    })
                                     ->searchable()
                                     ->preload()
                                     ->required(),

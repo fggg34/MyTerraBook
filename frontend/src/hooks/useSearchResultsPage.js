@@ -11,7 +11,7 @@ import {
   pruneQuickFilters,
   toggleQuickFilter,
 } from '../utils/searchQuickFilters'
-import { categoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
+import { mainCategoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 import { toApiDateTime } from '../utils/format'
 
 function matchesTransmission(car, value) {
@@ -65,14 +65,21 @@ export default function useSearchResultsPage(vehicleType) {
     if (query.pickup_at) params.pickup_at = toApiDateTime(query.pickup_at)
     if (query.dropoff_at) params.dropoff_at = toApiDateTime(query.dropoff_at)
 
-    Promise.all([api.get('/cars', { params }), api.get('/categories'), api.get('/locations')])
+    const carParams = { ...params }
+    if (config.mainCategorySlug) carParams.main_category = config.mainCategorySlug
+
+    Promise.all([
+      api.get('/cars', { params: carParams }),
+      api.get('/sub-categories', { params: config.mainCategorySlug ? { main_category: config.mainCategorySlug, search_filters_only: 1 } : {} }),
+      api.get('/locations'),
+    ])
       .then(([carsRes, catRes, locRes]) => {
         setCars(carsRes.data.data || [])
         setCategories(catRes.data.data || [])
         setLocations(locRes.data.data || [])
       })
       .finally(() => setLoading(false))
-  }, [vehicleType, query.pickup_location_id, query.dropoff_location_id, query.pickup_at, query.dropoff_at])
+  }, [vehicleType, config.mainCategorySlug, query.pickup_location_id, query.dropoff_location_id, query.pickup_at, query.dropoff_at])
 
   const categoryMap = useMemo(() => {
     const m = {}
@@ -92,10 +99,7 @@ export default function useSearchResultsPage(vehicleType) {
 
   const vehicleCards = useMemo(() => {
     return cars
-      .filter((car) => {
-        const name = car.category_name || categoryMap[car.category_id]
-        return categoryMatchesVehicleType(name, config.categoryNames)
-      })
+      .filter((car) => mainCategoryMatchesVehicleType(car.main_category_slug, vehicleType))
       .map((car) => {
         const categoryName = car.category_name || categoryMap[car.category_id]
         return mapCarToResultCard(

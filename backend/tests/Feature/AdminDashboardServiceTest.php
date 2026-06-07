@@ -7,7 +7,8 @@ use App\Enums\GuestHouseStatus;
 use App\Enums\GuestHouseType;
 use App\Enums\OrderStatus;
 use App\Models\Car;
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use App\Models\GuestHouse;
 use App\Models\GuestHouseBooking;
 use App\Models\Location;
@@ -22,9 +23,10 @@ class AdminDashboardServiceTest extends TestCase
 
     public function test_snapshot_returns_expected_counts_and_revenue(): void
     {
-        $category = Category::query()->create(['name' => 'Dashboard', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Dashboard', 'is_active' => true, 'is_search_filter' => true]);
         $car = Car::query()->create([
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'name' => 'Dashboard Car',
             'units_available' => 2,
             'is_active' => true,

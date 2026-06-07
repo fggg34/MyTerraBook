@@ -11,7 +11,8 @@ class HostCarResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'category_id' => $this->category_id,
+            'sub_category_id' => $this->sub_category_id,
+            'category_id' => $this->sub_category_id,
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
@@ -34,10 +35,22 @@ class HostCarResource extends JsonResource
             'dropoff_location_ids' => $this->whenLoaded('locations', fn () => $this->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_dropoff)->pluck('id')->values()->all()),
             'characteristic_ids' => $this->whenLoaded('characteristics', fn () => $this->characteristics->pluck('id')->all()),
             'rental_option_ids' => $this->whenLoaded('rentalOptions', fn () => $this->rentalOptions->pluck('id')->all()),
-            'category' => $this->whenLoaded('category', fn () => [
-                'id' => $this->category->id,
-                'name' => $this->category->name,
-                'slug' => $this->category->slug,
+            'main_category_id' => $this->whenLoaded('subCategory', fn () => $this->subCategory?->main_category_id),
+            'sub_category' => $this->whenLoaded('subCategory', fn () => [
+                'id' => $this->subCategory->id,
+                'name' => $this->subCategory->name,
+                'slug' => $this->subCategory->slug,
+                'main_category_id' => $this->subCategory->main_category_id,
+            ]),
+            'main_category' => $this->whenLoaded('subCategory.mainCategory', fn () => $this->subCategory?->mainCategory ? [
+                'id' => $this->subCategory->mainCategory->id,
+                'name' => $this->subCategory->mainCategory->name,
+                'slug' => $this->subCategory->mainCategory->slug,
+            ] : null),
+            'category' => $this->whenLoaded('subCategory', fn () => [
+                'id' => $this->subCategory->id,
+                'name' => $this->subCategory->name,
+                'slug' => $this->subCategory->slug,
             ]),
             'units_count' => $this->whenCounted('carUnits'),
             'created_at' => $this->created_at?->toIso8601String(),

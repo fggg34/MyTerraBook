@@ -5,7 +5,8 @@ namespace Tests\Feature;
 use App\Enums\OrderStatus;
 use App\Enums\UserRole;
 use App\Models\Car;
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use App\Models\DailyFare;
 use App\Models\Location;
 use App\Models\Order;
@@ -24,9 +25,10 @@ class OrderFlowApiTest extends TestCase
         Setting::putValue('shop.currency', ['code' => 'EUR']);
         Setting::putValue('shop.default_tax', ['basis_points' => 0]);
 
-        $category = Category::query()->create(['name' => 'Eco', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Eco', 'is_active' => true, 'is_search_filter' => true]);
         $car = Car::query()->create([
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'name' => 'Test Vehicle',
             'units_available' => 1,
             'is_active' => true,

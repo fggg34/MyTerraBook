@@ -24,7 +24,7 @@ class HostCarController extends Controller
 
         $cars = Car::query()
             ->where('user_id', $request->user()->id)
-            ->with('category')
+            ->with('subCategory.mainCategory')
             ->withCount('carUnits')
             ->orderByDesc('updated_at')
             ->paginate((int) $request->query('per_page', 20));
@@ -52,7 +52,7 @@ class HostCarController extends Controller
         ]);
 
         $this->syncRelations($request, $car);
-        $car->load(['category', 'locations', 'characteristics', 'rentalOptions']);
+        $car->load(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']);
 
         return response()->json(['data' => new HostCarResource($car)], 201);
     }
@@ -60,7 +60,7 @@ class HostCarController extends Controller
     public function show(Car $car): JsonResponse
     {
         $this->authorize('view', $car);
-        $car->load(['category', 'locations', 'characteristics', 'rentalOptions']);
+        $car->load(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']);
         $car->loadCount('carUnits');
 
         return response()->json(['data' => new HostCarResource($car)]);
@@ -75,7 +75,7 @@ class HostCarController extends Controller
         $car->update($data);
         $this->syncRelations($request, $car);
 
-        $car->load(['category', 'locations', 'characteristics', 'rentalOptions']);
+        $car->load(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']);
         $car->loadCount('carUnits');
 
         return response()->json(['data' => new HostCarResource($car)]);
@@ -103,7 +103,7 @@ class HostCarController extends Controller
             'rejection_reason' => null,
         ]);
 
-        return response()->json(['data' => new HostCarResource($car->fresh(['category', 'locations', 'characteristics', 'rentalOptions']))]);
+        return response()->json(['data' => new HostCarResource($car->fresh(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']))]);
     }
 
     public function uploadImages(Request $request, Car $car): JsonResponse
@@ -422,8 +422,9 @@ class HostCarController extends Controller
 
     private function validatedData(Request $request, ?Car $car = null): array
     {
-        return $request->validate([
-            'category_id' => [$car ? 'sometimes' : 'required', 'exists:categories,id'],
+        $data = $request->validate([
+            'sub_category_id' => ['sometimes', 'exists:sub_categories,id'],
+            'category_id' => ['sometimes', 'exists:sub_categories,id'],
             'name' => [$car ? 'sometimes' : 'required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('cars', 'slug')->ignore($car?->id)],
             'description' => ['nullable', 'string'],
@@ -444,6 +445,18 @@ class HostCarController extends Controller
             'rental_option_ids' => ['nullable', 'array'],
             'rental_option_ids.*' => ['integer', 'exists:rental_options,id'],
         ]);
+
+        if (! isset($data['sub_category_id']) && isset($data['category_id'])) {
+            $data['sub_category_id'] = $data['category_id'];
+        }
+
+        unset($data['category_id']);
+
+        if (! $car && ! isset($data['sub_category_id'])) {
+            abort(422, 'The sub category id field is required.');
+        }
+
+        return $data;
     }
 
     private function syncRelations(Request $request, Car $car): void

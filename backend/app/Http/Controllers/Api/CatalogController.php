@@ -6,15 +6,17 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\CarDetailResource;
 use App\Http\Resources\Api\CarListResource;
-use App\Http\Resources\Api\CategoryResource;
 use App\Http\Resources\Api\LocationResource;
+use App\Http\Resources\Api\MainCategoryResource;
+use App\Http\Resources\Api\SubCategoryResource;
 use App\Models\BookingRestriction;
 use App\Models\Car;
-use App\Models\Category;
 use App\Models\DailyFare;
 use App\Models\Location;
+use App\Models\MainCategory;
 use App\Models\Order;
 use App\Models\PriceType;
+use App\Models\SubCategory;
 use App\Services\OrderAvailabilityService;
 use App\Services\RentalQuoteService;
 use App\Support\Money;
@@ -32,11 +34,35 @@ class CatalogController extends Controller
         private readonly RentalQuoteService $quoteService,
     ) {}
 
-    public function categories(): JsonResponse
+    public function mainCategories(): JsonResponse
     {
-        $rows = Category::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $rows = MainCategory::query()->where('is_active', true)->orderBy('sort_order')->get();
 
-        return response()->json(['data' => CategoryResource::collection($rows)]);
+        return response()->json(['data' => MainCategoryResource::collection($rows)]);
+    }
+
+    public function subCategories(Request $request): JsonResponse
+    {
+        $query = SubCategory::query()
+            ->with('mainCategory')
+            ->where('is_active', true)
+            ->orderBy('sort_order');
+
+        if ($request->filled('main_category')) {
+            $query->whereHas('mainCategory', fn ($builder) => $builder->where('slug', $request->query('main_category')));
+        }
+
+        if ($request->boolean('search_filters_only')) {
+            $query->where('is_search_filter', true);
+        }
+
+        return response()->json(['data' => SubCategoryResource::collection($query->get())]);
+    }
+
+    /** @deprecated Use subCategories() — kept for storefront filter compatibility. */
+    public function categories(Request $request): JsonResponse
+    {
+        return $this->subCategories($request);
     }
 
     public function locations(): JsonResponse
@@ -81,16 +107,25 @@ class CatalogController extends Controller
     {
         $pickupId = $request->query('pickup_location_id');
         $dropoffId = $request->query('dropoff_location_id');
+        $mainCategorySlug = $request->query('main_category');
 
         $query = Car::query()
             ->publiclyVisible()
-            ->with('category');
+            ->with(['subCategory.mainCategory']);
+
+        if ($mainCategorySlug) {
+            $query->whereHas('subCategory.mainCategory', fn ($builder) => $builder->where('slug', $mainCategorySlug));
+        }
 
         if ($pickupId) {
             $query->whereHas('locations', fn ($q) => $q->where('locations.id', $pickupId)->where('car_location.allows_pickup', true));
         }
         if ($dropoffId) {
             $query->whereHas('locations', fn ($q) => $q->where('locations.id', $dropoffId)->where('car_location.allows_dropoff', true));
+        }
+
+        if ($request->filled('sub_category_id')) {
+            $query->where('sub_category_id', $request->query('sub_category_id'));
         }
 
         $minPrices = DailyFare::query()
@@ -109,8 +144,12 @@ class CatalogController extends Controller
                 'id' => $car->id,
                 'name' => $car->name,
                 'slug' => $car->slug,
-                'category_id' => $car->category_id,
-                'category_name' => $car->category?->name,
+                'sub_category_id' => $car->sub_category_id,
+                'sub_category_name' => $car->subCategory?->name,
+                'main_category_slug' => $car->subCategory?->mainCategory?->slug,
+                'main_category_name' => $car->subCategory?->mainCategory?->name,
+                'category_id' => $car->sub_category_id,
+                'category_name' => $car->subCategory?->name,
                 'transmission' => $car->transmission,
                 'fuel_type' => $car->fuel_type,
                 'units_available' => $car->units_available,
@@ -136,7 +175,7 @@ class CatalogController extends Controller
         abort_unless($car->isPubliclyVisible(), 404);
 
         $car->load([
-            'category',
+            'subCategory.mainCategory',
             'characteristics',
             'rentalOptions',
             'listingReviews' => fn ($q) => $q->approved()->latest()->limit(50),

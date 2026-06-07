@@ -4,7 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
 use App\Models\Car;
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use App\Models\Location;
 use App\Models\Order;
 use App\Models\User;
@@ -21,9 +22,10 @@ class MeOrderIcalAuthorizationTest extends TestCase
         $alice = User::query()->where('email', 'customer@terrabook.test')->firstOrFail();
         $bob = User::factory()->create(['email' => 'bob@example.test']);
 
-        $category = Category::query()->create(['name' => 'X', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'X', 'is_active' => true, 'is_search_filter' => true]);
         $car = Car::query()->create([
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'name' => 'Car',
             'units_available' => 1,
             'is_active' => true,

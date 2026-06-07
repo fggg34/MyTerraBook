@@ -36,7 +36,8 @@ const STEPS = ['Vehicle', 'Specs', 'Locations', 'Units', 'Pricing', 'Availabilit
 
 const emptyForm = {
   name: '',
-  category_id: '',
+  main_category_id: '',
+  sub_category_id: '',
   description: '',
   transmission: 'manual',
   fuel_type: 'diesel',
@@ -62,7 +63,14 @@ export default function HostCarEditorPage() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [mainImage, setMainImage] = useState(null)
   const [ogImage, setOgImage] = useState(null)
-  const [catalog, setCatalog] = useState({ categories: [], locations: [], characteristics: [], rentalOptions: [], priceTypes: [] })
+  const [catalog, setCatalog] = useState({
+    mainCategories: [],
+    subCategories: [],
+    locations: [],
+    characteristics: [],
+    rentalOptions: [],
+    priceTypes: [],
+  })
   const [units, setUnits] = useState([])
   const [dailyFares, setDailyFares] = useState([])
   const [hourlyFares, setHourlyFares] = useState([])
@@ -80,14 +88,16 @@ export default function HostCarEditorPage() {
 
   useEffect(() => {
     Promise.all([
+      getHostCatalog('main-categories'),
       getHostCatalog('categories'),
       getHostCatalog('locations'),
       getHostCatalog('characteristics'),
       getHostCatalog('rental-options'),
       getHostCatalog('price-types'),
-    ]).then(([c, l, ch, ro, pt]) => {
+    ]).then(([mc, sc, l, ch, ro, pt]) => {
       setCatalog({
-        categories: c.data.data || [],
+        mainCategories: mc.data.data || [],
+        subCategories: sc.data.data || [],
         locations: l.data.data || [],
         characteristics: ch.data.data || [],
         rentalOptions: ro.data.data || [],
@@ -122,7 +132,8 @@ export default function HostCarEditorPage() {
         setForm({
           ...emptyForm,
           ...data,
-          category_id: data.category_id || '',
+          main_category_id: data.main_category_id || data.sub_category?.main_category_id || '',
+          sub_category_id: data.sub_category_id || data.category_id || '',
           meta_title: data.meta_title || '',
           meta_description: data.meta_description || '',
           details_image_paths: data.details_image_paths || [],
@@ -147,7 +158,7 @@ export default function HostCarEditorPage() {
     try {
       const payload = {
         name: form.name,
-        category_id: Number(form.category_id),
+        sub_category_id: Number(form.sub_category_id),
         description: form.description,
         transmission: form.transmission,
         fuel_type: form.fuel_type,
@@ -265,6 +276,10 @@ export default function HostCarEditorPage() {
     }
   }
 
+  const filteredSubCategories = catalog.subCategories.filter(
+    (sub) => !form.main_category_id || String(sub.main_category_id) === String(form.main_category_id),
+  )
+
   if (loading) return <PageLoader message="Loading editor…" />
 
   return (
@@ -285,10 +300,31 @@ export default function HostCarEditorPage() {
         {step === 0 && (
           <>
             <div className="host-field"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-            <div className="host-field"><label>Category</label>
-              <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}>
-                <option value="">Select category</option>
-                {catalog.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <div className="host-field"><label>Main category</label>
+              <select
+                value={form.main_category_id}
+                onChange={(e) => setForm({
+                  ...form,
+                  main_category_id: e.target.value,
+                  sub_category_id: '',
+                })}
+              >
+                <option value="">Select main category</option>
+                {catalog.mainCategories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="host-field"><label>Sub category</label>
+              <select
+                value={form.sub_category_id}
+                disabled={!form.main_category_id}
+                onChange={(e) => setForm({ ...form, sub_category_id: e.target.value })}
+              >
+                <option value="">Select sub category</option>
+                {filteredSubCategories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
               </select>
             </div>
             <div className="host-field"><label>Description</label><textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>

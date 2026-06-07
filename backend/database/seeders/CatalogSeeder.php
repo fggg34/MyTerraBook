@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\BookingRestriction;
-use App\Models\Category;
 use App\Models\Characteristic;
 use App\Models\Coupon;
 use App\Models\CustomField;
@@ -11,11 +10,13 @@ use App\Models\Location;
 use App\Models\LocationClosingDay;
 use App\Models\LocationFee;
 use App\Models\LocationSchedule;
+use App\Models\MainCategory;
 use App\Models\OutOfHoursFee;
 use App\Models\PaymentMethod;
 use App\Models\PriceType;
 use App\Models\RentalOption;
 use App\Models\SpecialPrice;
+use App\Models\SubCategory;
 use App\Models\TaxRate;
 use Illuminate\Database\Seeder;
 
@@ -25,18 +26,59 @@ class CatalogSeeder extends Seeder
     {
         $standardTax = TaxRate::query()->where('name', 'Standard VAT (10%)')->firstOrFail();
 
-        $categories = collect([
-            ['name' => 'Economy', 'sort_order' => 1],
-            ['name' => 'Compact', 'sort_order' => 2],
-            ['name' => 'Mid-size', 'sort_order' => 3],
-            ['name' => 'SUV', 'sort_order' => 4],
-            ['name' => 'Luxury', 'sort_order' => 5],
-            ['name' => 'Van', 'sort_order' => 6],
-            ['name' => 'Electric', 'sort_order' => 7],
-        ])->map(fn (array $data) => Category::query()->firstOrCreate(
-            ['name' => $data['name']],
-            ['description' => fake()->sentence(10), 'sort_order' => $data['sort_order'], 'is_active' => true]
-        ));
+        $carMain = MainCategory::query()->firstOrCreate(
+            ['slug' => 'car'],
+            ['name' => 'Car', 'description' => 'Passenger cars and 4×4s.', 'sort_order' => 1, 'is_active' => true],
+        );
+
+        $campervanMain = MainCategory::query()->firstOrCreate(
+            ['slug' => 'campervan'],
+            ['name' => 'Campervan', 'description' => 'Campervans and motorhomes.', 'sort_order' => 2, 'is_active' => true],
+        );
+
+        $carSubCategories = [
+            ['name' => 'Hatchback', 'sort_order' => 1],
+            ['name' => 'Sedan', 'sort_order' => 2],
+            ['name' => 'Estate', 'sort_order' => 3],
+            ['name' => 'Economy', 'sort_order' => 4],
+            ['name' => 'Compact', 'sort_order' => 5],
+            ['name' => 'Mid-size', 'sort_order' => 6],
+            ['name' => 'SUV', 'sort_order' => 7],
+            ['name' => 'Luxury', 'sort_order' => 8],
+            ['name' => 'Electric', 'sort_order' => 9],
+            ['name' => 'Convertible', 'sort_order' => 10],
+        ];
+
+        foreach ($carSubCategories as $data) {
+            SubCategory::query()->firstOrCreate(
+                ['main_category_id' => $carMain->id, 'name' => $data['name']],
+                [
+                    'description' => fake()->sentence(10),
+                    'sort_order' => $data['sort_order'],
+                    'is_active' => true,
+                    'is_search_filter' => true,
+                ],
+            );
+        }
+
+        $campervanSubCategories = [
+            ['name' => 'Van', 'sort_order' => 1],
+            ['name' => 'Motorhome', 'sort_order' => 2],
+            ['name' => 'Camper', 'sort_order' => 3],
+            ['name' => '4x4 Camper', 'sort_order' => 4],
+        ];
+
+        foreach ($campervanSubCategories as $data) {
+            SubCategory::query()->firstOrCreate(
+                ['main_category_id' => $campervanMain->id, 'name' => $data['name']],
+                [
+                    'description' => fake()->sentence(10),
+                    'sort_order' => $data['sort_order'],
+                    'is_active' => true,
+                    'is_search_filter' => true,
+                ],
+            );
+        }
 
         $characteristics = collect([
             'Air Conditioning', 'GPS Navigation', 'Bluetooth', 'USB Port',

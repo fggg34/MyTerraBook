@@ -145,7 +145,7 @@ export default function CarListingPage() {
 
             <div className="mt-5 space-y-5">
               <div>
-                <label className="label-field">Category</label>
+                <label className="label-field">Sub category</label>
                 <select
                   className="input-field"
                   value={filters.category_id}

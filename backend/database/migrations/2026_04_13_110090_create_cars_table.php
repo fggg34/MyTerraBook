@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('cars', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained()->restrictOnDelete();
+            $table->foreignId('sub_category_id')->constrained()->restrictOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->index(['category_id', 'is_active']);
+            $table->index(['sub_category_id', 'is_active']);
         });
     }
 

@@ -8,7 +8,8 @@ use App\Models\CarDamageMarker;
 use App\Models\CarDistinctiveFeatureDefinition;
 use App\Models\CarUnit;
 use App\Models\CarUnitDistinctiveValue;
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use App\Models\Coupon;
 use App\Models\DailyFare;
 use App\Models\ExtraHourFare;
@@ -27,12 +28,15 @@ class PricingSchemaTest extends TestCase
 
     public function test_pricing_and_unit_tables_wire_correctly(): void
     {
-        $category = Category::query()->create([
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create([
+            'main_category_id' => $main->id,
             'name' => 'SUV',
             'is_active' => true,
+            'is_search_filter' => true,
         ]);
         $car = Car::query()->create([
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'name' => 'Test Car',
             'units_available' => 2,
             'is_active' => true,

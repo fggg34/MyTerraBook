@@ -23,12 +23,12 @@ class RentalHistoryService
 
         if ($this->includesVehicleType($type)) {
             $orders = $user->orders()
-                ->with(['car.category', 'pickupLocation', 'dropoffLocation'])
+                ->with(['car.subCategory.mainCategory', 'pickupLocation', 'dropoffLocation'])
                 ->orderByDesc('pickup_at')
                 ->get();
 
             foreach ($orders as $order) {
-                $vehicleType = VehicleType::fromCategoryName($order->car?->category?->name);
+                $vehicleType = VehicleType::fromSubCategory($order->car?->subCategory);
 
                 if ($type === 'car' && $vehicleType !== 'car') {
                     continue;

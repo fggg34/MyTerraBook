@@ -26,8 +26,12 @@ class CarsTable
     {
         return $table
             ->columns([
-                TextColumn::make('category.name')
-                    ->searchable(),
+                TextColumn::make('subCategory.name')
+                    ->label('Sub Category')
+                    ->description(fn ($record) => $record->subCategory?->mainCategory?->name),
+                TextColumn::make('subCategory.mainCategory.name')
+                    ->label('Main Category')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('transmission')

@@ -88,6 +88,8 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 });
 
+Route::get('/main-categories', [CatalogController::class, 'mainCategories']);
+Route::get('/sub-categories', [CatalogController::class, 'subCategories']);
 Route::get('/categories', [CatalogController::class, 'categories']);
 Route::get('/locations', [CatalogController::class, 'locations']);
 Route::get('/search/suggestions', [SearchSuggestionsController::class, 'index']);
@@ -135,6 +137,7 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
     Route::get('dashboard', [HostDashboardController::class, 'show']);
 
     Route::prefix('catalog')->group(function () {
+        Route::get('main-categories', [HostCatalogController::class, 'mainCategories']);
         Route::get('categories', [HostCatalogController::class, 'categories']);
         Route::get('locations', [HostCatalogController::class, 'locations']);
         Route::get('characteristics', [HostCatalogController::class, 'characteristics']);

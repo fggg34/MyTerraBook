@@ -97,7 +97,10 @@
                                         <div class="text-gray-500 dark:text-gray-400">{{ $car->host?->email }}</div>
                                     </td>
                                     <td class="px-4 py-3 align-top text-gray-700 dark:text-gray-300">
-                                        {{ $car->category?->name ?? '—' }}
+                                        {{ $car->subCategory?->name ?? '—' }}
+                                        @if ($car->subCategory?->mainCategory)
+                                            <span class="text-xs text-gray-500">({{ $car->subCategory->mainCategory->name }})</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 align-top text-gray-700 dark:text-gray-300">
                                         <div>{{ ucfirst($car->transmission ?? '—') }} · {{ ucfirst($car->fuel_type ?? '—') }}</div>

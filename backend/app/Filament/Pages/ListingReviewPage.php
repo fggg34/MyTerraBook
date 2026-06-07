@@ -56,7 +56,7 @@ class ListingReviewPage extends Page
             ->get();
 
         $this->pendingCars = Car::query()
-            ->with(['host', 'category'])
+            ->with(['host', 'subCategory.mainCategory'])
             ->where('listing_status', ListingApprovalStatus::PendingReview)
             ->orderByDesc('submitted_at')
             ->get();

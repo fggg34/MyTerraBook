@@ -8,7 +8,7 @@ use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
 use App\Filament\Resources\Categories\Schemas\CategoryForm;
 use App\Filament\Resources\Categories\Tables\CategoriesTable;
-use App\Models\Category;
+use App\Models\MainCategory;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -20,13 +20,21 @@ use UnitEnum;
 
 class CategoryResource extends Resource
 {
-    protected static ?string $model = Category::class;
+    protected static ?string $model = MainCategory::class;
 
     protected static ?string $cluster = ImpactRentCluster::class;
+
+    protected static ?string $slug = 'main-categories';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Catalog';
+
+    protected static ?string $navigationLabel = 'Main Categories';
+
+    protected static ?string $modelLabel = 'main category';
+
+    protected static ?string $pluralModelLabel = 'Main Categories';
 
     protected static ?int $navigationSort = 2;
 

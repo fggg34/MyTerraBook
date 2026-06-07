@@ -7,7 +7,7 @@ use App\Models\Car;
 use App\Models\CarDistinctiveFeatureDefinition;
 use App\Models\CarUnit;
 use App\Models\CarUnitDistinctiveValue;
-use App\Models\Category;
+use App\Models\SubCategory;
 use App\Models\Characteristic;
 use App\Models\DailyFare;
 use App\Models\ExtraHourFare;
@@ -42,7 +42,7 @@ class CarSeeder extends Seeder
 
     public function run(): void
     {
-        $categories = Category::query()->get()->keyBy('name');
+        $categories = SubCategory::query()->get()->keyBy('name');
         $locations = Location::query()->where('is_active', true)->get();
         $characteristics = Characteristic::query()->get();
         $rentalOptions = RentalOption::query()->where('is_active', true)->get();
@@ -57,7 +57,7 @@ class CarSeeder extends Seeder
             $car = Car::query()->firstOrCreate(
                 ['name' => $name],
                 [
-                    'category_id' => $category->id,
+                    'sub_category_id' => $category->id,
                     'description' => fake()->paragraph(2),
                     'transmission' => $transmission,
                     'fuel_type' => $fuel,

@@ -7,7 +7,8 @@ use App\Enums\GuestHouseType;
 use App\Enums\ListingApprovalStatus;
 use App\Enums\UserRole;
 use App\Models\Car;
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use App\Models\GuestHouse;
 use App\Models\Location;
 use App\Models\User;
@@ -132,12 +133,13 @@ class HostPanelTest extends TestCase
 
     public function test_host_car_not_public_until_approved(): void
     {
-        $category = Category::query()->create(['name' => 'Camper', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Camper', 'is_active' => true, 'is_search_filter' => true]);
         $host = User::factory()->host()->create();
 
         $car = Car::query()->create([
             'user_id' => $host->id,
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'name' => 'Host Van',
             'slug' => 'host-van',
             'is_active' => false,
@@ -157,7 +159,8 @@ class HostPanelTest extends TestCase
 
     public function test_host_car_persists_seo_and_pickup_dropoff_locations(): void
     {
-        $category = Category::query()->create(['name' => 'Camper', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Camper', 'is_active' => true, 'is_search_filter' => true]);
         $pickup = Location::query()->create(['name' => 'Airport', 'slug' => 'airport', 'is_active' => true]);
         $dropoff = Location::query()->create(['name' => 'Downtown', 'slug' => 'downtown', 'is_active' => true]);
         $host = User::factory()->host()->create();
@@ -166,7 +169,7 @@ class HostPanelTest extends TestCase
 
         $created = $this->postJson('/api/host/cars', [
             'name' => 'SEO Van',
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'meta_title' => 'Best Van',
             'meta_description' => 'A great van to rent.',
         ])->assertCreated()->json('data');
