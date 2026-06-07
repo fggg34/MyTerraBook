@@ -20,7 +20,9 @@ class EditCategory extends EditRecord
     {
         $name = trim((string) ($data['name'] ?? ''));
 
-        $data['slug'] = MainCategory::uniqueSlugFromName($name, (int) $this->record->getKey());
+        $data['slug'] = $this->record->isCore()
+            ? $this->record->slug
+            : MainCategory::uniqueSlugFromName($name, (int) $this->record->getKey());
         $data['is_active'] = (bool) ($this->record->is_active ?? true);
         $data['sort_order'] = (int) ($this->record->sort_order ?? 0);
 
@@ -39,8 +41,10 @@ class EditCategory extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
+            DeleteAction::make()
+                ->hidden(fn (MainCategory $record): bool => $record->isCore()),
+            ForceDeleteAction::make()
+                ->hidden(fn (MainCategory $record): bool => $record->isCore()),
             RestoreAction::make(),
         ];
     }

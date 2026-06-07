@@ -21,6 +21,7 @@ class HostCatalogController extends Controller
         $query = SubCategory::query()
             ->with('mainCategory')
             ->where('is_active', true)
+            ->whereHas('mainCategory', fn ($builder) => $builder->where('is_active', true))
             ->orderBy('sort_order');
 
         if ($request->filled('main_category')) {
