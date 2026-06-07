@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Filament\Forms\Components\Component;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
@@ -53,14 +54,15 @@ class SiteContentFormBuilder
 
     /**
      * @param  list<array<string, mixed>>  $fields
-     * @return list<\Filament\Forms\Components\Component>
+     * @return list<Component>
      */
     private function buildFields(string $pageKey, string $sectionKey, array $fields, bool $isRootSection): array
     {
+        $liveFieldKeys = $this->visibleWhenControllerKeys($fields);
         $components = [];
 
         foreach ($fields as $field) {
-            $component = $this->buildField($pageKey, $sectionKey, $field, $isRootSection);
+            $component = $this->buildField($pageKey, $sectionKey, $field, $isRootSection, $liveFieldKeys);
             if ($component !== null) {
                 $components[] = $component;
             }
@@ -70,9 +72,39 @@ class SiteContentFormBuilder
     }
 
     /**
+     * @param  list<array<string, mixed>>  $fields
+     * @return list<string>
+     */
+    private function visibleWhenControllerKeys(array $fields): array
+    {
+        $keys = [];
+
+        foreach ($fields as $field) {
+            $whenField = $field['visibleWhen']['field'] ?? null;
+            if (is_string($whenField) && $whenField !== '') {
+                $keys[] = $whenField;
+            }
+
+            if (($field['type'] ?? '') === 'repeater') {
+                foreach ($field['fields'] ?? [] as $subField) {
+                    $subWhenField = $subField['visibleWhen']['field'] ?? null;
+                    if (is_string($subWhenField) && $subWhenField !== '') {
+                        $keys[] = $subWhenField;
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($keys));
+    }
+
+    /**
      * @param  array<string, mixed>  $field
      */
-    private function buildField(string $pageKey, string $sectionKey, array $field, bool $isRootSection): mixed
+    /**
+     * @param  list<string>  $liveFieldKeys
+     */
+    private function buildField(string $pageKey, string $sectionKey, array $field, bool $isRootSection, array $liveFieldKeys = []): mixed
     {
         $type = $field['type'] ?? 'text';
         $key = $field['key'] ?? null;
@@ -96,6 +128,10 @@ class SiteContentFormBuilder
             default => TextInput::make($statePath),
         };
 
+        if ($key !== null && in_array($key, $liveFieldKeys, true) && in_array($type, ['toggle', 'select'], true)) {
+            $component->live();
+        }
+
         if (isset($field['label'])) {
             $component->label($field['label']);
         }
@@ -115,7 +151,18 @@ class SiteContentFormBuilder
         if (isset($field['visibleWhen']) && is_array($field['visibleWhen'])) {
             $whenField = $field['visibleWhen']['field'] ?? '';
             $whenValue = $field['visibleWhen']['value'] ?? null;
-            $component->visible(fn (Get $get): bool => ($get($whenField) ?? null) === $whenValue);
+            $whenStatePath = $sectionKey !== ''
+                ? $this->statePath($sectionKey, $whenField, [], $isRootSection)
+                : $whenField;
+            $component->visible(function (Get $get) use ($whenStatePath, $whenValue): bool {
+                $actual = $get($whenStatePath);
+
+                if (is_bool($whenValue)) {
+                    return (bool) $actual === $whenValue;
+                }
+
+                return ($actual ?? null) === $whenValue;
+            });
         }
 
         $component->dehydratedWhenHidden();
