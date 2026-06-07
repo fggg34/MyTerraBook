@@ -222,7 +222,6 @@ return [
                         ['key' => 'navLinks', 'type' => 'repeater', 'label' => 'Nav links', 'fields' => $linkRepeater, 'columnSpanFull' => true],
                         ['key' => 'ctaLabel', 'type' => 'text', 'label' => 'CTA label'],
                         ['key' => 'ctaHref', 'type' => 'text', 'label' => 'CTA link'],
-                        ['key' => 'langLabel', 'type' => 'text', 'label' => 'Language label'],
                         ['key' => 'currencyLabel', 'type' => 'text', 'label' => 'Currency label'],
                         ['key' => 'signInLabel', 'type' => 'text', 'label' => 'Sign in label'],
                         ['key' => 'signInHref', 'type' => 'text', 'label' => 'Sign in link'],
@@ -846,11 +845,28 @@ return [
                 ]],
             ],
         ],
+        'client-panel' => [
+            'label' => 'Client panel',
+            'group' => 'App',
+            'preview_route' => '/dashboard',
+            'sort_order' => 22,
+            'sections' => [
+                'content' => ['label' => 'Shell copy', 'isRootSection' => true, 'fields' => [
+                    ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+                    ['key' => 'sidebarTitle', 'type' => 'text', 'label' => 'Sidebar title'],
+                    ['key' => 'signOutLabel', 'type' => 'text', 'label' => 'Sign out label'],
+                    ['key' => 'navItems', 'type' => 'repeater', 'label' => 'Nav items', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+                        ['key' => 'to', 'type' => 'text', 'label' => 'Route'],
+                        ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
+                    ]],
+                ]],
+            ],
+        ],
         'host-panel' => [
             'label' => 'Host panel',
             'group' => 'App',
             'preview_route' => '/host',
-            'sort_order' => 22,
+            'sort_order' => 23,
             'sections' => [
                 'content' => ['label' => 'Shell copy', 'isRootSection' => true, 'fields' => [
                     ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
@@ -867,7 +883,7 @@ return [
             'label' => 'Newsletter unsubscribe',
             'group' => 'App',
             'preview_route' => '/newsletter/unsubscribe',
-            'sort_order' => 23,
+            'sort_order' => 24,
             'sections' => [
                 'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => [
                     ['key' => 'title', 'type' => 'text', 'label' => 'Title'],

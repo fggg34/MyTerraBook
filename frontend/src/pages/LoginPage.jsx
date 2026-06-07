@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import AuthPageLayout from '../components/auth/AuthPageLayout'
 import PasswordInput from '../components/auth/PasswordInput'
 import PageHead from '../components/seo/PageHead'
@@ -30,8 +30,6 @@ export default function LoginPage({ hostIntent = false }) {
   const { loginWithCredentials } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const redirect = searchParams.get('redirect') || (hostIntent ? '/host' : null)
   const [form, setForm] = useState({ email: '', password: '', remember: false })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -48,7 +46,7 @@ export default function LoginPage({ hostIntent = false }) {
     try {
       const loggedInUser = await loginWithCredentials(form.email, form.password)
       toast('Welcome back!', 'success')
-      navigate(getPostLoginPath(loggedInUser, redirect))
+      navigate(getPostLoginPath(loggedInUser))
     } catch (err) {
       const msg = err.response?.data?.message || 'Invalid email or password'
       setErrors({ form: msg })

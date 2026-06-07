@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\Host\HostCatalogController;
 use App\Http\Controllers\Api\Host\HostDashboardController;
 use App\Http\Controllers\Api\Host\HostGuestHouseController;
 use App\Http\Controllers\Api\MeGuestHouseBookingController;
+use App\Http\Controllers\Api\MeProfileController;
 use App\Http\Controllers\Api\PublicOrderController;
 use App\Http\Controllers\Api\SearchSuggestionsController;
 use Illuminate\Http\Request;
@@ -117,6 +118,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me/guest-house-bookings', [MeGuestHouseBookingController::class, 'index']);
     Route::get('/me/guest-house-bookings/{ref}', [MeGuestHouseBookingController::class, 'show']);
     Route::post('/me/guest-house-bookings/{ref}/cancel', [MeGuestHouseBookingController::class, 'cancel']);
+    Route::patch('/me/profile', [MeProfileController::class, 'update']);
+    Route::patch('/me/password', [MeProfileController::class, 'updatePassword']);
 });
 
 Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {

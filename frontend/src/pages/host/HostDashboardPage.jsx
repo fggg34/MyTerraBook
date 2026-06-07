@@ -1,22 +1,64 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getHostDashboard } from '../../api/host'
+import { getStoredToken } from '../../auth'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { formatCurrency } from '../../utils/format'
 
 export default function HostDashboardPage() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  useEffect(() => {
+  const loadDashboard = useCallback(() => {
+    if (!getStoredToken()) {
+      setError('Your session is not ready yet. Please sign in again.')
+      setStats(null)
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
     getHostDashboard()
       .then((res) => setStats(res.data.data))
-      .catch(() => setStats(null))
+      .catch((err) => {
+        setStats(null)
+        if (err.response?.status === 401) {
+          setError('Your session expired. Please sign out and sign in again.')
+          return
+        }
+        if (!err.response) {
+          setError('Could not reach the server. Make sure the backend is running on port 8080.')
+          return
+        }
+        setError(err.response?.data?.message || 'Could not load dashboard.')
+      })
       .finally(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    loadDashboard()
+  }, [loadDashboard])
+
   if (loading) return <PageLoader message="Loading host dashboard…" />
-  if (!stats) return <p>Could not load dashboard.</p>
+
+  if (!stats) {
+    return (
+      <div className="host-form-card">
+        <p className="text-sm text-slate-600">{error || 'Could not load dashboard.'}</p>
+        <div className="host-actions">
+          <button type="button" className="host-btn primary" onClick={loadDashboard}>
+            Try again
+          </button>
+          <Link to="/host/guesthouses/new" className="host-btn secondary">
+            Add guesthouse
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>

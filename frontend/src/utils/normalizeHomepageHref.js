@@ -1,6 +1,9 @@
 const LEGACY_HREFS = {
   '#campervan': '/campervans',
+  '#car': '/cars',
+  '#cars': '/cars',
   '#guesthouse': '/guesthouses',
+  '#guesthouses': '/guesthouses',
   '#host': '/become-a-host',
   '/guest-houses': '/guesthouses',
 }
@@ -13,7 +16,7 @@ export function normalizeHomepageHref(href) {
 
 function normalizeFooterHref(href, label) {
   const normalized = normalizeHomepageHref(href)
-  if (normalized && normalized !== '#') return normalized
+  if (normalized?.startsWith('/')) return normalized
   const key = String(label || '').toLowerCase()
   if (key.includes('campervan')) return '/campervans'
   if (key.includes('guesthouse')) return '/guesthouses'

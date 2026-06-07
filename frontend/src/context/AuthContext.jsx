@@ -12,8 +12,7 @@ export function normalizeUserRole(user) {
   return null
 }
 
-export function getPostLoginPath(user, redirect) {
-  if (redirect) return redirect
+export function getPostLoginPath(user) {
   const role = normalizeUserRole(user)
   if (role === 'admin') return '/admin'
   if (role === 'host') return '/host'
@@ -21,7 +20,7 @@ export function getPostLoginPath(user, redirect) {
 }
 
 export function getLoginPathForRole(role) {
-  if (role === 'host') return '/login?redirect=/host'
+  if (role === 'host') return '/host/login'
   return '/login'
 }
 

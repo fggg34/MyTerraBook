@@ -8,12 +8,13 @@ const IMG = {
   cardHouse: '/images/homepage/cardhouse.jpg',
 }
 
-const pick = (name, price, gearbox, seats, sleeps, bags, image = IMG.cardCamper) => ({
+const pick = (name, price, gearbox, seats, sleeps, bags, image = IMG.cardCamper, href = '/campervans') => ({
   name,
   image,
   price,
   per: 'day',
   badge: 'Extras included',
+  href,
   specs: [
     { type: 'gearbox', label: gearbox },
     { type: 'seat', label: `Seats ${seats}` },
@@ -37,7 +38,6 @@ export const defaultHomepageData = {
     ],
     ctaLabel: 'Become a host',
     ctaHref: '/become-a-host',
-    langLabel: 'EN',
     currencyLabel: '€ EUR',
     signInLabel: 'Sign in',
     signInHref: '/login',

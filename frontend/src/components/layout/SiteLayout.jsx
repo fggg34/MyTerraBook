@@ -5,9 +5,11 @@ import FaqSection from '../homepage/FaqSection'
 import NewsSection from '../homepage/NewsSection'
 import Footer from '../homepage/Footer'
 import { useSiteLayout } from '../../context/SiteLayoutContext'
+import useHomepageBodyClass from '../../hooks/useHomepageBodyClass'
 import BackToTop from './BackToTop'
 
 export default function SiteLayout() {
+  useHomepageBodyClass()
   const { siteData } = useSiteLayout()
 
   return (

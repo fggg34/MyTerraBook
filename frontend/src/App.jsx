@@ -4,7 +4,8 @@ import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { getSitePreviewUrl, setAuthToken } from './api'
 import { AuthProvider, getLoginPathForRole, normalizeUserRole, useAuth } from './context/AuthContext'
 import { getStoredUser } from './auth'
-import { SiteContentProvider } from './context/SiteContentContext'
+import { SiteContentProvider, useSiteContent } from './context/SiteContentContext'
+import { LocalePreferencesProvider } from './context/LocalePreferencesContext'
 import { SiteLayoutProvider } from './context/SiteLayoutContext'
 import { ToastProvider } from './context/ToastContext'
 import { getStoredToken } from './auth'
@@ -22,7 +23,10 @@ import HomePageContainer from './pages/HomePageContainer'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import UnderConstructionPage from './pages/UnderConstructionPage'
-import UserDashboardPage from './pages/UserDashboardPage'
+import ClientLayout from './components/client/ClientLayout'
+import ClientBookingsPage from './pages/client/ClientBookingsPage'
+import ClientStaysPage from './pages/client/ClientStaysPage'
+import ClientSettingsPage from './pages/client/ClientSettingsPage'
 import HostLayout from './components/host/HostLayout'
 import HostDashboardPage from './pages/host/HostDashboardPage'
 import HostGuestHousesPage from './pages/host/HostGuestHousesPage'
@@ -118,10 +122,14 @@ function AppRoutes() {
           path="/dashboard"
           element={
             <ProtectedRoute customerOnly>
-              <UserDashboardPage />
+              <ClientLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<ClientBookingsPage />} />
+          <Route path="stays" element={<ClientStaysPage />} />
+          <Route path="settings" element={<ClientSettingsPage />} />
+        </Route>
         <Route
           path="/admin"
           element={
@@ -191,12 +199,22 @@ function AppRoutes() {
           </SiteLayoutProvider>
         }
       >
-        <Route path="/search" element={<SearchResultsPage vehicleType="campervan" />} />
-        <Route path="/campervans" element={<SearchResultsPage vehicleType="campervan" />} />
-        <Route path="/cars" element={<SearchResultsPage vehicleType="car" />} />
-        <Route path="/guesthouses" element={<SearchResultsPage vehicleType="guesthouse" />} />
+        <Route path="/search" element={<SearchResultsPage key="search" vehicleType="campervan" />} />
+        <Route path="/campervans" element={<SearchResultsPage key="campervan" vehicleType="campervan" />} />
+        <Route path="/cars" element={<SearchResultsPage key="car" vehicleType="car" />} />
+        <Route path="/guesthouses" element={<SearchResultsPage key="guesthouse" vehicleType="guesthouse" />} />
       </Route>
     </Routes>
+  )
+}
+
+function LocalePreferencesBridge({ children }) {
+  const { siteData } = useSiteContent()
+
+  return (
+    <LocalePreferencesProvider currencyLabel={siteData.header?.currencyLabel}>
+      {children}
+    </LocalePreferencesProvider>
   )
 }
 
@@ -205,7 +223,9 @@ function App() {
     <ToastProvider>
       <AuthProvider>
         <SiteContentProvider>
-          <AppRoutes />
+          <LocalePreferencesBridge>
+            <AppRoutes />
+          </LocalePreferencesBridge>
         </SiteContentProvider>
       </AuthProvider>
     </ToastProvider>

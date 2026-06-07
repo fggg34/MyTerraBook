@@ -1,7 +1,14 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import SiteLogo from '../branding/SiteLogo'
+import { getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
 import LangCurrencyMenu from './LangCurrencyMenu'
+
+function getDashboardLabel(role) {
+  if (role === 'host') return 'Host panel'
+  if (role === 'admin') return 'Admin'
+  return 'My account'
+}
 
 function NavLink({ href, children, onClick, className = '' }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
@@ -27,14 +34,40 @@ export default function Header({
   navLinks = [],
   ctaLabel,
   ctaHref,
-  langLabel,
-  currencyLabel,
   signInLabel,
   signInHref,
 }) {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userMenuRef = useRef(null)
+
+  const role = normalizeUserRole(user)
+  const dashboardPath = user ? getPostLoginPath(user) : null
+  const dashboardLabel = getDashboardLabel(role)
+  const showHostCta = !user || (role !== 'host' && role !== 'admin')
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || '?'
 
   const closeMobile = () => setMobileOpen(false)
+
+  useEffect(() => {
+    if (!userMenuOpen) return undefined
+    const onPointerDown = (event) => {
+      if (!userMenuRef.current?.contains(event.target)) {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [userMenuOpen])
+
+  const handleLogout = async () => {
+    await logout()
+    setUserMenuOpen(false)
+    closeMobile()
+    navigate('/')
+  }
 
   return (
     <header className="nav">
@@ -51,8 +84,8 @@ export default function Header({
         </nav>
 
         <div className="nav-right">
-          <LangCurrencyMenu langLabel={langLabel} currencyLabel={currencyLabel} />
-          {ctaLabel &&
+          <LangCurrencyMenu />
+          {showHostCta && ctaLabel &&
             (ctaHref?.startsWith('/') ? (
               <Link className="host" to={ctaHref}>
                 {ctaLabel}
@@ -62,7 +95,39 @@ export default function Header({
                 {ctaLabel}
               </button>
             ))}
-          {signInLabel &&
+          {user ? (
+            <div className="user-menu-wrap" ref={userMenuRef}>
+              <button
+                type="button"
+                className={`user-menu-btn${userMenuOpen ? ' open' : ''}`}
+                aria-expanded={userMenuOpen}
+                aria-haspopup="menu"
+                onClick={() => setUserMenuOpen((open) => !open)}
+              >
+                <span className="user-avatar" aria-hidden>
+                  {userInitial}
+                </span>
+                <span className="user-name">{user.name}</span>
+                <svg className="user-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+              <div className={`user-menu-panel${userMenuOpen ? ' show' : ''}`} role="menu">
+                <Link
+                  to={dashboardPath}
+                  className="user-menu-item"
+                  role="menuitem"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  {dashboardLabel}
+                </Link>
+                <button type="button" className="user-menu-item user-menu-logout" role="menuitem" onClick={handleLogout}>
+                  Log out
+                </button>
+              </div>
+            </div>
+          ) : (
+            signInLabel &&
             (signInHref?.startsWith('/') ? (
               <Link className="signin" to={signInHref}>
                 {signInLabel}
@@ -71,7 +136,8 @@ export default function Header({
               <button className="signin" type="button" onClick={() => (window.location.href = signInHref || '/login')}>
                 {signInLabel}
               </button>
-            ))}
+            ))
+          )}
           <button
             className="hamburger"
             type="button"
@@ -92,7 +158,7 @@ export default function Header({
             {link.label}
           </NavLink>
         ))}
-        {ctaLabel &&
+        {showHostCta && ctaLabel &&
           (ctaHref?.startsWith('/') ? (
             <Link to={ctaHref} onClick={closeMobile}>
               {ctaLabel}
@@ -102,6 +168,27 @@ export default function Header({
               {ctaLabel}
             </a>
           ))}
+        {user ? (
+          <>
+            <Link to={dashboardPath} onClick={closeMobile}>
+              {dashboardLabel}
+            </Link>
+            <button type="button" className="user-menu-logout-mobile" onClick={handleLogout}>
+              Log out
+            </button>
+          </>
+        ) : (
+          signInLabel &&
+          (signInHref?.startsWith('/') ? (
+            <Link to={signInHref} onClick={closeMobile}>
+              {signInLabel}
+            </Link>
+          ) : (
+            <a href={signInHref || '/login'} onClick={closeMobile}>
+              {signInLabel}
+            </a>
+          ))
+        )}
       </div>
     </header>
   )

@@ -13,7 +13,7 @@ export default function HostLandingHero({ hero = {} }) {
   const { registerAsHost } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
-  const [signup, setSignup] = useState({ email: '', password: '', password_confirmation: '', name: '' })
+  const [signup, setSignup] = useState({ name: '', email: '', phone: '', password: '', password_confirmation: '' })
   const [signupLoading, setSignupLoading] = useState(false)
 
   const title = hero.title ?? 'Earn from your van or guesthouse'
@@ -30,11 +30,12 @@ export default function HostLandingHero({ hero = {} }) {
       const user = await registerAsHost({
         name,
         email: signup.email,
+        phone: signup.phone,
         password: signup.password,
-        password_confirmation: signup.password_confirmation || signup.password,
+        password_confirmation: signup.password_confirmation,
       })
       toast('Host account created', 'success')
-      navigate(getPostLoginPath(user, '/host/guesthouses/new'))
+      navigate(getPostLoginPath(user))
     } catch (err) {
       toast(err.response?.data?.message || 'Could not create account', 'error')
     } finally {
@@ -94,6 +95,18 @@ export default function HostLandingHero({ hero = {} }) {
               />
             </div>
             <div className="host-landing-field">
+              <label htmlFor="host-su-phone">Phone</label>
+              <input
+                id="host-su-phone"
+                type="tel"
+                placeholder="+354 555 1234"
+                autoComplete="tel"
+                value={signup.phone}
+                onChange={(e) => setSignup({ ...signup, phone: e.target.value })}
+                required
+              />
+            </div>
+            <div className="host-landing-field">
               <label htmlFor="host-su-pass">Password</label>
               <input
                 id="host-su-pass"
@@ -103,6 +116,20 @@ export default function HostLandingHero({ hero = {} }) {
                 value={signup.password}
                 onChange={(e) => setSignup({ ...signup, password: e.target.value })}
                 required
+                minLength={8}
+              />
+            </div>
+            <div className="host-landing-field">
+              <label htmlFor="host-su-pass-confirm">Confirm password</label>
+              <input
+                id="host-su-pass-confirm"
+                type="password"
+                placeholder="Confirm your password"
+                autoComplete="new-password"
+                value={signup.password_confirmation}
+                onChange={(e) => setSignup({ ...signup, password_confirmation: e.target.value })}
+                required
+                minLength={8}
               />
             </div>
             <button className="host-landing-submit" type="submit" disabled={signupLoading}>

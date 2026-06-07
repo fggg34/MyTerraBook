@@ -38,7 +38,8 @@ export function mapCarToResultCard(car, { searchQuery = '', config, categoryName
   if (sleeps > 0) specs.push({ type: 'bed', label: `Sleeps ${sleeps}` })
   specs.push({ type: 'bag', label: `${bags} Bag${bags === 1 ? '' : 's'}` })
 
-  const href = `/cars/${car.id}${searchQuery ? `?${searchQuery}` : ''}`
+  const detailBase = config?.route || '/cars'
+  const href = `${detailBase}/${car.id}${searchQuery ? `?${searchQuery}` : ''}`
 
   return {
     id: car.id,
