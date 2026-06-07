@@ -404,57 +404,52 @@ export const defaultHomepageData = {
   },
   reviewsSection: {
     eyebrow: 'Traveller stories',
-    heading: 'Loved on the Ring Road.',
+    heading: 'Proof you can trust before you book.',
+    lead: 'Real reviews from campers, drivers, and guests who explored Iceland with us — polished into one calm, credible section.',
     rating: '4.9 / 5',
-    ratingCount: '12,400+ travellers',
+    ratingCount: '12,400+ reviews',
     reviews: [
       {
         quote:
           '"Picked up the camper ten minutes from Keflavík and were chasing waterfalls by lunch. Everything just worked."',
         name: 'Marta Lindqvist',
         fill: '#a9d4e6',
-        rot: '-9deg',
-        ty: '30px',
+        relativeTime: '2 months ago',
       },
       {
         quote:
           '"Gravel roads, a river crossing, even a June snow flurry — the 4×4 and the insurance took it all in stride."',
         name: 'Tom Okafor',
         fill: '#bcdcab',
-        rot: '-5.5deg',
-        ty: '16px',
+        relativeTime: '3 weeks ago',
       },
       {
         quote:
           '"Our guesthouse in Vík was cosier than the photos. After a long day on the Ring Road we slept like rocks."',
         name: 'Sofia Rossi',
         fill: '#f1d79a',
-        rot: '-1.5deg',
-        ty: '4px',
+        relativeTime: '9 days ago',
       },
       {
         quote:
           '"Booking the van, the car days and two stays in one place saved us an entire evening of admin."',
         name: 'Daniel Berg',
         fill: '#cdbbea',
-        rot: '1.5deg',
-        ty: '4px',
+        relativeTime: '1 month ago',
       },
       {
         quote:
           '"Flat tyre near Höfn at midnight. One call, a real person, sorted in twenty minutes. Unreal."',
         name: 'Aiko Tanaka',
         fill: '#a4ddcd',
-        rot: '5.5deg',
-        ty: '16px',
+        relativeTime: '6 weeks ago',
       },
       {
         quote:
           '"Cleanest van we\'ve ever rented, fair price, and not a single surprise fee at the counter."',
         name: 'Lucas Moreau',
         fill: '#f4c1a4',
-        rot: '9deg',
-        ty: '30px',
+        relativeTime: '2 weeks ago',
       },
     ],
   },

@@ -2,6 +2,17 @@
     $path = request()->path();
     $inImpactRent = str_starts_with($path, 'admin/impact-rent');
 
+    // Dashboard-style analytics pages live in the cluster but should not show the editor tab bar.
+    $irTabsExcludedPrefixes = [
+        'admin/impact-rent/reports',
+    ];
+
+    $isIrTabsExcluded = collect($irTabsExcludedPrefixes)->contains(
+        fn (string $prefix): bool => $path === $prefix || str_starts_with($path, $prefix.'/')
+    );
+
+    $showIrTabs = $inImpactRent && ! $isIrTabsExcluded;
+
     /*
      * Each top-level item can be:
      *   - a direct link  →  ['label', 'icon', 'url', 'active']
@@ -116,7 +127,7 @@
     ];
 @endphp
 
-@if ($inImpactRent)
+@if ($showIrTabs)
     <style>
         /* Hide native Filament cluster sub-nav tabs — replaced by this bar */
         .fi-page-sub-navigation-tabs {
@@ -430,12 +441,30 @@
 
     window.__irTabsNavCleanup = true;
 
+    function shouldShowIrTabs(pathname) {
+        if (!pathname.includes('/admin/impact-rent')) {
+            return false;
+        }
+
+        var excludedPrefixes = ['/admin/impact-rent/reports'];
+        for (var i = 0; i < excludedPrefixes.length; i++) {
+            var prefix = excludedPrefixes[i];
+            if (pathname === prefix || pathname.indexOf(prefix + '/') === 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     document.addEventListener('livewire:navigated', function () {
-        if (window.location.pathname.includes('/admin/impact-rent')) {
+        if (shouldShowIrTabs(window.location.pathname)) {
             return;
         }
 
-        document.querySelectorAll('[data-ir-quick-access]').forEach((el) => el.remove());
+        document.querySelectorAll('[data-ir-quick-access]').forEach(function (el) {
+            el.remove();
+        });
     });
 })();
 </script>
