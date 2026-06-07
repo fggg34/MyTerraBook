@@ -10,6 +10,7 @@ export default function Step2ExtrasCover({
   updateForm,
   nights,
   toggleAddon,
+  errors = {},
   onNext,
   onBack,
 }) {
@@ -33,6 +34,11 @@ export default function Step2ExtrasCover({
             selectedId={form.price_type_id}
             onSelect={(id) => updateForm({ price_type_id: id })}
           />
+          {errors.price_type_id && (
+            <p className="hint" style={{ color: 'var(--rtb-red)', marginTop: 10 }}>
+              Choose a protection plan to continue
+            </p>
+          )}
         </div>
       )}
 

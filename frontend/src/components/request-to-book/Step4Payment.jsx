@@ -7,7 +7,7 @@ import LoadingSpinner from '../ui/LoadingSpinner'
 const PAY_NOTES = {
   card: (
     <>
-      <b>{PREPAY_PERCENT}% prepayment on approval.</b> Once your host approves, we charge {PREPAY_PERCENT}% to hold the booking. The remaining balance is paid on pick-up — refundable until 48 hours before.
+      <b>{PREPAY_PERCENT}% prepayment on approval.</b> Once your host approves, we charge {PREPAY_PERCENT}% to hold the booking. This prepayment is non-refundable. The remaining balance is paid on pick-up.
     </>
   ),
   instal: (

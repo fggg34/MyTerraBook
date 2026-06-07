@@ -15,7 +15,10 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 require __DIR__.'/../vendor/autoload.php';
 
 /**
- * Strip URL prefix (e.g. /backend) from REQUEST_URI so routes match (/admin, /api/…).
+ * The app is served under a URL prefix (e.g. /backend). Expose that prefix to Symfony as
+ * the base URL so routes still match (/admin, /api/…) while request()->url() keeps the
+ * prefix — required for signed-URL validation (Livewire file uploads/previews) to match the
+ * signatures generated with URL::forceRootUrl(.../backend).
  * Live servers often omit the path in APP_URL or cache a wrong .env — prefer SCRIPT_NAME.
  */
 if (PHP_SAPI !== 'cli' && is_file(__DIR__.'/../.env')) {
@@ -83,13 +86,18 @@ if (PHP_SAPI !== 'cli') {
         $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
         $pathPart = parse_url($requestUri, PHP_URL_PATH) ?: '/';
         if ($pathPart === '/'.$prefix || str_starts_with($pathPart, '/'.$prefix.'/')) {
-            $trimmed = substr($pathPart, strlen($prefix) + 1);
-            // Remainder is often "/admin/…" (leading slash); avoid "//admin/…".
-            $newPath = ($trimmed === '' || $trimmed === false) ? '/' : '/'.ltrim((string) $trimmed, '/');
-            $query = parse_url($requestUri, PHP_URL_QUERY);
-            $_SERVER['REQUEST_URI'] = $newPath.($query !== null && $query !== '' ? '?'.$query : '');
-            // Some Apache/CGI setups still pass the old path here; Symfony may read it.
-            unset($_SERVER['PATH_INFO'], $_SERVER['ORIG_PATH_INFO']);
+            // Expose /{prefix} as the application base URL instead of removing it from
+            // REQUEST_URI. Symfony derives the base path from SCRIPT_NAME (basename matches
+            // the real index.php), so the path Laravel routes on still drops the prefix
+            // (/admin, /api, /livewire-…) exactly like before — BUT request()->url() keeps
+            // the /{prefix} segment. That is what makes signed URLs validate: Livewire signs
+            // temporary upload/preview URLs (and any signed route) with
+            // URL::forceRootUrl(.../{prefix}) and validation re-hashes request()->url();
+            // stripping the prefix made the two diverge → 401 "failed to upload".
+            $_SERVER['SCRIPT_NAME'] = '/'.$prefix.'/index.php';
+            $_SERVER['PHP_SELF'] = '/'.$prefix.'/index.php';
+            // Stale CGI vars can make Symfony mis-derive the path info; clear them.
+            unset($_SERVER['PATH_INFO'], $_SERVER['ORIG_PATH_INFO'], $_SERVER['ORIG_SCRIPT_NAME']);
         }
     }
 }

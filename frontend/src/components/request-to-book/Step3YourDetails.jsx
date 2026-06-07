@@ -26,7 +26,7 @@ export default function Step3YourDetails({
             {showSuperhost && <span className="ab-badge">★ Superhost</span>}
           </h4>
           <p>
-            Nothing is charged today. Once your host approves, we take a <b>20% prepayment</b> to hold the booking — the balance is due on pick-up.
+            Nothing is charged today. Once your host approves, we take a <b>20% prepayment</b> to hold the booking — this is non-refundable. The balance is due on pick-up.
           </p>
         </span>
       </div>

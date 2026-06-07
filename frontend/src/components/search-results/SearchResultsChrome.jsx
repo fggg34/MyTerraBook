@@ -1,37 +1,9 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import DateRangePicker from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
 import useSearchChromeDraft from '../../hooks/useSearchChromeDraft'
 import { SORT_OPTIONS } from '../../data/searchResultsConfig'
-
-const CAT_ICONS = {
-  camper: (
-    <svg viewBox="0 0 28 18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1 13V6.5C1 5.7 1.7 5 2.5 5H16l5 4h4.5C26.3 9 27 9.7 27 10.5V13" />
-      <path d="M1 13h3M11 13h6M24 13h3" />
-      <circle cx="7.5" cy="13.5" r="2.5" />
-      <circle cx="20.5" cy="13.5" r="2.5" />
-      <path d="M5 5V2.5h7V5" />
-    </svg>
-  ),
-  car: (
-    <svg viewBox="0 0 28 18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 12V9.2c0-.5.3-.9.8-1L6 7l2.8-3.4c.4-.5 1-.8 1.6-.8h7.5c.7 0 1.3.3 1.7.9L22 7l3.2.9c.5.1.8.5.8 1V12" />
-      <path d="M2 12h3M11 12h6M23 12h3M6 7h16" />
-      <circle cx="8" cy="12.5" r="2.4" />
-      <circle cx="20" cy="12.5" r="2.4" />
-    </svg>
-  ),
-  house: (
-    <svg viewBox="0 0 24 22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 20V9l8-6 8 6v11" />
-      <path d="M2 20h20" />
-      <rect x="9.5" y="12" width="5" height="8" />
-    </svg>
-  ),
-}
 
 const PIN_ICON = (
   <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -66,7 +38,6 @@ export default function SearchResultsChrome({
   setFilters,
   guestsLabel,
 }) {
-  const navigate = useNavigate()
   const [sortOpen, setSortOpen] = useState(false)
   const [openPop, setOpenPop] = useState(null)
 
@@ -83,7 +54,6 @@ export default function SearchResultsChrome({
     handleVehicleDates,
     handleGuestDates,
     applyDraft,
-    buildQueryParams,
     guestPeopleOptions,
     minRentalDays,
     maxRentalDays,
@@ -92,25 +62,6 @@ export default function SearchResultsChrome({
     guestStartDate,
     guestEndDate,
   } = useSearchChromeDraft({ vehicleType, query, updateSearch })
-
-  const switchVehicle = (type) => {
-    const target = VEHICLE_TYPES[type]?.route || '/campervans'
-    const draftQuery = type === 'guesthouse'
-      ? {
-          city: guestDraft.city,
-          check_in: guestDraft.check_in,
-          check_out: guestDraft.check_out,
-          guests: guestDraft.guests,
-        }
-      : {
-          pickup_location_id: vehicleDraft.pickup_location_id,
-          dropoff_location_id: vehicleDraft.dropoff_location_id,
-          pickup_at: vehicleDraft.pickup_at,
-          dropoff_at: vehicleDraft.dropoff_at,
-        }
-    const params = buildQueryParams(draftQuery)
-    navigate(`${target}?${params.toString()}`)
-  }
 
   const pickupOptions = useMemo(
     () => pickupLocations.map((loc) => ({ value: loc.value, label: loc.label, subtitle: loc.subtitle })),
@@ -126,36 +77,6 @@ export default function SearchResultsChrome({
     <>
       <div className="hsearch" id="hsearch">
         <div className="hsearch-inner">
-          <div className="hcats" id="hcats">
-            <button
-              className={`hcat ${vehicleType === 'campervan' ? 'active' : ''}`}
-              type="button"
-              data-cat="camper"
-              onClick={() => switchVehicle('campervan')}
-            >
-              {CAT_ICONS.camper}
-              Campervan
-            </button>
-            <button
-              className={`hcat ${vehicleType === 'car' ? 'active' : ''}`}
-              type="button"
-              data-cat="car"
-              onClick={() => switchVehicle('car')}
-            >
-              {CAT_ICONS.car}
-              Cars
-            </button>
-            <button
-              className={`hcat ${isGuesthouse ? 'active' : ''}`}
-              type="button"
-              data-cat="house"
-              onClick={() => switchVehicle('guesthouse')}
-            >
-              {CAT_ICONS.house}
-              Guesthouses
-            </button>
-          </div>
-
           <div className="hsearch-bar">
             {isGuesthouse ? (
               <>
