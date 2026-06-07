@@ -8,7 +8,7 @@ import { mergePageContent } from '../utils/mergePageContent'
 import { mapCarToListing } from '../utils/mapCarToListing'
 import { mapGuestHouseToListing } from '../utils/mapGuestHouseToListing'
 import { mapApiListingReviews } from '../utils/mapListingReviews'
-import { categoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
+import { mainCategoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 
 const LISTING_PAGE_KEYS = {
   campervan: 'listing-campervan',
@@ -66,9 +66,8 @@ export default function useListingPage(listingType) {
       .get(`/cars/${id}`)
       .then((res) => {
         const data = res.data?.data
-        const catName = data?.category?.name
-        const allowed = typeConfig.categoryNames
-        if (allowed?.length && catName && !categoryMatchesVehicleType(catName, allowed)) {
+        const mainCategorySlug = data?.main_category?.slug || data?.category?.main_category_slug
+        if (typeConfig.mainCategorySlug && mainCategorySlug && !mainCategoryMatchesVehicleType(mainCategorySlug, listingType)) {
           setLoadState('error')
           return
         }
@@ -79,7 +78,7 @@ export default function useListingPage(listingType) {
       .catch(() => setLoadState('error'))
 
     return undefined
-  }, [id, listingType, typeConfig.categoryNames])
+  }, [id, listingType, typeConfig.mainCategorySlug])
 
   useEffect(() => {
     if (!entity?.id) {
@@ -96,19 +95,18 @@ export default function useListingPage(listingType) {
       return undefined
     }
 
-    api.get('/cars').then((res) => {
+    const params = typeConfig.mainCategorySlug ? { main_category: typeConfig.mainCategorySlug } : {}
+
+    api.get('/cars', { params }).then((res) => {
       const all = res.data.data || []
       const filtered = all
         .filter((c) => c.id !== entity.id)
-        .filter((c) => {
-          if (!typeConfig.categoryNames?.length) return true
-          return categoryMatchesVehicleType(c.category_name, typeConfig.categoryNames)
-        })
+        .filter((c) => mainCategoryMatchesVehicleType(c.main_category_slug, listingType))
         .slice(0, 6)
       setRelated(filtered)
     })
     return undefined
-  }, [entity, listingType, typeConfig.categoryNames])
+  }, [entity, listingType, typeConfig.mainCategorySlug])
 
   const listing = useMemo(() => {
     if (!entity) return null

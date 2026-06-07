@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Car;
-use App\Models\Category;
+use App\Models\SubCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Car> */
@@ -46,7 +46,7 @@ class CarFactory extends Factory
         $name = "{$make} {$model} {$year}";
 
         return [
-            'category_id' => Category::factory(),
+            'sub_category_id' => SubCategory::factory(),
             'name' => $name,
             'description' => fake()->paragraph(3),
             'transmission' => $transmission,

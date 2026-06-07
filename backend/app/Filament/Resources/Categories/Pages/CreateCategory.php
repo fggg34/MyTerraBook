@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Categories\Pages;
 
 use App\Filament\Resources\Categories\CategoryResource;
-use App\Models\Category;
+use App\Models\MainCategory;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Enums\Width;
 
@@ -17,9 +17,9 @@ class CreateCategory extends CreateRecord
     {
         $name = trim((string) ($data['name'] ?? ''));
 
-        $data['slug'] = Category::uniqueSlugFromName($name);
+        $data['slug'] = MainCategory::uniqueSlugFromName($name);
         $data['is_active'] = true;
-        $data['sort_order'] = ((int) Category::query()->max('sort_order')) + 1;
+        $data['sort_order'] = ((int) MainCategory::query()->max('sort_order')) + 1;
 
         return $data;
     }

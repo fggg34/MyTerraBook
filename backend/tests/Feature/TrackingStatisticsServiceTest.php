@@ -4,7 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
 use App\Models\Car;
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use App\Models\Location;
 use App\Models\Order;
 use App\Models\TrackingEvent;
@@ -18,9 +19,10 @@ class TrackingStatisticsServiceTest extends TestCase
 
     public function test_tracking_statistics_works_without_tracking_campaigns_or_events(): void
     {
-        $category = Category::query()->create(['name' => 'Stats', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Stats', 'is_active' => true, 'is_search_filter' => true]);
         $car = Car::query()->create([
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'name' => 'Compact',
             'units_available' => 2,
             'is_active' => true,
@@ -57,9 +59,10 @@ class TrackingStatisticsServiceTest extends TestCase
 
     public function test_tracking_statistics_returns_requested_sections(): void
     {
-        $category = Category::query()->create(['name' => 'Stats', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Stats', 'is_active' => true, 'is_search_filter' => true]);
         $car = Car::query()->create([
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'name' => 'Compact',
             'units_available' => 2,
             'is_active' => true,

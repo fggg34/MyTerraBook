@@ -5,7 +5,8 @@ namespace Tests\Feature;
 use App\Enums\GuestHouseStatus;
 use App\Enums\GuestHouseType;
 use App\Models\Car;
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use App\Models\GuestHouse;
 use App\Models\Location;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,11 +21,12 @@ class SearchSuggestionsApiTest extends TestCase
         $pickup = Location::query()->create(['name' => 'Keflavík Airport', 'address' => '235 Keflavík', 'is_active' => true]);
         Location::query()->create(['name' => 'Akureyri Downtown', 'address' => 'Akureyri centre', 'is_active' => true]);
 
-        $category = Category::query()->create(['name' => 'Van', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Van', 'is_active' => true, 'is_search_filter' => true]);
         $car = Car::query()->create([
             'name' => 'Camper',
             'slug' => 'camper',
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'is_active' => true,
         ]);
         $car->locations()->attach($pickup->id, ['allows_pickup' => true, 'allows_dropoff' => true]);
@@ -46,11 +48,12 @@ class SearchSuggestionsApiTest extends TestCase
 
         $pickup->dropoffCombinations()->sync([$allowed->id]);
 
-        $category = Category::query()->create(['name' => 'Economy', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Economy', 'is_active' => true, 'is_search_filter' => true]);
         $car = Car::query()->create([
             'name' => 'Sedan',
             'slug' => 'sedan',
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'is_active' => true,
         ]);
         $car->locations()->attach($pickup->id, ['allows_pickup' => true, 'allows_dropoff' => true]);

@@ -46,7 +46,8 @@ export default function HostCarsPage() {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Category</th>
+              <th>Main category</th>
+              <th>Sub category</th>
               <th>Status</th>
               <th>Units</th>
               <th />
@@ -55,13 +56,14 @@ export default function HostCarsPage() {
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={5}>No vehicles yet.</td>
+                <td colSpan={6}>No vehicles yet.</td>
               </tr>
             ) : (
               items.map((item) => (
                 <tr key={item.id}>
                   <td>{item.name}</td>
-                  <td>{item.category?.name || '—'}</td>
+                  <td>{item.main_category?.name || '—'}</td>
+                  <td>{item.sub_category?.name || item.category?.name || '—'}</td>
                   <td><ListingStatusBadge status={item.listing_status} /></td>
                   <td>{item.units_count ?? item.units_available}</td>
                   <td className="host-actions" style={{ margin: 0 }}>

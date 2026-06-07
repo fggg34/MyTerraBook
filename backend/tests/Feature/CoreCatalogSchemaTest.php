@@ -3,14 +3,15 @@
 namespace Tests\Feature;
 
 use App\Models\Car;
-use App\Models\Category;
 use App\Models\Characteristic;
 use App\Models\Location;
 use App\Models\LocationClosingDay;
 use App\Models\LocationSchedule;
 use App\Models\LocationScheduleBreak;
+use App\Models\MainCategory;
 use App\Models\PriceType;
 use App\Models\RentalOption;
+use App\Models\SubCategory;
 use App\Models\TaxRate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,11 +27,18 @@ class CoreCatalogSchemaTest extends TestCase
             'basis_points' => 2000,
         ]);
 
-        $category = Category::query()->create([
+        $mainCategory = MainCategory::query()->firstOrCreate(
+            ['slug' => 'car'],
+            ['name' => 'Car', 'description' => 'Passenger cars', 'sort_order' => 1, 'is_active' => true],
+        );
+
+        $subCategory = SubCategory::query()->create([
+            'main_category_id' => $mainCategory->id,
             'name' => 'Economy',
             'description' => 'Compact cars',
             'sort_order' => 1,
             'is_active' => true,
+            'is_search_filter' => true,
         ]);
 
         $char = Characteristic::query()->create([
@@ -79,7 +87,7 @@ class CoreCatalogSchemaTest extends TestCase
         ]);
 
         $car = Car::query()->create([
-            'category_id' => $category->id,
+            'sub_category_id' => $subCategory->id,
             'name' => 'Toyota Yaris',
             'units_available' => 3,
             'is_active' => true,
@@ -93,7 +101,8 @@ class CoreCatalogSchemaTest extends TestCase
         $car->rentalOptions()->attach($option->id);
 
         $this->assertDatabaseHas('tax_rates', ['id' => $vat->id]);
-        $this->assertDatabaseHas('categories', ['id' => $category->id]);
+        $this->assertDatabaseHas('main_categories', ['id' => $mainCategory->id]);
+        $this->assertDatabaseHas('sub_categories', ['id' => $subCategory->id]);
         $this->assertDatabaseHas('cars', ['id' => $car->id]);
         $this->assertTrue($car->locations()->whereKey($location->id)->exists());
         $this->assertTrue($car->characteristics()->whereKey($char->id)->exists());

@@ -13,7 +13,7 @@ class MeOrderController extends Controller
     {
         $orders = $request->user()
             ->orders()
-            ->with(['car.category', 'pickupLocation', 'dropoffLocation'])
+            ->with(['car.subCategory.mainCategory', 'pickupLocation', 'dropoffLocation'])
             ->orderByDesc('created_at')
             ->paginate(20);
 

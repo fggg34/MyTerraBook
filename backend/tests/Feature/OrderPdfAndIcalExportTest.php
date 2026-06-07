@@ -8,7 +8,8 @@ use App\Models\CarDamageMarker;
 use App\Models\CarDistinctiveFeatureDefinition;
 use App\Models\CarUnit;
 use App\Models\CarUnitDistinctiveValue;
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use App\Models\Location;
 use App\Models\Order;
 use App\Models\User;
@@ -21,9 +22,10 @@ class OrderPdfAndIcalExportTest extends TestCase
 
     protected function seedOrderFor(User $owner, OrderStatus $status): Order
     {
-        $category = Category::query()->create(['name' => 'X', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'X', 'is_active' => true, 'is_search_filter' => true]);
         $car = Car::query()->create([
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'name' => 'SUV',
             'units_available' => 1,
             'is_active' => true,

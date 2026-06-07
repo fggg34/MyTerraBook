@@ -2,16 +2,7 @@
     $path = request()->path();
     $inImpactRent = str_starts_with($path, 'admin/impact-rent');
 
-    // Dashboard-style analytics pages live in the cluster but should not show the editor tab bar.
-    $irTabsExcludedPrefixes = [
-        'admin/impact-rent/reports',
-    ];
-
-    $isIrTabsExcluded = collect($irTabsExcludedPrefixes)->contains(
-        fn (string $prefix): bool => $path === $prefix || str_starts_with($path, $prefix.'/')
-    );
-
-    $showIrTabs = $inImpactRent && ! $isIrTabsExcluded;
+    $showIrTabs = $inImpactRent;
 
     /*
      * Each top-level item can be:
@@ -48,12 +39,14 @@
         [
             'label'  => 'Cars',
             'icon'   => $icons['cars'],
-            'active' => request()->is('admin/impact-rent/categories*')
+            'active' => request()->is('admin/impact-rent/main-categories*')
+                || request()->is('admin/impact-rent/sub-categories*')
                 || request()->is('admin/impact-rent/rental-options*')
                 || request()->is('admin/impact-rent/characteristics*')
                 || request()->is('admin/impact-rent/cars*'),
             'items'  => [
-                ['label' => 'Categories',      'url' => url('/admin/impact-rent/categories'),      'active' => request()->is('admin/impact-rent/categories*')],
+                ['label' => 'Main Categories', 'url' => url('/admin/impact-rent/main-categories'), 'active' => request()->is('admin/impact-rent/main-categories*')],
+                ['label' => 'Sub Categories',  'url' => url('/admin/impact-rent/sub-categories'),  'active' => request()->is('admin/impact-rent/sub-categories*')],
                 ['label' => 'Car Options',     'url' => url('/admin/impact-rent/rental-options'),  'active' => request()->is('admin/impact-rent/rental-options*')],
                 ['label' => 'Characteristics', 'url' => url('/admin/impact-rent/characteristics'), 'active' => request()->is('admin/impact-rent/characteristics*')],
                 ['label' => 'Cars List',       'url' => url('/admin/impact-rent/cars'),            'active' => request()->is('admin/impact-rent/cars*')],
@@ -127,13 +120,17 @@
     ];
 @endphp
 
-@if ($showIrTabs)
+@if ($inImpactRent)
     <style>
-        /* Hide native Filament cluster sub-nav tabs — replaced by this bar */
+        /* Hide native Filament cluster sub-nav tabs — replaced by the IR bar below */
         .fi-page-sub-navigation-tabs {
             display: none !important;
         }
+    </style>
+@endif
 
+@if ($showIrTabs)
+    <style>
         /* ── Outer centering wrapper ── */
         .ir-tabs-outer {
             display: flex;
@@ -442,19 +439,7 @@
     window.__irTabsNavCleanup = true;
 
     function shouldShowIrTabs(pathname) {
-        if (!pathname.includes('/admin/impact-rent')) {
-            return false;
-        }
-
-        var excludedPrefixes = ['/admin/impact-rent/reports'];
-        for (var i = 0; i < excludedPrefixes.length; i++) {
-            var prefix = excludedPrefixes[i];
-            if (pathname === prefix || pathname.indexOf(prefix + '/') === 0) {
-                return false;
-            }
-        }
-
-        return true;
+        return pathname.includes('/admin/impact-rent');
     }
 
     document.addEventListener('livewire:navigated', function () {

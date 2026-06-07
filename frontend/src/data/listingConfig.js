@@ -3,7 +3,7 @@
 export const LISTING_TYPES = {
   campervan: {
     id: 'campervan',
-    categoryNames: ['Van', 'SUV'],
+    mainCategorySlug: 'campervan',
     archiveRoute: '/campervans',
     archiveLabel: 'See all campervans',
     dateStartLabel: 'Pick-up',
@@ -40,7 +40,7 @@ export const LISTING_TYPES = {
   },
   car: {
     id: 'car',
-    categoryNames: ['Economy', 'Compact', 'Mid-size', 'Luxury', 'Electric', 'SUV'],
+    mainCategorySlug: 'car',
     archiveRoute: '/cars',
     archiveLabel: 'See all cars',
     dateStartLabel: 'Pick-up',
@@ -76,7 +76,7 @@ export const LISTING_TYPES = {
   },
   guesthouse: {
     id: 'guesthouse',
-    categoryNames: [],
+    mainCategorySlug: null,
     archiveRoute: '/guesthouses',
     archiveLabel: 'See all guesthouses',
     dateStartLabel: 'Check-in',

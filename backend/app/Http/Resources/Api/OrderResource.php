@@ -43,11 +43,17 @@ class OrderResource extends JsonResource
                     'name' => $this->car->name,
                     'slug' => $this->car->slug,
                     'thumbnail' => $this->car->main_image_path,
-                    'category_name' => $this->car->relationLoaded('category')
-                        ? $this->car->category?->name
+                    'category_name' => $this->car->relationLoaded('subCategory')
+                        ? $this->car->subCategory?->name
                         : null,
-                    'vehicle_type' => VehicleType::fromCategoryName(
-                        $this->car->relationLoaded('category') ? $this->car->category?->name : null
+                    'sub_category_name' => $this->car->relationLoaded('subCategory')
+                        ? $this->car->subCategory?->name
+                        : null,
+                    'main_category_slug' => $this->car->relationLoaded('subCategory')
+                        ? $this->car->subCategory?->mainCategory?->slug
+                        : null,
+                    'vehicle_type' => VehicleType::fromSubCategory(
+                        $this->car->relationLoaded('subCategory') ? $this->car->subCategory : null
                     ),
                 ]
             ),

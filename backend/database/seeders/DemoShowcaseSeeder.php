@@ -9,7 +9,7 @@ use App\Models\Car;
 use App\Models\CarDistinctiveFeatureDefinition;
 use App\Models\CarUnit;
 use App\Models\CarUnitDistinctiveValue;
-use App\Models\Category;
+use App\Models\SubCategory;
 use App\Models\Characteristic;
 use App\Models\DailyFare;
 use App\Models\ExtraHourFare;
@@ -50,15 +50,15 @@ class DemoShowcaseSeeder extends Seeder
     /** @return list<Car> */
     private function seedDemoCars(): array
     {
-        $economy = Category::query()->where('name', 'Economy')->firstOrFail();
-        $compact = Category::query()->where('name', 'Compact')->firstOrFail();
-        $luxury = Category::query()->where('name', 'Luxury')->firstOrFail();
+        $economy = SubCategory::query()->where('name', 'Economy')->firstOrFail();
+        $compact = SubCategory::query()->where('name', 'Compact')->firstOrFail();
+        $luxury = SubCategory::query()->where('name', 'Luxury')->firstOrFail();
 
         $specs = [
             [
                 'slug' => 'toyota-yaris-2024',
                 'name' => 'Toyota Yaris 2024',
-                'category_id' => $economy->id,
+                'sub_category_id' => $economy->id,
                 'description' => 'Compact hybrid ideal for city trips and short tours. Automatic, Bluetooth, unlimited mileage.',
                 'transmission' => 'automatic',
                 'fuel_type' => 'hybrid',
@@ -69,7 +69,7 @@ class DemoShowcaseSeeder extends Seeder
             [
                 'slug' => 'vw-golf-2023',
                 'name' => 'Volkswagen Golf 2023',
-                'category_id' => $compact->id,
+                'sub_category_id' => $compact->id,
                 'description' => 'Comfortable compact with great fuel economy. Perfect for couples exploring the south coast.',
                 'transmission' => 'manual',
                 'fuel_type' => 'petrol',
@@ -80,7 +80,7 @@ class DemoShowcaseSeeder extends Seeder
             [
                 'slug' => 'bmw-3-series-2024',
                 'name' => 'BMW 3 Series 2024',
-                'category_id' => $luxury->id,
+                'sub_category_id' => $luxury->id,
                 'description' => 'Premium sedan with leather interior and advanced safety features for a refined road trip.',
                 'transmission' => 'automatic',
                 'fuel_type' => 'diesel',
@@ -96,13 +96,13 @@ class DemoShowcaseSeeder extends Seeder
     /** @return list<Car> */
     private function seedDemoCampervans(): array
     {
-        $van = Category::query()->where('name', 'Van')->firstOrFail();
+        $van = SubCategory::query()->where('name', 'Van')->firstOrFail();
 
         $specs = [
             [
                 'slug' => 'vw-california-2023',
                 'name' => 'VW California 2023',
-                'category_id' => $van->id,
+                'sub_category_id' => $van->id,
                 'description' => 'Pop-top campervan sleeping four with kitchenette and camping essentials. Ideal for the Ring Road.',
                 'transmission' => 'automatic',
                 'fuel_type' => 'diesel',
@@ -114,7 +114,7 @@ class DemoShowcaseSeeder extends Seeder
             [
                 'slug' => 'mercedes-marco-polo-2022',
                 'name' => 'Mercedes Marco Polo 2022',
-                'category_id' => $van->id,
+                'sub_category_id' => $van->id,
                 'description' => 'Luxury campervan with standing room, diesel heater, and full camping kit. Sleeps 4 comfortably.',
                 'transmission' => 'automatic',
                 'fuel_type' => 'diesel',
@@ -126,7 +126,7 @@ class DemoShowcaseSeeder extends Seeder
             [
                 'slug' => 'ford-transit-custom-2024',
                 'name' => 'Ford Transit Custom 2024',
-                'category_id' => $van->id,
+                'sub_category_id' => $van->id,
                 'description' => 'Spacious high-roof camper with shower option and room for five. Built for long Icelandic adventures.',
                 'transmission' => 'automatic',
                 'fuel_type' => 'diesel',
@@ -206,7 +206,7 @@ class DemoShowcaseSeeder extends Seeder
             ['slug' => $data['slug']],
             [
                 'name' => $data['name'],
-                'category_id' => $data['category_id'],
+                'sub_category_id' => $data['sub_category_id'],
                 'description' => $data['description'],
                 'transmission' => $data['transmission'],
                 'fuel_type' => $data['fuel_type'],

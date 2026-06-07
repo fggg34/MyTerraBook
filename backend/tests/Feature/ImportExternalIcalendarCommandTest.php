@@ -4,7 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\AvailabilityBlock;
 use App\Models\Car;
-use App\Models\Category;
+use App\Models\MainCategory;
+use App\Models\SubCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -15,9 +16,10 @@ class ImportExternalIcalendarCommandTest extends TestCase
 
     public function test_command_counts_vevents(): void
     {
-        $category = Category::query()->create(['name' => 'iCal', 'is_active' => true]);
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'iCal', 'is_active' => true, 'is_search_filter' => true]);
         $car = Car::query()->create([
-            'category_id' => $category->id,
+            'sub_category_id' => $category->id,
             'name' => 'Calendar car',
             'units_available' => 1,
             'is_active' => true,

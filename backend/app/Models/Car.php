@@ -19,7 +19,7 @@ class Car extends Model
 
     protected $fillable = [
         'user_id',
-        'category_id',
+        'sub_category_id',
         'name',
         'meta_title',
         'meta_description',
@@ -118,9 +118,9 @@ class Car extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
-    public function category(): BelongsTo
+    public function subCategory(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(SubCategory::class);
     }
 
     public function locations(): BelongsToMany

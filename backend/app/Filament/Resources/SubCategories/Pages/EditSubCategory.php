@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Filament\Resources\Categories\Pages;
+namespace App\Filament\Resources\SubCategories\Pages;
 
-use App\Filament\Resources\Categories\CategoryResource;
-use App\Models\MainCategory;
+use App\Filament\Resources\SubCategories\SubCategoryResource;
+use App\Models\SubCategory;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Enums\Width;
 
-class EditCategory extends EditRecord
+class EditSubCategory extends EditRecord
 {
-    protected static string $resource = CategoryResource::class;
+    protected static string $resource = SubCategoryResource::class;
 
     protected Width|string|null $maxContentWidth = Width::Full;
 
@@ -20,7 +20,7 @@ class EditCategory extends EditRecord
     {
         $name = trim((string) ($data['name'] ?? ''));
 
-        $data['slug'] = MainCategory::uniqueSlugFromName($name, (int) $this->record->getKey());
+        $data['slug'] = SubCategory::uniqueSlugFromName($name, (int) $this->record->getKey());
         $data['is_active'] = (bool) ($this->record->is_active ?? true);
         $data['sort_order'] = (int) ($this->record->sort_order ?? 0);
 
@@ -31,8 +31,8 @@ class EditCategory extends EditRecord
     {
         return [
             ...parent::getPageClasses(),
-            'ir-categories-page',
-            'ir-categories-page--edit',
+            'ir-sub-categories-page',
+            'ir-sub-categories-page--edit',
         ];
     }
 
