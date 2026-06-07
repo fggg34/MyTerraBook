@@ -13,7 +13,7 @@ function resolveApiBaseUrl() {
   if (import.meta.env.PROD) {
     return '/backend/api'
   }
-  return 'http://127.0.0.1:8000/api'
+  return 'http://127.0.0.1:8080/api'
 }
 
 const API_BASE_URL = resolveApiBaseUrl()
@@ -50,6 +50,10 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   config.headers['Accept-Language'] = 'en'
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('terrabook_token') : null
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
   return config
 })
 

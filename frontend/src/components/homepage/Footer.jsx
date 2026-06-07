@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import SiteLogo from '../branding/SiteLogo'
+import LangCurrencyMenu from './LangCurrencyMenu'
 
 function FooterLink({ href, children, className }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
@@ -44,8 +45,6 @@ export default function Footer({
   address,
   columns = [],
   copyright,
-  locale,
-  currency,
   legal = [],
   social = [],
   hostCtaLabel,
@@ -140,21 +139,7 @@ export default function Footer({
               </div>
             </div>
 
-            <div className="ftr-selectors">
-              <button className="selector" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-                </svg>
-                {locale}
-              </button>
-              <button className="selector" type="button">
-                {currency}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </button>
-            </div>
+            <LangCurrencyMenu variant="footer" />
           </div>
 
           <div className="ftr-bot">

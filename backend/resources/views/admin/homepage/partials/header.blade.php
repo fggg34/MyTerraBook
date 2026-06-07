@@ -7,15 +7,9 @@
     <label>CTA button URL</label>
     <input type="text" name="content[ctaHref]" value="{{ $content['ctaHref'] ?? '' }}">
 </div>
-<div class="grid-2">
-    <div class="field">
-        <label>Language label</label>
-        <input type="text" name="content[langLabel]" value="{{ $content['langLabel'] ?? '' }}">
-    </div>
-    <div class="field">
-        <label>Currency label</label>
-        <input type="text" name="content[currencyLabel]" value="{{ $content['currencyLabel'] ?? '' }}">
-    </div>
+<div class="field">
+    <label>Currency label</label>
+    <input type="text" name="content[currencyLabel]" value="{{ $content['currencyLabel'] ?? '' }}">
 </div>
 <div class="grid-2">
     <div class="field">

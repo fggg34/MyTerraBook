@@ -110,7 +110,7 @@ const defaultSitePages = {
 <h2>Analytics cookies</h2>
 <p>Help us understand how visitors use the site so we can improve search, listings, and content. You can opt out via your browser settings.</p>
 <h2>Preference cookies</h2>
-<p>Remember language, currency, and session choices to make return visits smoother.</p>
+<p>Remember currency and session choices to make return visits smoother.</p>
 <h2>Managing cookies</h2>
 <p>Most browsers let you block or delete cookies. Blocking essential cookies may limit booking functionality.</p>`,
     content: null,

@@ -5,6 +5,7 @@ import FaqSection from '../homepage/FaqSection'
 import NewsSection from '../homepage/NewsSection'
 import Footer from '../homepage/Footer'
 import { useSiteLayout } from '../../context/SiteLayoutContext'
+import useHomepageBodyClass from '../../hooks/useHomepageBodyClass'
 import BackToTop from './BackToTop'
 
 /**
@@ -12,6 +13,7 @@ import BackToTop from './BackToTop'
  * `.chrome` stack (nav + search bar + filters). Results grid lives below the chrome.
  */
 export default function SearchResultsLayout() {
+  useHomepageBodyClass()
   const { siteData } = useSiteLayout()
 
   return (

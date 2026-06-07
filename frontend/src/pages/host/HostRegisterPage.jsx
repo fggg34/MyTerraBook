@@ -23,7 +23,7 @@ export default function HostRegisterPage() {
     try {
       const user = await registerAsHost(form)
       toast('Host account created', 'success')
-      navigate(getPostLoginPath(user, '/host'))
+      navigate(getPostLoginPath(user))
     } catch (err) {
       toast(err.response?.data?.message || 'Registration failed', 'error')
     } finally {
@@ -44,9 +44,9 @@ export default function HostRegisterPage() {
         <form onSubmit={handleSubmit} className="auth-card">
           <div className="auth-field"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
           <div className="auth-field"><label>Email</label><input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></div>
-          <div className="auth-field"><label>Phone</label><input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-          <div className="auth-field"><label>Password</label><input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required /></div>
-          <div className="auth-field"><label>Confirm password</label><input type="password" value={form.password_confirmation} onChange={(e) => setForm({ ...form, password_confirmation: e.target.value })} required /></div>
+          <div className="auth-field"><label>Phone</label><input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+354 555 1234" required /></div>
+          <div className="auth-field"><label>Password</label><input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} autoComplete="new-password" /></div>
+          <div className="auth-field"><label>Confirm password</label><input type="password" value={form.password_confirmation} onChange={(e) => setForm({ ...form, password_confirmation: e.target.value })} required minLength={8} autoComplete="new-password" /></div>
           <button type="submit" className="auth-submit" disabled={loading}>{loading ? 'Creating…' : (copy.submitLabel ?? 'Register as host')}</button>
           <p className="auth-foot">Already a host? <Link to="/host/login">Sign in</Link></p>
         </form>

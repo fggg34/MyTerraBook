@@ -3,22 +3,46 @@ import { api } from '../api'
 import { useSiteLayout } from '../context/SiteLayoutContext'
 import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
+import { VEHICLE_TYPES } from '../data/searchResultsConfig'
 import { mapCarsToPickCards } from '../utils/mapCarsToPickCards'
 import { mapGuestHousesToStayCards } from '../utils/mapGuestHousesToStayCards'
+import { categoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 import HomePage from './HomePage'
+
+function splitCarsIntoPickTabs(cars = []) {
+  const camper = []
+  const car = []
+
+  for (const item of cars) {
+    const categoryName = item.category_name
+    if (categoryMatchesVehicleType(categoryName, VEHICLE_TYPES.campervan.categoryNames)) {
+      camper.push(
+        mapCarsToPickCards([item], { detailBase: VEHICLE_TYPES.campervan.route })[0],
+      )
+    } else if (categoryMatchesVehicleType(categoryName, VEHICLE_TYPES.car.categoryNames)) {
+      car.push(mapCarsToPickCards([item], { detailBase: VEHICLE_TYPES.car.route })[0])
+    }
+  }
+
+  return {
+    camper: camper.slice(0, 8),
+    car: car.slice(0, 8),
+  }
+}
 
 function withBackendListings(pageData, cars = [], guesthouses = []) {
   let next = pageData
 
   if (cars.length) {
-    const pickCards = mapCarsToPickCards(cars).slice(0, 8)
+    const pickTabs = splitCarsIntoPickTabs(cars)
     next = {
       ...next,
       picksSection: {
         ...next.picksSection,
         items: {
           ...next.picksSection.items,
-          car: pickCards,
+          ...(pickTabs.camper.length ? { camper: pickTabs.camper } : {}),
+          ...(pickTabs.car.length ? { car: pickTabs.car } : {}),
         },
       },
     }

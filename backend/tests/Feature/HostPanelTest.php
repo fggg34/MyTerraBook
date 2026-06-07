@@ -18,11 +18,24 @@ class HostPanelTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_register_host_requires_phone(): void
+    {
+        $this->postJson('/api/auth/register-host', [
+            'name' => 'Host User',
+            'email' => 'host@example.test',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['phone']);
+    }
+
     public function test_register_host_creates_host_user(): void
     {
         $response = $this->postJson('/api/auth/register-host', [
             'name' => 'Host User',
             'email' => 'host@example.test',
+            'phone' => '+354 555 1234',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
@@ -146,5 +159,44 @@ class HostPanelTest extends TestCase
         Sanctum::actingAs(User::factory()->customer()->create());
 
         $this->getJson('/api/host/dashboard')->assertForbidden();
+    }
+
+    public function test_guest_cannot_access_host_dashboard(): void
+    {
+        $this->getJson('/api/host/dashboard')
+            ->assertUnauthorized()
+            ->assertJsonPath('message', 'Unauthenticated.');
+    }
+
+    public function test_new_host_can_load_dashboard(): void
+    {
+        $host = User::factory()->host()->create();
+
+        Sanctum::actingAs($host);
+
+        $this->getJson('/api/host/dashboard')
+            ->assertOk()
+            ->assertJsonPath('data.guest_houses.live', 0)
+            ->assertJsonPath('data.cars.live', 0)
+            ->assertJsonPath('data.bookings.pending_car_orders', 0)
+            ->assertJsonPath('data.revenue_cents.car_orders', 0);
+    }
+
+    public function test_newly_registered_host_can_load_dashboard(): void
+    {
+        $response = $this->postJson('/api/auth/register-host', [
+            'name' => 'Fresh Host',
+            'email' => 'fresh-host@example.test',
+            'phone' => '+354 555 9999',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertCreated();
+
+        $token = $response->json('token');
+
+        $this->withToken($token)
+            ->getJson('/api/host/dashboard')
+            ->assertOk()
+            ->assertJsonPath('data.guest_houses.live', 0);
     }
 }

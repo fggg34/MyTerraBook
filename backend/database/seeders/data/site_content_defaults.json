@@ -34,7 +34,6 @@
       ],
       "ctaLabel": "Become a host",
       "ctaHref": "/become-a-host",
-      "langLabel": "EN",
       "currencyLabel": "€ EUR",
       "signInLabel": "Sign in",
       "signInHref": "/login"
@@ -1821,26 +1820,27 @@
   },
   "user-dashboard": {
     "title": "My account",
-    "sidebarLinks": [
-      {
-        "id": "bookings",
-        "label": "My Bookings"
-      },
-      {
-        "id": "stays",
-        "label": "My Stays"
-      },
-      {
-        "id": "profile",
-        "label": "Profile"
-      },
-      {
-        "id": "settings",
-        "label": "Settings"
-      }
-    ],
     "emptyBookings": "No bookings yet",
     "emptyStays": "No stays yet"
+  },
+  "client-panel": {
+    "eyebrow": "My account",
+    "sidebarTitle": "Account",
+    "signOutLabel": "Sign out",
+    "navItems": [
+      {
+        "to": "/dashboard",
+        "label": "My bookings"
+      },
+      {
+        "to": "/dashboard/stays",
+        "label": "My stays"
+      },
+      {
+        "to": "/dashboard/settings",
+        "label": "Settings"
+      }
+    ]
   },
   "admin-dashboard": {
     "title": "Admin dashboard",

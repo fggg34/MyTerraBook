@@ -34,7 +34,6 @@
       ],
       "ctaLabel": "Become a host",
       "ctaHref": "/become-a-host",
-      "langLabel": "EN",
       "currencyLabel": "€ EUR",
       "signInLabel": "Sign in",
       "signInHref": "/login"
@@ -1209,7 +1208,7 @@
       "title": "Cookie policy",
       "lead": "How MyTerraBook uses cookies and similar technologies."
     },
-    "body": "<h2>Essential cookies</h2>\n<p>Required for sign-in, checkout, and security. These cannot be disabled while using the site.</p>\n<h2>Analytics cookies</h2>\n<p>Help us understand how visitors use the site so we can improve search, listings, and content. You can opt out via your browser settings.</p>\n<h2>Preference cookies</h2>\n<p>Remember language, currency, and session choices to make return visits smoother.</p>\n<h2>Managing cookies</h2>\n<p>Most browsers let you block or delete cookies. Blocking essential cookies may limit booking functionality.</p>",
+    "body": "<h2>Essential cookies</h2>\n<p>Required for sign-in, checkout, and security. These cannot be disabled while using the site.</p>\n<h2>Analytics cookies</h2>\n<p>Help us understand how visitors use the site so we can improve search, listings, and content. You can opt out via your browser settings.</p>\n<h2>Preference cookies</h2>\n<p>Remember currency and session choices to make return visits smoother.</p>\n<h2>Managing cookies</h2>\n<p>Most browsers let you block or delete cookies. Blocking essential cookies may limit booking functionality.</p>",
     "seo": {
       "title": "Cookie Policy",
       "description": "How MyTerraBook uses essential, analytics, and preference cookies on myterrabook.is.",
@@ -1821,26 +1820,27 @@
   },
   "user-dashboard": {
     "title": "My account",
-    "sidebarLinks": [
-      {
-        "id": "bookings",
-        "label": "My Bookings"
-      },
-      {
-        "id": "stays",
-        "label": "My Stays"
-      },
-      {
-        "id": "profile",
-        "label": "Profile"
-      },
-      {
-        "id": "settings",
-        "label": "Settings"
-      }
-    ],
     "emptyBookings": "No bookings yet",
     "emptyStays": "No stays yet"
+  },
+  "client-panel": {
+    "eyebrow": "My account",
+    "sidebarTitle": "Account",
+    "signOutLabel": "Sign out",
+    "navItems": [
+      {
+        "to": "/dashboard",
+        "label": "My bookings"
+      },
+      {
+        "to": "/dashboard/stays",
+        "label": "My stays"
+      },
+      {
+        "to": "/dashboard/settings",
+        "label": "Settings"
+      }
+    ]
   },
   "admin-dashboard": {
     "title": "Admin dashboard",

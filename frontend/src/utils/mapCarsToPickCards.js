@@ -19,12 +19,13 @@ function fuelLabel(fuelType) {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
-export function mapCarsToPickCards(cars = []) {
+export function mapCarsToPickCards(cars = [], { detailBase = '/cars' } = {}) {
+  const base = detailBase.replace(/\/$/, '')
   return cars.map((car) => ({
     id: car.id,
     name: car.name,
     image: resolveStorageUrl(car.thumbnail_url) || '/images/homepage/cardcar.jpg',
-    href: `/cars/${car.id}`,
+    href: `${base}/${car.id}`,
     price: formatPrice(car.base_daily_price),
     per: 'day',
     badge: 'Extras included',

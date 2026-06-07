@@ -41,10 +41,21 @@
   .nav-right .host:hover{background:var(--green-dark);}
   .signin{border:1.5px solid var(--line);border-radius:999px;padding:9px 22px;font-size:15px;font-weight:600;color:var(--navy);background:#fff;cursor:pointer;transition:.15s;white-space:nowrap;}
   .signin:hover{border-color:var(--green);color:var(--green);}
+  .user-menu-wrap{position:relative;}
+  .user-menu-btn{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:999px;padding:5px 14px 5px 5px;font-size:15px;font-weight:600;color:var(--navy);background:#fff;cursor:pointer;transition:border-color .15s,color .15s;white-space:nowrap;}
+  .user-menu-btn:hover,.user-menu-btn.open{border-color:var(--green);color:var(--green);}
+  .user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(150deg,var(--green),#5bb481);color:#fff;font-size:14px;font-weight:700;display:grid;place-items:center;flex:0 0 auto;}
+  .user-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;}
+  .user-caret{width:16px;height:16px;color:var(--slate);flex:0 0 auto;}
+  .user-menu-btn.open .user-caret{color:var(--green);}
+  .user-menu-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:80;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 48px -20px rgba(15,32,54,.45);padding:8px;min-width:200px;display:none;}
+  .user-menu-panel.show{display:block;}
+  .user-menu-item{display:block;width:100%;text-align:left;border:none;background:none;cursor:pointer;font-size:15px;font-weight:600;color:var(--ink);padding:11px 14px;border-radius:10px;transition:background .15s,color .15s;}
+  .user-menu-item:hover{background:rgba(69,160,106,.08);color:var(--green-dark);}
+  .user-menu-logout{color:var(--red);}
+  .user-menu-logout:hover{background:rgba(226,55,68,.08);color:var(--red);}
   .lang-cur{display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;padding:6px 4px;transition:color .15s;}
   .lang-cur:hover{color:var(--green);}
-  .lang-cur svg{width:18px;height:18px;color:var(--slate);flex:0 0 auto;}
-  .lang-cur .lc-div{width:1px;height:15px;background:var(--line);}
   .hamburger{display:none;background:none;border:none;cursor:pointer;color:var(--navy);padding:6px;}
   .hamburger svg{width:26px;height:26px;display:block;}
 

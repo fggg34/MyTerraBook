@@ -32,7 +32,6 @@ class HomepageSectionSeeder extends Seeder
                     ],
                     'ctaLabel' => 'Become a host',
                     'ctaHref' => '/become-a-host',
-                    'langLabel' => 'EN',
                     'currencyLabel' => '€ EUR',
                     'signInLabel' => 'Sign in',
                     'signInHref' => '/login',

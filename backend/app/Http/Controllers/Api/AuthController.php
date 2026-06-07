@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterHostRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +25,7 @@ class AuthController extends Controller
         return response()->json(['token' => $token, 'user' => $user], 201);
     }
 
-    public function registerHost(RegisterRequest $request): JsonResponse
+    public function registerHost(RegisterHostRequest $request): JsonResponse
     {
         $user = User::query()->create([
             ...$request->validated(),

@@ -270,6 +270,14 @@
     max-width: 440px;
     margin: 0 auto;
   }
+
+  .pcard-foot h3 {
+    font-size: 20px;
+  }
+
+  .specs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 1080px) {
