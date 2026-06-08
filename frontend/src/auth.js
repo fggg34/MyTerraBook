@@ -23,3 +23,10 @@ export function getStoredUser() {
   const raw = localStorage.getItem(USER_KEY)
   return raw ? JSON.parse(raw) : null
 }
+
+/** Prefer localStorage when a token exists so route guards stay in sync right after login. */
+export function getCurrentUser(contextUser) {
+  const token = getStoredToken()
+  const storedUser = token ? getStoredUser() : null
+  return storedUser ?? contextUser ?? null
+}

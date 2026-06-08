@@ -5,7 +5,7 @@ import PasswordInput from '../components/auth/PasswordInput'
 import PhoneField from '../components/forms/PhoneField'
 import RequiredMark from '../components/forms/RequiredMark'
 import PageHead from '../components/seo/PageHead'
-import { getPostLoginPath, useAuth } from '../context/AuthContext'
+import { getPostLoginPath, useAuth, useRedirectIfAuthenticated } from '../context/AuthContext'
 import { usePageContent } from '../context/SiteContentContext'
 import { useToast } from '../context/ToastContext'
 import usePageSeo from '../hooks/usePageSeo'
@@ -45,6 +45,7 @@ const REGISTER_FEATURES = [
 ]
 
 export default function RegisterPage() {
+  useRedirectIfAuthenticated(false)
   const { page: copy } = usePageContent('auth-register')
   const seo = usePageSeo('auth-register', { source: copy, robots: 'noindex' })
   const { registerAccount } = useAuth()
@@ -80,7 +81,7 @@ export default function RegisterPage() {
         phone: formatPhoneForApi(form.phone),
       })
       toast('Account created successfully!', 'success')
-      navigate(getPostLoginPath(user))
+      navigate(getPostLoginPath(user), { replace: true })
     } catch (err) {
       const apiErrors = err.response?.data?.errors
       if (apiErrors) {
@@ -200,6 +201,8 @@ export default function RegisterPage() {
         <p className="auth-switch">
           {copy.loginPrompt ?? 'Already have an account?'}{' '}
           <Link to="/login">{copy.loginLink ?? 'Sign in'}</Link>
+          {' · '}
+          <Link to="/forgot-password">Forgot your password?</Link>
         </p>
       </footer>
     </AuthPageLayout>

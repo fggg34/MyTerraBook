@@ -190,12 +190,32 @@ class GuestHouseForm
                 ]),
 
             Section::make('Address')
+                ->description('Hosts normally add this via Google Places autocomplete in the host panel. Admins can edit the stored fields here.')
                 ->schema([
                     Grid::make(2)->schema([
-                        TextInput::make('address')->columnSpan(2),
-                        TextInput::make('country')->default('Iceland'),
-                        TextInput::make('latitude')->numeric(),
-                        TextInput::make('longitude')->numeric(),
+                        TextInput::make('address')
+                            ->label('Street address')
+                            ->required()
+                            ->maxLength(500)
+                            ->columnSpan(2)
+                            ->helperText('Shown on the stay detail page, e.g. Laugavegur 12.'),
+                        TextInput::make('country')
+                            ->default('Iceland')
+                            ->required()
+                            ->maxLength(255),
+                    ]),
+                ]),
+
+            Section::make('Advanced coordinates')
+                ->collapsed()
+                ->schema([
+                    Grid::make(2)->schema([
+                        TextInput::make('latitude')
+                            ->numeric()
+                            ->helperText('Optional. Usually filled automatically when the host picks an address.'),
+                        TextInput::make('longitude')
+                            ->numeric()
+                            ->helperText('Optional. Used for Google Maps links on the listing page.'),
                     ]),
                 ]),
 

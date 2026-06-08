@@ -47,7 +47,7 @@ export default function HostLandingHero({ hero = {} }) {
         password_confirmation: signup.password_confirmation,
       })
       toast('Host account created', 'success')
-      navigate(getPostLoginPath(user))
+      navigate(getPostLoginPath(user, { hostIntent: true }), { replace: true })
     } catch (err) {
       toast(err.response?.data?.message || 'Could not create account', 'error')
     } finally {
@@ -154,6 +154,8 @@ export default function HostLandingHero({ hero = {} }) {
           </form>
           <p className="host-landing-signup-foot">
             Already a host? <Link to="/host/login">Log in</Link>
+            {' · '}
+            <Link to="/host/forgot-password">Forgot your password?</Link>
           </p>
         </div>
       </div>

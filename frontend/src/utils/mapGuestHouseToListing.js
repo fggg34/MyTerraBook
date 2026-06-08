@@ -2,6 +2,7 @@ import { resolveStorageUrl } from '../api'
 import { LISTING_TYPES } from '../data/listingConfig'
 import { mapApiListingReviews } from './mapListingReviews'
 import { mapCarToListing } from './mapCarToListing'
+import { buildGoogleMapsUrl, formatLocationLine } from './parseGooglePlace'
 
 function formatPriceCents(cents, fallback = '89') {
   if (cents == null) return fallback
@@ -186,11 +187,22 @@ export function mapGuestHouseToListing(house, listingReviews) {
   const shortDesc = desc.length > 280 ? desc.slice(0, 280).trim() : desc
   const moreDesc = desc.length > 280 ? desc.slice(280).trim() : ''
 
+  const location = {
+    address: house.address || '',
+    city: house.city || '',
+    country: house.country || '',
+    latitude: house.latitude ?? null,
+    longitude: house.longitude ?? null,
+    formattedLine: formatLocationLine(house),
+    mapsUrl: buildGoogleMapsUrl(house),
+  }
+
   return {
     ...base,
     car: house,
     slug: house.slug,
     categoryName: typeLabel(house.type),
+    location,
     images: images.length ? images : base.images,
     photoCount: Math.max(images.length, 1),
     detailSpecs: buildDetailSpecs(house),

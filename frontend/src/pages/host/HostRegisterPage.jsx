@@ -4,7 +4,7 @@ import SiteLogo from '../../components/branding/SiteLogo'
 import PhoneField from '../../components/forms/PhoneField'
 import RequiredMark from '../../components/forms/RequiredMark'
 import PageHead from '../../components/seo/PageHead'
-import { getPostLoginPath, useAuth } from '../../context/AuthContext'
+import { getPostLoginPath, useAuth, useRedirectIfAuthenticated } from '../../context/AuthContext'
 import { usePageContent } from '../../context/SiteContentContext'
 import { useToast } from '../../context/ToastContext'
 import usePageSeo from '../../hooks/usePageSeo'
@@ -12,6 +12,7 @@ import { formatPhoneForApi, validatePhone } from '../../utils/phone'
 import '../../styles/auth-pages.css'
 
 export default function HostRegisterPage() {
+  useRedirectIfAuthenticated(true)
   const { page: copy } = usePageContent('auth-host-register')
   const seo = usePageSeo('auth-host-register', { source: copy, robots: 'noindex' })
   const { registerAsHost } = useAuth()
@@ -41,7 +42,7 @@ export default function HostRegisterPage() {
         phone: formatPhoneForApi(form.phone),
       })
       toast('Host account created', 'success')
-      navigate(getPostLoginPath(user))
+      navigate(getPostLoginPath(user, { hostIntent: true }), { replace: true })
     } catch (err) {
       toast(err.response?.data?.message || 'Registration failed', 'error')
     } finally {
@@ -93,7 +94,11 @@ export default function HostRegisterPage() {
             {errors.password_confirmation && <p className="auth-field-error">{errors.password_confirmation}</p>}
           </div>
           <button type="submit" className="auth-submit" disabled={loading}>{loading ? 'Creating…' : (copy.submitLabel ?? 'Register as host')}</button>
-          <p className="auth-foot">Already a host? <Link to="/host/login">Sign in</Link></p>
+          <p className="auth-foot">
+            Already a host? <Link to="/host/login">Sign in</Link>
+            {' · '}
+            <Link to="/host/forgot-password">Forgot your password?</Link>
+          </p>
         </form>
       </div>
     </div>

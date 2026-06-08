@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import SiteLogo from '../branding/SiteLogo'
 import { getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
@@ -30,6 +31,10 @@ function navLinkClass(href) {
   return 'nav-collapsible'
 }
 
+function isGoodToKnowLink(link) {
+  return link?.href === '/good-to-know' || link?.label === 'Good to Know'
+}
+
 export default function Header({
   navLinks = [],
   ctaLabel,
@@ -42,14 +47,56 @@ export default function Header({
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef(null)
+  const headerRef = useRef(null)
 
   const role = normalizeUserRole(user)
   const dashboardPath = user ? getPostLoginPath(user) : null
   const dashboardLabel = getDashboardLabel(role)
   const showHostCta = !user || (role !== 'host' && role !== 'admin')
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || '?'
+  const mobileNavLinks = navLinks.filter((link) => !isGoodToKnowLink(link))
 
   const closeMobile = () => setMobileOpen(false)
+
+  useEffect(() => {
+    document.body.classList.toggle('mobile-nav-open', mobileOpen)
+    return () => document.body.classList.remove('mobile-nav-open')
+  }, [mobileOpen])
+
+  useEffect(() => {
+    if (!mobileOpen || !headerRef.current) {
+      document.documentElement.style.removeProperty('--mobile-nav-top')
+      return undefined
+    }
+    const header = headerRef.current
+    const syncMenuOffset = () => {
+      const chrome = header.querySelector('.nav-chrome')
+      const bottom = chrome?.getBoundingClientRect().bottom ?? header.getBoundingClientRect().bottom
+      document.documentElement.style.setProperty('--mobile-nav-top', `${bottom}px`)
+    }
+    syncMenuOffset()
+    requestAnimationFrame(syncMenuOffset)
+    window.addEventListener('resize', syncMenuOffset)
+    return () => window.removeEventListener('resize', syncMenuOffset)
+  }, [mobileOpen])
+
+  useEffect(() => {
+    if (!mobileOpen) return undefined
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [mobileOpen])
+
+  useEffect(() => {
+    if (!mobileOpen) return undefined
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setMobileOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [mobileOpen])
 
   useEffect(() => {
     if (!userMenuOpen) return undefined
@@ -69,9 +116,88 @@ export default function Header({
     navigate('/')
   }
 
+  const mobileMenuLayer = (
+    <>
+      <button
+        type="button"
+        className="mobile-menu-backdrop open"
+        aria-label="Close menu"
+        onClick={closeMobile}
+      />
+
+      <div
+        className="mobile-menu open"
+        id="mobileMenu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+      >
+        <div className="mobile-menu-main">
+          {mobileNavLinks.map((link) => (
+            <NavLink key={link.label} href={link.href} onClick={closeMobile} className="mobile-menu-link">
+              {link.label}
+            </NavLink>
+          ))}
+        </div>
+
+        <div className="mobile-menu-footer">
+          {((showHostCta && ctaLabel) || !user) && (
+            <div className="mobile-menu-actions">
+              {showHostCta && ctaLabel &&
+                (ctaHref?.startsWith('/') ? (
+                  <Link className="mobile-menu-action mobile-menu-action--host" to={ctaHref} onClick={closeMobile}>
+                    {ctaLabel}
+                  </Link>
+                ) : (
+                  <a className="mobile-menu-action mobile-menu-action--host" href={ctaHref || '#host'} onClick={closeMobile}>
+                    {ctaLabel}
+                  </a>
+                ))}
+              {!user &&
+                (signInHref?.startsWith('/') ? (
+                  <Link className="mobile-menu-action mobile-menu-action--signin" to={signInHref || '/login'} onClick={closeMobile}>
+                    {signInLabel || 'Sign in'}
+                  </Link>
+                ) : (
+                  <a className="mobile-menu-action mobile-menu-action--signin" href={signInHref || '/login'} onClick={closeMobile}>
+                    {signInLabel || 'Sign in'}
+                  </a>
+                ))}
+            </div>
+          )}
+
+          <div className="mobile-menu-currency">
+            <LangCurrencyMenu variant="mobile" />
+          </div>
+        </div>
+      </div>
+    </>
+  )
+
   return (
-    <header className="nav">
-      <div className="wrap">
+    <header ref={headerRef} className={`nav${mobileOpen ? ' menu-open' : ''}`}>
+      <div className="wrap nav-chrome">
+        <div className="nav-mobile-left">
+          <button
+            className="hamburger"
+            type="button"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+            aria-controls="mobileMenu"
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            {mobileOpen ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            )}
+          </button>
+        </div>
+
         <SiteLogo variant="header" className="logo" />
 
         <nav className="main" aria-label="Main">
@@ -138,58 +264,10 @@ export default function Header({
               </button>
             ))
           )}
-          <button
-            className="hamburger"
-            type="button"
-            aria-label="Menu"
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen((v) => !v)}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
-          </button>
         </div>
       </div>
 
-      <div className={`mobile-menu ${mobileOpen ? 'open' : ''}`} id="mobileMenu">
-        {navLinks.map((link) => (
-          <NavLink key={link.label} href={link.href} onClick={closeMobile}>
-            {link.label}
-          </NavLink>
-        ))}
-        {showHostCta && ctaLabel &&
-          (ctaHref?.startsWith('/') ? (
-            <Link to={ctaHref} onClick={closeMobile}>
-              {ctaLabel}
-            </Link>
-          ) : (
-            <a href={ctaHref || '#host'} onClick={closeMobile}>
-              {ctaLabel}
-            </a>
-          ))}
-        {user ? (
-          <>
-            <Link to={dashboardPath} onClick={closeMobile}>
-              {dashboardLabel}
-            </Link>
-            <button type="button" className="user-menu-logout-mobile" onClick={handleLogout}>
-              Log out
-            </button>
-          </>
-        ) : (
-          signInLabel &&
-          (signInHref?.startsWith('/') ? (
-            <Link to={signInHref} onClick={closeMobile}>
-              {signInLabel}
-            </Link>
-          ) : (
-            <a href={signInHref || '/login'} onClick={closeMobile}>
-              {signInLabel}
-            </a>
-          ))
-        )}
-      </div>
+      {mobileOpen && createPortal(mobileMenuLayer, document.body)}
     </header>
   )
 }

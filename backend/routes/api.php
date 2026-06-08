@@ -34,6 +34,7 @@ use App\Http\Controllers\Api\Host\HostDashboardController;
 use App\Http\Controllers\Api\Host\HostGuestHouseController;
 use App\Http\Controllers\Api\MeGuestHouseBookingController;
 use App\Http\Controllers\Api\MeProfileController;
+use App\Http\Controllers\Api\PublicConfigController;
 use App\Http\Controllers\Api\PublicOrderController;
 use App\Http\Controllers\Api\SearchSuggestionsController;
 use Illuminate\Http\Request;
@@ -71,6 +72,8 @@ Route::get('/health', function () {
     ]);
 });
 
+Route::get('/public-config', [PublicConfigController::class, 'show']);
+
 Route::get('/homepage', [HomepageController::class, 'show']);
 Route::get('/site-content', [SiteContentController::class, 'index']);
 Route::get('/site-content/{pageKey}', [SiteContentController::class, 'show']);
@@ -85,6 +88,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/register-host', [AuthController::class, 'registerHost']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 });
 

@@ -3,19 +3,21 @@ import { Link, useNavigate } from 'react-router-dom'
 import AuthPageLayout from '../components/auth/AuthPageLayout'
 import PasswordInput from '../components/auth/PasswordInput'
 import PageHead from '../components/seo/PageHead'
-import { getPostLoginPath, useAuth } from '../context/AuthContext'
+import { getPostLoginPath, normalizeUserRole, useAuth, useRedirectIfAuthenticated } from '../context/AuthContext'
 import { usePageContent } from '../context/SiteContentContext'
 import { useToast } from '../context/ToastContext'
 import usePageSeo from '../hooks/usePageSeo'
 import '../styles/auth-pages.css'
 
 export default function LoginPage({ hostIntent = false }) {
+  useRedirectIfAuthenticated(hostIntent)
   const { page: copy } = usePageContent(hostIntent ? 'auth-host-register' : 'auth-login')
   const loginCopy = hostIntent
     ? {
         title: 'Host sign in',
         subtitle: 'Manage your listings, bookings and payouts.',
         submitLabel: 'Sign in to host panel',
+        forgotPasswordLabel: 'Forgot your password?',
         registerPrompt: 'New host?',
         registerLink: 'Create a host account',
         heroTitle: 'Welcome back, host',
@@ -27,7 +29,7 @@ export default function LoginPage({ hostIntent = false }) {
     source: mergedCopy,
     robots: 'noindex',
   })
-  const { loginWithCredentials } = useAuth()
+  const { loginWithCredentials, logout } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '', remember: false })
@@ -45,8 +47,16 @@ export default function LoginPage({ hostIntent = false }) {
     setLoading(true)
     try {
       const loggedInUser = await loginWithCredentials(form.email, form.password)
+      const role = normalizeUserRole(loggedInUser)
+      if (hostIntent && role !== 'host' && role !== 'admin') {
+        await logout()
+        const msg = 'This account is not registered as a host. Sign in as a guest or create a host account.'
+        setErrors({ form: msg })
+        toast(msg, 'error')
+        return
+      }
       toast('Welcome back!', 'success')
-      navigate(getPostLoginPath(loggedInUser))
+      navigate(getPostLoginPath(loggedInUser, { hostIntent }), { replace: true })
     } catch (err) {
       const msg = err.response?.data?.message || 'Invalid email or password'
       setErrors({ form: msg })
@@ -109,6 +119,12 @@ export default function LoginPage({ hostIntent = false }) {
             />
             {mergedCopy.rememberLabel ?? 'Remember me'}
           </label>
+          <Link
+            to={hostIntent ? '/host/forgot-password' : '/forgot-password'}
+            className="auth-forgot-link"
+          >
+            {mergedCopy.forgotPasswordLabel ?? 'Forgot your password?'}
+          </Link>
         </div>
 
         <button type="submit" className="auth-submit" disabled={loading}>
@@ -119,7 +135,7 @@ export default function LoginPage({ hostIntent = false }) {
       <footer className="auth-layout__footer">
         <p className="auth-switch">
           {mergedCopy.registerPrompt ?? 'New here?'}{' '}
-          <Link to={hostIntent ? '/become-a-host' : '/register'}>
+          <Link to={hostIntent ? '/host/register' : '/register'}>
             {mergedCopy.registerLink ?? (hostIntent ? 'Create a host account' : 'Create an account')}
           </Link>
         </p>

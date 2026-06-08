@@ -3,7 +3,7 @@ import axios from 'axios'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { getSitePreviewUrl, setAuthToken } from './api'
 import { AuthProvider, getLoginPathForRole, normalizeUserRole, useAuth } from './context/AuthContext'
-import { getStoredUser } from './auth'
+import { getCurrentUser } from './auth'
 import { SiteContentProvider, useSiteContent } from './context/SiteContentContext'
 import { LocalePreferencesProvider } from './context/LocalePreferencesContext'
 import { SiteLayoutProvider } from './context/SiteLayoutContext'
@@ -21,6 +21,8 @@ import SearchResultsPage from './pages/SearchResultsPage'
 import CheckoutPage from './pages/CheckoutPage'
 import HomePageContainer from './pages/HomePageContainer'
 import LoginPage from './pages/LoginPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import RegisterPage from './pages/RegisterPage'
 import UnderConstructionPage from './pages/UnderConstructionPage'
 import ClientLayout from './components/client/ClientLayout'
@@ -48,7 +50,7 @@ function RedirectGuestHouseSlug() {
 
 function ProtectedRoute({ children, role, customerOnly = false }) {
   const { user: contextUser } = useAuth()
-  const user = contextUser ?? getStoredUser()
+  const user = getCurrentUser(contextUser)
   const userRole = normalizeUserRole(user)
 
   if (!user) {
@@ -178,6 +180,9 @@ function AppRoutes() {
         <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/host/login" element={<LoginPage hostIntent />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/host/forgot-password" element={<ForgotPasswordPage hostIntent />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/host/register" element={<HostRegisterPage />} />
       </Route>

@@ -7,11 +7,14 @@ use App\Models\Car;
 use App\Models\GuestHouse;
 use App\Models\GuestHouseBooking;
 use App\Models\Order;
+use App\Observers\GuestHouseBookingObserver;
+use App\Observers\OrderObserver;
 use App\Policies\CarPolicy;
 use App\Policies\GuestHouseBookingPolicy;
 use App\Policies\GuestHousePolicy;
 use App\Policies\OrderPolicy;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as FilamentLoginResponseContract;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -36,7 +39,18 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(GuestHouseBooking::class, GuestHouseBookingPolicy::class);
 
+        Order::observe(OrderObserver::class);
+        GuestHouseBooking::observe(GuestHouseBookingObserver::class);
+
         $this->app->bind(FilamentLoginResponseContract::class, FilamentLoginResponse::class);
+
+        ResetPassword::createUrlUsing(function (object $notifiable, string $token): string {
+            $frontend = rtrim((string) config('app.frontend_url'), '/');
+            $email = urlencode($notifiable->getEmailForPasswordReset());
+            $intent = method_exists($notifiable, 'isHost') && $notifiable->isHost() ? '&intent=host' : '';
+
+            return "{$frontend}/reset-password?token={$token}&email={$email}{$intent}";
+        });
 
         if ($this->app->runningInConsole()) {
             return;

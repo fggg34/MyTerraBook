@@ -11,6 +11,7 @@ use App\Models\DailyFare;
 use App\Models\ExtraHourFare;
 use App\Models\HourlyFare;
 use App\Models\SpecialPrice;
+use App\Services\Email\EmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -89,7 +90,7 @@ class HostCarController extends Controller
         return response()->json(['message' => 'Car deleted.']);
     }
 
-    public function submit(Car $car): JsonResponse
+    public function submit(Car $car, EmailService $email): JsonResponse
     {
         $this->authorize('submit', $car);
 
@@ -102,6 +103,14 @@ class HostCarController extends Controller
             'submitted_at' => now(),
             'rejection_reason' => null,
         ]);
+
+        $car->loadMissing('host');
+        if ($hostEmail = $car->host?->email) {
+            $email->send('listing_submitted', $hostEmail, [
+                'host_name' => $car->host?->name,
+                'listing_name' => $car->name,
+            ]);
+        }
 
         return response()->json(['data' => new HostCarResource($car->fresh(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']))]);
     }

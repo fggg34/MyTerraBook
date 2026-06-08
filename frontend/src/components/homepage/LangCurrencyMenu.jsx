@@ -46,6 +46,30 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [open])
 
+  if (variant === 'mobile') {
+    return (
+      <div className="lang-cur-wrap lang-cur-wrap--mobile" ref={rootRef}>
+        <button
+          className={`lang-cur lang-cur--icon ${open ? 'open' : ''}`}
+          type="button"
+          aria-label={`Currency: ${currency.label}`}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v12M9.5 9.5h4a2 2 0 0 1 0 3h-4M14.5 14.5h-4a2 2 0 0 1 0-3h4" />
+          </svg>
+        </button>
+
+        <div className={`lang-cur-panel lang-cur-panel--mobile ${open ? 'show' : ''}`} role="dialog" aria-label="Currency">
+          <CurrencyPanel currency={currency} onSelectCurrency={setCurrency} />
+        </div>
+      </div>
+    )
+  }
+
   const wrapClass = variant === 'footer' ? 'lang-cur-wrap lang-cur-wrap--footer' : 'lang-cur-wrap'
 
   return (
