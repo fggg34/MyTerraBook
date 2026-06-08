@@ -14,6 +14,11 @@ class EmailTemplatesTable
     {
         return $table
             ->columns([
+                TextColumn::make('key')
+                    ->label('Key')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
@@ -45,6 +50,8 @@ class EmailTemplatesTable
                         'orders' => 'Orders',
                         'bookings' => 'Bookings',
                         'listings' => 'Listings',
+                        'general' => 'General',
+                        'custom' => 'Custom',
                     ]),
             ])
             ->recordActions([

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmailTemplates;
 
+use App\Filament\Resources\EmailTemplates\Pages\CreateEmailTemplate;
 use App\Filament\Resources\EmailTemplates\Pages\EditEmailTemplate;
 use App\Filament\Resources\EmailTemplates\Pages\ListEmailTemplates;
 use App\Filament\Resources\EmailTemplates\Schemas\EmailTemplateForm;
@@ -42,13 +43,14 @@ class EmailTemplateResource extends Resource
 
     public static function canCreate(): bool
     {
-        return false;
+        return true;
     }
 
     public static function getPages(): array
     {
         return [
             'index' => ListEmailTemplates::route('/'),
+            'create' => CreateEmailTemplate::route('/create'),
             'edit' => EditEmailTemplate::route('/{record}/edit'),
         ];
     }
