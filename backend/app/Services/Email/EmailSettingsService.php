@@ -19,6 +19,7 @@ class EmailSettingsService
             'brand_name' => (string) config('app.name', 'MyTerraBook'),
             'sender_name' => (string) config('mail.from.name', config('app.name', 'MyTerraBook')),
             'sender_email' => (string) config('mail.from.address', 'hello@myterrabook.com'),
+            'admin_email' => '',
             'reply_to' => '',
             'support_email' => '',
             'logo_mode' => 'text',
@@ -29,6 +30,17 @@ class EmailSettingsService
             'company_address' => '',
             'test_recipient_email' => '',
         ];
+    }
+
+    public function getAdminEmail(): string
+    {
+        $email = trim($this->get('admin_email'));
+
+        if ($email !== '') {
+            return $email;
+        }
+
+        return (string) data_get(Setting::getValue('shop.admin_email', ['email' => '']), 'email', '');
     }
 
     public function getTestRecipient(): string

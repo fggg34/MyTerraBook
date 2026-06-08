@@ -15,6 +15,7 @@ use App\Models\OrderLineItem;
 use App\Models\OrderRentalOption;
 use App\Models\Setting;
 use App\Services\Email\EmailService;
+use App\Services\Email\EmailSettingsService;
 use App\Services\Email\OrderEmailPayload;
 use App\Services\OrderAvailabilityService;
 use App\Services\RentalQuoteService;
@@ -31,6 +32,7 @@ class PublicOrderController extends Controller
         private readonly RentalQuoteService $quoteService,
         private readonly OrderAvailabilityService $availabilityService,
         private readonly EmailService $email,
+        private readonly EmailSettingsService $emailSettings,
     ) {}
 
     public function quote(OrderQuoteRequest $request): JsonResponse
@@ -233,7 +235,7 @@ class PublicOrderController extends Controller
         }
 
         $recipients = [];
-        $adminEmail = (string) data_get(Setting::getValue('shop.admin_email', ['email' => '']), 'email', '');
+        $adminEmail = $this->emailSettings->getAdminEmail();
         if ($adminEmail !== '') {
             $recipients[] = $adminEmail;
         }

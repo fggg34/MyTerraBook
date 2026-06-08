@@ -113,7 +113,7 @@ class EmailTesting extends Page
         $service->saveTestRecipient($email);
 
         try {
-            Mail::to($email)->send(new TemplatedMail(
+            Mail::to($email)->sendNow(new TemplatedMail(
                 templateKey: $template->key,
                 data: EmailTestSampleData::forTemplate($template),
             ));
