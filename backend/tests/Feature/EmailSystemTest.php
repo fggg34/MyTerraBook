@@ -8,6 +8,7 @@ use App\Enums\GuestHouseType;
 use App\Filament\Pages\EmailSettings;
 use App\Filament\Pages\EmailTesting;
 use App\Filament\Resources\EmailLogs\Pages\ListEmailLogs;
+use App\Filament\Resources\EmailTemplates\Pages\CreateEmailTemplate;
 use App\Filament\Resources\EmailTemplates\Pages\EditEmailTemplate;
 use App\Filament\Resources\EmailTemplates\Pages\ListEmailTemplates;
 use App\Mail\TemplatedMail;
@@ -207,6 +208,61 @@ class EmailSystemTest extends TestCase
 
         $this->assertSame('A brand new subject', $template->fresh()->subject);
         $this->assertFalse($template->fresh()->is_enabled);
+    }
+
+    public function test_admin_can_create_a_custom_template(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin);
+
+        Livewire::test(CreateEmailTemplate::class)
+            ->fillForm([
+                'key' => 'promo_summer',
+                'name' => 'Summer promo',
+                'category' => 'custom',
+                'audience' => 'customer',
+                'is_enabled' => true,
+                'available_variables' => ['customer_name', 'promo_code'],
+                'subject' => 'Your {{promo_code}} offer',
+                'heading' => 'Summer sale',
+                'greeting' => 'Hi {{customer_name}},',
+                'body_html' => '<p>Use code {{promo_code}} at checkout.</p>',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $template = EmailTemplate::findByKey('promo_summer');
+        $this->assertNotNull($template);
+        $this->assertSame('Summer promo', $template->name);
+        $this->assertSame(['customer_name', 'promo_code'], $template->available_variables);
+    }
+
+    public function test_install_defaults_action_adds_missing_templates(): void
+    {
+        EmailTemplate::query()->delete();
+
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin);
+
+        $this->assertSame(0, EmailTemplate::query()->count());
+
+        Livewire::test(ListEmailTemplates::class)
+            ->callAction('installDefaults')
+            ->assertNotified();
+
+        $this->assertSame(EmailTemplateSeeder::defaultTemplateCount(), EmailTemplate::query()->count());
+    }
+
+    public function test_seed_email_templates_command_is_idempotent(): void
+    {
+        EmailTemplate::query()->delete();
+        $this->assertSame(0, EmailTemplate::query()->count());
+
+        $this->artisan('email:seed-templates')->assertSuccessful();
+        $this->assertSame(EmailTemplateSeeder::defaultTemplateCount(), EmailTemplate::query()->count());
+
+        $this->artisan('email:seed-templates')->assertSuccessful();
+        $this->assertSame(EmailTemplateSeeder::defaultTemplateCount(), EmailTemplate::query()->count());
     }
 
     public function test_admin_can_save_email_settings(): void

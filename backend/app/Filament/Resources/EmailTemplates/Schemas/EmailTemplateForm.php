@@ -5,12 +5,13 @@ namespace App\Filament\Resources\EmailTemplates\Schemas;
 use App\Models\EmailTemplate;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Illuminate\Support\HtmlString;
 
 class EmailTemplateForm
 {
@@ -20,28 +21,49 @@ class EmailTemplateForm
             Section::make('Settings')
                 ->columns(2)
                 ->schema([
-                    Placeholder::make('name_display')
-                        ->label('Template')
-                        ->content(fn (?EmailTemplate $record): string => $record?->name ?? '—'),
+                    TextInput::make('key')
+                        ->label('Template key')
+                        ->required()
+                        ->maxLength(120)
+                        ->regex('/^[a-z][a-z0-9_]*$/')
+                        ->unique(ignoreRecord: true)
+                        ->helperText('Lowercase identifier used in code, e.g. order_received. Cannot be changed later.')
+                        ->visible(fn (?EmailTemplate $record): bool => $record === null),
+                    Placeholder::make('key_display')
+                        ->label('Template key')
+                        ->content(fn (?EmailTemplate $record): string => $record?->key ?? '—')
+                        ->visible(fn (?EmailTemplate $record): bool => $record !== null),
+                    TextInput::make('name')
+                        ->label('Name')
+                        ->required()
+                        ->maxLength(255),
+                    Select::make('category')
+                        ->options(self::categoryOptions())
+                        ->required()
+                        ->default('general')
+                        ->visible(fn (?EmailTemplate $record): bool => $record === null),
+                    Placeholder::make('category_display')
+                        ->label('Category')
+                        ->content(fn (?EmailTemplate $record): string => self::categoryOptions()[$record?->category ?? ''] ?? ($record?->category ?? '—'))
+                        ->visible(fn (?EmailTemplate $record): bool => $record !== null),
+                    Select::make('audience')
+                        ->options(self::audienceOptions())
+                        ->required()
+                        ->default('customer')
+                        ->visible(fn (?EmailTemplate $record): bool => $record === null),
+                    Placeholder::make('audience_display')
+                        ->label('Audience')
+                        ->content(fn (?EmailTemplate $record): string => self::audienceOptions()[$record?->audience ?? ''] ?? ($record?->audience ?? '—'))
+                        ->visible(fn (?EmailTemplate $record): bool => $record !== null),
                     Toggle::make('is_enabled')
                         ->label('Enabled')
+                        ->default(true)
                         ->helperText('When off, this email is not sent.'),
-                    Placeholder::make('available_variables_display')
+                    TagsInput::make('available_variables')
                         ->label('Available variables')
-                        ->columnSpanFull()
-                        ->content(function (?EmailTemplate $record): HtmlString {
-                            $vars = $record?->available_variables ?? [];
-
-                            if (empty($vars)) {
-                                return new HtmlString('<span style="color:#6b7280;">No variables for this template.</span>');
-                            }
-
-                            $chips = collect($vars)
-                                ->map(fn (string $var): string => '<code style="background:#f1f5f9;border-radius:4px;padding:2px 6px;margin:0 4px 4px 0;display:inline-block;font-size:12px;">{{ '.$var.' }}</code>')
-                                ->implode('');
-
-                            return new HtmlString('<div>'.$chips.'</div>');
-                        }),
+                        ->placeholder('customer_name')
+                        ->helperText('Use these in subject/body as {{variable_name}}. Global variables like {{brand_name}} and {{frontend_url}} are always available.')
+                        ->columnSpanFull(),
                 ]),
             Section::make('Content')
                 ->columns(2)
@@ -75,5 +97,32 @@ class EmailTemplateForm
                         ->columnSpanFull(),
                 ]),
         ]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function categoryOptions(): array
+    {
+        return [
+            'account' => 'Account',
+            'orders' => 'Orders',
+            'bookings' => 'Bookings',
+            'listings' => 'Listings',
+            'general' => 'General',
+            'custom' => 'Custom',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function audienceOptions(): array
+    {
+        return [
+            'customer' => 'Customer',
+            'host' => 'Host',
+            'staff' => 'Staff',
+        ];
     }
 }

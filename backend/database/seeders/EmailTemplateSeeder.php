@@ -9,12 +9,30 @@ class EmailTemplateSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach ($this->templates() as $template) {
-            EmailTemplate::query()->firstOrCreate(
+        self::seedMissing();
+    }
+
+    public static function seedMissing(): int
+    {
+        $created = 0;
+
+        foreach ((new self())->templates() as $template) {
+            $record = EmailTemplate::query()->firstOrCreate(
                 ['key' => $template['key']],
                 $template,
             );
+
+            if ($record->wasRecentlyCreated) {
+                $created++;
+            }
         }
+
+        return $created;
+    }
+
+    public static function defaultTemplateCount(): int
+    {
+        return count((new self())->templates());
     }
 
     /**
