@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Services\Email\EmailService;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -73,5 +74,22 @@ class User extends Authenticatable implements FilamentUser
     public function isHost(): bool
     {
         return $this->role === UserRole::Host || $this->role === UserRole::Admin;
+    }
+
+    /**
+     * Send the branded password reset email instead of Laravel's default markdown notification.
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $frontend = rtrim((string) config('app.frontend_url', config('app.url')), '/');
+        $email = urlencode($this->getEmailForPasswordReset());
+        $intent = $this->isHost() ? '&intent=host' : '';
+        $resetUrl = "{$frontend}/reset-password?token={$token}&email={$email}{$intent}";
+
+        app(EmailService::class)->send('password_reset', $this->email, [
+            'customer_name' => $this->name,
+            'reset_url' => $resetUrl,
+            'expires' => (string) config('auth.passwords.users.expire', 60),
+        ]);
     }
 }

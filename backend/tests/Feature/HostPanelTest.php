@@ -11,6 +11,7 @@ use App\Models\MainCategory;
 use App\Models\SubCategory;
 use App\Models\GuestHouse;
 use App\Models\Location;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -87,7 +88,9 @@ class HostPanelTest extends TestCase
             'slug' => 'pending-house',
             'type' => GuestHouseType::Apartment,
             'status' => GuestHouseStatus::Draft,
+            'address' => 'Laugavegur 12',
             'city' => 'Reykjavík',
+            'country' => 'Iceland',
             'max_guests' => 2,
             'bedrooms' => 1,
             'bathrooms' => 1,
@@ -106,6 +109,42 @@ class HostPanelTest extends TestCase
             'id' => $house->id,
             'status' => GuestHouseStatus::PendingReview->value,
         ]);
+    }
+
+    public function test_submit_guesthouse_requires_complete_address(): void
+    {
+        $host = User::factory()->host()->create();
+
+        $house = GuestHouse::query()->create([
+            'user_id' => $host->id,
+            'name' => 'Incomplete House',
+            'slug' => 'incomplete-house',
+            'type' => GuestHouseType::Apartment,
+            'status' => GuestHouseStatus::Draft,
+            'city' => 'Reykjavík',
+            'country' => 'Iceland',
+            'max_guests' => 2,
+            'bedrooms' => 1,
+            'bathrooms' => 1,
+            'beds' => 1,
+            'min_nights' => 1,
+            'base_price_per_night' => 10000,
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->postJson("/api/host/guest-houses/{$house->id}/submit")
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'A complete street address is required before submitting for review.');
+    }
+
+    public function test_public_config_exposes_maps_api_key(): void
+    {
+        Setting::putValue('system.google_maps_api_key', ['key' => 'test-maps-key']);
+
+        $this->getJson('/api/public-config')
+            ->assertOk()
+            ->assertJsonPath('maps_api_key', 'test-maps-key');
     }
 
     public function test_pending_guesthouse_not_in_public_list(): void

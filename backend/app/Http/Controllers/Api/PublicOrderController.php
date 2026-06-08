@@ -14,6 +14,8 @@ use App\Models\Order;
 use App\Models\OrderLineItem;
 use App\Models\OrderRentalOption;
 use App\Models\Setting;
+use App\Services\Email\EmailService;
+use App\Services\Email\OrderEmailPayload;
 use App\Services\OrderAvailabilityService;
 use App\Services\RentalQuoteService;
 use App\Support\Money;
@@ -28,6 +30,7 @@ class PublicOrderController extends Controller
     public function __construct(
         private readonly RentalQuoteService $quoteService,
         private readonly OrderAvailabilityService $availabilityService,
+        private readonly EmailService $email,
     ) {}
 
     public function quote(OrderQuoteRequest $request): JsonResponse
@@ -214,8 +217,34 @@ class PublicOrderController extends Controller
             return $order;
         });
 
+        $this->sendOrderEmails($order->load('car'));
+
         return response()->json([
-            'data' => OrderResource::make($order->load('car')),
+            'data' => OrderResource::make($order),
         ], 201);
+    }
+
+    private function sendOrderEmails(Order $order): void
+    {
+        $payload = OrderEmailPayload::for($order);
+
+        if ($order->customer_email) {
+            $this->email->send('order_received', $order->customer_email, $payload);
+        }
+
+        $recipients = [];
+        $adminEmail = (string) data_get(Setting::getValue('shop.admin_email', ['email' => '']), 'email', '');
+        if ($adminEmail !== '') {
+            $recipients[] = $adminEmail;
+        }
+        if ($hostEmail = $order->car?->host?->email) {
+            $recipients[] = $hostEmail;
+        }
+
+        if ($recipients !== []) {
+            $this->email->send('order_new_admin', $recipients, $payload + [
+                'admin_url' => rtrim((string) config('app.url'), '/').'/admin',
+            ]);
+        }
     }
 }

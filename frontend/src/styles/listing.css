@@ -32,9 +32,9 @@
   .logo .mark svg{width:20px;height:20px;}
   .logo .terra{color:var(--green);}
   nav.main{display:flex;align-items:center;gap:28px;margin-left:8px;}
-  nav.main a{font-size:15px;color:var(--ink);font-weight:600;white-space:nowrap;position:relative;transition:color .15s,transform .35s cubic-bezier(.34,1.56,.64,1);}
+  nav.main a{font-size:15px;color:var(--ink);font-weight:600;white-space:nowrap;position:relative;transition:color .15s;}
   nav.main a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:2px;background:var(--green);border-radius:2px;transform:scaleX(0);transform-origin:left;transition:transform .25s ease;}
-  nav.main a:hover{color:var(--green);transform:translateY(-4px);}
+  nav.main a:hover{color:var(--green);}
   nav.main a:hover::after{transform:scaleX(1);}
   .nav-right{margin-left:auto;display:flex;align-items:center;gap:18px;}
   .nav-right .host{border:none;border-radius:999px;padding:9px 22px;font-size:15px;font-weight:700;color:#fff;background:var(--green);cursor:pointer;transition:.15s;white-space:nowrap;}
@@ -148,7 +148,15 @@
   .owner-sub b{color:var(--navy);font-weight:700;}
 
   /* title (static) */
-  .listing-title{font-size:38px;line-height:1.08;letter-spacing:-0.02em;margin-bottom:22px;text-wrap:balance;}
+  .listing-title{font-size:38px;line-height:1.08;letter-spacing:-0.02em;margin-bottom:14px;text-wrap:balance;}
+
+  .listing-location{margin-bottom:22px;}
+  .listing-location-line{display:flex;align-items:flex-start;gap:8px;margin:0;color:#5b6b82;font-size:15px;line-height:1.5;}
+  .listing-location-icon{width:18px;height:18px;flex-shrink:0;margin-top:2px;color:var(--accent,#e85d2a);}
+  .listing-location-link{display:inline-block;margin-top:8px;font-size:14px;font-weight:700;color:var(--navy,#0f2036);text-decoration:underline;text-underline-offset:3px;}
+  .listing-location-link:hover{color:var(--accent,#e85d2a);}
+  .listing-location-map{display:block;margin-top:14px;border-radius:16px;overflow:hidden;border:1px solid var(--line,#e2e7ef);box-shadow:0 12px 28px -24px rgba(15,32,54,.35);}
+  .listing-location-map img{display:block;width:100%;height:auto;}
 
   /* ===== Swappable tab content card ===== */
   .tabcard{

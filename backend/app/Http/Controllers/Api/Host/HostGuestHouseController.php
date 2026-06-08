@@ -11,6 +11,7 @@ use App\Models\GuestHouse;
 use App\Models\GuestHouseAvailabilityBlock;
 use App\Models\GuestHouseImage;
 use App\Models\GuestHouseSeasonalPrice;
+use App\Services\Email\EmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -105,7 +106,7 @@ class HostGuestHouseController extends Controller
         return response()->json(['message' => 'Guest house deleted.']);
     }
 
-    public function submit(GuestHouse $guestHouse): JsonResponse
+    public function submit(GuestHouse $guestHouse, EmailService $email): JsonResponse
     {
         $this->authorize('submit', $guestHouse);
 
@@ -113,11 +114,35 @@ class HostGuestHouseController extends Controller
             return response()->json(['message' => 'Only draft or rejected listings can be submitted.'], 422);
         }
 
+        $address = trim((string) $guestHouse->address);
+        $city = trim((string) $guestHouse->city);
+        $country = trim((string) $guestHouse->country);
+
+        if ($address === '' || strlen($address) < 5) {
+            return response()->json(['message' => 'A complete street address is required before submitting for review.'], 422);
+        }
+
+        if ($city === '') {
+            return response()->json(['message' => 'City is required before submitting for review.'], 422);
+        }
+
+        if ($country === '') {
+            return response()->json(['message' => 'Country is required before submitting for review.'], 422);
+        }
+
         $guestHouse->update([
             'status' => GuestHouseStatus::PendingReview,
             'submitted_at' => now(),
             'rejection_reason' => null,
         ]);
+
+        $guestHouse->loadMissing('host');
+        if ($hostEmail = $guestHouse->host?->email) {
+            $email->send('listing_submitted', $hostEmail, [
+                'host_name' => $guestHouse->host?->name,
+                'listing_name' => $guestHouse->name,
+            ]);
+        }
 
         return response()->json(['data' => new HostGuestHouseResource($guestHouse->fresh(['amenities', 'images', 'seasonalPrices']))]);
     }

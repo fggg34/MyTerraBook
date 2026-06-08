@@ -112,6 +112,13 @@
             background: #f8fafc;
         }
 
+        .ir-global-hint {
+            margin-top: 0.35rem;
+            color: #607080;
+            font-size: 0.78rem;
+            line-height: 1.45;
+        }
+
         @media (max-width: 1024px) {
             .ir-global-grid {
                 grid-template-columns: 1fr;
@@ -273,6 +280,7 @@
                         <div class="ir-global-field">
                             <label class="ir-global-label">Google Maps API Key</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.google_maps_api_key" />
+                            <p class="ir-global-hint">Used for Google Reviews, host address autocomplete (Places API + Maps JavaScript API), and listing map previews. Restrict the key to your site referrers in Google Cloud.</p>
                         </div>
                         <div class="ir-global-field">
                             <label class="ir-global-label">Ipinfo.io API Token</label>

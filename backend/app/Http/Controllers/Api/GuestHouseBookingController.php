@@ -9,6 +9,8 @@ use App\Http\Requests\Api\GuestHouseBookingRequest;
 use App\Http\Resources\Api\GuestHouseBookingResource;
 use App\Models\GuestHouse;
 use App\Models\GuestHouseBooking;
+use App\Services\Email\EmailService;
+use App\Services\Email\GuestHouseBookingEmailPayload;
 use App\Services\GuestHouseAvailabilityService;
 use App\Services\GuestHouseQuoteService;
 use Illuminate\Http\JsonResponse;
@@ -20,6 +22,7 @@ class GuestHouseBookingController extends Controller
     public function __construct(
         private readonly GuestHouseQuoteService $quoteService,
         private readonly GuestHouseAvailabilityService $availabilityService,
+        private readonly EmailService $email,
     ) {}
 
     public function store(GuestHouseBookingRequest $request): JsonResponse
@@ -78,8 +81,23 @@ class GuestHouseBookingController extends Controller
 
         $booking->load('guestHouse');
 
+        $this->sendBookingEmails($booking, $house);
+
         return response()->json([
             'data' => new GuestHouseBookingResource($booking),
         ], 201);
+    }
+
+    private function sendBookingEmails(GuestHouseBooking $booking, GuestHouse $house): void
+    {
+        $payload = GuestHouseBookingEmailPayload::for($booking);
+
+        if ($booking->guest_email) {
+            $this->email->send('gh_booking_received', $booking->guest_email, $payload);
+        }
+
+        if ($hostEmail = $house->host?->email) {
+            $this->email->send('gh_booking_new_host', $hostEmail, $payload);
+        }
     }
 }

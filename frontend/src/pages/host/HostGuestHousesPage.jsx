@@ -60,7 +60,10 @@ export default function HostGuestHousesPage() {
             ) : (
               items.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.name}</td>
+                  <td>
+                    <div>{item.name}</div>
+                    {item.address && <div className="text-xs text-slate-500">{item.address}</div>}
+                  </td>
                   <td>{item.city}</td>
                   <td><ListingStatusBadge status={item.status} /></td>
                   <td>€{item.base_price_per_night_euros}</td>

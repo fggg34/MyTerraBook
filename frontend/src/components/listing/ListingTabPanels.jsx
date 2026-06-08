@@ -1,5 +1,8 @@
+import { MapPin } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
+import { useMapsConfig } from '../../hooks/useMapsConfig'
+import { buildStaticMapUrl } from '../../utils/parseGooglePlace'
 
 function euro(n) {
   return `€${n.toLocaleString('en-IE')}`
@@ -13,7 +16,8 @@ export default function ListingTabPanels({
   bookingDatesRef,
   openCalendarRef,
 }) {
-  const { typeConfig, rating, detailSpecs, description, amenities, conditions, sleeping, addons } = listing
+  const { typeConfig, rating, detailSpecs, description, amenities, conditions, sleeping, addons, location } = listing
+  const { mapsApiKey } = useMapsConfig()
   const [startDate, setStartDate] = useState(() => parseDateOnly(initialPickup))
   const [endDate, setEndDate] = useState(() => parseDateOnly(initialDropoff))
   const priceFrom = Number(listing.priceFrom) || 94
@@ -43,6 +47,13 @@ export default function ListingTabPanels({
       ? Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86400000))
       : 0
   const total = nights * priceFrom
+  const staticMapUrl = location
+    ? buildStaticMapUrl({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        mapsApiKey,
+      })
+    : null
 
   return (
     <>
@@ -73,6 +84,25 @@ export default function ListingTabPanels({
           </div>
 
           <h1 className="listing-title">{listing.title}</h1>
+
+          {location?.formattedLine ? (
+            <div className="listing-location">
+              <p className="listing-location-line">
+                <MapPin className="listing-location-icon" aria-hidden />
+                <span>{location.formattedLine}</span>
+              </p>
+              {location.mapsUrl ? (
+                <a className="listing-location-link" href={location.mapsUrl} target="_blank" rel="noopener noreferrer">
+                  Open in Google Maps
+                </a>
+              ) : null}
+              {staticMapUrl ? (
+                <a className="listing-location-map" href={location.mapsUrl || staticMapUrl} target="_blank" rel="noopener noreferrer">
+                  <img src={staticMapUrl} alt={`Map showing ${location.formattedLine}`} loading="lazy" />
+                </a>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="tabcard" id="tabcard">
             <div className="tpanel active" data-panel="0">

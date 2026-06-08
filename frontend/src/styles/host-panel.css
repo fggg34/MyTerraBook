@@ -152,6 +152,29 @@
   font-size: 14px;
 }
 
+.host-field-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.host-location-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -4px 0 12px;
+}
+
+.host-location-preview span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f2036;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
 .host-actions {
   display: flex;
   gap: 12px;

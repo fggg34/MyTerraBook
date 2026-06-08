@@ -13,9 +13,12 @@ import {
   updateHostGuestHouse,
   uploadHostGuestHouseImages,
 } from '../../api/host'
+import AddressAutocomplete from '../../components/host/AddressAutocomplete'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
+import { useMapsConfig } from '../../hooks/useMapsConfig'
+import { formatLocationLine } from '../../utils/parseGooglePlace'
 
 const STEPS = ['Basics', 'Details', 'Pricing', 'Rules', 'Availability', 'SEO', 'Review']
 
@@ -68,6 +71,18 @@ export default function HostGuestHouseEditorPage() {
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [recordId, setRecordId] = useState(isNew ? null : Number(id))
+  const { mapsApiKey } = useMapsConfig()
+
+  const handleLocationChange = (location) => {
+    setForm((prev) => ({
+      ...prev,
+      address: location.address ?? prev.address,
+      city: location.city ?? prev.city,
+      country: location.country ?? prev.country,
+      latitude: location.latitude ?? prev.latitude,
+      longitude: location.longitude ?? prev.longitude,
+    }))
+  }
 
   useEffect(() => {
     getHostCatalog('amenities').then((res) => setAmenities(res.data.data || []))
@@ -250,7 +265,16 @@ export default function HostGuestHouseEditorPage() {
                 {['room', 'apartment', 'villa', 'cottage', 'chalet', 'studio'].map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
-            <div className="host-field"><label>City</label><input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
+            <AddressAutocomplete
+              mapsApiKey={mapsApiKey}
+              value={{
+                address: form.address,
+                city: form.city,
+                country: form.country,
+                formattedAddress: form.address ? formatLocationLine(form) : '',
+              }}
+              onChange={handleLocationChange}
+            />
             <div className="host-field"><label>Short description</label><textarea rows={3} value={form.short_description} onChange={(e) => setForm({ ...form, short_description: e.target.value })} /></div>
             {recordId ? (
               <>
@@ -283,12 +307,6 @@ export default function HostGuestHouseEditorPage() {
               <div className="host-field"><label>Bedrooms</label><input type="number" value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Bathrooms</label><input type="number" value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Total beds</label><input type="number" value={form.beds} onChange={(e) => setForm({ ...form, beds: Number(e.target.value) })} /></div>
-            </div>
-            <div className="host-field"><label>Address</label><input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="host-field"><label>Country</label><input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} /></div>
-              <div className="host-field"><label>Latitude</label><input type="number" step="any" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} /></div>
-              <div className="host-field"><label>Longitude</label><input type="number" step="any" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} /></div>
             </div>
             <div className="host-field"><label>Amenities</label>
               <div className="grid grid-cols-2 gap-2">
@@ -403,7 +421,7 @@ export default function HostGuestHouseEditorPage() {
             <p className="text-sm text-slate-600">Review your listing, save changes, then submit for admin approval.</p>
             <ul className="mt-4 space-y-2 text-sm">
               <li><strong>Name:</strong> {form.name}</li>
-              <li><strong>City:</strong> {form.city}</li>
+              <li><strong>Location:</strong> {formatLocationLine(form) || '—'}</li>
               <li><strong>Price:</strong> €{form.base_price_per_night_euros}/night</li>
             </ul>
           </div>

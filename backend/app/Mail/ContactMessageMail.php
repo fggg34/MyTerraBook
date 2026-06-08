@@ -30,8 +30,19 @@ class ContactMessageMail extends Mailable
 
     public function content(): Content
     {
+        $name = (string) ($this->payload['name'] ?? '');
+        $email = (string) ($this->payload['email'] ?? '');
+        $message = (string) ($this->payload['message'] ?? '');
+
         return new Content(
-            text: 'mail.contact-message',
+            view: 'mail.layouts.brand',
+            with: [
+                'heading' => 'New contact message',
+                'greeting' => 'Hello,',
+                'preheader' => 'A visitor sent a message through the contact form.',
+                'bodyHtml' => '<p><strong>From:</strong> '.e($name).' ('.e($email).')</p>'
+                    .'<p>'.nl2br(e($message)).'</p>',
+            ],
         );
     }
 }
