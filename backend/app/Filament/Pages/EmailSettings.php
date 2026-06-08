@@ -70,7 +70,13 @@ class EmailSettings extends Page
                         ->label('Sender email (from)')
                         ->email()
                         ->required()
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->helperText('SMTP "from" address. Use the same mailbox you configure on your mail server.'),
+                    TextInput::make('admin_email')
+                        ->label('Admin notification email')
+                        ->email()
+                        ->maxLength(255)
+                        ->helperText('Receives new order alerts (order_new_admin template). Often the same address as the sender email.'),
                     TextInput::make('reply_to')
                         ->label('Reply-to email')
                         ->email()

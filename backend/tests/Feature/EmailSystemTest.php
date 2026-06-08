@@ -11,9 +11,15 @@ use App\Filament\Resources\EmailLogs\Pages\ListEmailLogs;
 use App\Filament\Resources\EmailTemplates\Pages\EditEmailTemplate;
 use App\Filament\Resources\EmailTemplates\Pages\ListEmailTemplates;
 use App\Mail\TemplatedMail;
+use App\Models\Car;
+use App\Models\DailyFare;
 use App\Models\EmailLog;
 use App\Models\EmailTemplate;
 use App\Models\GuestHouse;
+use App\Models\Location;
+use App\Models\MainCategory;
+use App\Models\PriceType;
+use App\Models\SubCategory;
 use App\Models\GuestHouseBooking;
 use App\Models\Setting;
 use App\Models\User;
@@ -212,12 +218,36 @@ class EmailSystemTest extends TestCase
             ->fillForm([
                 'accent_color' => '#123456',
                 'sender_name' => 'Terra Team',
+                'admin_email' => 'orders@myterrabook.com',
             ])
             ->call('save')
             ->assertNotified();
 
         $this->assertDatabaseHas('settings', ['key' => 'email.accent_color']);
         $this->assertSame('#123456', app(\App\Services\Email\EmailSettingsService::class)->get('accent_color'));
+        $this->assertSame('orders@myterrabook.com', app(\App\Services\Email\EmailSettingsService::class)->getAdminEmail());
+    }
+
+    public function test_new_order_queues_admin_notification_email(): void
+    {
+        Mail::fake();
+
+        Setting::putValue('email.admin_email', ['value' => 'admin@myterrabook.com']);
+        [$car, $pickup, $dropoff, $priceType] = $this->seedCatalogForOrder();
+
+        $this->postJson('/api/orders', [
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => now()->addDay()->toDateTimeString(),
+            'dropoff_at' => now()->addDays(4)->toDateTimeString(),
+            'customer_name' => 'Alex',
+            'customer_email' => 'alex@example.com',
+        ])->assertCreated();
+
+        Mail::assertQueued(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->templateKey === 'order_new_admin'
+            && $mail->hasTo('admin@myterrabook.com'));
     }
 
     public function test_admin_can_send_test_email_from_testing_page(): void
@@ -233,7 +263,7 @@ class EmailSystemTest extends TestCase
             ->call('sendTest')
             ->assertNotified();
 
-        Mail::assertQueued(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->templateKey === 'customer_welcome'
+        Mail::assertSent(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->templateKey === 'customer_welcome'
             && $mail->hasTo('tester@example.com'));
 
         $this->assertSame('tester@example.com', app(\App\Services\Email\EmailSettingsService::class)->getTestRecipient());
@@ -253,6 +283,40 @@ class EmailSystemTest extends TestCase
 
         Mail::assertNothingQueued();
         $this->assertSame('saved@example.com', app(\App\Services\Email\EmailSettingsService::class)->getTestRecipient());
+    }
+
+    /**
+     * @return array{0: Car, 1: Location, 2: Location, 3: PriceType}
+     */
+    private function seedCatalogForOrder(): array
+    {
+        Setting::putValue('shop.currency', ['code' => 'EUR']);
+        Setting::putValue('shop.default_tax', ['basis_points' => 0]);
+
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Eco', 'is_active' => true, 'is_search_filter' => true]);
+        $car = Car::query()->create([
+            'sub_category_id' => $category->id,
+            'name' => 'Test Vehicle',
+            'units_available' => 1,
+            'is_active' => true,
+        ]);
+        $pickup = Location::query()->create(['name' => 'P1', 'is_active' => true]);
+        $dropoff = Location::query()->create(['name' => 'D1', 'is_active' => true]);
+        $car->locations()->attach([
+            $pickup->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+            $dropoff->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+        ]);
+        $priceType = PriceType::query()->create(['name' => 'Basic', 'is_active' => true]);
+        DailyFare::query()->create([
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 5000,
+        ]);
+
+        return [$car, $pickup, $dropoff, $priceType];
     }
 
     private function seedHouse(): GuestHouse
