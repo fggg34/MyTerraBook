@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   addHostCarAvailability,
@@ -7,16 +7,22 @@ import {
   createHostCarDailyFare,
   createHostCarExtraHourFare,
   createHostCarHourlyFare,
+  createHostCarLocationFee,
+  createHostCarOutOfHoursFee,
   createHostCarUnit,
   deleteHostCarDailyFare,
   deleteHostCarExtraHourFare,
   deleteHostCarHourlyFare,
+  deleteHostCarLocationFee,
+  deleteHostCarOutOfHoursFee,
   deleteHostCarUnit,
   getHostCar,
   getHostCarAvailability,
   getHostCarDailyFares,
   getHostCarExtraHourFares,
   getHostCarHourlyFares,
+  getHostCarLocationFees,
+  getHostCarOutOfHoursFees,
   getHostCarSpecialPrices,
   getHostCarUnits,
   getHostCatalog,
@@ -33,6 +39,7 @@ import {
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
+import { formatWindowLabel, intersectionForLocations, timeOptionsForWindow } from '../../utils/locationHours'
 
 const STEPS = ['Vehicle', 'Specs', 'Locations', 'Units', 'Pricing', 'Availability', 'SEO', 'Review']
 
@@ -50,6 +57,10 @@ const emptyForm = {
   details_image_paths: [],
   pickup_location_ids: [],
   dropoff_location_ids: [],
+  pickup_time_from: '',
+  pickup_time_to: '',
+  dropoff_time_from: '',
+  dropoff_time_to: '',
   characteristic_ids: [],
   rental_option_ids: [],
 }
@@ -79,6 +90,24 @@ export default function HostCarEditorPage() {
   const [extraHourFares, setExtraHourFares] = useState([])
   const [availability, setAvailability] = useState([])
   const [specialPrices, setSpecialPrices] = useState([])
+  const [locationFees, setLocationFees] = useState([])
+  const [outOfHoursFees, setOutOfHoursFees] = useState([])
+  const [locationFeeDraft, setLocationFeeDraft] = useState({
+    pickup_location_id: '',
+    dropoff_location_id: '',
+    cost_euros: 0,
+    is_one_way_fee: false,
+    multiply_by_days: false,
+  })
+  const [oohFeeDraft, setOohFeeDraft] = useState({
+    name: 'Out-of-hours',
+    time_from: '20:00',
+    time_to: '08:00',
+    applies_to: 'both',
+    pickup_cost_euros: 35,
+    dropoff_cost_euros: 35,
+    location_ids: [],
+  })
   const [fareDraft, setFareDraft] = useState({ price_type_id: '', from_days: 1, to_days: 7, price_per_day_euros: 100 })
   const [hourlyDraft, setHourlyDraft] = useState({ price_type_id: '', min_minutes: 60, max_minutes: 240, total_price_euros: 50 })
   const [extraDraft, setExtraDraft] = useState({ price_type_id: '', charge_per_extra_hour_euros: 10 })
@@ -129,6 +158,8 @@ export default function HostCarEditorPage() {
     getHostCarExtraHourFares(carId).then((res) => setExtraHourFares(res.data.data || []))
     getHostCarAvailability(carId).then((res) => setAvailability(res.data.data || []))
     getHostCarSpecialPrices(carId).then((res) => setSpecialPrices(res.data.data || []))
+    getHostCarLocationFees(carId).then((res) => setLocationFees(res.data.data || []))
+    getHostCarOutOfHoursFees(carId).then((res) => setOutOfHoursFees(res.data.data || []))
   }
 
   const reloadCar = (carId) => {
@@ -155,6 +186,10 @@ export default function HostCarEditorPage() {
           details_image_paths: data.details_image_paths || [],
           pickup_location_ids: data.pickup_location_ids || data.location_ids || [],
           dropoff_location_ids: data.dropoff_location_ids || data.location_ids || [],
+          pickup_time_from: data.pickup_time_from || '',
+          pickup_time_to: data.pickup_time_to || '',
+          dropoff_time_from: data.dropoff_time_from || '',
+          dropoff_time_to: data.dropoff_time_to || '',
           characteristic_ids: data.characteristic_ids || [],
           rental_option_ids: data.rental_option_ids || [],
         })
@@ -182,6 +217,10 @@ export default function HostCarEditorPage() {
         ical_import_url: form.ical_import_url,
         meta_title: form.meta_title,
         meta_description: form.meta_description,
+        pickup_time_from: form.pickup_time_from || null,
+        pickup_time_to: form.pickup_time_to || null,
+        dropoff_time_from: form.dropoff_time_from || null,
+        dropoff_time_to: form.dropoff_time_to || null,
       }
       const relations = {
         pickup_location_ids: form.pickup_location_ids,
@@ -205,7 +244,9 @@ export default function HostCarEditorPage() {
       navigate(`/host/cars/${newId}/edit`, { replace: true })
       return newId
     } catch (err) {
-      toast(err.response?.data?.message || 'Could not save', 'error')
+      const validation = err.response?.data?.errors
+      const firstError = validation && Object.values(validation).flat()[0]
+      toast(firstError || err.response?.data?.message || 'Could not save', 'error')
       return null
     } finally {
       setSaving(false)
@@ -299,6 +340,38 @@ export default function HostCarEditorPage() {
   const filteredSubCategories = catalog.subCategories.filter(
     (sub) => !form.main_category_id || String(sub.main_category_id) === String(form.main_category_id),
   )
+
+  const selectedPickupLocations = useMemo(
+    () => catalog.locations.filter((loc) => hasId(form.pickup_location_ids, loc.id)),
+    [catalog.locations, form.pickup_location_ids],
+  )
+
+  const selectedDropoffLocations = useMemo(
+    () => catalog.locations.filter((loc) => hasId(form.dropoff_location_ids, loc.id)),
+    [catalog.locations, form.dropoff_location_ids],
+  )
+
+  const pickupBounds = useMemo(
+    () => intersectionForLocations(selectedPickupLocations),
+    [selectedPickupLocations],
+  )
+
+  const dropoffBounds = useMemo(
+    () => intersectionForLocations(selectedDropoffLocations),
+    [selectedDropoffLocations],
+  )
+
+  const pickupTimeOptions = useMemo(
+    () => timeOptionsForWindow(pickupBounds?.from, pickupBounds?.to),
+    [pickupBounds],
+  )
+
+  const dropoffTimeOptions = useMemo(
+    () => timeOptionsForWindow(dropoffBounds?.from, dropoffBounds?.to),
+    [dropoffBounds],
+  )
+
+  const canConfigureTimes = selectedPickupLocations.length > 0 && selectedDropoffLocations.length > 0
 
   if (loading) return <PageLoader message="Loading editor…" />
 
@@ -433,6 +506,281 @@ export default function HostCarEditorPage() {
                     ))}
                   </div>
                 </div>
+
+                {canConfigureTimes ? (
+                  <>
+                    <h3 className="mb-2 mt-4 font-semibold text-brand-950">Pickup & drop-off times</h3>
+                    <p className="mb-3 text-sm text-slate-500">
+                      Times must fall within admin opening hours for all selected locations.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="host-field">
+                        <label>Pickup from</label>
+                        <p className="mb-1 text-xs text-slate-500">Allowed: {formatWindowLabel(pickupBounds)}</p>
+                        <select
+                          value={form.pickup_time_from}
+                          onChange={(e) => setForm({ ...form, pickup_time_from: e.target.value })}
+                        >
+                          <option value="">Select</option>
+                          {pickupTimeOptions.map((t) => <option key={`pf-${t}`} value={t}>{t}</option>)}
+                        </select>
+                      </div>
+                      <div className="host-field">
+                        <label>Pickup to</label>
+                        <select
+                          value={form.pickup_time_to}
+                          onChange={(e) => setForm({ ...form, pickup_time_to: e.target.value })}
+                        >
+                          <option value="">Select</option>
+                          {pickupTimeOptions.map((t) => <option key={`pt-${t}`} value={t}>{t}</option>)}
+                        </select>
+                      </div>
+                      <div className="host-field">
+                        <label>Drop-off from</label>
+                        <p className="mb-1 text-xs text-slate-500">Allowed: {formatWindowLabel(dropoffBounds)}</p>
+                        <select
+                          value={form.dropoff_time_from}
+                          onChange={(e) => setForm({ ...form, dropoff_time_from: e.target.value })}
+                        >
+                          <option value="">Select</option>
+                          {dropoffTimeOptions.map((t) => <option key={`df-${t}`} value={t}>{t}</option>)}
+                        </select>
+                      </div>
+                      <div className="host-field">
+                        <label>Drop-off to</label>
+                        <select
+                          value={form.dropoff_time_to}
+                          onChange={(e) => setForm({ ...form, dropoff_time_to: e.target.value })}
+                        >
+                          <option value="">Select</option>
+                          {dropoffTimeOptions.map((t) => <option key={`dt-${t}`} value={t}>{t}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <p className="mt-4 text-sm text-slate-500">Select at least one pickup and one drop-off location to set times.</p>
+                )}
+
+                {recordId ? (
+                  <>
+                    <h3 className="mb-2 mt-6 font-semibold text-brand-950">Pickup / drop-off fees</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="host-field">
+                        <label>Pickup location</label>
+                        <select
+                          value={locationFeeDraft.pickup_location_id}
+                          onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, pickup_location_id: e.target.value })}
+                        >
+                          <option value="">Select</option>
+                          {selectedPickupLocations.map((loc) => (
+                            <option key={loc.id} value={loc.id}>{loc.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="host-field">
+                        <label>Drop-off location</label>
+                        <select
+                          value={locationFeeDraft.dropoff_location_id}
+                          onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, dropoff_location_id: e.target.value })}
+                        >
+                          <option value="">Select</option>
+                          {selectedDropoffLocations.map((loc) => (
+                            <option key={loc.id} value={loc.id}>{loc.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="host-field">
+                        <label>Fee (€)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          value={locationFeeDraft.cost_euros}
+                          onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, cost_euros: Number(e.target.value) })}
+                        />
+                      </div>
+                      <div className="host-field flex items-end gap-4 pb-2">
+                        <label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={locationFeeDraft.is_one_way_fee}
+                            onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, is_one_way_fee: e.target.checked })}
+                          />
+                          One-way fee
+                        </label>
+                        <label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={locationFeeDraft.multiply_by_days}
+                            onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, multiply_by_days: e.target.checked })}
+                          />
+                          Per day
+                        </label>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="host-btn secondary"
+                      disabled={!locationFeeDraft.pickup_location_id || !locationFeeDraft.dropoff_location_id}
+                      onClick={async () => {
+                        try {
+                          await createHostCarLocationFee(recordId, locationFeeDraft)
+                          getHostCarLocationFees(recordId).then((res) => setLocationFees(res.data.data || []))
+                          setLocationFeeDraft({
+                            pickup_location_id: '',
+                            dropoff_location_id: '',
+                            cost_euros: 0,
+                            is_one_way_fee: false,
+                            multiply_by_days: false,
+                          })
+                          toast('Fee added', 'success')
+                        } catch (err) {
+                          toast(err.response?.data?.message || 'Could not add fee', 'error')
+                        }
+                      }}
+                    >
+                      Add location fee
+                    </button>
+                    <ul className="mt-3 space-y-2 text-sm">
+                      {locationFees.map((fee) => (
+                        <li key={fee.id} className="flex justify-between">
+                          <span>
+                            {fee.pickup_location?.name || 'Pickup'} → {fee.dropoff_location?.name || 'Drop-off'}
+                            : €{fee.cost_euros ?? (fee.cost_cents / 100).toFixed(2)}
+                            {fee.is_one_way_fee ? ' (one-way)' : ''}
+                            {fee.multiply_by_days ? ' / day' : ''}
+                          </span>
+                          <button
+                            type="button"
+                            className="host-btn danger"
+                            onClick={async () => {
+                              await deleteHostCarLocationFee(recordId, fee.id)
+                              setLocationFees((prev) => prev.filter((f) => f.id !== fee.id))
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <h3 className="mb-2 mt-6 font-semibold text-brand-950">Out-of-hours fees</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="host-field">
+                        <label>Name</label>
+                        <input value={oohFeeDraft.name} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, name: e.target.value })} />
+                      </div>
+                      <div className="host-field">
+                        <label>Applies to</label>
+                        <select value={oohFeeDraft.applies_to} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, applies_to: e.target.value })}>
+                          <option value="pickup">Pick-up only</option>
+                          <option value="dropoff">Drop-off only</option>
+                          <option value="both">Both</option>
+                        </select>
+                      </div>
+                      <div className="host-field">
+                        <label>From time</label>
+                        <input type="time" value={oohFeeDraft.time_from} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, time_from: e.target.value })} />
+                      </div>
+                      <div className="host-field">
+                        <label>To time</label>
+                        <input type="time" value={oohFeeDraft.time_to} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, time_to: e.target.value })} />
+                      </div>
+                      <div className="host-field">
+                        <label>Pick-up charge (€)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={oohFeeDraft.pickup_cost_euros}
+                          onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, pickup_cost_euros: Number(e.target.value) })}
+                        />
+                      </div>
+                      <div className="host-field">
+                        <label>Drop-off charge (€)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={oohFeeDraft.dropoff_cost_euros}
+                          onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, dropoff_cost_euros: Number(e.target.value) })}
+                        />
+                      </div>
+                    </div>
+                    <div className="host-field">
+                      <label>Locations (optional — leave empty for all)</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[...selectedPickupLocations, ...selectedDropoffLocations]
+                          .filter((loc, idx, arr) => arr.findIndex((x) => x.id === loc.id) === idx)
+                          .map((loc) => (
+                            <label key={`ooh-${loc.id}`} className="flex items-center gap-2 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={oohFeeDraft.location_ids.some((x) => String(x) === String(loc.id))}
+                                onChange={() => {
+                                  const ids = oohFeeDraft.location_ids
+                                  const has = ids.some((x) => String(x) === String(loc.id))
+                                  setOohFeeDraft({
+                                    ...oohFeeDraft,
+                                    location_ids: has
+                                      ? ids.filter((x) => String(x) !== String(loc.id))
+                                      : [...ids, loc.id],
+                                  })
+                                }}
+                              />
+                              {loc.name}
+                            </label>
+                          ))}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="host-btn secondary"
+                      disabled={!oohFeeDraft.time_from || !oohFeeDraft.time_to}
+                      onClick={async () => {
+                        try {
+                          await createHostCarOutOfHoursFee(recordId, oohFeeDraft)
+                          getHostCarOutOfHoursFees(recordId).then((res) => setOutOfHoursFees(res.data.data || []))
+                          setOohFeeDraft({
+                            name: 'Out-of-hours',
+                            time_from: '20:00',
+                            time_to: '08:00',
+                            applies_to: 'both',
+                            pickup_cost_euros: 35,
+                            dropoff_cost_euros: 35,
+                            location_ids: [],
+                          })
+                          toast('Out-of-hours fee added', 'success')
+                        } catch (err) {
+                          toast(err.response?.data?.message || 'Could not add fee', 'error')
+                        }
+                      }}
+                    >
+                      Add out-of-hours fee
+                    </button>
+                    <ul className="mt-3 space-y-2 text-sm">
+                      {outOfHoursFees.map((fee) => (
+                        <li key={fee.id} className="flex justify-between">
+                          <span>
+                            {fee.name}: {fee.time_from}–{fee.time_to}
+                            {' '}(pick-up €{fee.pickup_cost_euros}, drop-off €{fee.dropoff_cost_euros})
+                          </span>
+                          <button
+                            type="button"
+                            className="host-btn danger"
+                            onClick={async () => {
+                              await deleteHostCarOutOfHoursFee(recordId, fee.id)
+                              setOutOfHoursFees((prev) => prev.filter((f) => f.id !== fee.id))
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="mt-4 text-sm text-slate-500">Save the vehicle first to configure fees.</p>
+                )}
               </>
             )}
           </>

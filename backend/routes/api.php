@@ -196,6 +196,12 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
     Route::get('cars/{car}/special-prices', [HostCarController::class, 'specialPrices']);
     Route::post('cars/{car}/special-prices', [HostCarController::class, 'storeSpecialPrice']);
     Route::delete('cars/{car}/special-prices/{specialPrice}', [HostCarController::class, 'destroySpecialPrice']);
+    Route::get('cars/{car}/location-fees', [HostCarController::class, 'locationFees']);
+    Route::post('cars/{car}/location-fees', [HostCarController::class, 'storeLocationFee']);
+    Route::delete('cars/{car}/location-fees/{locationFee}', [HostCarController::class, 'destroyLocationFee']);
+    Route::get('cars/{car}/out-of-hours-fees', [HostCarController::class, 'outOfHoursFees']);
+    Route::post('cars/{car}/out-of-hours-fees', [HostCarController::class, 'storeOutOfHoursFee']);
+    Route::delete('cars/{car}/out-of-hours-fees/{outOfHoursFee}', [HostCarController::class, 'destroyOutOfHoursFee']);
 
     Route::get('bookings/cars', [HostBookingController::class, 'carOrders']);
     Route::get('bookings/guest-houses', [HostBookingController::class, 'guestHouseBookings']);

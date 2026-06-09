@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useShopConfig } from '../context/ShopConfigContext'
 import { useToast } from '../context/ToastContext'
 import { usePageContent } from '../context/SiteContentContext'
-import { getRequestToBookConfig, resolveBookingType } from '../data/requestToBookConfig'
+import { getRequestToBookConfig, resolveBookingType, resolveTimeOptions } from '../data/requestToBookConfig'
 import { formatCurrency, formatCurrencyFromCents } from '../utils/format'
 import { formatPhoneForApi, validatePhone } from '../utils/phone'
 import { combineDateAndTime, nightsBetween, toDateOnlyString } from '../utils/requestToBookUtils'
@@ -124,6 +124,16 @@ export default function useRequestToBook() {
 
   const pickupLocations = useMemo(() => item?.pickup_locations || [], [item])
 
+  const pickupTimeOptions = useMemo(
+    () => resolveTimeOptions(item, 'pickup'),
+    [item],
+  )
+
+  const dropoffTimeOptions = useMemo(
+    () => resolveTimeOptions(item, 'dropoff'),
+    [item],
+  )
+
   const { options: dropoffOptions } = useLocationOptions({
     role: 'dropoff',
     pickupLocationId: form.pickup_location_id,
@@ -241,6 +251,19 @@ export default function useRequestToBook() {
       })
     }
   }, [pickupLocations, item, bookingType])
+
+  useEffect(() => {
+    if (bookingType === 'guesthouse' || !item) return
+    const pickupDefault = pickupTimeOptions[0]
+    const dropoffDefault = dropoffTimeOptions[0]
+    if (!pickupDefault && !dropoffDefault) return
+
+    setForm((prev) => ({
+      ...prev,
+      pickupTime: pickupTimeOptions.includes(prev.pickupTime) ? prev.pickupTime : (pickupDefault || prev.pickupTime),
+      dropoffTime: dropoffTimeOptions.includes(prev.dropoffTime) ? prev.dropoffTime : (dropoffDefault || prev.dropoffTime),
+    }))
+  }, [item, bookingType, pickupTimeOptions, dropoffTimeOptions])
 
   useEffect(() => {
     if (bookingType === 'guesthouse' || !item?.price_types?.length) return
@@ -581,6 +604,8 @@ export default function useRequestToBook() {
     locationName,
     selectedPriceType,
     locationFeeLabel,
+    pickupTimeOptions,
+    dropoffTimeOptions,
     toggleAddon,
     submit,
     rules,

@@ -113,7 +113,7 @@ class RentalQuoteService
         }
 
         [$feesCents, $feesLines] = $this->computeFees(
-            $car->id,
+            $car,
             $pickupLocationId,
             $dropoffLocationId,
             $pickupAt,
@@ -445,7 +445,7 @@ class RentalQuoteService
      * @return array{0: int, 1: list<array{label: string, amount_cents: int}>}
      */
     private function computeFees(
-        int $carId,
+        Car $car,
         int $pickupLocationId,
         int $dropoffLocationId,
         CarbonInterface $pickupAt,
@@ -455,8 +455,10 @@ class RentalQuoteService
     ): array {
         $feesCents = 0;
         $feesLines = [];
+        $carId = $car->id;
+        $isHostOwned = $car->isOwnedByHost();
 
-        $locationFees = LocationFee::query()
+        $locationFeeQuery = LocationFee::query()
             ->with(['pickupLocation', 'dropoffLocation'])
             ->where('is_active', true)
             ->where(function ($query) use ($pickupLocationId, $dropoffLocationId): void {
@@ -468,13 +470,20 @@ class RentalQuoteService
                         ->where('pickup_location_id', $dropoffLocationId)
                         ->where('dropoff_location_id', $pickupLocationId);
                 });
-            })
-            ->orderBy('id')
-            ->get();
+            });
 
-        if ($pickupLocationId !== $dropoffLocationId && $locationFees->where('is_one_way_fee', true)->isEmpty()) {
+        if ($isHostOwned) {
+            $locationFeeQuery->where('car_id', $carId);
+        } else {
+            $locationFeeQuery->whereNull('car_id');
+        }
+
+        $locationFees = $locationFeeQuery->orderBy('id')->get();
+
+        if (! $isHostOwned && $pickupLocationId !== $dropoffLocationId && $locationFees->where('is_one_way_fee', true)->isEmpty()) {
             $globalOneWay = LocationFee::query()
                 ->where('is_active', true)
+                ->whereNull('car_id')
                 ->where('is_one_way_fee', true)
                 ->orderBy('id')
                 ->first();
@@ -512,8 +521,13 @@ class RentalQuoteService
             ];
         }
 
-        foreach (OutOfHoursFee::query()->where('is_active', true)->orderBy('id')->cursor() as $ooh) {
-            if (! $this->oohMatchesVehicle($ooh, $carId)) {
+        $oohQuery = OutOfHoursFee::query()->where('is_active', true)->orderBy('id');
+        if ($isHostOwned) {
+            $oohQuery->whereJsonContains('vehicle_ids', $carId);
+        }
+
+        foreach ($oohQuery->cursor() as $ooh) {
+            if (! $this->oohMatchesVehicle($ooh, $carId, $isHostOwned)) {
                 continue;
             }
 
@@ -567,8 +581,12 @@ class RentalQuoteService
         return [$feesCents, $feesLines];
     }
 
-    private function oohMatchesVehicle(OutOfHoursFee $fee, int $carId): bool
+    private function oohMatchesVehicle(OutOfHoursFee $fee, int $carId, bool $isHostOwned = false): bool
     {
+        if ($isHostOwned) {
+            return in_array($carId, $fee->vehicle_ids ?? [], true);
+        }
+
         if ($fee->vehicle_ids === null || $fee->vehicle_ids === []) {
             return true;
         }

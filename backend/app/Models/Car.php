@@ -35,6 +35,10 @@ class Car extends Model
         'details_image_paths',
         'units_available',
         'ical_import_url',
+        'pickup_time_from',
+        'pickup_time_to',
+        'dropoff_time_from',
+        'dropoff_time_to',
         'is_active',
         'listing_status',
         'submitted_at',
@@ -181,5 +185,10 @@ class Car extends Model
     public function availabilityBlocks(): HasMany
     {
         return $this->hasMany(AvailabilityBlock::class);
+    }
+
+    public function locationFees(): HasMany
+    {
+        return $this->hasMany(LocationFee::class);
     }
 }

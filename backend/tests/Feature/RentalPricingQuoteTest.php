@@ -15,6 +15,8 @@ use App\Models\PriceType;
 use App\Models\RentalOption;
 use App\Models\Setting;
 use App\Models\TaxRate;
+use App\Models\User;
+use App\Models\OutOfHoursFee;
 use App\Services\RentalQuoteService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -280,5 +282,122 @@ class RentalPricingQuoteTest extends TestCase
         // Base 10000*10% + option 1000*20% + fee 2000*5% = 1000 + 200 + 100 = 1300
         $this->assertSame(1300, $quote['tax_cents']);
         $this->assertSame(14300, $quote['total_cents']);
+    }
+
+    public function test_host_owned_car_uses_only_host_scoped_fees(): void
+    {
+        [$platformCar, $pickup, $dropoff, $priceType] = $this->makeCatalog();
+
+        $host = User::factory()->host()->create();
+        $hostCar = Car::query()->create([
+            'user_id' => $host->id,
+            'sub_category_id' => $platformCar->sub_category_id,
+            'name' => 'Host Vehicle',
+            'units_available' => 1,
+            'is_active' => true,
+        ]);
+        $hostCar->locations()->attach([
+            $pickup->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+            $dropoff->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+        ]);
+        DailyFare::query()->create([
+            'car_id' => $hostCar->id,
+            'price_type_id' => $priceType->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 10000,
+        ]);
+
+        LocationFee::query()->create([
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'cost_cents' => 5000,
+            'is_active' => true,
+        ]);
+
+        LocationFee::query()->create([
+            'car_id' => $hostCar->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'cost_cents' => 1500,
+            'is_active' => true,
+        ]);
+
+        OutOfHoursFee::query()->create([
+            'name' => 'Global OOH',
+            'time_from' => '20:00:00',
+            'time_to' => '08:00:00',
+            'applies_to' => 'pickup',
+            'cost_cents' => 3500,
+            'pickup_cost_cents' => 3500,
+            'dropoff_cost_cents' => 0,
+            'is_active' => true,
+        ]);
+
+        OutOfHoursFee::query()->create([
+            'name' => 'Host OOH',
+            'time_from' => '20:00:00',
+            'time_to' => '08:00:00',
+            'applies_to' => 'pickup',
+            'cost_cents' => 2000,
+            'pickup_cost_cents' => 2000,
+            'dropoff_cost_cents' => 0,
+            'vehicle_ids' => [$hostCar->id],
+            'is_active' => true,
+        ]);
+
+        $svc = app(RentalQuoteService::class);
+        $inHoursPickup = Carbon::parse('2026-05-10 10:00:00');
+        $dropoffAt = Carbon::parse('2026-05-11 10:00:00');
+
+        $hostQuote = $svc->quote(
+            $hostCar,
+            $priceType->id,
+            $inHoursPickup,
+            $dropoffAt,
+            $pickup->id,
+            $dropoff->id,
+            [],
+            null,
+        );
+
+        $platformQuote = $svc->quote(
+            $platformCar,
+            $priceType->id,
+            $inHoursPickup,
+            $dropoffAt,
+            $pickup->id,
+            $dropoff->id,
+            [],
+            null,
+        );
+
+        $this->assertSame(1500, $hostQuote['fees_cents']);
+        $this->assertSame(5000, $platformQuote['fees_cents']);
+
+        $oohPickupAt = Carbon::parse('2026-05-10 21:00:00');
+        $hostOohQuote = $svc->quote(
+            $hostCar,
+            $priceType->id,
+            $oohPickupAt,
+            $dropoffAt,
+            $pickup->id,
+            $dropoff->id,
+            [],
+            null,
+        );
+        $platformOohQuote = $svc->quote(
+            $platformCar,
+            $priceType->id,
+            $oohPickupAt,
+            $dropoffAt,
+            $pickup->id,
+            $dropoff->id,
+            [],
+            null,
+        );
+
+        $this->assertSame(2000, collect($hostOohQuote['fees_lines'])->where('kind', 'out_of_hours_pickup')->sum('amount_cents'));
+        $this->assertSame(3500, collect($platformOohQuote['fees_lines'])->where('kind', 'out_of_hours_pickup')->sum('amount_cents'));
     }
 }
