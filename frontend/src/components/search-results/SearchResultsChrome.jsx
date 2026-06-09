@@ -1,9 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import DateRangePicker from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
+import FilterPopover from './FilterPopover'
+import PriceRangeFilter from './PriceRangeFilter'
 import useSearchChromeDraft from '../../hooks/useSearchChromeDraft'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { SORT_OPTIONS } from '../../data/searchResultsConfig'
+import { defaultPriceFilters, isPriceFilterActive } from '../../utils/searchPriceBounds'
 
 const PIN_ICON = (
   <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -18,6 +22,20 @@ const PERSON_ICON = (
     <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
   </svg>
 )
+
+const CARET_ICON = (
+  <svg className="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+)
+
+function formatTransmissionLabel(value) {
+  if (!value) return 'Any'
+  const lower = String(value).toLowerCase()
+  if (lower.includes('auto')) return 'Automatic'
+  if (lower.includes('manual')) return 'Manual'
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
 
 export default function SearchResultsChrome({
   vehicleType,
@@ -37,9 +55,14 @@ export default function SearchResultsChrome({
   filters,
   setFilters,
   guestsLabel,
+  priceBounds = { min: 0, max: 500, step: 10 },
+  transmissionOptions = ['automatic', 'manual'],
 }) {
   const [sortOpen, setSortOpen] = useState(false)
   const [openPop, setOpenPop] = useState(null)
+  const priceWrapRef = useRef(null)
+  const transWrapRef = useRef(null)
+  const priceFormatter = useFormatPrice()
 
   const {
     isGuesthouse,
@@ -73,6 +96,58 @@ export default function SearchResultsChrome({
     () => dropoffLocations.map((loc) => ({ value: loc.value, label: loc.label, subtitle: loc.subtitle })),
     [dropoffLocations],
   )
+
+  const priceActive = isPriceFilterActive(filters, priceBounds)
+  const perLabel = isGuesthouse ? 'night' : 'day'
+
+  const priceChipLabel = useMemo(() => {
+    if (!priceActive) return 'Price'
+    return `${priceFormatter.format(filters.minPrice)} – ${priceFormatter.format(filters.maxPrice)}`
+  }, [priceActive, filters.minPrice, filters.maxPrice, priceFormatter])
+
+  const transmissionChipLabel = useMemo(() => {
+    if (!filters.transmission) return 'Transmission'
+    return formatTransmissionLabel(filters.transmission)
+  }, [filters.transmission])
+
+  useEffect(() => {
+    if (!openPop) return undefined
+
+    const onPointerDown = (event) => {
+      const inPrice = priceWrapRef.current?.contains(event.target)
+      const inTrans = transWrapRef.current?.contains(event.target)
+      if (openPop === 'price' && !inPrice) setOpenPop(null)
+      if (openPop === 'trans' && !inTrans) setOpenPop(null)
+    }
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setOpenPop(null)
+    }
+
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [openPop])
+
+  const handlePriceChange = ({ minPrice, maxPrice }) => {
+    setFilters((prev) => ({ ...prev, minPrice, maxPrice }))
+  }
+
+  const resetPriceFilter = () => {
+    setFilters((prev) => ({ ...prev, ...defaultPriceFilters(priceBounds) }))
+  }
+
+  const handleTransmissionSelect = (transmission) => {
+    setFilters((prev) => ({ ...prev, transmission }))
+    setOpenPop(null)
+  }
+
+  const togglePop = (id) => {
+    setOpenPop((prev) => (prev === id ? null : id))
+  }
 
   return (
     <>
@@ -192,28 +267,75 @@ export default function SearchResultsChrome({
       <div className="filterbar" id="filterbar">
         <div className="filterbar-inner">
           <div className="chips" id="chips">
-            <button
-              className={`chip ${openPop === 'price' ? 'open' : ''} ${filters.maxPrice < 500 ? 'active' : ''}`}
-              type="button"
-              onClick={() => setOpenPop(openPop === 'price' ? null : 'price')}
-            >
-              Price
-              <svg className="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-            {!isGuesthouse && (
+            <div className="chip-wrap" ref={priceWrapRef}>
               <button
-                className={`chip ${openPop === 'trans' ? 'open' : ''} ${filters.transmission ? 'active' : ''}`}
+                className={`chip chip--filter ${openPop === 'price' ? 'open' : ''} ${priceActive ? 'active' : ''}`}
                 type="button"
-                onClick={() => setOpenPop(openPop === 'trans' ? null : 'trans')}
+                aria-expanded={openPop === 'price'}
+                onClick={() => togglePop('price')}
               >
-                Transmission
-                <svg className="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
+                <span className="chip-label">{priceChipLabel}</span>
+                {CARET_ICON}
               </button>
+              <FilterPopover open={openPop === 'price'}>
+                <h5>Price per {perLabel}</h5>
+                <PriceRangeFilter
+                  min={priceBounds.min}
+                  max={priceBounds.max}
+                  step={priceBounds.step}
+                  valueMin={filters.minPrice}
+                  valueMax={filters.maxPrice}
+                  onChange={handlePriceChange}
+                  formatPrice={priceFormatter.format}
+                  perLabel={perLabel}
+                />
+                {priceActive && (
+                  <div className="fpop-foot fpop-foot--start">
+                    <button className="fpop-reset" type="button" onClick={resetPriceFilter}>
+                      Reset range
+                    </button>
+                  </div>
+                )}
+              </FilterPopover>
+            </div>
+
+            {!isGuesthouse && (
+              <div className="chip-wrap" ref={transWrapRef}>
+                <button
+                  className={`chip chip--filter ${openPop === 'trans' ? 'open' : ''} ${filters.transmission ? 'active' : ''}`}
+                  type="button"
+                  aria-expanded={openPop === 'trans'}
+                  onClick={() => togglePop('trans')}
+                >
+                  <span className="chip-label">{transmissionChipLabel}</span>
+                  {CARET_ICON}
+                </button>
+                <FilterPopover open={openPop === 'trans'}>
+                  <p className="fpop-eyebrow">Vehicle type</p>
+                  <h5>Transmission</h5>
+                  <div className="fopts">
+                    <button
+                      type="button"
+                      className={`fopt ${!filters.transmission ? 'sel' : ''}`}
+                      onClick={() => handleTransmissionSelect('')}
+                    >
+                      Any
+                    </button>
+                    {transmissionOptions.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        className={`fopt ${filters.transmission === t ? 'sel' : ''}`}
+                        onClick={() => handleTransmissionSelect(t)}
+                      >
+                        {formatTransmissionLabel(t)}
+                      </button>
+                    ))}
+                  </div>
+                </FilterPopover>
+              </div>
             )}
+
             {quickFilterOptions.length > 0 && <span className="chip-div" />}
             {quickFilterOptions.map((qf) => (
               <button
@@ -262,46 +384,6 @@ export default function SearchResultsChrome({
           </div>
         </div>
       </div>
-
-      {openPop === 'price' && (
-        <div className="fpop show" style={{ position: 'absolute', zIndex: 70, left: 40, top: '100%' }}>
-          <h5>Max price per {isGuesthouse ? 'night' : 'day'}</h5>
-          <input
-            type="range"
-            min={20}
-            max={500}
-            step={10}
-            value={filters.maxPrice}
-            onChange={(e) => setFilters({ ...filters, maxPrice: Number(e.target.value) })}
-          />
-          <div className="fpop-foot">
-            <button className="fpop-apply" type="button" onClick={() => setOpenPop(null)}>
-              Apply
-            </button>
-          </div>
-        </div>
-      )}
-      {!isGuesthouse && openPop === 'trans' && (
-        <div className="fpop show" style={{ position: 'absolute', zIndex: 70, left: 140, top: '100%' }}>
-          <h5>Transmission</h5>
-          {['', 'automatic', 'manual'].map((t) => (
-            <button
-              key={t || 'any'}
-              type="button"
-              className={filters.transmission === t ? 'sel' : ''}
-              onClick={() => setFilters({ ...filters, transmission: t })}
-              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              {t ? t.charAt(0).toUpperCase() + t.slice(1) : 'Any'}
-            </button>
-          ))}
-          <div className="fpop-foot">
-            <button className="fpop-apply" type="button" onClick={() => setOpenPop(null)}>
-              Apply
-            </button>
-          </div>
-        </div>
-      )}
     </>
   )
 }

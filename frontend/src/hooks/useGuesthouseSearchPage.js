@@ -15,10 +15,15 @@ import {
   pruneQuickFilters,
   toggleQuickFilter,
 } from '../utils/searchQuickFilters'
+import {
+  clampPriceFilters,
+  computePriceBounds,
+  defaultPriceFilters,
+  isPriceFilterActive,
+} from '../utils/searchPriceBounds'
 
-function matchesPrice(card, maxEuros) {
-  if (!maxEuros) return true
-  return card.sortPrice <= maxEuros
+function matchesPrice(card, minPrice, maxPrice) {
+  return card.sortPrice >= minPrice && card.sortPrice <= maxPrice
 }
 
 function formatDateRange(checkIn, checkOut) {
@@ -44,6 +49,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
   const [sort, setSort] = useState('rec')
   const [quickFilters, setQuickFilters] = useState([])
   const [filters, setFilters] = useState({
+    minPrice: 0,
     maxPrice: 500,
     minGuests: 0,
   })
@@ -80,19 +86,37 @@ export default function useGuesthouseSearchPage(enabled = true) {
     query.max_price,
   ])
 
+  const allCards = useMemo(
+    () => houses.map((house) => mapGuestHouseToResultCard(house, { searchQuery })),
+    [houses, searchQuery],
+  )
+
   const quickFilterOptions = useMemo(
     () => buildGuesthouseQuickFilters(houses),
     [houses],
   )
+
+  const priceBounds = useMemo(() => computePriceBounds(allCards), [allCards])
+
+  useEffect(() => {
+    setFilters((prev) => {
+      const atInitialDefaults = prev.minPrice === 0 && prev.maxPrice === 500
+      const next = atInitialDefaults
+        ? defaultPriceFilters(priceBounds)
+        : clampPriceFilters(prev, priceBounds)
+      if (next.minPrice === prev.minPrice && next.maxPrice === prev.maxPrice) return prev
+      return { ...prev, ...next }
+    })
+  }, [priceBounds.min, priceBounds.max])
 
   useEffect(() => {
     setQuickFilters((prev) => pruneQuickFilters(prev, quickFilterOptions))
   }, [quickFilterOptions])
 
   const cards = useMemo(() => {
-    let list = houses.map((house) => mapGuestHouseToResultCard(house, { searchQuery }))
+    let list = [...allCards]
 
-    list = list.filter((card) => matchesPrice(card, filters.maxPrice))
+    list = list.filter((card) => matchesPrice(card, filters.minPrice, filters.maxPrice))
     if (filters.minGuests) list = list.filter((card) => card.sortGuests >= filters.minGuests)
     list = applyQuickFilters(list, quickFilters, quickFilterOptions)
 
@@ -104,7 +128,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
     })
 
     return list
-  }, [houses, filters, quickFilters, quickFilterOptions, searchQuery, sort])
+  }, [allCards, filters, quickFilters, quickFilterOptions, sort])
 
   const visibleCards = cards.slice(0, visibleCount)
   const cityLabel = query.city || 'Iceland'
@@ -127,13 +151,13 @@ export default function useGuesthouseSearchPage(enabled = true) {
   }
 
   const clearFilters = () => {
-    setFilters({ maxPrice: 500, minGuests: 0 })
+    setFilters({ ...defaultPriceFilters(priceBounds), minGuests: 0 })
     setQuickFilters([])
     setVisibleCount(PAGE_SIZE)
   }
 
   const hasActiveFilters =
-    quickFilters.length > 0 || filters.minGuests > 0 || filters.maxPrice < 500
+    quickFilters.length > 0 || filters.minGuests > 0 || isPriceFilterActive(filters, priceBounds)
 
   const sortLabel = GUESTHOUSE_SORT_OPTIONS.find((o) => o.id === sort)?.label || 'Recommended'
 
@@ -161,6 +185,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
     toggleQuick,
     clearFilters,
     hasActiveFilters,
+    priceBounds,
     guestsLabel,
     isGuesthouse: true,
   }
