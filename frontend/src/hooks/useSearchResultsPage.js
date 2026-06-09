@@ -14,15 +14,20 @@ import {
 } from '../utils/searchQuickFilters'
 import { mainCategoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 import { toApiDateTime } from '../utils/format'
+import {
+  clampPriceFilters,
+  computePriceBounds,
+  defaultPriceFilters,
+  isPriceFilterActive,
+} from '../utils/searchPriceBounds'
 
 function matchesTransmission(car, value) {
   if (!value) return true
   return String(car.transmission || '').toLowerCase().includes(value.toLowerCase())
 }
 
-function matchesPrice(car, max) {
-  if (!max) return true
-  return car.sortPrice <= max
+function matchesPrice(car, minPrice, maxPrice) {
+  return car.sortPrice >= minPrice && car.sortPrice <= maxPrice
 }
 
 const SEARCH_PAGE_KEYS = {
@@ -47,6 +52,7 @@ export default function useSearchResultsPage(vehicleType) {
   const [sort, setSort] = useState('rec')
   const [quickFilters, setQuickFilters] = useState([])
   const [filters, setFilters] = useState({
+    minPrice: 0,
     maxPrice: 500,
     transmission: '',
     minSeats: 0,
@@ -117,6 +123,25 @@ export default function useSearchResultsPage(vehicleType) {
     [vehicleCards],
   )
 
+  const priceBounds = useMemo(() => computePriceBounds(vehicleCards), [vehicleCards])
+
+  const transmissionOptions = useMemo(() => {
+    const values = [...new Set(vehicleCards.map((c) => c.transmission).filter(Boolean))]
+    if (!values.length) return ['automatic', 'manual']
+    return values
+  }, [vehicleCards])
+
+  useEffect(() => {
+    setFilters((prev) => {
+      const atInitialDefaults = prev.minPrice === 0 && prev.maxPrice === 500
+      const next = atInitialDefaults
+        ? defaultPriceFilters(priceBounds)
+        : clampPriceFilters(prev, priceBounds)
+      if (next.minPrice === prev.minPrice && next.maxPrice === prev.maxPrice) return prev
+      return { ...prev, ...next }
+    })
+  }, [priceBounds.min, priceBounds.max])
+
   useEffect(() => {
     setQuickFilters((prev) => pruneQuickFilters(prev, quickFilterOptions))
   }, [quickFilterOptions])
@@ -125,7 +150,7 @@ export default function useSearchResultsPage(vehicleType) {
     let list = vehicleCards
 
     list = list.filter((car) => matchesTransmission(car, filters.transmission))
-    list = list.filter((car) => matchesPrice(car, filters.maxPrice))
+    list = list.filter((car) => matchesPrice(car, filters.minPrice, filters.maxPrice))
     if (filters.minSeats) list = list.filter((car) => car.sortSeats >= filters.minSeats)
     if (filters.minSleeps) list = list.filter((car) => car.sortSleeps >= filters.minSleeps)
     list = applyQuickFilters(list, quickFilters, quickFilterOptions)
@@ -164,7 +189,7 @@ export default function useSearchResultsPage(vehicleType) {
   }
 
   const clearFilters = () => {
-    setFilters({ maxPrice: 500, transmission: '', minSeats: 0, minSleeps: 0 })
+    setFilters({ ...defaultPriceFilters(priceBounds), transmission: '', minSeats: 0, minSleeps: 0 })
     setQuickFilters([])
     setVisibleCount(PAGE_SIZE)
   }
@@ -174,7 +199,7 @@ export default function useSearchResultsPage(vehicleType) {
     filters.transmission ||
     filters.minSeats > 0 ||
     filters.minSleeps > 0 ||
-    filters.maxPrice < 500
+    isPriceFilterActive(filters, priceBounds)
 
   const sortLabel = SORT_OPTIONS.find((o) => o.id === sort)?.label || 'Recommended'
 
@@ -202,6 +227,8 @@ export default function useSearchResultsPage(vehicleType) {
     toggleQuick,
     clearFilters,
     hasActiveFilters,
+    priceBounds,
+    transmissionOptions,
     locations,
     categoryMap,
     guestsLabel: null,

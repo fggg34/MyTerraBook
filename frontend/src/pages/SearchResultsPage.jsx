@@ -47,6 +47,8 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     sortOptions,
     quickFilterOptions,
     guestsLabel,
+    priceBounds,
+    transmissionOptions,
   } = state
 
   const pillText = useMemo(() => {
@@ -114,6 +116,8 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
               hasActiveFilters={hasActiveFilters}
               filters={filters}
               setFilters={setFilters}
+              priceBounds={priceBounds}
+              transmissionOptions={transmissionOptions}
             />,
             document.getElementById('searchChromeBar') || document.body,
           )}
