@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { formatDateTimeLocal } from '../utils/format'
 
-const DEFAULT_RULES = { min_rental_days: 1, max_rental_days: null, loading: false }
+const DEFAULT_RULES = {
+  min_rental_days: 1,
+  max_rental_days: null,
+  restrictions: [],
+  loading: false,
+}
 
 export function useBookingRules(pickupDate, dropoffDate) {
   const [rules, setRules] = useState(DEFAULT_RULES)
@@ -32,6 +37,7 @@ export function useBookingRules(pickupDate, dropoffDate) {
           setRules({
             min_rental_days: res.data.min_rental_days ?? 1,
             max_rental_days: res.data.max_rental_days ?? null,
+            restrictions: res.data.restrictions ?? [],
             loading: false,
           })
         }

@@ -102,4 +102,28 @@ class SearchSuggestionsApiTest extends TestCase
         $this->getJson('/api/search/suggestions?scope=unknown')
             ->assertStatus(422);
     }
+
+    public function test_unlinked_location_excluded_from_pickup_suggestions(): void
+    {
+        Location::query()->create(['name' => 'Unlinked Hub', 'is_active' => true]);
+
+        $linked = Location::query()->create(['name' => 'Linked Hub', 'is_active' => true]);
+
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Compact', 'is_active' => true, 'is_search_filter' => true]);
+        $car = Car::query()->create([
+            'name' => 'Test Car',
+            'slug' => 'test-car-unlinked',
+            'sub_category_id' => $category->id,
+            'is_active' => true,
+        ]);
+        $car->locations()->attach($linked->id, ['allows_pickup' => true, 'allows_dropoff' => true]);
+
+        $response = $this->getJson('/api/search/suggestions?scope=location&role=pickup');
+
+        $response->assertOk();
+        $labels = collect($response->json('data'))->pluck('label')->all();
+        $this->assertContains('Linked Hub', $labels);
+        $this->assertNotContains('Unlinked Hub', $labels);
+    }
 }

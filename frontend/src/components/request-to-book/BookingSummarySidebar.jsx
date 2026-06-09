@@ -6,7 +6,8 @@ import {
   Tag,
 } from 'lucide-react'
 import { formatCurrency, formatCurrencyFromCents } from '../../utils/format'
-import { PREPAY_PERCENT } from '../../data/requestToBookConfig'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
+import { useShopConfig } from '../../context/ShopConfigContext'
 import { fmtDisplayDate } from '../../utils/requestToBookUtils'
 
 export default function BookingSummarySidebar({
@@ -22,6 +23,8 @@ export default function BookingSummarySidebar({
   selectedPriceType,
   onCouponApply,
 }) {
+  const price = useFormatPrice()
+  const { prepayPercent } = useShopConfig()
   const kick = config.summaryKick(item)
   const isVehicle = bookingType !== 'guesthouse'
 
@@ -30,8 +33,12 @@ export default function BookingSummarySidebar({
     : item?.base_price_per_night
 
   const rateDisplay = isVehicle
-    ? (selectedPriceType?.from_price_per_day || item?.price_types?.[0]?.from_price_per_day)
-    : item?.base_price_per_night_formatted || (rateCents ? formatCurrencyFromCents(rateCents) : null)
+    ? (selectedPriceType?.from_price_per_day_cents != null
+      ? price.formatCents(selectedPriceType.from_price_per_day_cents)
+      : selectedPriceType?.from_price_per_day
+        ? price.format(Number.parseFloat(selectedPriceType.from_price_per_day))
+        : null)
+    : item?.base_price_per_night_formatted || (rateCents ? price.formatCents(rateCents) : null)
 
   const pickDetail = bookingType === 'guesthouse'
     ? item?.check_in_time || 'From 15:00'
@@ -53,14 +60,14 @@ export default function BookingSummarySidebar({
     if (quoteLoading) return '…'
     const amount = totalAmount()
     if (amount == null) return '—'
-    if (bookingType === 'guesthouse') return quote.total_formatted || formatCurrency(amount, quote.currency)
-    return formatCurrency(amount, quote.currency)
+    if (bookingType === 'guesthouse') return quote.total_formatted || price.format(amount)
+    return price.format(amount)
   }
 
   const prepayAmount = () => {
     const total = totalAmount()
     if (total == null) return null
-    return Math.round(total * (PREPAY_PERCENT / 100) * 100) / 100
+    return Math.round(total * (prepayPercent / 100) * 100) / 100
   }
 
   const balanceAmount = () => {
@@ -133,30 +140,30 @@ export default function BookingSummarySidebar({
                 <span className="ll">
                   {rateDisplay} × {quote.rental_days || nights} {config.step1.rateUnit}{quote.rental_days !== 1 ? 's' : ''}
                 </span>
-                <span className="lv">{formatCurrency(quote.rental_subtotal, quote.currency)}</span>
+                <span className="lv">{price.format(quote.rental_subtotal)}</span>
               </div>
               {locationFees.map((line) => (
                 <div key={`loc-${line.label}`} className="lrow">
                   <span className="ll">Location service</span>
-                  <span className="lv">{formatCurrency(line.amount, quote.currency)}</span>
+                  <span className="lv">{price.format(line.amount)}</span>
                 </div>
               ))}
               {oohFees.map((line) => (
                 <div key={`ooh-${line.label}`} className="lrow">
                   <span className="ll">Out-of-hours pick-up</span>
-                  <span className="lv">{formatCurrency(line.amount, quote.currency)}</span>
+                  <span className="lv">{price.format(line.amount)}</span>
                 </div>
               ))}
               {otherFees.map((line) => (
                 <div key={`${line.kind}-${line.label}`} className="lrow">
                   <span className="ll">{line.label}</span>
-                  <span className="lv">{formatCurrency(line.amount, quote.currency)}</span>
+                  <span className="lv">{price.format(line.amount)}</span>
                 </div>
               ))}
               {protectionCost && (
                 <div className="lrow">
                   <span className="ll">{protectionCost.name} protection ×{quote.rental_days || nights}</span>
-                  <span className="lv">{formatCurrency(protectionCost.amount, protectionCost.currency)}</span>
+                  <span className="lv">{price.format(protectionCost.amount)}</span>
                 </div>
               )}
               {selectedAddons.map((opt) => {
@@ -172,13 +179,13 @@ export default function BookingSummarySidebar({
               {Number(quote.discount_amount) > 0 && (
                 <div className="lrow discount">
                   <span className="ll">Promo · {form.coupon_code.trim().toUpperCase() || 'DISCOUNT'}</span>
-                  <span className="lv">−{formatCurrency(quote.discount_amount, quote.currency)}</span>
+                  <span className="lv">−{price.format(quote.discount_amount)}</span>
                 </div>
               )}
               {Number(quote.tax_amount) > 0 && (
                 <div className="lrow">
                   <span className="ll">Tax</span>
-                  <span className="lv">{formatCurrency(quote.tax_amount, quote.currency)}</span>
+                  <span className="lv">{price.format(quote.tax_amount)}</span>
                 </div>
               )}
             </>
@@ -226,16 +233,19 @@ export default function BookingSummarySidebar({
           <div className="prepay-block">
             <div className="prepay-title">Payment schedule</div>
             <div className="prepay-row">
-              <span>Due on approval ({PREPAY_PERCENT}%)</span>
-              <b>{formatCurrency(prepayAmount(), quote.currency || 'EUR')}</b>
+              <span>Due on approval ({prepayPercent}%)</span>
+              <b>{price.format(prepayAmount())}</b>
             </div>
             <div className="prepay-row">
               <span>{isVehicle ? 'Due on pick-up' : 'Due at check-in'}</span>
-              <b>{formatCurrency(balanceAmount(), quote.currency || 'EUR')}</b>
+              <b>{price.format(balanceAmount())}</b>
             </div>
             <p className="prepay-note">
-              A {PREPAY_PERCENT}% prepayment secures your booking once the host approves and is non-refundable. The remaining balance is paid {isVehicle ? 'when you collect the vehicle' : 'at check-in'}.
+              A {prepayPercent}% prepayment secures your booking once the host approves and is non-refundable. The remaining balance is paid {isVehicle ? 'when you collect the vehicle' : 'at check-in'}.
             </p>
+            {price.isConverted ? (
+              <p className="prepay-note">Charged in {price.baseCurrency}; shown in {price.displayCurrency}.</p>
+            ) : null}
           </div>
         )}
         <div className="scard-foot">

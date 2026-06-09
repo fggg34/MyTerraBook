@@ -51,6 +51,7 @@ export default function SearchResultsChrome({
     setGuestCityLabel,
     pickupLocations,
     dropoffLocations,
+    pickupEmpty,
     handleVehicleDates,
     handleGuestDates,
     applyDraft,
@@ -125,6 +126,11 @@ export default function SearchResultsChrome({
               </>
             ) : (
               <>
+                {pickupEmpty && (
+                  <p className="location-empty-hint" role="status" style={{ marginBottom: 12 }}>
+                    Pickup locations are being configured. Assign locations to vehicles in admin.
+                  </p>
+                )}
                 <div className="hfield hfield--control">
                   <span className="hf-label">Pick-up location</span>
                   <FieldSelect
@@ -141,6 +147,7 @@ export default function SearchResultsChrome({
                     placeholder="Select location"
                     icon={PIN_ICON}
                     ariaLabel="Pick-up location"
+                    disabled={pickupEmpty}
                   />
                 </div>
                 <div className="hfield hfield--control">
@@ -152,7 +159,7 @@ export default function SearchResultsChrome({
                     placeholder="Select location"
                     icon={PIN_ICON}
                     ariaLabel="Drop-off location"
-                    disabled={!vehicleDraft.pickup_location_id}
+                    disabled={!vehicleDraft.pickup_location_id || pickupEmpty}
                   />
                 </div>
                 <div className="hfield hfield--control hfield--dates">

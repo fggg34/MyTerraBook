@@ -16,6 +16,7 @@ export default function TripCalendarPicker({
   startLabel,
   endLabel,
   blockedDates = [],
+  dateDisabled,
   onChange,
   onRangeComplete,
 }) {
@@ -62,15 +63,17 @@ export default function TripCalendarPicker({
     const dateStr = dt.toISOString().slice(0, 10)
     const past = dt < today
     const blocked = blockedSet.has(dateStr)
+    const role = open === 'end' ? 'end' : 'start'
+    const restricted = dateDisabled ? dateDisabled(dt, role) : false
     let cls = 'cal-cell'
-    if (past || blocked) cls += ' past'
+    if (past || blocked || restricted) cls += ' past'
     if (ts === today.getTime()) cls += ' today'
     const a = sel.a?.getTime()
     const b = sel.b?.getTime()
     if (a && ts === a) cls += ' sel range-start'
     if (b && ts === b) cls += ' sel range-end'
     if (a && b && ts > a && ts < b) cls += ' inrange'
-    cells.push({ d, dt, ts, cls, disabled: past || blocked, key: ts })
+    cells.push({ d, dt, ts, cls, disabled: past || blocked || restricted, key: ts })
   }
 
   const pick = (dt) => {

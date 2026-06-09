@@ -1,7 +1,7 @@
 import { MapPin, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { api } from '../../api'
 import { useBookingRules } from '../../hooks/useBookingRules'
+import useLocationOptions, { toFieldSelectOptions, useAutoSelectLocation } from '../../hooks/useLocationOptions'
 import {
   computeMaxDropoffDate,
   computeMinDropoffDate,
@@ -13,7 +13,6 @@ import DateTimePicker from '../ui/DateTimePicker'
 import { parseDateTimeLocal } from '../../utils/format'
 
 export default function SearchBar({ initialValues = {}, onSearch, variant = 'hero' }) {
-  const [locations, setLocations] = useState([])
   const [form, setForm] = useState({
     pickup_location_id: initialValues.pickup_location_id || '',
     dropoff_location_id: initialValues.dropoff_location_id || '',
@@ -21,9 +20,41 @@ export default function SearchBar({ initialValues = {}, onSearch, variant = 'her
     dropoff_at: initialValues.dropoff_at || '',
   })
 
-  useEffect(() => {
-    api.get('/locations').then((res) => setLocations(res.data.data || []))
-  }, [])
+  const { options: pickupOptions, isEmpty: pickupEmpty, loading: pickupLoading } = useLocationOptions({
+    role: 'pickup',
+    limit: 50,
+  })
+
+  const { options: dropoffOptions } = useLocationOptions({
+    role: 'dropoff',
+    pickupLocationId: form.pickup_location_id,
+    enabled: !!form.pickup_location_id,
+    limit: 50,
+  })
+
+  useAutoSelectLocation({
+    options: pickupOptions,
+    value: form.pickup_location_id,
+    onSelect: (id) => {
+      setForm((prev) => ({
+        ...prev,
+        pickup_location_id: id,
+        dropoff_location_id: prev.dropoff_location_id || id,
+      }))
+    },
+  })
+
+  useAutoSelectLocation({
+    options: dropoffOptions,
+    value: form.dropoff_location_id,
+    pickupValueForDropoff: form.pickup_location_id,
+    onSelect: (id) => {
+      setForm((prev) => ({ ...prev, dropoff_location_id: id }))
+    },
+  })
+
+  const pickupSelectOptions = useMemo(() => toFieldSelectOptions(pickupOptions), [pickupOptions])
+  const dropoffSelectOptions = useMemo(() => toFieldSelectOptions(dropoffOptions), [dropoffOptions])
 
   useEffect(() => {
     setForm((prev) => ({ ...prev, ...initialValues }))
@@ -83,6 +114,11 @@ export default function SearchBar({ initialValues = {}, onSearch, variant = 'her
 
   return (
     <form onSubmit={handleSubmit} className={`${shellClass} space-y-4`}>
+      {!pickupLoading && pickupEmpty && (
+        <p className="text-sm text-amber-700" role="status">
+          Pickup locations are being configured. Assign locations to vehicles in admin to enable search.
+        </p>
+      )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div>
           <label className="label-field flex items-center gap-1.5">
@@ -92,13 +128,22 @@ export default function SearchBar({ initialValues = {}, onSearch, variant = 'her
           <select
             className="input-field"
             value={form.pickup_location_id}
-            onChange={(e) => setForm({ ...form, pickup_location_id: e.target.value })}
+            onChange={(e) => {
+              const value = e.target.value
+              const sameAsPickup = form.dropoff_location_id === form.pickup_location_id
+              setForm({
+                ...form,
+                pickup_location_id: value,
+                dropoff_location_id: sameAsPickup ? value : form.dropoff_location_id,
+              })
+            }}
             required
+            disabled={pickupEmpty}
           >
             <option value="">Select location</option>
-            {locations.map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.name}
+            {pickupSelectOptions.map((loc) => (
+              <option key={loc.value} value={loc.value}>
+                {loc.label}
               </option>
             ))}
           </select>
@@ -114,11 +159,12 @@ export default function SearchBar({ initialValues = {}, onSearch, variant = 'her
             value={form.dropoff_location_id}
             onChange={(e) => setForm({ ...form, dropoff_location_id: e.target.value })}
             required
+            disabled={!form.pickup_location_id || pickupEmpty}
           >
             <option value="">Select location</option>
-            {locations.map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.name}
+            {dropoffSelectOptions.map((loc) => (
+              <option key={loc.value} value={loc.value}>
+                {loc.label}
               </option>
             ))}
           </select>

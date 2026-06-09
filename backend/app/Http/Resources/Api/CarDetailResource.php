@@ -21,6 +21,12 @@ class CarDetailResource extends JsonResource
     public function toArray(Request $request): array
     {
         $car = $this->resource;
+        $pickupLocations = $car->relationLoaded('locations')
+            ? $car->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_pickup)->values()
+            : $car->locations()->wherePivot('allows_pickup', true)->get();
+        $dropoffLocations = $car->relationLoaded('locations')
+            ? $car->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_dropoff)->values()
+            : $car->locations()->wherePivot('allows_dropoff', true)->get();
 
         return [
             'id' => $car->id,
@@ -35,7 +41,11 @@ class CarDetailResource extends JsonResource
             'category' => SubCategoryResource::make($car->subCategory),
             'transmission' => filled($car->transmission) ? $car->transmission : '—',
             'fuel_type' => filled($car->fuel_type) ? $car->fuel_type : '—',
+            'seats' => $car->seats,
+            'sleeps' => $car->sleeps,
+            'bags' => $car->bags,
             'units_available' => $car->units_available,
+            'host' => $car->host ? HostProfileResource::make($car->host) : null,
             'main_image_path' => $car->main_image_path,
             'details_image_paths' => $car->details_image_paths ?? [],
             'price_types' => collect($this->priceTypes)->map(fn (array $row) => [
@@ -49,6 +59,8 @@ class CarDetailResource extends JsonResource
             ]),
             'characteristics' => CharacteristicResource::collection($car->characteristics),
             'rental_options' => RentalOptionResource::collection($car->rentalOptions),
+            'pickup_locations' => LocationResource::collection($pickupLocations),
+            'dropoff_locations' => LocationResource::collection($dropoffLocations),
             'listing_reviews' => ListingReviewResource::collection(
                 $car->relationLoaded('listingReviews') ? $car->listingReviews : collect(),
             ),

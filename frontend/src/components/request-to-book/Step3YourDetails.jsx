@@ -1,6 +1,7 @@
 import { ChevronLeft, Mail } from 'lucide-react'
 import CountrySelect from '../forms/CountrySelect'
 import PhoneField from '../forms/PhoneField'
+import { useShopConfig } from '../../context/ShopConfigContext'
 
 export default function Step3YourDetails({
   config,
@@ -10,7 +11,9 @@ export default function Step3YourDetails({
   errors,
   onNext,
   onBack,
+  customFields = [],
 }) {
+  const { prepayPercent } = useShopConfig()
   const hostInitial = item?.name?.charAt(0)?.toUpperCase() || 'H'
   const showSuperhost = item?.rating && Number(item.rating) >= 4.8
 
@@ -27,7 +30,7 @@ export default function Step3YourDetails({
             {showSuperhost && <span className="ab-badge">★ Superhost</span>}
           </h4>
           <p>
-            Nothing is charged today. Once your host approves, we take a <b>20% prepayment</b> to hold the booking — this is non-refundable. The balance is due on pick-up.
+            Nothing is charged today. Once your host approves, we take a <b>{prepayPercent}% prepayment</b> to hold the booking — this is non-refundable. The balance is due on pick-up.
           </p>
         </span>
       </div>
@@ -177,6 +180,59 @@ export default function Step3YourDetails({
               onChange={(e) => updateForm({ special_requests: e.target.value })}
             />
           </div>
+        </div>
+      )}
+
+      {customFields.length > 0 && (
+        <div className="block">
+          <div className="block-head">
+            <span className="bnum">{config.step3.showLicence ? '3' : '2'}</span>
+            <h3>Additional information</h3>
+          </div>
+          {customFields.map((field) => (
+            <div key={field.field_key} className="field full" style={{ marginBottom: 12 }}>
+              <label>
+                {field.label}
+                {field.is_required ? <span className="req"> *</span> : null}
+              </label>
+              {field.type === 'select' ? (
+                <select
+                  className="sel"
+                  value={form.custom_field_values?.[field.field_key] || ''}
+                  onChange={(e) =>
+                    updateForm({
+                      custom_field_values: {
+                        ...form.custom_field_values,
+                        [field.field_key]: e.target.value,
+                      },
+                    })
+                  }
+                >
+                  <option value="">Select…</option>
+                  {(field.select_options || []).map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  className="inp"
+                  type={field.is_email ? 'email' : 'text'}
+                  value={form.custom_field_values?.[field.field_key] || ''}
+                  onChange={(e) =>
+                    updateForm({
+                      custom_field_values: {
+                        ...form.custom_field_values,
+                        [field.field_key]: e.target.value,
+                      },
+                    })
+                  }
+                />
+              )}
+              {errors[`custom_${field.field_key}`] && (
+                <span className="hint" style={{ color: 'var(--rtb-red)' }}>{errors[`custom_${field.field_key}`]}</span>
+              )}
+            </div>
+          ))}
         </div>
       )}
 

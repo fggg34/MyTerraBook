@@ -2,11 +2,8 @@ import { MapPin } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { buildStaticMapUrl } from '../../utils/parseGooglePlace'
-
-function euro(n) {
-  return `€${n.toLocaleString('en-IE')}`
-}
 
 export default function ListingTabPanels({
   listing,
@@ -16,11 +13,12 @@ export default function ListingTabPanels({
   bookingDatesRef,
   openCalendarRef,
 }) {
-  const { typeConfig, rating, detailSpecs, description, amenities, conditions, sleeping, addons, location } = listing
+  const { typeConfig, rating, detailSpecs, description, amenities, conditions, sleeping, addons, location, pickupLocations, owner } = listing
   const { mapsApiKey } = useMapsConfig()
+  const price = useFormatPrice()
   const [startDate, setStartDate] = useState(() => parseDateOnly(initialPickup))
   const [endDate, setEndDate] = useState(() => parseDateOnly(initialDropoff))
-  const priceFrom = Number(listing.priceFrom) || 94
+  const priceFrom = Number(listing.priceFrom) || 0
 
   const syncBookingDates = (start, end) => {
     if (bookingDatesRef) {
@@ -70,18 +68,20 @@ export default function ListingTabPanels({
 
       <div className="split">
         <div className="maincol">
-          <div className="owner">
-            <div className="owner-av">{listing.owner.initial}</div>
-            <div className="owner-meta">
-              <div className="owner-name">
-                {listing.owner.name}
-                {listing.owner.badge && <span className="owner-badge">{listing.owner.badge}</span>}
-              </div>
-              <div className="owner-sub">
-                Host · <b>{listing.owner.tripsLabel}</b> · {listing.owner.reviewsLabel}
+          {owner ? (
+            <div className="owner">
+              <div className="owner-av">{owner.initial}</div>
+              <div className="owner-meta">
+                <div className="owner-name">
+                  {owner.name}
+                  {owner.badge && <span className="owner-badge">{owner.badge}</span>}
+                </div>
+                <div className="owner-sub">
+                  Host · <b>{owner.tripsLabel}</b> · {owner.reviewsLabel}
+                </div>
               </div>
             </div>
-          </div>
+          ) : null}
 
           <h1 className="listing-title">{listing.title}</h1>
 
@@ -106,6 +106,7 @@ export default function ListingTabPanels({
 
           <div className="tabcard" id="tabcard">
             <div className="tpanel active" data-panel="0">
+              {rating ? (
               <div className="rating-strip">
                 <div className="rblock">
                   <div className="rscore">
@@ -132,8 +133,27 @@ export default function ListingTabPanels({
                       <span className="spec-lbl">{spec.label}</span>
                     </div>
                   ))}
+                  {(pickupLocations || []).map((loc) => (
+                    <div key={`pickup-${loc.id}`} className="spec">
+                      <span className="spec-lbl">Pick-up: {loc.name}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
+              ) : (
+                <div className="spec-grid">
+                  {detailSpecs.map((spec) => (
+                    <div key={spec.label} className="spec">
+                      <span className="spec-lbl">{spec.label}</span>
+                    </div>
+                  ))}
+                  {(pickupLocations || []).map((loc) => (
+                    <div key={`pickup-${loc.id}`} className="spec">
+                      <span className="spec-lbl">Pick-up: {loc.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="descwrap">
                 <p className="desc" id="desc">
                   {description.short}
@@ -152,7 +172,7 @@ export default function ListingTabPanels({
 
             <div className="tpanel" data-panel="1">
               <div className="amen-grid">
-                {amenities.map((a) => (
+                {amenities.length ? amenities.map((a) => (
                   <div key={a.name} className={`amen ${a.featured ? 'feat' : ''}`}>
                     <span className="a-ic" aria-hidden>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -161,13 +181,15 @@ export default function ListingTabPanels({
                     </span>
                     {a.name}
                   </div>
-                ))}
+                )) : (
+                  <p className="listing-empty-hint">No amenities listed for this vehicle.</p>
+                )}
               </div>
             </div>
 
             <div className="tpanel" data-panel="2">
               <div className="cond-list">
-                {conditions.map((c) => (
+                {conditions.length ? conditions.map((c) => (
                   <div key={c.title} className="cond">
                     <span className="c-ic" aria-hidden>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -179,7 +201,9 @@ export default function ListingTabPanels({
                       <span className="c-d">{c.desc}</span>
                     </span>
                   </div>
-                ))}
+                )) : (
+                  <p className="listing-empty-hint">No rental conditions listed.</p>
+                )}
               </div>
             </div>
 
@@ -222,7 +246,7 @@ export default function ListingTabPanels({
 
             <div className="tpanel" data-panel={sleeping ? 4 : 3}>
               <div className="addon-list">
-                {addons.map((a) => (
+                {addons.length ? addons.map((a) => (
                   <div key={a.name} className="addon">
                     <span className="ad-ic" aria-hidden>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -235,7 +259,9 @@ export default function ListingTabPanels({
                     </span>
                     <span className={`ad-price ${a.free ? 'free' : ''}`}>{a.price}</span>
                   </div>
-                ))}
+                )) : (
+                  <p className="listing-empty-hint">No add-ons available for this vehicle.</p>
+                )}
               </div>
             </div>
           </div>
@@ -262,11 +288,13 @@ export default function ListingTabPanels({
               </span>
               <span className="rr" id="rateR">
                 {startDate && endDate ? (
-                  <b>{euro(total)}.00</b>
-                ) : (
+                  <b>{price.format(total)}</b>
+                ) : listing.priceFrom ? (
                   <>
-                    From <b>€{listing.priceFrom}.00</b>
+                    From <b>{listing.priceFrom}</b>
                   </>
+                ) : (
+                  <b>—</b>
                 )}
               </span>
             </div>

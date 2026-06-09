@@ -7,6 +7,7 @@ import HowItWorksSection from '../components/homepage/HowItWorksSection'
 import StaySection from '../components/homepage/StaySection'
 import BlogSection from '../components/homepage/BlogSection'
 import HostCtaSection from '../components/homepage/HostCtaSection'
+import GuestHousesHighlight from '../components/guest-houses/GuestHousesHighlight'
 import ReviewsSection from '../components/homepage/ReviewsSection'
 
 export default function HomePage({ pageData = {} }) {
@@ -19,6 +20,9 @@ export default function HomePage({ pageData = {} }) {
       <PicksSection {...(pageData.picksSection || {})} />
       <HowItWorksSection {...(pageData.howSection || {})} />
       <StaySection {...(pageData.staySection || {})} />
+      {pageData.guestHousesHighlight ? (
+        <GuestHousesHighlight {...pageData.guestHousesHighlight} />
+      ) : null}
       <BlogSection {...(pageData.blogSection || {})} />
       <HostCtaSection {...(pageData.hostCtaSection || {})} />
       <ReviewsSection {...(pageData.reviewsSection || {})} />

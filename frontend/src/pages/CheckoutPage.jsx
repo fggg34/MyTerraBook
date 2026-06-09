@@ -83,7 +83,9 @@ export default function CheckoutPage() {
     updateForm: rtb.updateForm,
     nights: rtb.nights,
     locations: rtb.locations,
+    dropoffLocations: rtb.dropoffLocations,
     blockedDates: rtb.blockedDates,
+    restrictions: rtb.rules?.restrictions ?? [],
     errors: rtb.errors,
     toggleAddon: rtb.toggleAddon,
     locationName: rtb.locationName,
@@ -113,12 +115,14 @@ export default function CheckoutPage() {
                 {rtb.step === 2 && <Step2ExtrasCover {...stepProps} />}
               </div>
               <div className={`stepview${rtb.step === 3 ? ' show' : ''}`}>
-                {rtb.step === 3 && <Step3YourDetails {...stepProps} />}
+                {rtb.step === 3 && <Step3YourDetails {...stepProps} customFields={rtb.customFields} />}
               </div>
               <div className={`stepview${rtb.step === 4 ? ' show' : ''}`}>
                 {rtb.step === 4 && (
                   <Step4Payment
                     {...stepProps}
+                    paymentMethods={rtb.paymentMethods}
+                    prepayPercent={rtb.prepayPercent}
                     saving={rtb.saving}
                     onSubmit={rtb.submit}
                   />

@@ -33,6 +33,8 @@ use App\Http\Controllers\Api\Host\HostDashboardController;
 use App\Http\Controllers\Api\Host\HostGuestHouseController;
 use App\Http\Controllers\Api\MeGuestHouseBookingController;
 use App\Http\Controllers\Api\MeProfileController;
+use App\Http\Controllers\Api\CustomFieldController;
+use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\PublicConfigController;
 use App\Http\Controllers\Api\PublicOrderController;
 use App\Http\Controllers\Api\SearchSuggestionsController;
@@ -72,6 +74,8 @@ Route::get('/health', function () {
 });
 
 Route::get('/public-config', [PublicConfigController::class, 'show']);
+Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
+Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
 Route::get('/homepage', [HomepageController::class, 'show']);
 Route::get('/site-content', [SiteContentController::class, 'index']);

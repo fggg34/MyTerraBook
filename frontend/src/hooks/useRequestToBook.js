@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api, resolveStorageUrl } from '../api'
 import { useAuth } from '../context/AuthContext'
+import { useShopConfig } from '../context/ShopConfigContext'
 import { useToast } from '../context/ToastContext'
 import { usePageContent } from '../context/SiteContentContext'
 import { getRequestToBookConfig, resolveBookingType } from '../data/requestToBookConfig'
@@ -10,6 +11,8 @@ import { formatPhoneForApi, validatePhone } from '../utils/phone'
 import { combineDateAndTime, nightsBetween, toDateOnlyString } from '../utils/requestToBookUtils'
 import { toApiDateTime, parseDateTimeLocal } from '../utils/format'
 import { useBookingRules } from './useBookingRules'
+import { expandBlockedWindows } from '../utils/bookingRestrictions'
+import useLocationOptions, { mergeLocationLists, suggestionToLocation, useAutoSelectLocation } from './useLocationOptions'
 
 const DEFAULT_FORM = {
   startDate: null,
@@ -46,6 +49,7 @@ const DEFAULT_FORM = {
   billingCountry: '',
   agreed: false,
   coupon_code: '',
+  custom_field_values: {},
 }
 
 function parseInitialDates(params) {
@@ -67,8 +71,9 @@ export default function useRequestToBook() {
   const { toast } = useToast()
   const bookingType = resolveBookingType(searchParams)
   const { page: checkoutPage } = usePageContent('checkout')
+  const { prepayPercent } = useShopConfig()
   const config = useMemo(() => {
-    const base = getRequestToBookConfig(bookingType || 'car')
+    const base = getRequestToBookConfig(bookingType || 'car', prepayPercent)
     if (checkoutPage?.stepperSteps?.length) {
       return {
         ...base,
@@ -79,12 +84,14 @@ export default function useRequestToBook() {
       }
     }
     return base
-  }, [bookingType, checkoutPage])
+  }, [bookingType, checkoutPage, prepayPercent])
+
+  const [customFields, setCustomFields] = useState([])
+  const [paymentMethods, setPaymentMethods] = useState([])
 
   const [step, setStep] = useState(1)
   const [confirmed, setConfirmed] = useState(null)
   const [item, setItem] = useState(null)
-  const [locations, setLocations] = useState([])
   const [blockedDates, setBlockedDates] = useState([])
   const [loadState, setLoadState] = useState('loading')
   const [quote, setQuote] = useState(null)
@@ -114,6 +121,57 @@ export default function useRequestToBook() {
   const carId = searchParams.get('car_id')
   const slug = searchParams.get('slug')
   const vehicleType = searchParams.get('vehicle_type') || (bookingType === 'campervan' ? 'campervan' : 'car')
+
+  const pickupLocations = useMemo(() => item?.pickup_locations || [], [item])
+
+  const { options: dropoffOptions } = useLocationOptions({
+    role: 'dropoff',
+    pickupLocationId: form.pickup_location_id,
+    enabled: bookingType !== 'guesthouse' && !!form.pickup_location_id,
+    limit: 50,
+  })
+
+  const dropoffLocations = useMemo(
+    () => dropoffOptions.map(suggestionToLocation),
+    [dropoffOptions],
+  )
+
+  const allLocations = useMemo(
+    () => mergeLocationLists(pickupLocations, dropoffLocations),
+    [pickupLocations, dropoffLocations],
+  )
+
+  useAutoSelectLocation({
+    options: pickupLocations.map((loc) => ({
+      value: String(loc.id),
+      label: loc.name,
+      subtitle: loc.address,
+    })),
+    value: form.pickup_location_id,
+    onSelect: (id) => {
+      setForm((prev) => ({
+        ...prev,
+        pickup_location_id: id,
+        dropoff_location_id: prev.sameReturn ? id : prev.dropoff_location_id || id,
+      }))
+    },
+  })
+
+  useEffect(() => {
+    if (bookingType === 'guesthouse') return undefined
+    api.get('/custom-fields').then((res) => setCustomFields(res.data?.data ?? [])).catch(() => setCustomFields([]))
+    api.get('/payment-methods').then((res) => {
+      const methods = res.data?.data ?? []
+      setPaymentMethods(methods)
+      if (methods.length) {
+        setForm((prev) => ({
+          ...prev,
+          paymentMethod: prev.paymentMethod || methods[0].code,
+        }))
+      }
+    }).catch(() => setPaymentMethods([]))
+    return undefined
+  }, [bookingType])
 
   useEffect(() => {
     if (!bookingType) {
@@ -145,7 +203,6 @@ export default function useRequestToBook() {
       setLoadState('error')
       return
     }
-    api.get('/locations').then((res) => setLocations(res.data?.data || []))
     api
       .get(`/cars/${carId}`)
       .then((res) => {
@@ -153,28 +210,37 @@ export default function useRequestToBook() {
         setItem(data)
         setForm((prev) => {
           const pt = prev.price_type_id || String(data?.price_types?.[0]?.id || '')
-          const pickup = prev.pickup_location_id || String(locations[0]?.id || '')
+          const firstPickup = data?.pickup_locations?.[0]
+          const pickup = prev.pickup_location_id || (firstPickup ? String(firstPickup.id) : '')
           return {
             ...prev,
             price_type_id: pt,
-            pickup_location_id: prev.pickup_location_id || pickup,
-            dropoff_location_id: prev.dropoff_location_id || prev.pickup_location_id || pickup,
+            pickup_location_id: pickup,
+            dropoff_location_id: prev.dropoff_location_id || pickup,
           }
         })
         setLoadState(data ? 'ok' : 'error')
       })
       .catch(() => setLoadState('error'))
+
+    api
+      .get(`/cars/${carId}/availability-calendar`)
+      .then((res) => {
+        const windows = [...(res.data?.booked ?? []), ...(res.data?.blocked ?? [])]
+        setBlockedDates(expandBlockedWindows(windows))
+      })
+      .catch(() => setBlockedDates([]))
   }, [bookingType, carId, slug])
 
   useEffect(() => {
-    if (bookingType !== 'guesthouse' && locations.length && item) {
+    if (bookingType !== 'guesthouse' && pickupLocations.length && item) {
       setForm((prev) => {
         if (prev.pickup_location_id) return prev
-        const id = String(locations[0].id)
+        const id = String(pickupLocations[0].id)
         return { ...prev, pickup_location_id: id, dropoff_location_id: id }
       })
     }
-  }, [locations, item, bookingType])
+  }, [pickupLocations, item, bookingType])
 
   useEffect(() => {
     if (bookingType === 'guesthouse' || !item?.price_types?.length) return
@@ -305,6 +371,13 @@ export default function useRequestToBook() {
           if (!form.customer_country) e.customer_country = 'Required'
           if (!form.licenceNumber.trim()) e.licenceNumber = 'Required'
         }
+        for (const field of customFields) {
+          if (!field.is_required) continue
+          const value = form.custom_field_values?.[field.field_key]
+          if (!value || !String(value).trim()) {
+            e[`custom_${field.field_key}`] = `${field.label} is required`
+          }
+        }
       }
       if (s === 4) {
         if (!form.agreed) e.agreed = 'Required'
@@ -316,7 +389,7 @@ export default function useRequestToBook() {
       setErrors(e)
       return e
     },
-    [form, bookingType, dropoffLocationId],
+    [form, bookingType, dropoffLocationId, customFields],
   )
 
   const stepValidationMessage = useCallback(
@@ -413,6 +486,7 @@ export default function useRequestToBook() {
           customer_country: form.customer_country || undefined,
           rental_options: form.rental_option_ids.map(Number),
           coupon_code: form.coupon_code.trim() || undefined,
+          custom_field_values: form.custom_field_values,
         })
         setConfirmed({
           type: 'vehicle',
@@ -439,8 +513,8 @@ export default function useRequestToBook() {
   }, [item, bookingType])
 
   const locationName = useCallback(
-    (id) => locations.find((l) => String(l.id) === String(id))?.name || '—',
-    [locations],
+    (id) => allLocations.find((l) => String(l.id) === String(id))?.name || '—',
+    [allLocations],
   )
 
   const selectedPriceType = useMemo(
@@ -451,7 +525,7 @@ export default function useRequestToBook() {
   const locationFeeLabel = useCallback(
     (locId, role) => {
       const id = String(locId)
-      const baseId = locations[0] ? String(locations[0].id) : ''
+      const baseId = pickupLocations[0] ? String(pickupLocations[0].id) : ''
       if (role === 'pickup' && id === baseId) return 'Free'
       if (role === 'dropoff' && (form.sameReturn || id === String(form.pickup_location_id))) return 'Free'
 
@@ -468,14 +542,14 @@ export default function useRequestToBook() {
         }
       }
 
-      const loc = locations.find((l) => String(l.id) === id)
+      const loc = allLocations.find((l) => String(l.id) === id)
       if (loc?.pickup_fee_cents > 0) {
         return `+${formatCurrencyFromCents(loc.pickup_fee_cents, quote?.currency || 'EUR')}`
       }
 
       return id === baseId ? 'Free' : '—'
     },
-    [locations, form.pickup_location_id, form.dropoff_location_id, form.sameReturn, quote],
+    [pickupLocations, allLocations, form.pickup_location_id, form.dropoff_location_id, form.sameReturn, quote],
   )
 
   return {
@@ -489,7 +563,9 @@ export default function useRequestToBook() {
     confirmed,
     item,
     itemImage,
-    locations,
+    locations: pickupLocations,
+    dropoffLocations,
+    allLocations,
     blockedDates,
     loadState,
     form,
@@ -508,6 +584,9 @@ export default function useRequestToBook() {
     toggleAddon,
     submit,
     rules,
+    customFields,
+    paymentMethods,
+    prepayPercent,
     slug,
     carId,
   }

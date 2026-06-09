@@ -2,11 +2,12 @@ import { Fuel, Gauge, Tag, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { resolveStorageUrl } from '../../api'
 import { QuoteFeeLines } from './QuotePricingBreakdown'
-import { formatCurrency } from '../../utils/format'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
 
 export default function CarCard({ car, searchQuery = '', categoryName }) {
+  const fmt = useFormatPrice()
   const imageSrc = resolveStorageUrl(car.thumbnail_url || car.main_image_path)
-  const price = car.base_daily_price ?? '0.00'
+  const dailyPrice = car.base_daily_price ?? '0.00'
   const pricing = car.search_pricing
   const detailUrl = `/cars/${car.id}${searchQuery ? `?${searchQuery}` : ''}`
   const checkoutUrl = `/checkout?car_id=${car.id}${searchQuery ? `&${searchQuery}` : ''}`
@@ -68,11 +69,11 @@ export default function CarCard({ car, searchQuery = '', categoryName }) {
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               {Number(pricing.special_discount_amount) > 0 && (
                 <span className="text-sm text-slate-400 line-through">
-                  {formatCurrency(pricing.rental_before_specials, pricing.currency)}
+                  {fmt.format(pricing.rental_before_specials)}
                 </span>
               )}
               <span className="text-2xl font-bold text-brand-950">
-                {formatCurrency(pricing.rental_subtotal, pricing.currency)}
+                {fmt.format(pricing.rental_subtotal)}
               </span>
               <span className="text-sm text-slate-500">
                 rental · {pricing.rental_days} day{pricing.rental_days !== 1 ? 's' : ''}
@@ -80,7 +81,7 @@ export default function CarCard({ car, searchQuery = '', categoryName }) {
             </div>
             {Number(pricing.special_discount_amount) > 0 ? (
               <p className="text-sm font-medium text-emerald-600">
-                Special discount: -{formatCurrency(pricing.special_discount_amount, pricing.currency)}
+                Special discount: -{fmt.format(pricing.special_discount_amount)}
               </p>
             ) : (
               <p className="text-sm text-slate-500">No special price discount for these dates</p>
@@ -88,7 +89,7 @@ export default function CarCard({ car, searchQuery = '', categoryName }) {
             {(pricing.special_prices_applied || []).map((line) => (
               <p key={`${line.name}-${line.amount}`} className="text-xs text-slate-500">
                 {line.name}: {line.direction === 'discount' ? '-' : '+'}
-                {formatCurrency(line.amount, pricing.currency)}
+                {fmt.format(line.amount)}
               </p>
             ))}
             <QuoteFeeLines
@@ -97,13 +98,13 @@ export default function CarCard({ car, searchQuery = '', categoryName }) {
               className="text-xs text-slate-600"
             />
             <p className="text-sm text-slate-600">
-              Total from {formatCurrency(pricing.total, pricing.currency)}
+              Total from {fmt.format(pricing.total)}
             </p>
           </div>
         ) : (
           <div className="mt-4 flex items-baseline gap-1">
             <span className="text-2xl font-bold text-brand-950">
-              {formatCurrency(price)}
+              {fmt.format(dailyPrice)}
             </span>
             <span className="text-sm text-slate-500">/ day</span>
           </div>

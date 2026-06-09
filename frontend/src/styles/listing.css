@@ -203,6 +203,7 @@
 
   /* Amenities panel */
   .amen-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px 22px;}
+  .listing-empty-hint{margin:0;color:var(--slate);font-size:15px;line-height:1.5;}
   .amen{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600;color:var(--ink);}
   .amen .a-ic{width:38px;height:38px;border-radius:11px;background:var(--blue-soft);display:grid;place-items:center;color:var(--blue);flex:0 0 auto;}
   .amen .a-ic svg{width:20px;height:20px;}

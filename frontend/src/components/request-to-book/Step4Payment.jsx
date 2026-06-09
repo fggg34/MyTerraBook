@@ -1,26 +1,28 @@
 import { Check, ChevronLeft, Clock, CreditCard, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import CountrySelect from '../forms/CountrySelect'
-import { PREPAY_PERCENT } from '../../data/requestToBookConfig'
 import { groupCardNumber, formatCardExpiry } from '../../utils/requestToBookUtils'
 import LoadingSpinner from '../ui/LoadingSpinner'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
 
-const PAY_NOTES = {
-  card: (
-    <>
-      <b>{PREPAY_PERCENT}% prepayment on approval.</b> Once your host approves, we charge {PREPAY_PERCENT}% to hold the booking. This prepayment is non-refundable. The remaining balance is paid on pick-up.
-    </>
-  ),
-  instal: (
-    <>
-      <b>Pay in 3.</b> The {PREPAY_PERCENT}% prepayment is taken after approval; the rest can be split into interest-free instalments, with the final balance due on pick-up.
-    </>
-  ),
-  paypal: (
-    <>
-      <b>PayPal.</b> You&apos;ll pay the {PREPAY_PERCENT}% prepayment via PayPal after approval. The balance is settled on pick-up.
-    </>
-  ),
+function buildPayNotes(prepayPercent) {
+  return {
+    card: (
+      <>
+        <b>{prepayPercent}% prepayment on approval.</b> Once your host approves, we charge {prepayPercent}% to hold the booking. This prepayment is non-refundable. The remaining balance is paid on pick-up.
+      </>
+    ),
+    instal: (
+      <>
+        <b>Pay in 3.</b> The {prepayPercent}% prepayment is taken after approval; the rest can be split into interest-free instalments, with the final balance due on pick-up.
+      </>
+    ),
+    paypal: (
+      <>
+        <b>PayPal.</b> You&apos;ll pay the {prepayPercent}% prepayment via PayPal after approval. The balance is settled on pick-up.
+      </>
+    ),
+  }
 }
 
 function TermsLabel({ isGuesthouse }) {
@@ -38,6 +40,12 @@ function TermsLabel({ isGuesthouse }) {
   )
 }
 
+const FALLBACK_METHODS = [
+  { code: 'card', name: 'Card' },
+  { code: 'instal', name: 'Pay in 3' },
+  { code: 'paypal', name: 'PayPal' },
+]
+
 export default function Step4Payment({
   config,
   form,
@@ -46,13 +54,29 @@ export default function Step4Payment({
   saving,
   onSubmit,
   onBack,
+  paymentMethods = [],
+  prepayPercent = 15,
 }) {
-  const note = PAY_NOTES[form.paymentMethod] || PAY_NOTES.card
+  const price = useFormatPrice()
+  const methods = paymentMethods.length ? paymentMethods : FALLBACK_METHODS
+  const payNotes = buildPayNotes(prepayPercent)
+  const note = payNotes[form.paymentMethod] || (
+    <>
+      <b>{prepayPercent}% prepayment on approval.</b> The remaining balance is paid on pick-up or check-in.
+    </>
+  )
+  const showCardForm = ['card', 'offline_card', 'bank_transfer'].includes(form.paymentMethod)
 
   return (
     <div data-step="4">
       <h2 className="panel-title">{config.step4.title}</h2>
       <p className="panel-sub">{config.step4.subtitle}</p>
+
+      {price.isConverted ? (
+        <p className="hint" style={{ marginBottom: 16 }}>
+          Charged in {price.baseCurrency}; shown in {price.displayCurrency} for convenience.
+        </p>
+      ) : null}
 
       <div className="block">
         <div className="block-head">
@@ -60,93 +84,91 @@ export default function Step4Payment({
           <h3>Payment method</h3>
         </div>
         <div className="pay-methods">
-          {[
-            { id: 'card', label: 'Card', Icon: CreditCard },
-            { id: 'instal', label: 'Pay in 3', Icon: CreditCard },
-            { id: 'paypal', label: 'PayPal', Icon: CreditCard },
-          ].map(({ id, label, Icon }) => (
+          {methods.map(({ code, name }) => (
             <button
-              key={id}
+              key={code}
               type="button"
-              className={`pm${form.paymentMethod === id ? ' sel' : ''}`}
-              onClick={() => updateForm({ paymentMethod: id })}
+              className={`pm${form.paymentMethod === code ? ' sel' : ''}`}
+              onClick={() => updateForm({ paymentMethod: code })}
             >
-              <Icon aria-hidden />
-              {label}
+              <CreditCard aria-hidden />
+              {name}
             </button>
           ))}
         </div>
 
-        <div>
-          <div className="card-visual">
-            <div className="cv-brand">VISA</div>
-            <div className="cv-chip" />
-            <div className="cv-num">{form.cardNumber || '•••• •••• •••• ••••'}</div>
-            <div className="cv-foot">
-              <span>
-                <span className="cl">Card holder</span>
-                <br />
-                <span className="cvv">{(form.cardName || 'YOUR NAME').toUpperCase()}</span>
-              </span>
-              <span>
-                <span className="cl">Expires</span>
-                <br />
-                <span className="cvv">{form.cardExpiry || 'MM / YY'}</span>
-              </span>
+        {showCardForm ? (
+          <div>
+            <div className="card-visual">
+              <div className="cv-brand">VISA</div>
+              <div className="cv-chip" />
+              <div className="cv-num">{form.cardNumber || '•••• •••• •••• ••••'}</div>
+              <div className="cv-foot">
+                <span>
+                  <span className="cl">Card holder</span>
+                  <br />
+                  <span className="cvv">{(form.cardName || 'YOUR NAME').toUpperCase()}</span>
+                </span>
+                <span>
+                  <span className="cl">Expires</span>
+                  <br />
+                  <span className="cvv">{form.cardExpiry || 'MM / YY'}</span>
+                </span>
+              </div>
             </div>
-          </div>
-          <div className="frow" style={{ marginTop: 20 }}>
-            <div className="field full">
-              <label>Card number <span className="req">*</span></label>
-              <div className="control ic">
-                <CreditCard className="lead" aria-hidden />
+            <div className="frow" style={{ marginTop: 20 }}>
+              <div className="field full">
+                <label>Card number <span className="req">*</span></label>
+                <div className="control ic">
+                  <CreditCard className="lead" aria-hidden />
+                  <input
+                    className="inp"
+                    inputMode="numeric"
+                    placeholder="1234 5678 9012 3456"
+                    maxLength={19}
+                    value={form.cardNumber}
+                    onChange={(e) => updateForm({ cardNumber: groupCardNumber(e.target.value) })}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="frow tri">
+              <div className="field">
+                <label>Name on card <span className="req">*</span></label>
                 <input
                   className="inp"
-                  inputMode="numeric"
-                  placeholder="1234 5678 9012 3456"
-                  maxLength={19}
-                  value={form.cardNumber}
-                  onChange={(e) => updateForm({ cardNumber: groupCardNumber(e.target.value) })}
+                  placeholder="Full name"
+                  value={form.cardName}
+                  onChange={(e) => updateForm({ cardName: e.target.value })}
                 />
+              </div>
+              <div className="field">
+                <label>Expiry <span className="req">*</span></label>
+                <input
+                  className="inp"
+                  placeholder="MM / YY"
+                  maxLength={7}
+                  value={form.cardExpiry}
+                  onChange={(e) => updateForm({ cardExpiry: formatCardExpiry(e.target.value) })}
+                />
+              </div>
+              <div className="field">
+                <label>CVC <span className="req">*</span></label>
+                <div className="control ic">
+                  <Lock className="lead" aria-hidden />
+                  <input
+                    className="inp"
+                    inputMode="numeric"
+                    placeholder="123"
+                    maxLength={4}
+                    value={form.cardCvc}
+                    onChange={(e) => updateForm({ cardCvc: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+                  />
+                </div>
               </div>
             </div>
           </div>
-          <div className="frow tri">
-            <div className="field">
-              <label>Name on card <span className="req">*</span></label>
-              <input
-                className="inp"
-                placeholder="Full name"
-                value={form.cardName}
-                onChange={(e) => updateForm({ cardName: e.target.value })}
-              />
-            </div>
-            <div className="field">
-              <label>Expiry <span className="req">*</span></label>
-              <input
-                className="inp"
-                placeholder="MM / YY"
-                maxLength={7}
-                value={form.cardExpiry}
-                onChange={(e) => updateForm({ cardExpiry: formatCardExpiry(e.target.value) })}
-              />
-            </div>
-            <div className="field">
-              <label>CVC <span className="req">*</span></label>
-              <div className="control ic">
-                <Lock className="lead" aria-hidden />
-                <input
-                  className="inp"
-                  inputMode="numeric"
-                  placeholder="123"
-                  maxLength={4}
-                  value={form.cardCvc}
-                  onChange={(e) => updateForm({ cardCvc: e.target.value.replace(/\D/g, '').slice(0, 4) })}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        ) : null}
 
         <div className="instal-note">
           <Clock aria-hidden />

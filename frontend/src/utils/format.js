@@ -11,6 +11,45 @@ export function formatCurrencyFromCents(cents, currency = 'EUR') {
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency }).format(num)
 }
 
+export function convertFromBase(amount, targetCurrency, exchangeRates = {}, baseCurrency = 'EUR') {
+  const base = Number(amount)
+  if (Number.isNaN(base)) return 0
+  const rates = exchangeRates || {}
+  const targetRate = rates[targetCurrency] ?? (targetCurrency === baseCurrency ? 1 : 1)
+  return base * targetRate
+}
+
+export function createPriceFormatter({
+  baseCurrency = 'EUR',
+  displayCurrency = 'EUR',
+  exchangeRates = {},
+  currencyMeta = {},
+} = {}) {
+  const formatConverted = (amountInBase) => {
+    const converted = convertFromBase(amountInBase, displayCurrency, exchangeRates, baseCurrency)
+    try {
+      return new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: displayCurrency,
+        minimumFractionDigits: currencyMeta.decimals ?? 0,
+        maximumFractionDigits: currencyMeta.decimals ?? 2,
+      }).format(converted)
+    } catch {
+      return `${displayCurrency} ${converted.toFixed(currencyMeta.decimals ?? 2)}`
+    }
+  }
+
+  return {
+    baseCurrency,
+    displayCurrency,
+    format: (amountInBase) => formatConverted(Number(amountInBase)),
+    formatCents: (cents) => formatConverted(Number(cents) / 100),
+    convertFromBase: (amountInBase) =>
+      convertFromBase(amountInBase, displayCurrency, exchangeRates, baseCurrency),
+    isConverted: displayCurrency !== baseCurrency,
+  }
+}
+
 export function formatDate(iso) {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-GB', {

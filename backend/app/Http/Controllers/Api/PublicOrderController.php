@@ -137,6 +137,7 @@ class PublicOrderController extends Controller
                 'customer_email' => $request->string('customer_email'),
                 'customer_phone' => $request->input('customer_phone'),
                 'customer_country' => $request->input('customer_country'),
+                'custom_field_values' => $this->sanitizeCustomFieldValues($request->input('custom_field_values', [])),
                 'base_rental_cents' => $quote['base_rental_cents'],
                 'extras_cents' => $quote['extras_cents'],
                 'fees_cents' => $quote['fees_cents'],
@@ -248,5 +249,35 @@ class PublicOrderController extends Controller
                 'admin_url' => rtrim((string) config('app.url'), '/').'/admin',
             ]);
         }
+    }
+
+    /**
+     * @param  mixed  $raw
+     * @return array<string, string>
+     */
+    private function sanitizeCustomFieldValues(mixed $raw): array
+    {
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $allowedKeys = \App\Models\CustomField::query()
+            ->where('is_active', true)
+            ->pluck('field_key')
+            ->all();
+
+        $sanitized = [];
+        foreach ($allowedKeys as $key) {
+            if (! array_key_exists($key, $raw)) {
+                continue;
+            }
+            $value = $raw[$key];
+            if ($value === null || $value === '') {
+                continue;
+            }
+            $sanitized[$key] = (string) $value;
+        }
+
+        return $sanitized;
     }
 }

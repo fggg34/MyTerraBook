@@ -146,7 +146,7 @@ function buildRating(house, reviews) {
 }
 
 /** Maps guest-house API detail payload to the shared listing view model. */
-export function mapGuestHouseToListing(house, listingReviews) {
+export function mapGuestHouseToListing(house, listingReviews, priceFormatter) {
   const listingType = 'guesthouse'
   const images = (house.images || []).map((img, i) => ({
     url: resolveStorageUrl(img.path || house.thumbnail),
@@ -177,7 +177,7 @@ export function mapGuestHouseToListing(house, listingReviews) {
     rental_options: [],
   }
 
-  const base = mapCarToListing(carShaped, listingType)
+  const base = mapCarToListing(carShaped, listingType, listingReviews, priceFormatter)
   const reviews = listingReviews ?? mapApiListingReviews(house.listing_reviews)
   const amenities = buildAmenities(house)
   const conditions = buildConditions(house)
@@ -201,6 +201,9 @@ export function mapGuestHouseToListing(house, listingReviews) {
     ...base,
     car: house,
     slug: house.slug,
+    metaTitle: house.meta_title || house.name,
+    metaDescription: house.meta_description || house.short_description || house.description,
+    ogImage: house.og_image || house.thumbnail,
     categoryName: typeLabel(house.type),
     location,
     images: images.length ? images : base.images,

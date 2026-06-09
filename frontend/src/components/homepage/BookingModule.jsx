@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../../api'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
 import { useBookingRules } from '../../hooks/useBookingRules'
+import useLocationOptions, { toFieldSelectOptions, useAutoSelectLocation } from '../../hooks/useLocationOptions'
 import { ensureValidDropoff } from '../../utils/bookingRules'
 import { formatDateTimeLocal, parseDateTimeLocal } from '../../utils/format'
 
@@ -116,8 +116,6 @@ export default function BookingModule({
     pickup_at: '',
     dropoff_at: '',
   })
-  const [pickupLocations, setPickupLocations] = useState([])
-  const [dropoffLocations, setDropoffLocations] = useState([])
   const [guestForm, setGuestForm] = useState({
     city: '',
     check_in: defaultCheckIn(),
@@ -126,59 +124,42 @@ export default function BookingModule({
   })
   const [guestCityLabel, setGuestCityLabel] = useState('')
 
-  useEffect(() => {
-    if (isGuesthouse) return undefined
-    api
-      .get('/search/suggestions', { params: { scope: 'location', role: 'pickup', limit: 50 } })
-      .then((res) => {
-        const locations = res.data?.data ?? []
-        setPickupLocations(locations)
-        const first = locations[0]
-        if (!first) return
-        setVehicleForm((prev) => {
-          if (prev.pickup_location_id) return prev
-          return {
-            ...prev,
-            pickup_location_id: first.value,
-            dropoff_location_id: prev.dropoff_location_id || first.value,
-          }
-        })
-      })
-      .catch(() => {})
-    return undefined
-  }, [isGuesthouse])
+  const { options: pickupOptions, isEmpty: pickupEmpty, loading: pickupLoading } = useLocationOptions({
+    role: 'pickup',
+    enabled: !isGuesthouse,
+    limit: 50,
+  })
 
-  useEffect(() => {
-    if (isGuesthouse || !vehicleForm.pickup_location_id) {
-      setDropoffLocations([])
-      return undefined
-    }
-    api
-      .get('/search/suggestions', {
-        params: {
-          scope: 'location',
-          role: 'dropoff',
-          pickup_location_id: vehicleForm.pickup_location_id,
-          limit: 50,
-        },
-      })
-      .then((res) => setDropoffLocations(res.data?.data ?? []))
-      .catch(() => setDropoffLocations([]))
-    return undefined
-  }, [isGuesthouse, vehicleForm.pickup_location_id])
+  const { options: dropoffOptions } = useLocationOptions({
+    role: 'dropoff',
+    pickupLocationId: vehicleForm.pickup_location_id,
+    enabled: !isGuesthouse && !!vehicleForm.pickup_location_id,
+    limit: 50,
+  })
 
-  useEffect(() => {
-    if (!dropoffLocations.length) return undefined
-    setVehicleForm((prev) => {
-      if (!prev.dropoff_location_id) return prev
-      const stillValid = dropoffLocations.some((loc) => loc.value === prev.dropoff_location_id)
-      if (stillValid) return prev
-      const fallback =
-        dropoffLocations.find((loc) => loc.value === prev.pickup_location_id) || dropoffLocations[0]
-      return { ...prev, dropoff_location_id: fallback?.value || '' }
-    })
-    return undefined
-  }, [dropoffLocations])
+  useAutoSelectLocation({
+    options: pickupOptions,
+    value: vehicleForm.pickup_location_id,
+    onSelect: (id) => {
+      setVehicleForm((prev) => ({
+        ...prev,
+        pickup_location_id: id,
+        dropoff_location_id: prev.dropoff_location_id || id,
+      }))
+    },
+  })
+
+  useAutoSelectLocation({
+    options: dropoffOptions,
+    value: vehicleForm.dropoff_location_id,
+    pickupValueForDropoff: vehicleForm.pickup_location_id,
+    onSelect: (id) => {
+      setVehicleForm((prev) => ({ ...prev, dropoff_location_id: id }))
+    },
+  })
+
+  const pickupFieldOptions = useMemo(() => toFieldSelectOptions(pickupOptions), [pickupOptions])
+  const dropoffFieldOptions = useMemo(() => toFieldSelectOptions(dropoffOptions), [dropoffOptions])
 
   const pickupDate = useMemo(() => parseDateTimeLocal(vehicleForm.pickup_at), [vehicleForm.pickup_at])
   const dropoffDate = useMemo(() => parseDateTimeLocal(vehicleForm.dropoff_at), [vehicleForm.dropoff_at])
@@ -224,6 +205,11 @@ export default function BookingModule({
 
   const renderVehicleFields = () => (
     <>
+      {!pickupLoading && pickupEmpty && (
+        <p className="location-empty-hint" role="status">
+          Pickup locations are being configured. Assign locations to vehicles in admin to enable search.
+        </p>
+      )}
       <div className="field">
         <span className="flabel">Pick-up location</span>
         <FieldSelect
@@ -236,14 +222,11 @@ export default function BookingModule({
               dropoff_location_id: sameAsPickup ? value : prev.dropoff_location_id,
             }))
           }}
-          options={pickupLocations.map((loc) => ({
-            value: loc.value,
-            label: loc.label,
-            subtitle: loc.subtitle,
-          }))}
+          options={pickupFieldOptions}
           placeholder="Select location"
           icon={PIN_ICON}
           ariaLabel="Pick-up location"
+          disabled={pickupEmpty}
         />
       </div>
 
@@ -252,15 +235,11 @@ export default function BookingModule({
         <FieldSelect
           value={vehicleForm.dropoff_location_id}
           onChange={(value) => setVehicleForm((prev) => ({ ...prev, dropoff_location_id: value }))}
-          options={dropoffLocations.map((loc) => ({
-            value: loc.value,
-            label: loc.label,
-            subtitle: loc.subtitle,
-          }))}
+          options={dropoffFieldOptions}
           placeholder="Select location"
           icon={PIN_ICON}
           ariaLabel="Drop-off location"
-          disabled={!vehicleForm.pickup_location_id}
+          disabled={!vehicleForm.pickup_location_id || pickupEmpty}
         />
       </div>
 
