@@ -16,6 +16,10 @@ class FilamentLoginResponse implements Responsable
 {
     public function toResponse($request): RedirectResponse | Redirector
     {
+        if ($request->user()?->isDesigner()) {
+            return redirect()->away(config('app.frontend_url', '/'));
+        }
+
         return redirect()->to(route(Dashboard::getRouteName()));
     }
 }

@@ -31,6 +31,11 @@ class BlogPostResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canManageSiteContent() ?? false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return BlogPostForm::configure($schema);

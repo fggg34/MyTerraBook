@@ -32,6 +32,11 @@ class SiteContentHub extends Page
 
     protected static ?int $navigationSort = -2;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->canManageSiteContent() ?? false;
+    }
+
     protected string $view = 'filament.pages.site-content-hub';
 
     #[Url(as: 'tab')]

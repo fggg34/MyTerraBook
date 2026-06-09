@@ -43,7 +43,27 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
+        return $this->isFullAdmin() || $this->isDesigner();
+    }
+
+    public function isFullAdmin(): bool
+    {
         return $this->role === UserRole::Admin;
+    }
+
+    public function isDesigner(): bool
+    {
+        return $this->role === UserRole::Designer;
+    }
+
+    public function canManageSiteContent(): bool
+    {
+        return $this->isFullAdmin();
+    }
+
+    public function canPreviewSite(): bool
+    {
+        return $this->isFullAdmin() || $this->isDesigner();
     }
 
     public function orders(): HasMany

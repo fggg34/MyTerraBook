@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Api\Admin\AdminOrdersCsvExportController;
 use App\Http\Controllers\Api\Admin\AdminReportsController;
 use App\Http\Controllers\Api\Admin\AdminStatsController;
@@ -48,7 +47,7 @@ Route::middleware('web')->group(function () {
         }
 
         $webUser = auth()->guard('web')->user();
-        if ($webUser && $webUser->role === UserRole::Admin) {
+        if ($webUser?->canPreviewSite()) {
             return response()->json(['preview_unlocked' => true]);
         }
 
@@ -56,7 +55,7 @@ Route::middleware('web')->group(function () {
         if ($token) {
             $accessToken = PersonalAccessToken::findToken($token);
             $sanctumUser = $accessToken?->tokenable;
-            if ($sanctumUser && $sanctumUser->role === UserRole::Admin) {
+            if ($sanctumUser?->canPreviewSite()) {
                 return response()->json(['preview_unlocked' => true]);
             }
         }

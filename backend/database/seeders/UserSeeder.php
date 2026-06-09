@@ -44,6 +44,17 @@ class UserSeeder extends Seeder
             ]
         );
 
+        User::query()->firstOrCreate(
+            ['email' => 'designer@terrabook.test'],
+            [
+                'name' => 'Site Designer',
+                'phone' => '+355000000004',
+                'password' => Hash::make('password'),
+                'role' => UserRole::Designer,
+                'locale' => 'en',
+            ]
+        );
+
         $existingCustomers = User::query()->where('role', UserRole::Customer)->count();
         $targetCustomers = 7;
         if ($existingCustomers < $targetCustomers) {

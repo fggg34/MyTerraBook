@@ -16,6 +16,11 @@ class Dashboard extends BaseDashboard
 {
     protected static ?string $title = 'Dashboard';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->isFullAdmin() ?? false;
+    }
+
     public function getHeading(): string|Htmlable
     {
         return '';

@@ -32,6 +32,11 @@ class SitePageResource extends Resource
 
     protected static bool $shouldRegisterNavigation = false;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canManageSiteContent() ?? false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return SitePageForm::configure($schema);

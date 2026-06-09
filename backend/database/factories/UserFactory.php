@@ -67,4 +67,11 @@ class UserFactory extends Factory
             'role' => UserRole::Host,
         ]);
     }
+
+    public function designer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Designer,
+        ]);
+    }
 }
