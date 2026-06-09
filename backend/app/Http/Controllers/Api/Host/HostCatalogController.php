@@ -42,9 +42,48 @@ class HostCatalogController extends Controller
 
     public function locations(): JsonResponse
     {
-        $rows = Location::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug']);
+        $rows = Location::query()
+            ->with(['schedules:id,location_id,weekday,opening_time,closing_time,is_closed'])
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+                'slug',
+                'default_opening_time',
+                'default_closing_time',
+                'suggested_preselected_time',
+            ])
+            ->map(fn (Location $location): array => [
+                'id' => $location->id,
+                'name' => $location->name,
+                'slug' => $location->slug,
+                'default_opening_time' => self::formatTime($location->default_opening_time),
+                'default_closing_time' => self::formatTime($location->default_closing_time),
+                'suggested_preselected_time' => self::formatTime($location->suggested_preselected_time),
+                'schedules' => $location->schedules->map(fn ($schedule): array => [
+                    'weekday' => $schedule->weekday,
+                    'opening_time' => self::formatTime($schedule->opening_time),
+                    'closing_time' => self::formatTime($schedule->closing_time),
+                    'is_closed' => (bool) $schedule->is_closed,
+                ])->values()->all(),
+            ]);
 
         return response()->json(['data' => $rows]);
+    }
+
+    private static function formatTime(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $str = (string) $value;
+        if (preg_match('/^(\d{1,2}):(\d{2})/', $str, $m)) {
+            return sprintf('%02d:%02d', (int) $m[1], (int) $m[2]);
+        }
+
+        return null;
     }
 
     public function characteristics(): JsonResponse

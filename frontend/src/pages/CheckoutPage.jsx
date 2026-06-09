@@ -90,6 +90,8 @@ export default function CheckoutPage() {
     toggleAddon: rtb.toggleAddon,
     locationName: rtb.locationName,
     locationFeeLabel: rtb.locationFeeLabel,
+    pickupTimeOptions: rtb.pickupTimeOptions,
+    dropoffTimeOptions: rtb.dropoffTimeOptions,
     onNext: rtb.nextStep,
     onBack: rtb.prevStep,
   }

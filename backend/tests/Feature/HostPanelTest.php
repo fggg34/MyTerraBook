@@ -11,6 +11,8 @@ use App\Models\MainCategory;
 use App\Models\SubCategory;
 use App\Models\GuestHouse;
 use App\Models\Location;
+use App\Models\LocationFee;
+use App\Models\OutOfHoursFee;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -261,6 +263,141 @@ class HostPanelTest extends TestCase
         $response->assertJsonPath('data.meta_description', 'Cozy place near the centre.');
         $response->assertJsonPath('data.seasonal_prices.0.name', 'Summer');
         $response->assertJsonPath('data.seasonal_prices.0.price_per_night', 20000);
+    }
+
+    public function test_host_catalog_locations_include_opening_hours(): void
+    {
+        Location::query()->create([
+            'name' => 'Airport Kef',
+            'slug' => 'airport-kef',
+            'is_active' => true,
+            'default_opening_time' => '08:00:00',
+            'default_closing_time' => '20:00:00',
+        ]);
+
+        Sanctum::actingAs(User::factory()->host()->create());
+
+        $this->getJson('/api/host/catalog/locations')
+            ->assertOk()
+            ->assertJsonPath('data.0.default_opening_time', '08:00')
+            ->assertJsonPath('data.0.default_closing_time', '20:00');
+    }
+
+    public function test_host_car_persists_location_times_and_fees(): void
+    {
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Camper', 'is_active' => true, 'is_search_filter' => true]);
+        $pickup = Location::query()->create([
+            'name' => 'Airport',
+            'slug' => 'airport',
+            'is_active' => true,
+            'default_opening_time' => '08:00:00',
+            'default_closing_time' => '20:00:00',
+        ]);
+        $dropoff = Location::query()->create([
+            'name' => 'Downtown',
+            'slug' => 'downtown',
+            'is_active' => true,
+            'default_opening_time' => '09:00:00',
+            'default_closing_time' => '18:00:00',
+        ]);
+        $host = User::factory()->host()->create();
+
+        Sanctum::actingAs($host);
+
+        $carId = $this->postJson('/api/host/cars', [
+            'name' => 'Timed Van',
+            'sub_category_id' => $category->id,
+        ])->assertCreated()->json('data.id');
+
+        $this->patchJson("/api/host/cars/{$carId}/relations", [
+            'pickup_location_ids' => [$pickup->id],
+            'dropoff_location_ids' => [$dropoff->id],
+        ])->assertOk();
+
+        $this->patchJson("/api/host/cars/{$carId}", [
+            'pickup_time_from' => '09:00',
+            'pickup_time_to' => '17:00',
+            'dropoff_time_from' => '10:00',
+            'dropoff_time_to' => '16:00',
+        ])->assertOk()
+            ->assertJsonPath('data.pickup_time_from', '09:00')
+            ->assertJsonPath('data.dropoff_time_to', '16:00');
+
+        $this->patchJson("/api/host/cars/{$carId}", [
+            'pickup_time_from' => '07:00',
+            'pickup_time_to' => '17:00',
+        ])->assertUnprocessable();
+
+        $fee = $this->postJson("/api/host/cars/{$carId}/location-fees", [
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'cost_euros' => 49,
+            'is_one_way_fee' => true,
+        ])->assertCreated()->json('data');
+
+        $this->assertSame($carId, $fee['car_id']);
+        $this->assertSame(4900, $fee['cost_cents']);
+
+        $ooh = $this->postJson("/api/host/cars/{$carId}/out-of-hours-fees", [
+            'name' => 'Late pickup',
+            'time_from' => '20:00',
+            'time_to' => '08:00',
+            'applies_to' => 'both',
+            'pickup_cost_euros' => 35,
+            'dropoff_cost_euros' => 35,
+        ])->assertCreated()->json('data');
+
+        $this->assertContains($carId, $ooh['vehicle_ids']);
+
+        $this->getJson("/api/host/cars/{$carId}/location-fees")
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson("/api/host/cars/{$carId}/out-of-hours-fees")
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        $this->deleteJson("/api/host/cars/{$carId}/location-fees/{$fee['id']}")->assertOk();
+        $this->deleteJson("/api/host/cars/{$carId}/out-of-hours-fees/{$ooh['id']}")->assertOk();
+
+        $this->assertDatabaseMissing('location_fees', ['id' => $fee['id']]);
+        $this->assertDatabaseMissing('out_of_hours_fees', ['id' => $ooh['id']]);
+    }
+
+    public function test_host_car_ignores_platform_location_fees_in_storage(): void
+    {
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Van', 'is_active' => true, 'is_search_filter' => true]);
+        $pickup = Location::query()->create(['name' => 'P', 'slug' => 'p', 'is_active' => true]);
+        $dropoff = Location::query()->create(['name' => 'D', 'slug' => 'd', 'is_active' => true]);
+        $host = User::factory()->host()->create();
+
+        LocationFee::query()->create([
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'cost_cents' => 9999,
+            'is_active' => true,
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $carId = Car::query()->create([
+            'user_id' => $host->id,
+            'sub_category_id' => $category->id,
+            'name' => 'Host Van',
+            'listing_status' => ListingApprovalStatus::Draft,
+        ])->id;
+
+        $car = Car::query()->findOrFail($carId);
+        $car->locations()->attach([
+            $pickup->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+            $dropoff->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+        ]);
+
+        $this->getJson("/api/host/cars/{$carId}/location-fees")
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
     }
 
     public function test_customer_cannot_access_host_dashboard(): void

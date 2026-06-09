@@ -61,9 +61,27 @@ class CarDetailResource extends JsonResource
             'rental_options' => RentalOptionResource::collection($car->rentalOptions),
             'pickup_locations' => LocationResource::collection($pickupLocations),
             'dropoff_locations' => LocationResource::collection($dropoffLocations),
+            'pickup_time_from' => $this->formatTime($car->pickup_time_from),
+            'pickup_time_to' => $this->formatTime($car->pickup_time_to),
+            'dropoff_time_from' => $this->formatTime($car->dropoff_time_from),
+            'dropoff_time_to' => $this->formatTime($car->dropoff_time_to),
             'listing_reviews' => ListingReviewResource::collection(
                 $car->relationLoaded('listingReviews') ? $car->listingReviews : collect(),
             ),
         ];
+    }
+
+    private function formatTime(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $str = (string) $value;
+        if (preg_match('/^(\d{1,2}):(\d{2})/', $str, $m)) {
+            return sprintf('%02d:%02d', (int) $m[1], (int) $m[2]);
+        }
+
+        return null;
     }
 }

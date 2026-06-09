@@ -1,4 +1,5 @@
 import { LISTING_TYPES } from './listingConfig'
+import { timeOptionsForWindow } from '../utils/locationHours'
 
 export const STEPPER_STEPS = [
   { num: 1, sk: 'Step 1', sl: 'Trip & times' },
@@ -186,6 +187,13 @@ export function getRequestToBookConfig(bookingType, prepayPercent = 15) {
 export const TIME_OPTIONS = [
   '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
 ]
+
+export function resolveTimeOptions(car, role = 'pickup') {
+  const from = role === 'pickup' ? car?.pickup_time_from : car?.dropoff_time_from
+  const to = role === 'pickup' ? car?.pickup_time_to : car?.dropoff_time_to
+  const options = timeOptionsForWindow(from, to)
+  return options.length ? options : TIME_OPTIONS
+}
 
 export const OOH_TIME_VALUE = '20:30'
 export const OOH_FEE_DISPLAY = '€35'

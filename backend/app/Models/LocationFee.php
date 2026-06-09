@@ -11,6 +11,7 @@ class LocationFee extends Model
     use HasFactory;
 
     protected $fillable = [
+        'car_id',
         'pickup_location_id',
         'dropoff_location_id',
         'cost_cents',
@@ -32,6 +33,11 @@ class LocationFee extends Model
             'is_one_way_fee' => 'boolean',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function car(): BelongsTo
+    {
+        return $this->belongsTo(Car::class);
     }
 
     public function pickupLocation(): BelongsTo

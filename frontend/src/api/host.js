@@ -175,6 +175,30 @@ export function removeHostCarSpecialPrice(id, priceId) {
   return api.delete(`/host/cars/${id}/special-prices/${priceId}`)
 }
 
+export function getHostCarLocationFees(id) {
+  return api.get(`/host/cars/${id}/location-fees`)
+}
+
+export function createHostCarLocationFee(id, payload) {
+  return api.post(`/host/cars/${id}/location-fees`, payload)
+}
+
+export function deleteHostCarLocationFee(carId, feeId) {
+  return api.delete(`/host/cars/${carId}/location-fees/${feeId}`)
+}
+
+export function getHostCarOutOfHoursFees(id) {
+  return api.get(`/host/cars/${id}/out-of-hours-fees`)
+}
+
+export function createHostCarOutOfHoursFee(id, payload) {
+  return api.post(`/host/cars/${id}/out-of-hours-fees`, payload)
+}
+
+export function deleteHostCarOutOfHoursFee(carId, feeId) {
+  return api.delete(`/host/cars/${carId}/out-of-hours-fees/${feeId}`)
+}
+
 export function getHostCarBookings(params) {
   return api.get('/host/bookings/cars', { params })
 }

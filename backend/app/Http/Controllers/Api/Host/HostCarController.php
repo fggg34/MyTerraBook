@@ -5,13 +5,18 @@ namespace App\Http\Controllers\Api\Host;
 use App\Enums\ListingApprovalStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Host\HostCarResource;
+use App\Http\Resources\Host\HostLocationFeeResource;
+use App\Http\Resources\Host\HostOutOfHoursFeeResource;
 use App\Models\AvailabilityBlock;
 use App\Models\Car;
 use App\Models\DailyFare;
 use App\Models\ExtraHourFare;
 use App\Models\HourlyFare;
+use App\Models\LocationFee;
+use App\Models\OutOfHoursFee;
 use App\Models\SpecialPrice;
 use App\Services\Email\EmailService;
+use App\Services\LocationHoursService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -61,8 +66,7 @@ class HostCarController extends Controller
     public function show(Car $car): JsonResponse
     {
         $this->authorize('view', $car);
-        $car->load(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']);
-        $car->loadCount('carUnits');
+        $this->loadCarRelations($car);
 
         return response()->json(['data' => new HostCarResource($car)]);
     }
@@ -75,9 +79,8 @@ class HostCarController extends Controller
         unset($data['is_active'], $data['listing_status']);
         $car->update($data);
         $this->syncRelations($request, $car);
-
-        $car->load(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']);
-        $car->loadCount('carUnits');
+        $this->validateTimeWindows($car->fresh(['locations']));
+        $this->loadCarRelations($car->fresh());
 
         return response()->json(['data' => new HostCarResource($car)]);
     }
@@ -429,6 +432,129 @@ class HostCarController extends Controller
         return response()->json(['message' => 'Special price deleted.']);
     }
 
+    public function locationFees(Car $car): JsonResponse
+    {
+        $this->authorize('view', $car);
+
+        $fees = $car->locationFees()
+            ->with(['pickupLocation', 'dropoffLocation'])
+            ->orderBy('id')
+            ->get();
+
+        return response()->json(['data' => HostLocationFeeResource::collection($fees)]);
+    }
+
+    public function storeLocationFee(Request $request, Car $car): JsonResponse
+    {
+        $this->authorize('update', $car);
+
+        $data = $request->validate([
+            'pickup_location_id' => ['required', 'integer', 'exists:locations,id'],
+            'dropoff_location_id' => ['required', 'integer', 'exists:locations,id'],
+            'cost_cents' => ['required_without:cost_euros', 'integer', 'min:0'],
+            'cost_euros' => ['required_without:cost_cents', 'numeric', 'min:0'],
+            'multiply_by_days' => ['boolean'],
+            'is_one_way_fee' => ['boolean'],
+        ]);
+
+        $this->assertLocationsLinkedToCar($car, [
+            (int) $data['pickup_location_id'],
+            (int) $data['dropoff_location_id'],
+        ]);
+
+        if (isset($data['cost_euros'])) {
+            $data['cost_cents'] = (int) round($data['cost_euros'] * 100);
+        }
+
+        $fee = $car->locationFees()->create([
+            'pickup_location_id' => $data['pickup_location_id'],
+            'dropoff_location_id' => $data['dropoff_location_id'],
+            'cost_cents' => $data['cost_cents'],
+            'multiply_by_days' => $data['multiply_by_days'] ?? false,
+            'is_one_way_fee' => $data['is_one_way_fee'] ?? false,
+            'is_active' => true,
+        ]);
+
+        $fee->load(['pickupLocation', 'dropoffLocation']);
+
+        return response()->json(['data' => new HostLocationFeeResource($fee)], 201);
+    }
+
+    public function destroyLocationFee(Car $car, LocationFee $locationFee): JsonResponse
+    {
+        $this->authorize('update', $car);
+        abort_unless($locationFee->car_id === $car->id, 404);
+        $locationFee->delete();
+
+        return response()->json(['message' => 'Location fee deleted.']);
+    }
+
+    public function outOfHoursFees(Car $car): JsonResponse
+    {
+        $this->authorize('view', $car);
+
+        $fees = $this->outOfHoursFeesForCar($car);
+
+        return response()->json(['data' => HostOutOfHoursFeeResource::collection($fees)]);
+    }
+
+    public function storeOutOfHoursFee(Request $request, Car $car): JsonResponse
+    {
+        $this->authorize('update', $car);
+
+        $data = $request->validate([
+            'name' => ['nullable', 'string', 'max:120'],
+            'time_from' => ['required', 'date_format:H:i'],
+            'time_to' => ['required', 'date_format:H:i'],
+            'applies_to' => ['required', Rule::in(['pickup', 'dropoff', 'both'])],
+            'pickup_cost_cents' => ['nullable', 'integer', 'min:0'],
+            'dropoff_cost_cents' => ['nullable', 'integer', 'min:0'],
+            'pickup_cost_euros' => ['nullable', 'numeric', 'min:0'],
+            'dropoff_cost_euros' => ['nullable', 'numeric', 'min:0'],
+            'location_ids' => ['nullable', 'array'],
+            'location_ids.*' => ['integer', 'exists:locations,id'],
+        ]);
+
+        if (isset($data['pickup_cost_euros'])) {
+            $data['pickup_cost_cents'] = (int) round($data['pickup_cost_euros'] * 100);
+        }
+        if (isset($data['dropoff_cost_euros'])) {
+            $data['dropoff_cost_cents'] = (int) round($data['dropoff_cost_euros'] * 100);
+        }
+
+        $locationIds = array_map('intval', $data['location_ids'] ?? []);
+        if ($locationIds !== []) {
+            $this->assertLocationsLinkedToCar($car, $locationIds);
+        }
+
+        $pickupCost = (int) ($data['pickup_cost_cents'] ?? 0);
+        $dropoffCost = (int) ($data['dropoff_cost_cents'] ?? 0);
+
+        $fee = OutOfHoursFee::query()->create([
+            'name' => $data['name'] ?? 'Out-of-hours',
+            'time_from' => $data['time_from'],
+            'time_to' => $data['time_to'],
+            'applies_to' => $data['applies_to'],
+            'cost_cents' => max($pickupCost, $dropoffCost),
+            'pickup_cost_cents' => $pickupCost,
+            'dropoff_cost_cents' => $dropoffCost,
+            'vehicle_ids' => [$car->id],
+            'location_ids' => $locationIds === [] ? null : $locationIds,
+            'is_active' => true,
+        ]);
+
+        return response()->json(['data' => new HostOutOfHoursFeeResource($fee)], 201);
+    }
+
+    public function destroyOutOfHoursFee(Car $car, OutOfHoursFee $outOfHoursFee): JsonResponse
+    {
+        $this->authorize('update', $car);
+        abort_unless(in_array($car->id, $outOfHoursFee->vehicle_ids ?? [], true), 404);
+        $outOfHoursFee->delete();
+
+        return response()->json(['message' => 'Out-of-hours fee deleted.']);
+    }
+
     private function validatedData(Request $request, ?Car $car = null): array
     {
         $data = $request->validate([
@@ -443,6 +569,10 @@ class HostCarController extends Controller
             'ical_import_url' => ['nullable', 'url', 'max:500'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],
+            'pickup_time_from' => ['nullable', 'date_format:H:i'],
+            'pickup_time_to' => ['nullable', 'date_format:H:i'],
+            'dropoff_time_from' => ['nullable', 'date_format:H:i'],
+            'dropoff_time_to' => ['nullable', 'date_format:H:i'],
             'location_ids' => ['nullable', 'array'],
             'location_ids.*' => ['integer', 'exists:locations,id'],
             'pickup_location_ids' => ['nullable', 'array'],
@@ -496,6 +626,63 @@ class HostCarController extends Controller
 
         if ($request->has('rental_option_ids')) {
             $car->rentalOptions()->sync($request->input('rental_option_ids', []));
+        }
+    }
+
+    private function loadCarRelations(Car $car): void
+    {
+        $car->load([
+            'subCategory.mainCategory',
+            'locations',
+            'characteristics',
+            'rentalOptions',
+            'locationFees.pickupLocation',
+            'locationFees.dropoffLocation',
+        ]);
+        $car->loadCount('carUnits');
+        $car->setRelation('outOfHoursFees', $this->outOfHoursFeesForCar($car));
+    }
+
+    private function outOfHoursFeesForCar(Car $car)
+    {
+        return OutOfHoursFee::query()
+            ->whereJsonContains('vehicle_ids', $car->id)
+            ->orderBy('id')
+            ->get();
+    }
+
+    private function validateTimeWindows(Car $car): void
+    {
+        $hours = app(LocationHoursService::class);
+
+        $pickupLocations = $car->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_pickup);
+        $dropoffLocations = $car->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_dropoff);
+
+        $hours->assertWindowWithinBounds(
+            $car->pickup_time_from,
+            $car->pickup_time_to,
+            $hours->intersectionForLocations($pickupLocations),
+            'pickup_time',
+        );
+
+        $hours->assertWindowWithinBounds(
+            $car->dropoff_time_from,
+            $car->dropoff_time_to,
+            $hours->intersectionForLocations($dropoffLocations),
+            'dropoff_time',
+        );
+    }
+
+    /**
+     * @param  list<int>  $locationIds
+     */
+    private function assertLocationsLinkedToCar(Car $car, array $locationIds): void
+    {
+        $car->loadMissing('locations');
+        $linked = $car->locations->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        foreach (array_unique($locationIds) as $locationId) {
+            abort_unless(in_array($locationId, $linked, true), 422, 'Location must be assigned to this vehicle first.');
         }
     }
 }

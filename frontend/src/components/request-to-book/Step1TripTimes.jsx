@@ -19,6 +19,8 @@ export default function Step1TripTimes({
   item,
   locationName,
   locationFeeLabel,
+  pickupTimeOptions = TIME_OPTIONS,
+  dropoffTimeOptions = TIME_OPTIONS,
   errors = {},
   onNext,
 }) {
@@ -125,7 +127,7 @@ export default function Step1TripTimes({
                     guideToElement(dropoffRef.current)
                   }}
                 >
-                  {TIME_OPTIONS.map((t) => (
+                  {pickupTimeOptions.map((t) => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                   <option value={OOH_TIME_VALUE}>{oohLabel}</option>
@@ -199,7 +201,7 @@ export default function Step1TripTimes({
                     guideToElement(continueRef.current)
                   }}
                 >
-                  {TIME_OPTIONS.map((t) => (
+                  {dropoffTimeOptions.map((t) => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>

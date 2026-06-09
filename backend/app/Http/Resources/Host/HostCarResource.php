@@ -25,6 +25,10 @@ class HostCarResource extends JsonResource
             'meta_description' => $this->meta_description,
             'units_available' => $this->units_available,
             'ical_import_url' => $this->ical_import_url,
+            'pickup_time_from' => $this->formatTime($this->pickup_time_from),
+            'pickup_time_to' => $this->formatTime($this->pickup_time_to),
+            'dropoff_time_from' => $this->formatTime($this->dropoff_time_from),
+            'dropoff_time_to' => $this->formatTime($this->dropoff_time_to),
             'is_active' => $this->is_active,
             'listing_status' => $this->listing_status?->value,
             'submitted_at' => $this->submitted_at?->toIso8601String(),
@@ -53,8 +57,24 @@ class HostCarResource extends JsonResource
                 'slug' => $this->subCategory->slug,
             ]),
             'units_count' => $this->whenCounted('carUnits'),
+            'location_fees' => HostLocationFeeResource::collection($this->whenLoaded('locationFees')),
+            'out_of_hours_fees' => HostOutOfHoursFeeResource::collection($this->whenLoaded('outOfHoursFees')),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
+    }
+
+    private function formatTime(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $str = (string) $value;
+        if (preg_match('/^(\d{1,2}):(\d{2})/', $str, $m)) {
+            return sprintf('%02d:%02d', (int) $m[1], (int) $m[2]);
+        }
+
+        return null;
     }
 }
