@@ -227,11 +227,15 @@ export default function HostCarEditorPage() {
     }
   }
 
+  const hasId = (list, id) => list.some((x) => String(x) === String(id))
+
   const toggleId = (key, value) => {
     const list = form[key]
     setForm({
       ...form,
-      [key]: list.includes(value) ? list.filter((x) => x !== value) : [...list, value],
+      [key]: hasId(list, value)
+        ? list.filter((x) => String(x) !== String(value))
+        : [...list, value],
     })
   }
 
@@ -403,26 +407,34 @@ export default function HostCarEditorPage() {
         )}
         {step === 2 && (
           <>
-            <div className="host-field"><label>Pickup locations</label>
-              <div className="grid grid-cols-2 gap-2">
-                {catalog.locations.map((loc) => (
-                  <label key={loc.id} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.pickup_location_ids.includes(loc.id)} onChange={() => toggleId('pickup_location_ids', loc.id)} />
-                    {loc.name}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="host-field"><label>Drop-off locations</label>
-              <div className="grid grid-cols-2 gap-2">
-                {catalog.locations.map((loc) => (
-                  <label key={loc.id} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.dropoff_location_ids.includes(loc.id)} onChange={() => toggleId('dropoff_location_ids', loc.id)} />
-                    {loc.name}
-                  </label>
-                ))}
-              </div>
-            </div>
+            {catalog.locations.length === 0 ? (
+              <p className="text-sm text-slate-500">
+                No pickup or drop-off locations are available yet. Ask an admin to add active locations in Impact Rent.
+              </p>
+            ) : (
+              <>
+                <div className="host-field"><label>Pickup locations</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {catalog.locations.map((loc) => (
+                      <label key={loc.id} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={hasId(form.pickup_location_ids, loc.id)} onChange={() => toggleId('pickup_location_ids', loc.id)} />
+                        {loc.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="host-field"><label>Drop-off locations</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {catalog.locations.map((loc) => (
+                      <label key={loc.id} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={hasId(form.dropoff_location_ids, loc.id)} onChange={() => toggleId('dropoff_location_ids', loc.id)} />
+                        {loc.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
         {step === 3 && (
