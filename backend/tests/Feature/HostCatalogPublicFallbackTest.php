@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Location;
 use App\Models\MainCategory;
 use App\Models\SubCategory;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class HostCatalogPublicFallbackTest extends TestCase
@@ -17,6 +20,20 @@ class HostCatalogPublicFallbackTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.0.slug', 'car')
             ->assertJsonPath('data.1.slug', 'campervan');
+    }
+
+    public function test_host_catalog_returns_active_locations(): void
+    {
+        $active = Location::query()->create(['name' => 'Airport Kef', 'slug' => 'airport-kef', 'is_active' => true]);
+        Location::query()->create(['name' => 'Hidden', 'slug' => 'hidden', 'is_active' => false]);
+
+        Sanctum::actingAs(User::factory()->host()->create());
+
+        $this->getJson('/api/host/catalog/locations')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $active->id)
+            ->assertJsonPath('data.0.name', 'Airport Kef');
     }
 
     public function test_public_sub_categories_include_main_category_id(): void

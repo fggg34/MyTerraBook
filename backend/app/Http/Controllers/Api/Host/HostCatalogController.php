@@ -42,7 +42,7 @@ class HostCatalogController extends Controller
 
     public function locations(): JsonResponse
     {
-        $rows = Location::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug', 'city']);
+        $rows = Location::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug']);
 
         return response()->json(['data' => $rows]);
     }
