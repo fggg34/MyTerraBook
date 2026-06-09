@@ -1,8 +1,9 @@
 import { Check } from 'lucide-react'
-import { formatCurrencyFromCents } from '../../utils/format'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { getProtectionPresentation } from '../../data/requestToBookConfig'
 
 export default function ProtectionPlanGrid({ priceTypes, selectedId, onSelect }) {
+  const price = useFormatPrice()
   if (!priceTypes?.length) return null
   return (
     <div className="plan-grid" role="radiogroup" aria-label="Protection plan">
@@ -10,12 +11,10 @@ export default function ProtectionPlanGrid({ priceTypes, selectedId, onSelect })
         const sel = String(pt.id) === String(selectedId)
         const pres = getProtectionPresentation(pt, idx)
         const dailyCents = pt.from_price_per_day_cents || 0
-        const daily = dailyCents
-          ? formatCurrencyFromCents(dailyCents)
-          : pt.from_price_per_day || '€0'
+        const daily = dailyCents ? price.formatCents(dailyCents) : price.format(0)
         const deposit = pt.attribute_value_per_day || pres.deposit
         const priceLine = pres.included || dailyCents === 0
-          ? <><b>€0</b> / included</>
+          ? <><b>{price.format(0)}</b> / included</>
           : <><b>{daily}</b> / day</>
 
         return (

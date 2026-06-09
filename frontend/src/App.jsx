@@ -6,6 +6,7 @@ import { AuthProvider, getLoginPathForRole, normalizeUserRole, useAuth } from '.
 import { getCurrentUser } from './auth'
 import { SiteContentProvider, useSiteContent } from './context/SiteContentContext'
 import { LocalePreferencesProvider } from './context/LocalePreferencesContext'
+import { ShopConfigProvider } from './context/ShopConfigContext'
 import { SiteLayoutProvider } from './context/SiteLayoutContext'
 import { ToastProvider } from './context/ToastContext'
 import { getStoredToken } from './auth'
@@ -227,9 +228,11 @@ function App() {
     <ToastProvider>
       <AuthProvider>
         <SiteContentProvider>
-          <LocalePreferencesBridge>
-            <AppRoutes />
-          </LocalePreferencesBridge>
+          <ShopConfigProvider>
+            <LocalePreferencesBridge>
+              <AppRoutes />
+            </LocalePreferencesBridge>
+          </ShopConfigProvider>
         </SiteContentProvider>
       </AuthProvider>
     </ToastProvider>

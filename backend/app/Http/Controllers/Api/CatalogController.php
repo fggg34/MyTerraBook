@@ -101,6 +101,17 @@ class CatalogController extends Controller
         return response()->json([
             'min_rental_days' => $minRentalDays,
             'max_rental_days' => $maxRentalDays,
+            'restrictions' => $restrictions->map(fn ($restriction) => [
+                'id' => $restriction->id,
+                'name' => $restriction->name,
+                'date_from' => $restriction->date_from->toDateString(),
+                'date_to' => $restriction->date_to->toDateString(),
+                'min_rental_days' => $restriction->min_rental_days,
+                'max_rental_days' => $restriction->max_rental_days,
+                'closed_to_arrival' => $restriction->cta_weekdays ?? [],
+                'closed_to_departure' => $restriction->ctd_weekdays ?? [],
+                'forced_pickup_weekdays' => $restriction->forced_pickup_weekdays ?? [],
+            ])->values(),
         ]);
     }
 
@@ -153,6 +164,9 @@ class CatalogController extends Controller
                 'category_name' => $car->subCategory?->name,
                 'transmission' => $car->transmission,
                 'fuel_type' => $car->fuel_type,
+                'seats' => $car->seats,
+                'sleeps' => $car->sleeps,
+                'bags' => $car->bags,
                 'units_available' => $car->units_available,
                 'main_image_path' => $car->main_image_path,
                 'min_daily_price_cents' => (int) ($car->min_daily_price_cents ?? 0),
@@ -179,6 +193,8 @@ class CatalogController extends Controller
             'subCategory.mainCategory',
             'characteristics',
             'rentalOptions',
+            'locations',
+            'host',
             'listingReviews' => fn ($q) => $q->approved()->latest()->limit(50),
         ]);
 

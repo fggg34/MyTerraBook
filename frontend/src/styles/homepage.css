@@ -232,6 +232,16 @@ body.homepage-active { margin: 0; overflow-x: clip; }
 
   /* ---------- Booking module (tabs + form + footer, one connected card) ---------- */
   .booking{margin-top:40px;}
+  .location-empty-hint{
+    grid-column:1 / -1;
+    margin:0 0 12px;
+    padding:10px 14px;
+    border-radius:10px;
+    background:#fef3c7;
+    color:#92400e;
+    font-size:14px;
+    line-height:1.45;
+  }
   .booking-card{
     filter:drop-shadow(0 30px 60px rgba(8,16,30,.45));
   }

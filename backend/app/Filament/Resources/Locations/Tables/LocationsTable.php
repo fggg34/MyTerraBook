@@ -22,6 +22,10 @@ class LocationsTable
                     ->label('Location Address')
                     ->searchable()
                     ->placeholder('—'),
+                TextColumn::make('cars_count')
+                    ->label('Linked vehicles')
+                    ->counts('cars')
+                    ->sortable(),
                 TextColumn::make('taxRate.name')
                     ->label('Override Tax Rate')
                     ->placeholder('—'),

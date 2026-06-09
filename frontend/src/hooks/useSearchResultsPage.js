@@ -4,6 +4,7 @@ import { api } from '../api'
 import { usePageContent } from '../context/SiteContentContext'
 import { PAGE_SIZE, SORT_OPTIONS, VEHICLE_TYPES } from '../data/searchResultsConfig'
 import { mergePageContent } from '../utils/mergePageContent'
+import { useFormatPrice } from './useFormatPrice'
 import { mapCarToResultCard } from '../utils/mapCarToResultCard'
 import {
   applyQuickFilters,
@@ -97,6 +98,8 @@ export default function useSearchResultsPage(vehicleType) {
     return m
   }, [locations])
 
+  const priceFormatter = useFormatPrice()
+
   const vehicleCards = useMemo(() => {
     return cars
       .filter((car) => mainCategoryMatchesVehicleType(car.main_category_slug, vehicleType))
@@ -104,10 +107,10 @@ export default function useSearchResultsPage(vehicleType) {
         const categoryName = car.category_name || categoryMap[car.category_id]
         return mapCarToResultCard(
           { ...car, categoryName },
-          { searchQuery, config, categoryName },
+          { searchQuery, config, categoryName, priceFormatter },
         )
       })
-  }, [cars, categoryMap, config, searchQuery])
+  }, [cars, categoryMap, config, searchQuery, priceFormatter, vehicleType])
 
   const quickFilterOptions = useMemo(
     () => buildVehicleQuickFilters(vehicleCards),

@@ -53,6 +53,24 @@ class CarForm
                                     ->minValue(1)
                                     ->default(1),
 
+                                TextInput::make('seats')
+                                    ->label('Seats')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(20),
+
+                                TextInput::make('sleeps')
+                                    ->label('Sleeps')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(20),
+
+                                TextInput::make('bags')
+                                    ->label('Bags')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(20),
+
                                 FileUpload::make('main_image_path')
                                     ->label('Image')
                                     ->disk('public')

@@ -38,7 +38,11 @@ class LocationForm
                                 TextInput::make('name')
                                     ->label('Location Name')
                                     ->required()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->helperText(
+                                        'Locations only appear in homepage search after being assigned to at least one vehicle '
+                                        .'(Impact Rent → Cars List → Pickup / Drop Off Locations).'
+                                    ),
 
                                 TextInput::make('address')
                                     ->label('Location Address')

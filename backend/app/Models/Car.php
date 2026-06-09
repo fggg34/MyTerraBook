@@ -28,6 +28,9 @@ class Car extends Model
         'description',
         'transmission',
         'fuel_type',
+        'seats',
+        'sleeps',
+        'bags',
         'main_image_path',
         'details_image_paths',
         'units_available',
@@ -44,6 +47,9 @@ class Car extends Model
     {
         return [
             'units_available' => 'integer',
+            'seats' => 'integer',
+            'sleeps' => 'integer',
+            'bags' => 'integer',
             'details_image_paths' => 'array',
             'is_active' => 'boolean',
             'listing_status' => ListingApprovalStatus::class,

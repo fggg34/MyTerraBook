@@ -90,6 +90,7 @@ export function mergeHomepageData(apiData = {}) {
     tabs: normalizePicksTabs(
       apiData.picksSection?.tabs?.length ? apiData.picksSection.tabs : defaults.picksSection.tabs,
     ),
+    items: apiData.picksSection?.items || {},
   }
 
   const header = {
@@ -111,6 +112,7 @@ export function mergeHomepageData(apiData = {}) {
     ...defaults.staySection,
     ...apiData.staySection,
     allHref: normalizeHomepageHref(apiData.staySection?.allHref ?? defaults.staySection.allHref),
+    cards: apiData.staySection?.cards?.length ? apiData.staySection.cards : [],
   }
 
   const hostCtaSection = {
@@ -162,8 +164,11 @@ export function mergeHomepageData(apiData = {}) {
       ...apiData.reviewsSection,
       reviews: apiData.reviewsSection?.reviews?.length
         ? apiData.reviewsSection.reviews
-        : defaults.reviewsSection.reviews,
+        : apiData.reviewsSection?.isDemo === false
+          ? []
+          : defaults.reviewsSection.reviews,
     },
+    guestHousesHighlight: apiData.guestHousesHighlight || null,
     faqSection: { ...defaults.faqSection, ...apiData.faqSection },
     newsSection: {
       ...defaults.newsSection,

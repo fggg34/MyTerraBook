@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { api } from '../api'
+import useLocationOptions, { useAutoSelectLocation } from './useLocationOptions'
 import { useBookingRules } from './useBookingRules'
 import { ensureValidDropoff } from '../utils/bookingRules'
 import { formatDateTimeLocal, parseDateTimeLocal } from '../utils/format'
@@ -39,8 +39,43 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     guests: '2',
   })
   const [guestCityLabel, setGuestCityLabel] = useState('')
-  const [pickupLocations, setPickupLocations] = useState([])
-  const [dropoffLocations, setDropoffLocations] = useState([])
+
+  const { options: pickupOptions, isEmpty: pickupEmpty } = useLocationOptions({
+    role: 'pickup',
+    enabled: !isGuesthouse,
+    limit: 50,
+  })
+
+  const { options: dropoffOptions } = useLocationOptions({
+    role: 'dropoff',
+    pickupLocationId: vehicleDraft.pickup_location_id,
+    enabled: !isGuesthouse && !!vehicleDraft.pickup_location_id,
+    limit: 50,
+  })
+
+  useAutoSelectLocation({
+    options: pickupOptions,
+    value: vehicleDraft.pickup_location_id,
+    onSelect: (id) => {
+      setVehicleDraft((prev) => ({
+        ...prev,
+        pickup_location_id: id,
+        dropoff_location_id: prev.dropoff_location_id || id,
+      }))
+    },
+  })
+
+  useAutoSelectLocation({
+    options: dropoffOptions,
+    value: vehicleDraft.dropoff_location_id,
+    pickupValueForDropoff: vehicleDraft.pickup_location_id,
+    onSelect: (id) => {
+      setVehicleDraft((prev) => ({ ...prev, dropoff_location_id: id }))
+    },
+  })
+
+  const pickupLocations = pickupOptions
+  const dropoffLocations = dropoffOptions
 
   useEffect(() => {
     if (isGuesthouse) {
@@ -71,60 +106,6 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     query.pickup_at,
     query.dropoff_at,
   ])
-
-  useEffect(() => {
-    if (isGuesthouse) return undefined
-    api
-      .get('/search/suggestions', { params: { scope: 'location', role: 'pickup', limit: 50 } })
-      .then((res) => {
-        const locations = res.data?.data ?? []
-        setPickupLocations(locations)
-        setVehicleDraft((prev) => {
-          if (prev.pickup_location_id) return prev
-          const first = locations[0]
-          if (!first) return prev
-          return {
-            ...prev,
-            pickup_location_id: first.value,
-            dropoff_location_id: prev.dropoff_location_id || first.value,
-          }
-        })
-      })
-      .catch(() => {})
-    return undefined
-  }, [isGuesthouse])
-
-  useEffect(() => {
-    if (isGuesthouse || !vehicleDraft.pickup_location_id) {
-      setDropoffLocations([])
-      return undefined
-    }
-    api
-      .get('/search/suggestions', {
-        params: {
-          scope: 'location',
-          role: 'dropoff',
-          pickup_location_id: vehicleDraft.pickup_location_id,
-          limit: 50,
-        },
-      })
-      .then((res) => setDropoffLocations(res.data?.data ?? []))
-      .catch(() => setDropoffLocations([]))
-    return undefined
-  }, [isGuesthouse, vehicleDraft.pickup_location_id])
-
-  useEffect(() => {
-    if (!dropoffLocations.length) return undefined
-    setVehicleDraft((prev) => {
-      if (!prev.dropoff_location_id) return prev
-      const stillValid = dropoffLocations.some((loc) => loc.value === prev.dropoff_location_id)
-      if (stillValid) return prev
-      const fallback =
-        dropoffLocations.find((loc) => loc.value === prev.pickup_location_id) || dropoffLocations[0]
-      return { ...prev, dropoff_location_id: fallback?.value || '' }
-    })
-    return undefined
-  }, [dropoffLocations])
 
   const pickupDate = useMemo(
     () => parseDateTimeLocal(vehicleDraft.pickup_at),
@@ -191,6 +172,7 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     setGuestCityLabel,
     pickupLocations,
     dropoffLocations,
+    pickupEmpty,
     handleVehicleDates,
     handleGuestDates,
     applyDraft,

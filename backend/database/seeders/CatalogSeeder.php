@@ -269,5 +269,12 @@ class CatalogSeeder extends Seeder
             ['field_key' => 'hotel_name'],
             ['label' => 'Hotel Name', 'type' => 'text', 'sort_order' => 2, 'is_active' => true]
         );
+
+        \App\Models\Setting::putValue('shop.exchange_rates', [
+            'EUR' => 1,
+            'USD' => 1.08,
+            'GBP' => 0.86,
+            'ISK' => 150,
+        ]);
     }
 }

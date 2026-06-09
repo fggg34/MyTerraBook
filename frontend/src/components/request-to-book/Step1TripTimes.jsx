@@ -3,6 +3,7 @@ import { Check, Clock, Plane, Users } from 'lucide-react'
 import TripCalendarPicker from './TripCalendarPicker'
 import RadioOptionCard from './RadioOptionCard'
 import { TIME_OPTIONS, OOH_TIME_VALUE, formatOohTimeOption } from '../../data/requestToBookConfig'
+import { buildDateDisabledChecker } from '../../utils/bookingRestrictions'
 import { guideToElement, fmtDisplayDate } from '../../utils/requestToBookUtils'
 
 export default function Step1TripTimes({
@@ -11,7 +12,9 @@ export default function Step1TripTimes({
   form,
   updateForm,
   locations,
+  dropoffLocations,
   blockedDates,
+  restrictions = [],
   nights,
   item,
   locationName,
@@ -25,6 +28,7 @@ export default function Step1TripTimes({
   const continueRef = useRef(null)
 
   const pickupLocName = locationName(form.pickup_location_id)
+  const dropoffList = dropoffLocations?.length ? dropoffLocations : locations
 
   const handleRangeComplete = () => {
     if (bookingType === 'guesthouse') return
@@ -32,6 +36,8 @@ export default function Step1TripTimes({
   }
 
   const oohLabel = formatOohTimeOption()
+  const pickupDisabled = buildDateDisabledChecker({ blockedDates, restrictions, role: 'pickup' })
+  const dropoffDisabled = buildDateDisabledChecker({ blockedDates, restrictions, role: 'dropoff' })
 
   return (
     <div data-step="1">
@@ -50,6 +56,7 @@ export default function Step1TripTimes({
           startLabel={config.step1.dateStartLabel}
           endLabel={config.step1.dateEndLabel}
           blockedDates={blockedDates}
+          dateDisabled={(date, role) => (role === 'end' ? dropoffDisabled(date) : pickupDisabled(date))}
           onChange={(start, end) => updateForm({ startDate: start, endDate: end })}
           onRangeComplete={handleRangeComplete}
         />
@@ -168,7 +175,7 @@ export default function Step1TripTimes({
           </label>
           {!form.sameReturn && (
             <div className="opt-list" style={{ marginBottom: 18 }}>
-              {locations.map((loc) => (
+              {dropoffList.map((loc) => (
                 <RadioOptionCard
                   key={loc.id}
                   location={loc}

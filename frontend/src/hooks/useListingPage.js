@@ -5,6 +5,7 @@ import { fetchListingReviews } from '../api/listingReviews'
 import { usePageContent } from '../context/SiteContentContext'
 import { LISTING_TYPES } from '../data/listingConfig'
 import { mergePageContent } from '../utils/mergePageContent'
+import { useFormatPrice } from './useFormatPrice'
 import { mapCarToListing } from '../utils/mapCarToListing'
 import { mapGuestHouseToListing } from '../utils/mapGuestHouseToListing'
 import { mapApiListingReviews } from '../utils/mapListingReviews'
@@ -108,13 +109,15 @@ export default function useListingPage(listingType) {
     return undefined
   }, [entity, listingType, typeConfig.mainCategorySlug])
 
+  const priceFormatter = useFormatPrice()
+
   const listing = useMemo(() => {
     if (!entity) return null
     if (listingType === 'guesthouse') {
-      return mapGuestHouseToListing(entity, reviews)
+      return mapGuestHouseToListing(entity, reviews, priceFormatter)
     }
-    return mapCarToListing(entity, listingType, reviews)
-  }, [entity, listingType, reviews])
+    return mapCarToListing(entity, listingType, reviews, priceFormatter)
+  }, [entity, listingType, reviews, priceFormatter])
 
   const reviewTarget = useMemo(() => {
     if (!id) return null
