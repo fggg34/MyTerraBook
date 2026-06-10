@@ -36,10 +36,11 @@ import {
   updateHostCar,
   uploadHostCarImages,
 } from '../../api/host'
+import HostCarLocationsStep from '../../components/host/HostCarLocationsStep'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
-import { formatWindowLabel, intersectionForLocations, timeOptionsForWindow } from '../../utils/locationHours'
+import { intersectionForLocations, timeOptionsForWindow } from '../../utils/locationHours'
 
 const STEPS = ['Vehicle', 'Specs', 'Locations', 'Units', 'Pricing', 'Availability', 'SEO', 'Review']
 
@@ -97,7 +98,6 @@ export default function HostCarEditorPage() {
     dropoff_location_id: '',
     cost_euros: 0,
     is_one_way_fee: false,
-    multiply_by_days: false,
   })
   const [oohFeeDraft, setOohFeeDraft] = useState({
     name: 'Out-of-hours',
@@ -479,311 +479,69 @@ export default function HostCarEditorPage() {
           </>
         )}
         {step === 2 && (
-          <>
-            {catalog.locations.length === 0 ? (
-              <p className="text-sm text-slate-500">
-                No pickup or drop-off locations are available yet. Ask an admin to add active locations in Impact Rent.
-              </p>
-            ) : (
-              <>
-                <div className="host-field"><label>Pickup locations</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {catalog.locations.map((loc) => (
-                      <label key={loc.id} className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={hasId(form.pickup_location_ids, loc.id)} onChange={() => toggleId('pickup_location_ids', loc.id)} />
-                        {loc.name}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div className="host-field"><label>Drop-off locations</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {catalog.locations.map((loc) => (
-                      <label key={loc.id} className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={hasId(form.dropoff_location_ids, loc.id)} onChange={() => toggleId('dropoff_location_ids', loc.id)} />
-                        {loc.name}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {canConfigureTimes ? (
-                  <>
-                    <h3 className="mb-2 mt-4 font-semibold text-brand-950">Pickup & drop-off times</h3>
-                    <p className="mb-3 text-sm text-slate-500">
-                      Times must fall within admin opening hours for all selected locations.
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="host-field">
-                        <label>Pickup from</label>
-                        <p className="mb-1 text-xs text-slate-500">Allowed: {formatWindowLabel(pickupBounds)}</p>
-                        <select
-                          value={form.pickup_time_from}
-                          onChange={(e) => setForm({ ...form, pickup_time_from: e.target.value })}
-                        >
-                          <option value="">Select</option>
-                          {pickupTimeOptions.map((t) => <option key={`pf-${t}`} value={t}>{t}</option>)}
-                        </select>
-                      </div>
-                      <div className="host-field">
-                        <label>Pickup to</label>
-                        <select
-                          value={form.pickup_time_to}
-                          onChange={(e) => setForm({ ...form, pickup_time_to: e.target.value })}
-                        >
-                          <option value="">Select</option>
-                          {pickupTimeOptions.map((t) => <option key={`pt-${t}`} value={t}>{t}</option>)}
-                        </select>
-                      </div>
-                      <div className="host-field">
-                        <label>Drop-off from</label>
-                        <p className="mb-1 text-xs text-slate-500">Allowed: {formatWindowLabel(dropoffBounds)}</p>
-                        <select
-                          value={form.dropoff_time_from}
-                          onChange={(e) => setForm({ ...form, dropoff_time_from: e.target.value })}
-                        >
-                          <option value="">Select</option>
-                          {dropoffTimeOptions.map((t) => <option key={`df-${t}`} value={t}>{t}</option>)}
-                        </select>
-                      </div>
-                      <div className="host-field">
-                        <label>Drop-off to</label>
-                        <select
-                          value={form.dropoff_time_to}
-                          onChange={(e) => setForm({ ...form, dropoff_time_to: e.target.value })}
-                        >
-                          <option value="">Select</option>
-                          {dropoffTimeOptions.map((t) => <option key={`dt-${t}`} value={t}>{t}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <p className="mt-4 text-sm text-slate-500">Select at least one pickup and one drop-off location to set times.</p>
-                )}
-
-                {recordId ? (
-                  <>
-                    <h3 className="mb-2 mt-6 font-semibold text-brand-950">Pickup / drop-off fees</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="host-field">
-                        <label>Pickup location</label>
-                        <select
-                          value={locationFeeDraft.pickup_location_id}
-                          onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, pickup_location_id: e.target.value })}
-                        >
-                          <option value="">Select</option>
-                          {selectedPickupLocations.map((loc) => (
-                            <option key={loc.id} value={loc.id}>{loc.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="host-field">
-                        <label>Drop-off location</label>
-                        <select
-                          value={locationFeeDraft.dropoff_location_id}
-                          onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, dropoff_location_id: e.target.value })}
-                        >
-                          <option value="">Select</option>
-                          {selectedDropoffLocations.map((loc) => (
-                            <option key={loc.id} value={loc.id}>{loc.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="host-field">
-                        <label>Fee (€)</label>
-                        <input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={locationFeeDraft.cost_euros}
-                          onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, cost_euros: Number(e.target.value) })}
-                        />
-                      </div>
-                      <div className="host-field flex items-end gap-4 pb-2">
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            checked={locationFeeDraft.is_one_way_fee}
-                            onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, is_one_way_fee: e.target.checked })}
-                          />
-                          One-way fee
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            checked={locationFeeDraft.multiply_by_days}
-                            onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, multiply_by_days: e.target.checked })}
-                          />
-                          Per day
-                        </label>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="host-btn secondary"
-                      disabled={!locationFeeDraft.pickup_location_id || !locationFeeDraft.dropoff_location_id}
-                      onClick={async () => {
-                        try {
-                          await createHostCarLocationFee(recordId, locationFeeDraft)
-                          getHostCarLocationFees(recordId).then((res) => setLocationFees(res.data.data || []))
-                          setLocationFeeDraft({
-                            pickup_location_id: '',
-                            dropoff_location_id: '',
-                            cost_euros: 0,
-                            is_one_way_fee: false,
-                            multiply_by_days: false,
-                          })
-                          toast('Fee added', 'success')
-                        } catch (err) {
-                          toast(err.response?.data?.message || 'Could not add fee', 'error')
-                        }
-                      }}
-                    >
-                      Add location fee
-                    </button>
-                    <ul className="mt-3 space-y-2 text-sm">
-                      {locationFees.map((fee) => (
-                        <li key={fee.id} className="flex justify-between">
-                          <span>
-                            {fee.pickup_location?.name || 'Pickup'} → {fee.dropoff_location?.name || 'Drop-off'}
-                            : €{fee.cost_euros ?? (fee.cost_cents / 100).toFixed(2)}
-                            {fee.is_one_way_fee ? ' (one-way)' : ''}
-                            {fee.multiply_by_days ? ' / day' : ''}
-                          </span>
-                          <button
-                            type="button"
-                            className="host-btn danger"
-                            onClick={async () => {
-                              await deleteHostCarLocationFee(recordId, fee.id)
-                              setLocationFees((prev) => prev.filter((f) => f.id !== fee.id))
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <h3 className="mb-2 mt-6 font-semibold text-brand-950">Out-of-hours fees</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="host-field">
-                        <label>Name</label>
-                        <input value={oohFeeDraft.name} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, name: e.target.value })} />
-                      </div>
-                      <div className="host-field">
-                        <label>Applies to</label>
-                        <select value={oohFeeDraft.applies_to} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, applies_to: e.target.value })}>
-                          <option value="pickup">Pick-up only</option>
-                          <option value="dropoff">Drop-off only</option>
-                          <option value="both">Both</option>
-                        </select>
-                      </div>
-                      <div className="host-field">
-                        <label>From time</label>
-                        <input type="time" value={oohFeeDraft.time_from} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, time_from: e.target.value })} />
-                      </div>
-                      <div className="host-field">
-                        <label>To time</label>
-                        <input type="time" value={oohFeeDraft.time_to} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, time_to: e.target.value })} />
-                      </div>
-                      <div className="host-field">
-                        <label>Pick-up charge (€)</label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={oohFeeDraft.pickup_cost_euros}
-                          onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, pickup_cost_euros: Number(e.target.value) })}
-                        />
-                      </div>
-                      <div className="host-field">
-                        <label>Drop-off charge (€)</label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={oohFeeDraft.dropoff_cost_euros}
-                          onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, dropoff_cost_euros: Number(e.target.value) })}
-                        />
-                      </div>
-                    </div>
-                    <div className="host-field">
-                      <label>Locations (optional — leave empty for all)</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {[...selectedPickupLocations, ...selectedDropoffLocations]
-                          .filter((loc, idx, arr) => arr.findIndex((x) => x.id === loc.id) === idx)
-                          .map((loc) => (
-                            <label key={`ooh-${loc.id}`} className="flex items-center gap-2 text-sm">
-                              <input
-                                type="checkbox"
-                                checked={oohFeeDraft.location_ids.some((x) => String(x) === String(loc.id))}
-                                onChange={() => {
-                                  const ids = oohFeeDraft.location_ids
-                                  const has = ids.some((x) => String(x) === String(loc.id))
-                                  setOohFeeDraft({
-                                    ...oohFeeDraft,
-                                    location_ids: has
-                                      ? ids.filter((x) => String(x) !== String(loc.id))
-                                      : [...ids, loc.id],
-                                  })
-                                }}
-                              />
-                              {loc.name}
-                            </label>
-                          ))}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="host-btn secondary"
-                      disabled={!oohFeeDraft.time_from || !oohFeeDraft.time_to}
-                      onClick={async () => {
-                        try {
-                          await createHostCarOutOfHoursFee(recordId, oohFeeDraft)
-                          getHostCarOutOfHoursFees(recordId).then((res) => setOutOfHoursFees(res.data.data || []))
-                          setOohFeeDraft({
-                            name: 'Out-of-hours',
-                            time_from: '20:00',
-                            time_to: '08:00',
-                            applies_to: 'both',
-                            pickup_cost_euros: 35,
-                            dropoff_cost_euros: 35,
-                            location_ids: [],
-                          })
-                          toast('Out-of-hours fee added', 'success')
-                        } catch (err) {
-                          toast(err.response?.data?.message || 'Could not add fee', 'error')
-                        }
-                      }}
-                    >
-                      Add out-of-hours fee
-                    </button>
-                    <ul className="mt-3 space-y-2 text-sm">
-                      {outOfHoursFees.map((fee) => (
-                        <li key={fee.id} className="flex justify-between">
-                          <span>
-                            {fee.name}: {fee.time_from}–{fee.time_to}
-                            {' '}(pick-up €{fee.pickup_cost_euros}, drop-off €{fee.dropoff_cost_euros})
-                          </span>
-                          <button
-                            type="button"
-                            className="host-btn danger"
-                            onClick={async () => {
-                              await deleteHostCarOutOfHoursFee(recordId, fee.id)
-                              setOutOfHoursFees((prev) => prev.filter((f) => f.id !== fee.id))
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                ) : (
-                  <p className="mt-4 text-sm text-slate-500">Save the vehicle first to configure fees.</p>
-                )}
-              </>
-            )}
-          </>
+          <HostCarLocationsStep
+            catalogLocations={catalog.locations}
+            form={form}
+            setForm={setForm}
+            selectedPickupLocations={selectedPickupLocations}
+            selectedDropoffLocations={selectedDropoffLocations}
+            pickupBounds={pickupBounds}
+            dropoffBounds={dropoffBounds}
+            pickupTimeOptions={pickupTimeOptions}
+            dropoffTimeOptions={dropoffTimeOptions}
+            canConfigureTimes={canConfigureTimes}
+            recordId={recordId}
+            locationFees={locationFees}
+            outOfHoursFees={outOfHoursFees}
+            locationFeeDraft={locationFeeDraft}
+            setLocationFeeDraft={setLocationFeeDraft}
+            oohFeeDraft={oohFeeDraft}
+            setOohFeeDraft={setOohFeeDraft}
+            onAddLocationFee={async () => {
+              try {
+                await createHostCarLocationFee(recordId, {
+                  ...locationFeeDraft,
+                  multiply_by_days: false,
+                })
+                getHostCarLocationFees(recordId).then((res) => setLocationFees(res.data.data || []))
+                setLocationFeeDraft({
+                  pickup_location_id: '',
+                  dropoff_location_id: '',
+                  cost_euros: 0,
+                  is_one_way_fee: false,
+                })
+                toast('Fee added', 'success')
+              } catch (err) {
+                toast(err.response?.data?.message || 'Could not add fee', 'error')
+              }
+            }}
+            onDeleteLocationFee={async (feeId) => {
+              await deleteHostCarLocationFee(recordId, feeId)
+              setLocationFees((prev) => prev.filter((f) => f.id !== feeId))
+            }}
+            onAddOohFee={async () => {
+              try {
+                await createHostCarOutOfHoursFee(recordId, oohFeeDraft)
+                getHostCarOutOfHoursFees(recordId).then((res) => setOutOfHoursFees(res.data.data || []))
+                setOohFeeDraft({
+                  name: 'Out-of-hours',
+                  time_from: '20:00',
+                  time_to: '08:00',
+                  applies_to: 'both',
+                  pickup_cost_euros: 35,
+                  dropoff_cost_euros: 35,
+                  location_ids: [],
+                })
+                toast('Out-of-hours fee added', 'success')
+              } catch (err) {
+                toast(err.response?.data?.message || 'Could not add fee', 'error')
+              }
+            }}
+            onDeleteOohFee={async (feeId) => {
+              await deleteHostCarOutOfHoursFee(recordId, feeId)
+              setOutOfHoursFees((prev) => prev.filter((f) => f.id !== feeId))
+            }}
+          />
         )}
         {step === 3 && (
           recordId ? (

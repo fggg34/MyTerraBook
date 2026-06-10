@@ -224,7 +224,418 @@
 .host-status.rejected { background: #fef3f2; color: #b42318; }
 .host-status.inactive { background: #f4f4f5; color: #71717a; }
 
+/* Select2-style controls in host forms */
+.host-select-wrap,
+.host-multi-select {
+  width: 100%;
+}
+
+.host-form-card .field-select {
+  width: 100%;
+}
+
+.host-form-card .field-control-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #e2e7ef;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.host-form-card .field-select.is-open .field-control-wrap,
+.host-multi-select.is-open .host-multi-trigger {
+  border-color: #45a06a;
+  box-shadow: 0 0 0 3px rgba(69, 160, 106, 0.12);
+}
+
+.host-form-card .field-select-trigger {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #94a3b8;
+  width: 100%;
+  padding: 10px 0;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.host-form-card .field-select-trigger.filled {
+  color: #0f2036;
+}
+
+.host-form-card .field-select-value {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.host-form-card .field-select-chevron,
+.host-multi-chevron {
+  width: 14px;
+  height: 14px;
+  color: #64748b;
+  flex: 0 0 auto;
+}
+
+.host-form-card .field-select-menu {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #e2e7ef;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(15, 32, 54, 0.12);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.host-form-card .field-select-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+  font-family: inherit;
+}
+
+.host-form-card .field-select-item:hover,
+.host-form-card .field-select-item.highlighted {
+  background: #f6f8fb;
+}
+
+.host-form-card .field-select-item.selected {
+  background: #e8f5ee;
+}
+
+.host-form-card .field-select-item.selected .field-select-label {
+  color: #3a8d5d;
+}
+
+.host-form-card .field-select-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f2036;
+}
+
+.host-form-card .field-select-sub {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.host-form-card .field-select-status {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.host-multi-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #e2e7ef;
+  border-radius: 10px;
+  padding: 6px 12px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.host-multi-trigger:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+.host-multi-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.host-multi-placeholder {
+  font-size: 14px;
+  color: #94a3b8;
+  padding: 4px 0;
+}
+
+.host-multi-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f2036;
+  background: #eef2f8;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  padding: 4px 8px 4px 10px;
+}
+
+.host-multi-tag-remove {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.host-multi-tag-remove:hover {
+  color: #b42318;
+}
+
+.host-multi-menu {
+  background: #fff;
+  border: 1px solid #e2e7ef;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(15, 32, 54, 0.12);
+  overflow: hidden;
+}
+
+.host-multi-search {
+  padding: 8px;
+  border-bottom: 1px solid #f1f3f8;
+}
+
+.host-multi-search input {
+  width: 100%;
+  border: 1px solid #e2e7ef;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+  outline: none;
+}
+
+.host-multi-search input:focus {
+  border-color: #45a06a;
+  box-shadow: 0 0 0 3px rgba(69, 160, 106, 0.12);
+}
+
+.host-multi-options {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.host-multi-status {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.host-multi-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+  font-family: inherit;
+}
+
+.host-multi-option:hover,
+.host-multi-option.highlighted {
+  background: #f6f8fb;
+}
+
+.host-multi-option.selected {
+  background: #e8f5ee;
+}
+
+.host-multi-check {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #c9d3e2;
+  border-radius: 4px;
+  flex: 0 0 auto;
+  margin-top: 2px;
+  position: relative;
+}
+
+.host-multi-check.on {
+  background: #45a06a;
+  border-color: #45a06a;
+}
+
+.host-multi-check.on::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.host-multi-option-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f2036;
+}
+
+.host-multi-option-sub {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.host-locations-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.host-subsection {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #f1f3f8;
+}
+
+.host-subsection-head {
+  margin-bottom: 16px;
+}
+
+.host-subsection-head h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f2036;
+}
+
+.host-subsection-head p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.host-fees-section {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid #e2e7ef;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.host-fees-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.host-field-span-2 {
+  grid-column: 1 / -1;
+}
+
+.host-fees-toggle {
+  display: flex;
+  align-items: stretch;
+}
+
+.host-check-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid #e2e7ef;
+  border-radius: 10px;
+  padding: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.host-check-card input {
+  width: auto;
+  margin-top: 3px;
+}
+
+.host-check-card strong {
+  display: block;
+  font-size: 13px;
+  color: #0f2036;
+}
+
+.host-check-card small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.host-fee-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.host-fee-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e2e7ef;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.host-fee-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.host-fee-route {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f2036;
+}
+
+.host-fee-amount {
+  font-size: 13px;
+  color: #64748b;
+}
+
 @media (max-width: 900px) {
   .host-shell { grid-template-columns: 1fr; }
   .host-sidebar { border-right: none; border-bottom: 1px solid #e2e7ef; }
+  .host-locations-grid,
+  .host-fees-form { grid-template-columns: 1fr; }
 }
