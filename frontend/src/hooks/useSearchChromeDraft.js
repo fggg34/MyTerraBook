@@ -25,6 +25,8 @@ function dateTimeWithTime(date, time) {
 
 export default function useSearchChromeDraft({ vehicleType, query, updateSearch }) {
   const isGuesthouse = vehicleType === 'guesthouse'
+  const vehicleMainCategory =
+    vehicleType === 'campervan' ? 'campervan' : vehicleType === 'car' ? 'car' : ''
 
   const [vehicleDraft, setVehicleDraft] = useState({
     pickup_location_id: '',
@@ -42,6 +44,7 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
 
   const { options: pickupOptions, isEmpty: pickupEmpty } = useLocationOptions({
     role: 'pickup',
+    mainCategory: vehicleMainCategory,
     enabled: !isGuesthouse,
     limit: 50,
   })
@@ -49,6 +52,7 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
   const { options: dropoffOptions } = useLocationOptions({
     role: 'dropoff',
     pickupLocationId: vehicleDraft.pickup_location_id,
+    mainCategory: vehicleMainCategory,
     enabled: !isGuesthouse && !!vehicleDraft.pickup_location_id,
     limit: 50,
   })

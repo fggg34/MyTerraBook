@@ -90,7 +90,6 @@ export function mergeHomepageData(apiData = {}) {
     tabs: normalizePicksTabs(
       apiData.picksSection?.tabs?.length ? apiData.picksSection.tabs : defaults.picksSection.tabs,
     ),
-    items: apiData.picksSection?.items || {},
   }
 
   const header = {
@@ -112,7 +111,6 @@ export function mergeHomepageData(apiData = {}) {
     ...defaults.staySection,
     ...apiData.staySection,
     allHref: normalizeHomepageHref(apiData.staySection?.allHref ?? defaults.staySection.allHref),
-    cards: apiData.staySection?.cards?.length ? apiData.staySection.cards : [],
   }
 
   const hostCtaSection = {

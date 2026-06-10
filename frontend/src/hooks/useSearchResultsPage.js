@@ -75,13 +75,23 @@ export default function useSearchResultsPage(vehicleType) {
     const carParams = { ...params }
     if (config.mainCategorySlug) carParams.main_category = config.mainCategorySlug
 
+    const fetchCars = (params) => api.get('/cars', { params }).then((res) => res.data.data || [])
+
     Promise.all([
-      api.get('/cars', { params: carParams }),
+      fetchCars(carParams),
       api.get('/sub-categories', { params: config.mainCategorySlug ? { main_category: config.mainCategorySlug, search_filters_only: 1 } : {} }),
       api.get('/locations'),
     ])
-      .then(([carsRes, catRes, locRes]) => {
-        setCars(carsRes.data.data || [])
+      .then(async ([carData, catRes, locRes]) => {
+        const hasLocationFilter = query.pickup_location_id || query.dropoff_location_id
+        if (carData.length === 0 && hasLocationFilter) {
+          const fallbackParams = { ...carParams }
+          delete fallbackParams.pickup_location_id
+          delete fallbackParams.dropoff_location_id
+          carData = await fetchCars(fallbackParams)
+        }
+
+        setCars(carData)
         setCategories(catRes.data.data || [])
         setLocations(locRes.data.data || [])
       })

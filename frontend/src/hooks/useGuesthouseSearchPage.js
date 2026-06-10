@@ -70,9 +70,23 @@ export default function useGuesthouseSearchPage(enabled = true) {
     if (query.min_price) params.min_price = query.min_price
     if (query.max_price) params.max_price = query.max_price
 
-    api
-      .get('/guest-houses', { params })
-      .then((res) => setHouses(res.data?.data ?? []))
+    const fetchHouses = (requestParams) =>
+      api.get('/guest-houses', { params: requestParams }).then((res) => res.data?.data ?? [])
+
+    fetchHouses(params)
+      .then(async (data) => {
+        const hasDateFilter = query.check_in && query.check_out
+        if (data.length === 0 && hasDateFilter) {
+          const fallbackParams = { per_page: 100 }
+          if (query.city) fallbackParams.city = query.city
+          if (query.type) fallbackParams.type = query.type
+          if (query.guests) fallbackParams.guests = query.guests
+          if (query.min_price) fallbackParams.min_price = query.min_price
+          if (query.max_price) fallbackParams.max_price = query.max_price
+          data = await fetchHouses(fallbackParams)
+        }
+        setHouses(data)
+      })
       .catch(() => setHouses([]))
       .finally(() => setLoading(false))
   }, [

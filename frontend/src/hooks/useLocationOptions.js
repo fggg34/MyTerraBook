@@ -7,6 +7,7 @@ import { api } from '../api'
 export default function useLocationOptions({
   role = 'pickup',
   pickupLocationId = '',
+  mainCategory = '',
   enabled = true,
   limit = 50,
 } = {}) {
@@ -33,6 +34,9 @@ export default function useLocationOptions({
     if (role === 'dropoff' && pickupLocationId) {
       params.pickup_location_id = pickupLocationId
     }
+    if (mainCategory) {
+      params.main_category = mainCategory
+    }
 
     api
       .get('/search/suggestions', { params })
@@ -49,7 +53,7 @@ export default function useLocationOptions({
     return () => {
       cancelled = true
     }
-  }, [role, pickupLocationId, enabled, limit])
+  }, [role, pickupLocationId, mainCategory, enabled, limit])
 
   const isEmpty = !loading && options.length === 0
 

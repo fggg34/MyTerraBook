@@ -109,6 +109,8 @@ export default function BookingModule({
       ]
   const [activeTab, setActiveTab] = useState(tabList[0]?.id || 'campervan')
   const isGuesthouse = activeTab === 'guesthouses'
+  const vehicleMainCategory =
+    activeTab === 'campervan' ? 'campervan' : activeTab === 'cars' ? 'car' : ''
 
   const [vehicleForm, setVehicleForm] = useState({
     pickup_location_id: '',
@@ -126,6 +128,7 @@ export default function BookingModule({
 
   const { options: pickupOptions, isEmpty: pickupEmpty, loading: pickupLoading } = useLocationOptions({
     role: 'pickup',
+    mainCategory: vehicleMainCategory,
     enabled: !isGuesthouse,
     limit: 50,
   })
@@ -133,6 +136,7 @@ export default function BookingModule({
   const { options: dropoffOptions } = useLocationOptions({
     role: 'dropoff',
     pickupLocationId: vehicleForm.pickup_location_id,
+    mainCategory: vehicleMainCategory,
     enabled: !isGuesthouse && !!vehicleForm.pickup_location_id,
     limit: 50,
   })

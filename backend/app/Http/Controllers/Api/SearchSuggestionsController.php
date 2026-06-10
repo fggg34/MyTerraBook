@@ -40,10 +40,22 @@ class SearchSuggestionsController extends Controller
             ->where('is_active', true)
             ->orderBy('name');
 
+        $mainCategory = $request->string('main_category')->toString();
+
         if ($role === 'pickup') {
-            $query->whereHas('cars', fn ($carQuery) => $carQuery->where('car_location.allows_pickup', true));
+            $query->whereHas('cars', function ($carQuery) use ($mainCategory) {
+                $carQuery->where('car_location.allows_pickup', true);
+                if ($mainCategory !== '') {
+                    $carQuery->whereHas('subCategory.mainCategory', fn ($builder) => $builder->where('slug', $mainCategory));
+                }
+            });
         } else {
-            $query->whereHas('cars', fn ($carQuery) => $carQuery->where('car_location.allows_dropoff', true));
+            $query->whereHas('cars', function ($carQuery) use ($mainCategory) {
+                $carQuery->where('car_location.allows_dropoff', true);
+                if ($mainCategory !== '') {
+                    $carQuery->whereHas('subCategory.mainCategory', fn ($builder) => $builder->where('slug', $mainCategory));
+                }
+            });
 
             if ($pickupLocationId) {
                 $pickup = Location::query()->find($pickupLocationId);

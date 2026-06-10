@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useStayListings } from '../../hooks/useHomepageListings'
 import ProductCard from './ProductCard'
 
 function SectionLink({ href, className, children }) {
@@ -17,8 +18,9 @@ function SectionLink({ href, className, children }) {
   )
 }
 
-export default function StaySection({ heading, subtitle, allLabel, allHref, cards = [] }) {
+export default function StaySection({ heading, subtitle, allLabel, allHref }) {
   const trackRef = useRef(null)
+  const { cards, loading } = useStayListings()
 
   const scroll = (direction) => {
     const track = trackRef.current
@@ -52,18 +54,24 @@ export default function StaySection({ heading, subtitle, allLabel, allHref, card
             </svg>
           </button>
           <div className="track" ref={trackRef}>
-            {cards.map((card) => (
-              <ProductCard
-                key={card.slug || card.id || card.name}
-                name={card.name}
-                image={card.image}
-                badge={card.badge}
-                specs={card.specs}
-                price={card.price}
-                per={card.per || 'night'}
-                href={card.href}
-              />
-            ))}
+            {loading ? (
+              <p className="stay-empty" role="status">Loading guesthouses…</p>
+            ) : cards.length ? (
+              cards.map((card) => (
+                <ProductCard
+                  key={card.slug || card.id || card.name}
+                  name={card.name}
+                  image={card.image}
+                  badge={card.badge}
+                  specs={card.specs}
+                  price={card.price}
+                  per={card.per || 'night'}
+                  href={card.href}
+                />
+              ))
+            ) : (
+              <p className="stay-empty" role="status">No guesthouses available yet.</p>
+            )}
           </div>
           <button className="carousel-nav next" type="button" aria-label="Next" onClick={() => scroll(1)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">

@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { usePicksListings } from '../../hooks/useHomepageListings'
 import ProductCard from './ProductCard'
 
 function SectionLink({ href, className, children }) {
@@ -17,11 +18,22 @@ function SectionLink({ href, className, children }) {
   )
 }
 
-export default function PicksSection({ heading, tabs = [], items = {} }) {
+export default function PicksSection({ heading, tabs = [] }) {
   const trackRef = useRef(null)
-  const [activeTab, setActiveTab] = useState(tabs[0]?.id || 'camper')
+  const { items, loading } = usePicksListings()
+  const tabList = useMemo(() => {
+    const availableTabs = tabs.filter((tab) => (items[tab.id] || []).length > 0)
+    return availableTabs.length ? availableTabs : tabs
+  }, [tabs, items])
+  const [activeTab, setActiveTab] = useState(tabList[0]?.id || 'camper')
   const activeItems = items[activeTab] || []
-  const activeTabMeta = tabs.find((t) => t.id === activeTab) || tabs[0]
+  const activeTabMeta = tabList.find((t) => t.id === activeTab) || tabList[0]
+
+  useEffect(() => {
+    if (!tabList.some((tab) => tab.id === activeTab)) {
+      setActiveTab(tabList[0]?.id || 'camper')
+    }
+  }, [activeTab, tabList])
 
   const scroll = (direction) => {
     const track = trackRef.current
@@ -37,7 +49,7 @@ export default function PicksSection({ heading, tabs = [], items = {} }) {
         <div className="picks-head">
           <div className="picks-head-l">{heading && <h2>{heading}</h2>}</div>
           <div className="picks-tabs">
-            {tabs.map((tab) => (
+            {tabList.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
@@ -57,9 +69,15 @@ export default function PicksSection({ heading, tabs = [], items = {} }) {
             </svg>
           </button>
           <div className="track" ref={trackRef}>
-            {activeItems.map((item) => (
-              <ProductCard key={item.id || item.name} {...item} />
-            ))}
+            {loading ? (
+              <p className="picks-empty" role="status">Loading listings…</p>
+            ) : activeItems.length ? (
+              activeItems.map((item) => (
+                <ProductCard key={item.id || item.name} {...item} />
+              ))
+            ) : (
+              <p className="picks-empty" role="status">No listings available yet.</p>
+            )}
           </div>
           <button className="carousel-nav next" type="button" aria-label="Next" onClick={() => scroll(1)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">

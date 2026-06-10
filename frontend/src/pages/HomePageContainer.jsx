@@ -1,71 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api'
 import { useSiteLayout } from '../context/SiteLayoutContext'
-import { useFormatPrice } from '../hooks/useFormatPrice'
 import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
-import { VEHICLE_TYPES } from '../data/searchResultsConfig'
-import { mapCarsToPickCards } from '../utils/mapCarsToPickCards'
-import { mapGuestHousesToStayCards } from '../utils/mapGuestHousesToStayCards'
-import { mainCategoryMatchesVehicleType } from '../utils/vehicleCategoryFilter'
 import { mergeHomepageData } from '../utils/mergeHomepageData'
 import HomePage from './HomePage'
 
-function splitCarsIntoPickTabs(cars = [], priceFormatter) {
-  const camper = []
-  const car = []
-
-  for (const item of cars) {
-    if (mainCategoryMatchesVehicleType(item.main_category_slug, 'campervan')) {
-      camper.push(
-        mapCarsToPickCards([item], { detailBase: VEHICLE_TYPES.campervan.route, priceFormatter })[0],
-      )
-    } else if (mainCategoryMatchesVehicleType(item.main_category_slug, 'car')) {
-      car.push(mapCarsToPickCards([item], { detailBase: VEHICLE_TYPES.car.route, priceFormatter })[0])
-    }
-  }
-
-  return {
-    camper: camper.slice(0, 8),
-    car: car.slice(0, 8),
-  }
-}
-
-function withBackendListings(pageData, cars = [], guesthouses = [], priceFormatter) {
-  let next = pageData
-
-  if (cars.length) {
-    const pickTabs = splitCarsIntoPickTabs(cars, priceFormatter)
-    next = {
-      ...next,
-      picksSection: {
-        ...next.picksSection,
-        items: {
-          ...next.picksSection.items,
-          ...(pickTabs.camper.length ? { camper: pickTabs.camper } : {}),
-          ...(pickTabs.car.length ? { car: pickTabs.car } : {}),
-        },
-      },
-    }
-  }
-
-  if (guesthouses.length) {
-    const stayCards = mapGuestHousesToStayCards(guesthouses).slice(0, 8)
-    next = {
-      ...next,
-      staySection: {
-        ...next.staySection,
-        cards: stayCards,
-      },
-    }
-  }
-
-  return next
-}
-
 export default function HomePageContainer() {
   const { siteData } = useSiteLayout()
-  const priceFormatter = useFormatPrice()
   const seo = usePageSeo('home', {
     source: {
       heading: siteData?.hero?.heading,
@@ -73,8 +15,6 @@ export default function HomePageContainer() {
       backgroundImage: siteData?.hero?.backgroundImage,
     },
   })
-  const [cars, setCars] = useState([])
-  const [guesthouses, setGuesthouses] = useState([])
   const [homepageData, setHomepageData] = useState(null)
 
   useEffect(() => {
@@ -84,24 +24,9 @@ export default function HomePageContainer() {
       .catch(() => setHomepageData(null))
   }, [])
 
-  useEffect(() => {
-    api
-      .get('/cars')
-      .then((res) => setCars(res.data?.data ?? []))
-      .catch(() => setCars([]))
-  }, [])
-
-  useEffect(() => {
-    api
-      .get('/guest-houses', { params: { per_page: 8 } })
-      .then((res) => setGuesthouses(res.data?.data ?? []))
-      .catch(() => setGuesthouses([]))
-  }, [])
-
   const pageData = useMemo(() => {
-    const merged = mergeHomepageData({ ...siteData, ...homepageData })
-    return withBackendListings(merged, cars, guesthouses, priceFormatter)
-  }, [siteData, homepageData, cars, guesthouses, priceFormatter])
+    return mergeHomepageData({ ...siteData, ...homepageData })
+  }, [siteData, homepageData])
 
   return (
     <>
