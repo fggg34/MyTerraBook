@@ -14,6 +14,8 @@ import {
   uploadHostGuestHouseImages,
 } from '../../api/host'
 import AddressAutocomplete from '../../components/host/AddressAutocomplete'
+import HostDatePicker from '../../components/host/HostDatePicker'
+import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
@@ -261,9 +263,12 @@ export default function HostGuestHouseEditorPage() {
             <div className="host-field"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="host-field"><label>Slug</label><input value={form.slug} placeholder="Auto-generated from name" onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
             <div className="host-field"><label>Type</label>
-              <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                {['room', 'apartment', 'villa', 'cottage', 'chalet', 'studio'].map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
+              <HostSelect
+                value={form.type}
+                onChange={(v) => setForm({ ...form, type: v })}
+                options={['room', 'apartment', 'villa', 'cottage', 'chalet', 'studio'].map((t) => ({ value: t, label: t }))}
+                ariaLabel="Property type"
+              />
             </div>
             <AddressAutocomplete
               mapsApiKey={mapsApiKey}
@@ -327,10 +332,13 @@ export default function HostGuestHouseEditorPage() {
               <div className="host-field"><label>Cleaning fee (€)</label><input type="number" value={form.cleaning_fee_euros} onChange={(e) => setForm({ ...form, cleaning_fee_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Security deposit (€)</label><input type="number" value={form.security_deposit_euros} onChange={(e) => setForm({ ...form, security_deposit_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Tax rate</label>
-                <select value={form.tax_rate_id || ''} onChange={(e) => setForm({ ...form, tax_rate_id: e.target.value ? Number(e.target.value) : null })}>
-                  <option value="">None</option>
-                  {taxRates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
+                <HostSelect
+                  value={form.tax_rate_id ? String(form.tax_rate_id) : ''}
+                  onChange={(v) => setForm({ ...form, tax_rate_id: v ? Number(v) : null })}
+                  options={taxRates.map((t) => ({ value: String(t.id), label: t.name }))}
+                  placeholder="None"
+                  ariaLabel="Tax rate"
+                />
               </div>
             </div>
 
@@ -338,8 +346,8 @@ export default function HostGuestHouseEditorPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="host-field"><label>Name</label><input value={seasonalDraft.name} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, name: e.target.value })} /></div>
               <div className="host-field"><label>Price / night (€)</label><input type="number" value={seasonalDraft.price_per_night_euros} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, price_per_night_euros: Number(e.target.value) })} /></div>
-              <div className="host-field"><label>From date</label><input type="date" value={seasonalDraft.date_from} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, date_from: e.target.value })} /></div>
-              <div className="host-field"><label>To date</label><input type="date" value={seasonalDraft.date_to} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, date_to: e.target.value })} /></div>
+              <div className="host-field"><label>From date</label><HostDatePicker value={seasonalDraft.date_from} onChange={(v) => setSeasonalDraft({ ...seasonalDraft, date_from: v })} /></div>
+              <div className="host-field"><label>To date</label><HostDatePicker value={seasonalDraft.date_to} onChange={(v) => setSeasonalDraft({ ...seasonalDraft, date_to: v })} minDate={seasonalDraft.date_from ? new Date(seasonalDraft.date_from) : undefined} /></div>
               <div className="host-field"><label>Minimum nights</label><input type="number" value={seasonalDraft.minimum_nights} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, minimum_nights: e.target.value })} /></div>
             </div>
             <button type="button" className="host-btn secondary" disabled={!seasonalDraft.name || !seasonalDraft.date_from || !seasonalDraft.date_to} onClick={() => {
@@ -366,9 +374,12 @@ export default function HostGuestHouseEditorPage() {
               <div className="host-field"><label>Max nights</label><input type="number" value={form.max_nights} onChange={(e) => setForm({ ...form, max_nights: e.target.value })} /></div>
             </div>
             <div className="host-field"><label>Cancellation policy</label>
-              <select value={form.cancellation_policy} onChange={(e) => setForm({ ...form, cancellation_policy: e.target.value })}>
-                {['flexible', 'moderate', 'strict'].map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
+              <HostSelect
+                value={form.cancellation_policy}
+                onChange={(v) => setForm({ ...form, cancellation_policy: v })}
+                options={['flexible', 'moderate', 'strict'].map((p) => ({ value: p, label: p }))}
+                ariaLabel="Cancellation policy"
+              />
             </div>
           </>
         )}
@@ -377,8 +388,8 @@ export default function HostGuestHouseEditorPage() {
             <>
               <h3 className="mb-2 font-semibold text-brand-950">Availability blocks</h3>
               <div className="grid grid-cols-3 gap-3">
-                <div className="host-field"><label>From</label><input type="date" value={blockDraft.blocked_from} onChange={(e) => setBlockDraft({ ...blockDraft, blocked_from: e.target.value })} /></div>
-                <div className="host-field"><label>To</label><input type="date" value={blockDraft.blocked_to} onChange={(e) => setBlockDraft({ ...blockDraft, blocked_to: e.target.value })} /></div>
+                <div className="host-field"><label>From</label><HostDatePicker value={blockDraft.blocked_from} onChange={(v) => setBlockDraft({ ...blockDraft, blocked_from: v })} /></div>
+                <div className="host-field"><label>To</label><HostDatePicker value={blockDraft.blocked_to} onChange={(v) => setBlockDraft({ ...blockDraft, blocked_to: v })} minDate={blockDraft.blocked_from ? new Date(blockDraft.blocked_from) : undefined} /></div>
                 <div className="host-field"><label>Note</label><input value={blockDraft.note} onChange={(e) => setBlockDraft({ ...blockDraft, note: e.target.value })} /></div>
               </div>
               <button type="button" className="host-btn secondary" disabled={!blockDraft.blocked_from || !blockDraft.blocked_to} onClick={async () => {

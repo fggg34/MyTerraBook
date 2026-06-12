@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { usePageContent } from '../../context/SiteContentContext'
 import PageHead from '../seo/PageHead'
 import usePageSeo from '../../hooks/usePageSeo'
+import 'react-datepicker/dist/react-datepicker.css'
 import '../../styles/host-panel.css'
 
 const ICONS = {

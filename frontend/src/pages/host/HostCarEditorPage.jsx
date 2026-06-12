@@ -37,6 +37,9 @@ import {
   uploadHostCarImages,
 } from '../../api/host'
 import HostCarLocationsStep from '../../components/host/HostCarLocationsStep'
+import HostDatePicker from '../../components/host/HostDatePicker'
+import HostDateTimePicker from '../../components/host/HostDateTimePicker'
+import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
@@ -394,31 +397,23 @@ export default function HostCarEditorPage() {
           <>
             <div className="host-field"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="host-field"><label>Main category</label>
-              <select
-                value={form.main_category_id}
-                onChange={(e) => setForm({
-                  ...form,
-                  main_category_id: e.target.value,
-                  sub_category_id: '',
-                })}
-              >
-                <option value="">Select main category</option>
-                {catalog.mainCategories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <HostSelect
+                value={String(form.main_category_id || '')}
+                onChange={(v) => setForm({ ...form, main_category_id: v, sub_category_id: '' })}
+                options={catalog.mainCategories.map((c) => ({ value: String(c.id), label: c.name }))}
+                placeholder="Select main category"
+                ariaLabel="Main category"
+              />
             </div>
             <div className="host-field"><label>Sub category</label>
-              <select
-                value={form.sub_category_id}
+              <HostSelect
+                value={String(form.sub_category_id || '')}
                 disabled={!form.main_category_id}
-                onChange={(e) => setForm({ ...form, sub_category_id: e.target.value })}
-              >
-                <option value="">Select sub category</option>
-                {filteredSubCategories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+                onChange={(v) => setForm({ ...form, sub_category_id: v })}
+                options={filteredSubCategories.map((c) => ({ value: String(c.id), label: c.name }))}
+                placeholder="Select sub category"
+                ariaLabel="Sub category"
+              />
             </div>
             <div className="host-field"><label>Description</label><textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             {recordId ? (
@@ -447,14 +442,20 @@ export default function HostCarEditorPage() {
         {step === 1 && (
           <>
             <div className="host-field"><label>Transmission</label>
-              <select value={form.transmission} onChange={(e) => setForm({ ...form, transmission: e.target.value })}>
-                {['manual', 'automatic'].map((v) => <option key={v} value={v}>{v}</option>)}
-              </select>
+              <HostSelect
+                value={form.transmission}
+                onChange={(v) => setForm({ ...form, transmission: v })}
+                options={['manual', 'automatic'].map((v) => ({ value: v, label: v }))}
+                ariaLabel="Transmission"
+              />
             </div>
             <div className="host-field"><label>Fuel type</label>
-              <select value={form.fuel_type} onChange={(e) => setForm({ ...form, fuel_type: e.target.value })}>
-                {['petrol', 'diesel', 'electric', 'hybrid'].map((v) => <option key={v} value={v}>{v}</option>)}
-              </select>
+              <HostSelect
+                value={form.fuel_type}
+                onChange={(v) => setForm({ ...form, fuel_type: v })}
+                options={['petrol', 'diesel', 'electric', 'hybrid'].map((v) => ({ value: v, label: v }))}
+                ariaLabel="Fuel type"
+              />
             </div>
             <div className="host-field"><label>Characteristics</label>
               <div className="grid grid-cols-2 gap-2">
@@ -568,10 +569,13 @@ export default function HostCarEditorPage() {
               <h3 className="mb-2 font-semibold text-brand-950">Daily fares</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="host-field"><label>Price type</label>
-                  <select value={fareDraft.price_type_id} onChange={(e) => setFareDraft({ ...fareDraft, price_type_id: e.target.value })}>
-                    <option value="">Select</option>
-                    {catalog.priceTypes.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
+                  <HostSelect
+                    value={String(fareDraft.price_type_id || '')}
+                    onChange={(v) => setFareDraft({ ...fareDraft, price_type_id: v })}
+                    options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
+                    placeholder="Select"
+                    ariaLabel="Daily fare price type"
+                  />
                 </div>
                 <div className="host-field"><label>From days</label><input type="number" value={fareDraft.from_days} onChange={(e) => setFareDraft({ ...fareDraft, from_days: Number(e.target.value) })} /></div>
                 <div className="host-field"><label>To days</label><input type="number" value={fareDraft.to_days} onChange={(e) => setFareDraft({ ...fareDraft, to_days: Number(e.target.value) })} /></div>
@@ -593,10 +597,13 @@ export default function HostCarEditorPage() {
               <h3 className="mb-2 mt-6 font-semibold text-brand-950">Hourly fares</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="host-field"><label>Price type</label>
-                  <select value={hourlyDraft.price_type_id} onChange={(e) => setHourlyDraft({ ...hourlyDraft, price_type_id: e.target.value })}>
-                    <option value="">Select</option>
-                    {catalog.priceTypes.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
+                  <HostSelect
+                    value={String(hourlyDraft.price_type_id || '')}
+                    onChange={(v) => setHourlyDraft({ ...hourlyDraft, price_type_id: v })}
+                    options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
+                    placeholder="Select"
+                    ariaLabel="Hourly fare price type"
+                  />
                 </div>
                 <div className="host-field"><label>Min minutes</label><input type="number" value={hourlyDraft.min_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, min_minutes: Number(e.target.value) })} /></div>
                 <div className="host-field"><label>Max minutes</label><input type="number" value={hourlyDraft.max_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, max_minutes: Number(e.target.value) })} /></div>
@@ -618,10 +625,13 @@ export default function HostCarEditorPage() {
               <h3 className="mb-2 mt-6 font-semibold text-brand-950">Extra-hour fares</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="host-field"><label>Price type</label>
-                  <select value={extraDraft.price_type_id} onChange={(e) => setExtraDraft({ ...extraDraft, price_type_id: e.target.value })}>
-                    <option value="">Select</option>
-                    {catalog.priceTypes.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
+                  <HostSelect
+                    value={String(extraDraft.price_type_id || '')}
+                    onChange={(v) => setExtraDraft({ ...extraDraft, price_type_id: v })}
+                    options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
+                    placeholder="Select"
+                    ariaLabel="Extra-hour fare price type"
+                  />
                 </div>
                 <div className="host-field"><label>€ / extra hour</label><input type="number" value={extraDraft.charge_per_extra_hour_euros} onChange={(e) => setExtraDraft({ ...extraDraft, charge_per_extra_hour_euros: Number(e.target.value) })} /></div>
               </div>
@@ -647,8 +657,8 @@ export default function HostCarEditorPage() {
             <>
               <h3 className="mb-2 font-semibold text-brand-950">Availability blocks</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="host-field"><label>From</label><input type="datetime-local" value={blockDraft.starts_at} onChange={(e) => setBlockDraft({ ...blockDraft, starts_at: e.target.value })} /></div>
-                <div className="host-field"><label>To</label><input type="datetime-local" value={blockDraft.ends_at} onChange={(e) => setBlockDraft({ ...blockDraft, ends_at: e.target.value })} /></div>
+                <div className="host-field"><label>From</label><HostDateTimePicker value={blockDraft.starts_at} onChange={(v) => setBlockDraft({ ...blockDraft, starts_at: v })} placeholder="Select start date & time" /></div>
+                <div className="host-field"><label>To</label><HostDateTimePicker value={blockDraft.ends_at} onChange={(v) => setBlockDraft({ ...blockDraft, ends_at: v })} placeholder="Select end date & time" /></div>
                 <div className="host-field"><label>Units blocked</label><input type="number" min={1} value={blockDraft.units_blocked} onChange={(e) => setBlockDraft({ ...blockDraft, units_blocked: Number(e.target.value) })} /></div>
                 <div className="host-field"><label>Notes</label><input value={blockDraft.notes} onChange={(e) => setBlockDraft({ ...blockDraft, notes: e.target.value })} /></div>
               </div>
@@ -674,18 +684,28 @@ export default function HostCarEditorPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="host-field"><label>Name</label><input value={specialDraft.name} onChange={(e) => setSpecialDraft({ ...specialDraft, name: e.target.value })} /></div>
                 <div className="host-field"><label>Type</label>
-                  <select value={specialDraft.type} onChange={(e) => setSpecialDraft({ ...specialDraft, type: e.target.value })}>
-                    <option value="charge">Charge</option>
-                    <option value="discount">Discount</option>
-                  </select>
+                  <HostSelect
+                    value={specialDraft.type}
+                    onChange={(v) => setSpecialDraft({ ...specialDraft, type: v })}
+                    options={[
+                      { value: 'charge', label: 'Charge' },
+                      { value: 'discount', label: 'Discount' },
+                    ]}
+                    ariaLabel="Special price type"
+                  />
                 </div>
-                <div className="host-field"><label>From date</label><input type="date" value={specialDraft.date_from} onChange={(e) => setSpecialDraft({ ...specialDraft, date_from: e.target.value })} /></div>
-                <div className="host-field"><label>To date</label><input type="date" value={specialDraft.date_to} onChange={(e) => setSpecialDraft({ ...specialDraft, date_to: e.target.value })} /></div>
+                <div className="host-field"><label>From date</label><HostDatePicker value={specialDraft.date_from} onChange={(v) => setSpecialDraft({ ...specialDraft, date_from: v })} /></div>
+                <div className="host-field"><label>To date</label><HostDatePicker value={specialDraft.date_to} onChange={(v) => setSpecialDraft({ ...specialDraft, date_to: v })} minDate={specialDraft.date_from ? new Date(specialDraft.date_from) : undefined} /></div>
                 <div className="host-field"><label>Value type</label>
-                  <select value={specialDraft.value_mode} onChange={(e) => setSpecialDraft({ ...specialDraft, value_mode: e.target.value })}>
-                    <option value="percentage">Percentage</option>
-                    <option value="fixed">Fixed</option>
-                  </select>
+                  <HostSelect
+                    value={specialDraft.value_mode}
+                    onChange={(v) => setSpecialDraft({ ...specialDraft, value_mode: v })}
+                    options={[
+                      { value: 'percentage', label: 'Percentage' },
+                      { value: 'fixed', label: 'Fixed' },
+                    ]}
+                    ariaLabel="Special price value type"
+                  />
                 </div>
                 {specialDraft.value_mode === 'percentage' ? (
                   <div className="host-field"><label>Percentage (bips, 1000 = 10%)</label><input type="number" min={0} value={specialDraft.value_percent_bips} onChange={(e) => setSpecialDraft({ ...specialDraft, value_percent_bips: Number(e.target.value) })} /></div>

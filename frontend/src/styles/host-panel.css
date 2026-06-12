@@ -224,6 +224,52 @@
 .host-status.rejected { background: #fef3f2; color: #b42318; }
 .host-status.inactive { background: #f4f4f5; color: #71717a; }
 
+/* Datepicker controls in host forms */
+.host-datepicker-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.host-datepicker-wrap.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.host-datepicker-input,
+.host-datepicker-wrap .tb-datepicker-input {
+  width: 100%;
+  border: 1px solid #e2e7ef;
+  border-radius: 10px;
+  padding: 10px 36px 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #0f2036;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.host-datepicker-input:focus,
+.host-datepicker-wrap .tb-datepicker-input:focus {
+  outline: none;
+  border-color: #45a06a;
+  box-shadow: 0 0 0 3px rgba(69, 160, 106, 0.12);
+}
+
+.host-datepicker-icon {
+  pointer-events: none;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  color: #64748b;
+}
+
+.host-form-card .tb-datepicker-popper {
+  z-index: 1200 !important;
+}
+
 /* Select2-style controls in host forms */
 .host-select-wrap,
 .host-multi-select {
