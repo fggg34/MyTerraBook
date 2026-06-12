@@ -59,7 +59,8 @@ class GuestHouseBookingController extends Controller
             return GuestHouseBooking::query()->create([
                 'guest_house_id' => $house->id,
                 'user_id' => $request->user()?->id,
-                'status' => GuestHouseBookingStatus::Pending,
+                'status' => GuestHouseBookingStatus::Confirmed,
+                'confirmed_at' => now(),
                 'guest_name' => $request->string('guest_name'),
                 'guest_email' => $request->string('guest_email'),
                 'guest_phone' => $request->string('guest_phone'),
@@ -93,7 +94,10 @@ class GuestHouseBookingController extends Controller
         $payload = GuestHouseBookingEmailPayload::for($booking);
 
         if ($booking->guest_email) {
-            $this->email->send('gh_booking_received', $booking->guest_email, $payload);
+            $guestTemplate = $booking->status === GuestHouseBookingStatus::Confirmed
+                ? 'gh_booking_confirmed'
+                : 'gh_booking_received';
+            $this->email->send($guestTemplate, $booking->guest_email, $payload);
         }
 
         if ($hostEmail = $house->host?->email) {

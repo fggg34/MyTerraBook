@@ -89,7 +89,7 @@ class EmailSystemTest extends TestCase
             'guest_phone' => '+123456789',
         ])->assertCreated();
 
-        Mail::assertQueued(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->templateKey === 'gh_booking_received'
+        Mail::assertQueued(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->templateKey === 'gh_booking_confirmed'
             && $mail->hasTo('jane@example.com'));
     }
 

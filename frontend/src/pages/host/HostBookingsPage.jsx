@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api'
-import {
-  getHostCarBookings,
-  getHostGuestHouseBookings,
-  updateHostCarBookingStatus,
-  updateHostGuestHouseBookingStatus,
-} from '../../api/host'
+import { getHostCarBookings, getHostGuestHouseBookings } from '../../api/host'
 import StatusBadge from '../../components/ui/StatusBadge'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
@@ -32,16 +27,6 @@ export default function HostBookingsPage() {
     load()
   }, [])
 
-  const confirmCar = async (order) => {
-    try {
-      await updateHostCarBookingStatus(order.id, 'confirmed')
-      toast('Order confirmed', 'success')
-      load()
-    } catch (err) {
-      toast(err.response?.data?.message || 'Could not update', 'error')
-    }
-  }
-
   const openPdf = async (url, filename) => {
     try {
       const res = await api.get(url, { responseType: 'blob' })
@@ -53,16 +38,6 @@ export default function HostBookingsPage() {
       URL.revokeObjectURL(blobUrl)
     } catch {
       toast('Could not download contract', 'error')
-    }
-  }
-
-  const confirmStay = async (booking) => {
-    try {
-      await updateHostGuestHouseBookingStatus(booking.id, { status: 'confirmed' })
-      toast('Booking confirmed', 'success')
-      load()
-    } catch (err) {
-      toast(err.response?.data?.message || 'Could not update', 'error')
     }
   }
 
@@ -87,9 +62,6 @@ export default function HostBookingsPage() {
                   <td><StatusBadge status={o.order_status} /></td>
                   <td>{formatCurrency(o.total_cents / 100, o.currency)}</td>
                   <td className="host-actions" style={{ margin: 0 }}>
-                    {o.order_status === 'pending' && (
-                      <button type="button" className="host-btn primary" onClick={() => confirmCar(o)}>Confirm</button>
-                    )}
                     {o.order_status === 'confirmed' && (
                       <button type="button" className="host-btn secondary" onClick={() => openPdf(`/host/bookings/cars/${o.id}/contract.pdf`, `contract-${o.reference}.pdf`)}>PDF</button>
                     )}
@@ -112,9 +84,6 @@ export default function HostBookingsPage() {
                   <td><StatusBadge status={b.status} /></td>
                   <td>{formatCurrency(b.total_amount / 100)}</td>
                   <td className="host-actions" style={{ margin: 0 }}>
-                    {b.status === 'pending' && (
-                      <button type="button" className="host-btn primary" onClick={() => confirmStay(b)}>Confirm</button>
-                    )}
                     {['confirmed', 'completed'].includes(b.status) && (
                       <button type="button" className="host-btn secondary" onClick={() => openPdf(`/host/bookings/guest-houses/${b.id}/contract.pdf`, `contract-${b.booking_reference}.pdf`)}>PDF</button>
                     )}

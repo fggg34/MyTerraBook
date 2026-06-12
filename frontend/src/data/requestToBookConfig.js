@@ -70,15 +70,15 @@ export function getProtectionPresentation(priceType, index = 0) {
 function buildConfirmationTimeline(prepayPercent) {
   return {
     vehicle: [
-      { title: 'Request sent', text: 'Today · Your host has been notified of your trip.' },
-      { title: 'Host approves your trip', text: "Usually within the hour. We'll email and text you." },
-      { title: 'Prepayment confirmed', text: `A ${prepayPercent}% prepayment is charged after approval to hold your booking. This prepayment is non-refundable. The remaining balance is due on pick-up.` },
+      { title: 'Booking confirmed', text: 'Today · Your trip is locked in and your host has been notified.' },
+      { title: 'Payment received', text: `Your ${prepayPercent}% prepayment has been processed. The remaining balance is due on pick-up.` },
+      { title: 'Pre-trip details', text: "We'll email your rental agreement and pick-up instructions before your trip." },
       { title: 'Pick up & hit the Ring Road', text: 'Meet your host for a full walkover of the vehicle, then you\'re off.' },
     ],
     guesthouse: [
-      { title: 'Request sent', text: 'Today · Your host has been notified of your stay.' },
-      { title: 'Host approves your stay', text: "Usually within the hour. We'll email you when it's confirmed." },
-      { title: 'Prepayment confirmed', text: `A ${prepayPercent}% prepayment is charged after approval to hold your stay. This prepayment is non-refundable. The remaining balance is due at check-in.` },
+      { title: 'Booking confirmed', text: 'Today · Your stay is locked in and your host has been notified.' },
+      { title: 'Payment received', text: `Your ${prepayPercent}% prepayment has been processed. The remaining balance is due at check-in.` },
+      { title: 'Pre-arrival details', text: "We'll email check-in instructions before your stay." },
       { title: 'Check in & enjoy', text: 'Arrive at the agreed time; your host will show you in.' },
     ],
   }
@@ -120,7 +120,7 @@ export function getRequestToBookConfig(bookingType, prepayPercent = 15) {
       showGuests: isGuesthouse,
       showPropertyAddress: isGuesthouse,
       continueLabel: isGuesthouse ? 'Continue' : 'Continue to extras',
-      stepNote: `${prepayPercent}% prepayment on approval (non-refundable) · balance due on pick-up`,
+      stepNote: `${prepayPercent}% prepayment charged at checkout (non-refundable) · balance due on pick-up`,
     },
     step2: {
       title: 'Add extras & choose your cover',
@@ -147,8 +147,8 @@ export function getRequestToBookConfig(bookingType, prepayPercent = 15) {
     },
     step4: {
       title: 'Payment',
-      subtitle: `Choose how you'd like to pay. Once your host approves, we charge a ${prepayPercent}% prepayment to hold the booking — the remaining balance is paid on pick-up or check-in.`,
-      submitLabel: 'Request to Book',
+      subtitle: `Choose how you'd like to pay. We charge a ${prepayPercent}% prepayment at checkout to confirm your booking — the remaining balance is paid on pick-up or check-in.`,
+      submitLabel: 'Complete Booking',
       isGuesthouse,
     },
     summaryKick: (item) => {
@@ -171,15 +171,15 @@ export function getRequestToBookConfig(bookingType, prepayPercent = 15) {
     },
     confirmationTimeline: isGuesthouse ? confirmationTimeline.guesthouse : confirmationTimeline.vehicle,
     confirmationHero: isGuesthouse
-      ? (name) => `You're almost checked in, ${name}!`
-      : (name) => `You're almost on the road, ${name}!`,
+      ? (name) => `You're checked in, ${name}!`
+      : (name) => `You're on the road, ${name}!`,
     confirmationSubtext: isGuesthouse
-      ? `Your request has been sent to your host. They typically reply within the hour — we'll email you when your stay is approved. A ${prepayPercent}% prepayment is charged then; the balance is due at check-in.`
-      : `Your request has been sent to your host. They typically reply within the hour — we'll email you when your trip is approved. A ${prepayPercent}% prepayment is charged then; the balance is due on pick-up.`,
+      ? `Your stay is confirmed. We've emailed your booking details and notified your host. The remaining balance is due at check-in.`
+      : `Your trip is confirmed. We've emailed your booking details and notified your host. The remaining balance is due on pick-up.`,
     reassurance: [
-      { bold: `${prepayPercent}% prepayment on approval (non-refundable).`, text: 'The remaining balance is paid on pick-up or check-in.' },
+      { bold: `${prepayPercent}% prepayment charged at checkout (non-refundable).`, text: 'The remaining balance is paid on pick-up or check-in.' },
       { text: 'Comprehensive insurance & 24/7 roadside assistance.' },
-      { bold: 'Average host reply in under 1 hour.', text: '' },
+      { bold: 'Instant confirmation after checkout.', text: '' },
     ],
   }
 }

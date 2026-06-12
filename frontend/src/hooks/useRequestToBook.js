@@ -519,7 +519,7 @@ export default function useRequestToBook() {
           name: form.customer_name.split(' ')[0],
         })
       }
-      toast('Request sent successfully', 'success')
+      toast('Booking confirmed successfully', 'success')
     } catch (err) {
       toast(err.response?.data?.message || 'Could not complete booking', 'error')
     } finally {

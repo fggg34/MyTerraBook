@@ -69,7 +69,7 @@ class GuestHouseBookingApiTest extends TestCase
 
         $this->assertDatabaseHas('guest_house_bookings', [
             'guest_email' => 'jane@example.com',
-            'status' => GuestHouseBookingStatus::Pending->value,
+            'status' => GuestHouseBookingStatus::Confirmed->value,
         ]);
     }
 

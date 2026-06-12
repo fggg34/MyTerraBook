@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Calendar, Check, Clock, Globe, Mail } from 'lucide-react'
+import { Calendar, Check, Globe, Mail } from 'lucide-react'
 import { getProtectionPresentation } from '../../data/requestToBookConfig'
 import { fmtDisplayDate } from '../../utils/requestToBookUtils'
 
@@ -29,7 +29,7 @@ export default function BookingConfirmation({
         <div className="check-burst">
           <Check aria-hidden />
         </div>
-        <div className="ch-kick">Request sent</div>
+        <div className="ch-kick">Booking confirmed</div>
         <h1>{config.confirmationHero(confirmed.name)}</h1>
         <p>{config.confirmationSubtext}</p>
       </div>
@@ -41,8 +41,8 @@ export default function BookingConfirmation({
               Booking reference <b>{confirmed.reference}</b>
             </span>
             <span className="pill">
-              <Clock aria-hidden />
-              Awaiting host approval
+              <Check aria-hidden />
+              Confirmed
             </span>
           </div>
           <div className="cbody">
@@ -92,7 +92,7 @@ export default function BookingConfirmation({
                 {isVehicle && <span className="cfs">Unlimited mileage included</span>}
               </div>
               <div className="cf">
-                <span className="cfk">Total (on approval)</span>
+                <span className="cfk">Total</span>
                 <span className="cfv">{confirmed.total}</span>
                 {protectionSummary && <span className="cfs">{protectionSummary}</span>}
               </div>
@@ -102,9 +102,9 @@ export default function BookingConfirmation({
               {timeline.map((step, i) => (
                 <div
                   key={step.title}
-                  className={`ctl${i === 0 ? ' done' : ''}${i === 1 ? ' now' : ''}`}
+                  className={`ctl${i <= 1 ? ' done' : ''}${i === 2 ? ' now' : ''}`}
                 >
-                  <span className="tl-dot">{i === 0 ? <Check aria-hidden /> : i + 1}</span>
+                  <span className="tl-dot">{i <= 1 ? <Check aria-hidden /> : i + 1}</span>
                   <div className="tl-tx">
                     <h5>{step.title}</h5>
                     <p>{step.text}</p>

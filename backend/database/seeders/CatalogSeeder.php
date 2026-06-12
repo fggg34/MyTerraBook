@@ -190,8 +190,8 @@ class CatalogSeeder extends Seeder
 
         collect([
             ['code' => 'card', 'name' => 'Credit / Debit Card', 'auto_confirm_order' => true],
-            ['code' => 'cash', 'name' => 'Pay at Pickup', 'auto_confirm_order' => false],
-            ['code' => 'bank_transfer', 'name' => 'Bank Transfer', 'auto_confirm_order' => false],
+            ['code' => 'cash', 'name' => 'Pay at Pickup', 'auto_confirm_order' => true],
+            ['code' => 'bank_transfer', 'name' => 'Bank Transfer', 'auto_confirm_order' => true],
         ])->each(fn (array $data) => PaymentMethod::query()->firstOrCreate(
             ['code' => $data['code']],
             [

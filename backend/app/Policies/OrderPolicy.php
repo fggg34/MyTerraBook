@@ -24,6 +24,6 @@ class OrderPolicy
 
     public function updateStatus(User $user, Order $order): bool
     {
-        return $this->view($user, $order);
+        return $user->role === UserRole::Admin;
     }
 }

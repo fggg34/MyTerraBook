@@ -24,6 +24,6 @@ class GuestHouseBookingPolicy
 
     public function updateStatus(User $user, GuestHouseBooking $booking): bool
     {
-        return $this->view($user, $booking);
+        return $user->role === UserRole::Admin;
     }
 }

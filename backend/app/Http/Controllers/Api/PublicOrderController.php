@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\OrderStatus;
+use App\Enums\RentalStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\OrderQuoteRequest;
 use App\Http\Requests\Api\StoreOrderRequest;
@@ -131,8 +132,8 @@ class PublicOrderController extends Controller
                 'dropoff_location_id' => $request->integer('dropoff_location_id'),
                 'pickup_at' => $pickup,
                 'dropoff_at' => $dropoff,
-                'order_status' => OrderStatus::StandBy,
-                'rental_status' => null,
+                'order_status' => OrderStatus::Confirmed,
+                'rental_status' => RentalStatus::Upcoming,
                 'customer_name' => $request->string('customer_name'),
                 'customer_email' => $request->string('customer_email'),
                 'customer_phone' => $request->input('customer_phone'),
@@ -232,7 +233,10 @@ class PublicOrderController extends Controller
         $payload = OrderEmailPayload::for($order);
 
         if ($order->customer_email) {
-            $this->email->send('order_received', $order->customer_email, $payload);
+            $customerTemplate = $order->order_status === OrderStatus::Confirmed
+                ? 'order_confirmed'
+                : 'order_received';
+            $this->email->send($customerTemplate, $order->customer_email, $payload);
         }
 
         $recipients = [];
