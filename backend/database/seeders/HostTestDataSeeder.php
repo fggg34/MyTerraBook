@@ -39,18 +39,23 @@ class HostTestDataSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->ensurePrerequisites();
+
         $admin = User::query()->where('email', 'admin@terrabook.test')->first();
-        $standardTax = TaxRate::query()->where('name', 'Standard VAT (10%)')->firstOrFail();
+        $standardTax = TaxRate::query()->firstOrCreate(
+            ['name' => 'Standard VAT (10%)'],
+            ['basis_points' => 1000],
+        );
         $locations = Location::query()->where('is_active', true)->orderBy('id')->get();
         $allCharacteristicIds = Characteristic::query()->pluck('id')->all();
         $allRentalOptionIds = RentalOption::query()->where('is_active', true)->pluck('id')->all();
         $allAmenityIds = GuestHouseAmenity::query()->pluck('id')->all();
-        $basic = PriceType::query()->where('slug', 'basic')->firstOrFail();
-        $plus = PriceType::query()->where('slug', 'plus')->firstOrFail();
-        $max = PriceType::query()->where('slug', 'max')->firstOrFail();
+        $basic = $this->requirePriceType('basic');
+        $plus = $this->requirePriceType('plus');
+        $max = $this->requirePriceType('max');
 
-        $luxuryCar = SubCategory::query()->where('name', 'Luxury')->firstOrFail();
-        $motorhome = SubCategory::query()->where('name', 'Motorhome')->firstOrFail();
+        $luxuryCar = $this->requireSubCategory('Luxury');
+        $motorhome = $this->requireSubCategory('Motorhome');
 
         $hosts = [
             [
@@ -497,5 +502,46 @@ class HostTestDataSeeder extends Seeder
         );
 
         return $house;
+    }
+
+    private function ensurePrerequisites(): void
+    {
+        $this->call(TaxRateSeeder::class);
+
+        if (PriceType::query()->where('slug', 'basic')->doesntExist()) {
+            $this->command?->info('Catalog missing — running CatalogSeeder…');
+            $this->call(CatalogSeeder::class);
+        }
+
+        if (GuestHouseAmenity::query()->doesntExist()) {
+            $this->command?->info('Guesthouse amenities missing — running GuestHouseAmenitySeeder…');
+            $this->call(GuestHouseAmenitySeeder::class);
+        }
+    }
+
+    private function requirePriceType(string $slug): PriceType
+    {
+        $priceType = PriceType::query()->where('slug', $slug)->first();
+
+        if ($priceType === null) {
+            throw new \RuntimeException(
+                "Price type [{$slug}] not found. Run: php artisan db:seed --class=CatalogSeeder"
+            );
+        }
+
+        return $priceType;
+    }
+
+    private function requireSubCategory(string $name): SubCategory
+    {
+        $subCategory = SubCategory::query()->where('name', $name)->first();
+
+        if ($subCategory === null) {
+            throw new \RuntimeException(
+                "Sub-category [{$name}] not found. Run: php artisan db:seed --class=CatalogSeeder"
+            );
+        }
+
+        return $subCategory;
     }
 }
