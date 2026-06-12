@@ -180,6 +180,10 @@ class SiteContentFormBuilder
             ->directory("site-content/{$pageKey}")
             ->visibility('public');
 
+        if (isset($field['acceptedFileTypes']) && is_array($field['acceptedFileTypes'])) {
+            return $upload->acceptedFileTypes($field['acceptedFileTypes']);
+        }
+
         if ($field['allowSvg'] ?? false) {
             return $upload->acceptedFileTypes([
                 'image/jpeg',

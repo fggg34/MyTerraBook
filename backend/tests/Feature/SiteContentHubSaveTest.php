@@ -114,4 +114,34 @@ class SiteContentHubSaveTest extends TestCase
         $this->assertSame($path, $logoImage);
         $this->assertNotSame([], $logoImage);
     }
+
+    public function test_save_persists_uploaded_favicon_path(): void
+    {
+        Storage::fake('public');
+
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+
+        $this->actingAs($admin);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => ['branding' => ['logoMode' => 'text']],
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        $path = 'site-content/global/test-favicon.png';
+        Storage::disk('public')->put($path, 'fake-png');
+
+        Livewire::test(SiteContentHub::class, ['activePageKey' => 'global'])
+            ->set('data.branding.favicon', [$path])
+            ->call('save')
+            ->assertNotified();
+
+        $favicon = SiteContentPage::query()->where('page_key', 'global')->first()?->content['branding']['favicon'] ?? null;
+
+        $this->assertSame($path, $favicon);
+        $this->assertNotSame([], $favicon);
+    }
 }

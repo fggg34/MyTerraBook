@@ -205,7 +205,21 @@ return [
                         ['key' => 'accent', 'type' => 'text', 'label' => 'Accent text'],
                         ['key' => 'suffix', 'type' => 'text', 'label' => 'Text suffix'],
                         ['key' => 'logoImage', 'type' => 'image', 'label' => 'Logo image', 'allowSvg' => true],
-                        ['key' => 'favicon', 'type' => 'file', 'label' => 'Favicon (SVG/PNG/ICO)', 'helperText' => 'Upload .svg, .png, or .ico for the browser tab icon.'],
+                        [
+                            'key' => 'favicon',
+                            'type' => 'image',
+                            'label' => 'Favicon image',
+                            'allowSvg' => true,
+                            'acceptedFileTypes' => [
+                                'image/png',
+                                'image/jpeg',
+                                'image/webp',
+                                'image/svg+xml',
+                                'image/x-icon',
+                                'image/vnd.microsoft.icon',
+                            ],
+                            'helperText' => 'Square icon shown in the browser tab. Use PNG, SVG, or ICO (32×32 or 64×64 recommended).',
+                        ],
                     ],
                 ],
                 'topbar' => [
