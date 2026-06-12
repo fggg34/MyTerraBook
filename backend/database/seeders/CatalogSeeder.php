@@ -25,7 +25,10 @@ class CatalogSeeder extends Seeder
 {
     public function run(): void
     {
-        $standardTax = TaxRate::query()->where('name', 'Standard VAT (10%)')->firstOrFail();
+        $standardTax = TaxRate::query()->firstOrCreate(
+            ['name' => 'Standard VAT (10%)'],
+            ['basis_points' => 1000],
+        );
 
         $carMain = MainCategory::ensureBySlug('car', [
             'name' => 'Car',
@@ -55,7 +58,7 @@ class CatalogSeeder extends Seeder
         foreach ($carSubCategories as $data) {
             SubCategory::ensureBySlug(Str::slug($data['name']), $carMain->id, [
                 'name' => $data['name'],
-                'description' => fake()->sentence(10),
+                'description' => "{$data['name']} rental vehicles for everyday travel and road trips.",
                 'sort_order' => $data['sort_order'],
                 'is_search_filter' => true,
             ]);
@@ -71,7 +74,7 @@ class CatalogSeeder extends Seeder
         foreach ($campervanSubCategories as $data) {
             SubCategory::ensureBySlug(Str::slug($data['name']), $campervanMain->id, [
                 'name' => $data['name'],
-                'description' => fake()->sentence(10),
+                'description' => "{$data['name']} rentals for camping and extended self-drive tours.",
                 'sort_order' => $data['sort_order'],
                 'is_search_filter' => true,
             ]);
@@ -176,7 +179,7 @@ class CatalogSeeder extends Seeder
         ])->map(fn (array $data) => RentalOption::query()->firstOrCreate(
             ['name' => $data['name']],
             [
-                'description' => $data['description'] ?? fake()->sentence(8),
+                'description' => $data['description'] ?? "Optional add-on: {$data['name']}.",
                 'cost_cents' => $data['cost_cents'],
                 'is_daily_cost' => $data['is_daily_cost'],
                 'tax_rate_id' => $standardTax->id,
