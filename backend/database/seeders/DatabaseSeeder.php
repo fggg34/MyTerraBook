@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
                 GuestHouseAmenitySeeder::class,
                 GuestHouseSeeder::class,
                 DemoShowcaseSeeder::class,
+                HostTestDataSeeder::class,
             ]);
         }
     }
