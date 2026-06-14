@@ -1,5 +1,14 @@
 @php
     $path = request()->path();
+
+    // During Livewire AJAX updates (e.g. clicking a table tab via $set), this
+    // render hook re-runs but request()->path() is "livewire/update" rather than
+    // the real page path. Derive the actual page path from the Referer so the
+    // gate stays stable and Livewire's DOM morph doesn't strip the nav.
+    if (request()->hasHeader('X-Livewire') && ($__irReferer = request()->header('referer'))) {
+        $path = ltrim(parse_url($__irReferer, PHP_URL_PATH) ?? $path, '/');
+    }
+
     $inImpactRent = str_starts_with($path, 'admin/impact-rent');
 
     $showIrTabs = $inImpactRent;

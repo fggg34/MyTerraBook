@@ -16,6 +16,7 @@ use App\Models\LocationFee;
 use App\Models\OutOfHoursFee;
 use App\Models\SpecialPrice;
 use App\Services\Email\EmailService;
+use App\Services\ListingSeoService;
 use App\Services\LocationHoursService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,7 +46,7 @@ class HostCarController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, ListingSeoService $seo): JsonResponse
     {
         $this->authorize('create', Car::class);
 
@@ -58,6 +59,7 @@ class HostCarController extends Controller
         ]);
 
         $this->syncRelations($request, $car);
+        $seo->syncCar($car);
         $car->load(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']);
 
         return response()->json(['data' => new HostCarResource($car)], 201);
@@ -71,7 +73,7 @@ class HostCarController extends Controller
         return response()->json(['data' => new HostCarResource($car)]);
     }
 
-    public function update(Request $request, Car $car): JsonResponse
+    public function update(Request $request, Car $car, ListingSeoService $seo): JsonResponse
     {
         $this->authorize('update', $car);
 
@@ -79,6 +81,7 @@ class HostCarController extends Controller
         unset($data['is_active'], $data['listing_status']);
         $car->update($data);
         $this->syncRelations($request, $car);
+        $seo->syncCar($car);
         $this->validateTimeWindows($car->fresh(['locations']));
         $this->loadCarRelations($car->fresh());
 
@@ -122,13 +125,12 @@ class HostCarController extends Controller
         return response()->json(['data' => new HostCarResource($car->fresh(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']))]);
     }
 
-    public function uploadImages(Request $request, Car $car): JsonResponse
+    public function uploadImages(Request $request, Car $car, ListingSeoService $seo): JsonResponse
     {
         $this->authorize('update', $car);
 
         $request->validate([
             'main_image' => ['nullable', 'image', 'max:8192'],
-            'og_image' => ['nullable', 'image', 'max:8192'],
             'details_images' => ['nullable', 'array'],
             'details_images.*' => ['image', 'max:8192'],
             'details_image_paths' => ['nullable', 'array'],
@@ -138,11 +140,6 @@ class HostCarController extends Controller
         if ($request->hasFile('main_image')) {
             $path = $request->file('main_image')->store('cars', 'public');
             $car->update(['main_image_path' => $path]);
-        }
-
-        if ($request->hasFile('og_image')) {
-            $path = $request->file('og_image')->store('cars/og', 'public');
-            $car->update(['og_image' => $path]);
         }
 
         if ($request->hasFile('details_images')) {
@@ -159,6 +156,10 @@ class HostCarController extends Controller
                 fn ($path) => filled($path),
             ));
             $car->update(['details_image_paths' => $paths]);
+        }
+
+        if ($request->hasFile('main_image')) {
+            $seo->syncCar($car);
         }
 
         return response()->json(['data' => new HostCarResource($car->fresh())]);
@@ -574,8 +575,6 @@ class HostCarController extends Controller
             'bags' => ['nullable', 'integer', 'min:0', 'max:50'],
             'units_available' => ['nullable', 'integer', 'min:1'],
             'ical_import_url' => ['nullable', 'url', 'max:500'],
-            'meta_title' => ['nullable', 'string', 'max:255'],
-            'meta_description' => ['nullable', 'string', 'max:1000'],
             'pickup_time_from' => ['nullable', 'date_format:H:i'],
             'pickup_time_to' => ['nullable', 'date_format:H:i'],
             'dropoff_time_from' => ['nullable', 'date_format:H:i'],

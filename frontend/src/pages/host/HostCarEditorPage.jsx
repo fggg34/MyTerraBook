@@ -45,7 +45,7 @@ import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
 import { intersectionForLocations, timeOptionsForWindow } from '../../utils/locationHours'
 
-const STEPS = ['Vehicle', 'Specs', 'Locations', 'Units', 'Pricing', 'Availability', 'SEO', 'Review']
+const STEPS = ['Vehicle', 'Specs', 'Locations', 'Units', 'Pricing', 'Availability', 'Review']
 
 const emptyForm = {
   name: '',
@@ -59,8 +59,6 @@ const emptyForm = {
   bags: 2,
   units_available: 1,
   ical_import_url: '',
-  meta_title: '',
-  meta_description: '',
   details_image_paths: [],
   pickup_location_ids: [],
   dropoff_location_ids: [],
@@ -82,7 +80,6 @@ export default function HostCarEditorPage() {
   const [status, setStatus] = useState('draft')
   const [rejectionReason, setRejectionReason] = useState('')
   const [mainImage, setMainImage] = useState(null)
-  const [ogImage, setOgImage] = useState(null)
   const [catalog, setCatalog] = useState({
     mainCategories: [],
     subCategories: [],
@@ -173,7 +170,6 @@ export default function HostCarEditorPage() {
       const data = res.data.data
       setForm((prev) => ({ ...prev, details_image_paths: data.details_image_paths || [] }))
       setMainImage(data.main_image_path || null)
-      setOgImage(data.og_image || null)
     })
   }
 
@@ -187,8 +183,6 @@ export default function HostCarEditorPage() {
           ...data,
           main_category_id: data.main_category_id || data.sub_category?.main_category_id || '',
           sub_category_id: data.sub_category_id || data.category_id || '',
-          meta_title: data.meta_title || '',
-          meta_description: data.meta_description || '',
           details_image_paths: data.details_image_paths || [],
           pickup_location_ids: data.pickup_location_ids || data.location_ids || [],
           dropoff_location_ids: data.dropoff_location_ids || data.location_ids || [],
@@ -203,7 +197,6 @@ export default function HostCarEditorPage() {
           rental_option_ids: data.rental_option_ids || [],
         })
         setMainImage(data.main_image_path || null)
-        setOgImage(data.og_image || null)
         setStatus(data.listing_status)
         setRejectionReason(data.rejection_reason || '')
         setRecordId(data.id)
@@ -227,8 +220,6 @@ export default function HostCarEditorPage() {
         bags: form.bags,
         units_available: form.units_available,
         ical_import_url: form.ical_import_url,
-        meta_title: form.meta_title,
-        meta_description: form.meta_description,
         pickup_time_from: form.pickup_time_from || null,
         pickup_time_to: form.pickup_time_to || null,
         dropoff_time_from: form.dropoff_time_from || null,
@@ -333,19 +324,6 @@ export default function HostCarEditorPage() {
       toast('Image removed', 'success')
     } catch {
       toast('Could not remove image', 'error')
-    }
-  }
-
-  const handleOgImage = async (event) => {
-    if (!recordId || !event.target.files?.[0]) return
-    const fd = new FormData()
-    fd.append('og_image', event.target.files[0])
-    try {
-      await uploadHostCarImages(recordId, fd)
-      reloadCar(recordId)
-      toast('Share image uploaded', 'success')
-    } catch {
-      toast('Upload failed', 'error')
     }
   }
 
@@ -815,18 +793,6 @@ export default function HostCarEditorPage() {
           ) : <p className="text-sm text-slate-500">Save the vehicle first to manage availability.</p>
         )}
         {step === 6 && (
-          <>
-            <div className="host-field"><label>Meta title</label><input value={form.meta_title} onChange={(e) => setForm({ ...form, meta_title: e.target.value })} /></div>
-            <div className="host-field"><label>Meta description</label><textarea rows={3} value={form.meta_description} onChange={(e) => setForm({ ...form, meta_description: e.target.value })} /></div>
-            {recordId ? (
-              <div className="host-field"><label>Share image (OG)</label>
-                {ogImage && <img src={resolveStorageUrl(ogImage)} alt="Share" className="mb-2 h-24 w-auto rounded-lg object-cover" />}
-                <input type="file" accept="image/*" onChange={handleOgImage} />
-              </div>
-            ) : <p className="text-sm text-slate-500">Save the vehicle first to upload a share image.</p>}
-          </>
-        )}
-        {step === 7 && (
           <p className="text-sm text-slate-600">Save your vehicle and submit for admin approval when ready.</p>
         )}
         <div className="host-actions">

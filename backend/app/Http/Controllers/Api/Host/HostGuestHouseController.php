@@ -12,6 +12,7 @@ use App\Models\GuestHouseAvailabilityBlock;
 use App\Models\GuestHouseImage;
 use App\Models\GuestHouseSeasonalPrice;
 use App\Services\Email\EmailService;
+use App\Services\ListingSeoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -39,7 +40,7 @@ class HostGuestHouseController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, ListingSeoService $seo): JsonResponse
     {
         $this->authorize('create', GuestHouse::class);
 
@@ -67,6 +68,7 @@ class HostGuestHouseController extends Controller
             $this->syncSeasonalPrices($house, $request->input('seasonal_prices', []));
         }
 
+        $seo->syncGuestHouse($house);
         $house->load(['amenities', 'images', 'seasonalPrices']);
 
         return response()->json(['data' => new HostGuestHouseResource($house)], 201);
@@ -81,7 +83,7 @@ class HostGuestHouseController extends Controller
         return response()->json(['data' => new HostGuestHouseResource($guestHouse)]);
     }
 
-    public function update(Request $request, GuestHouse $guestHouse): JsonResponse
+    public function update(Request $request, GuestHouse $guestHouse, ListingSeoService $seo): JsonResponse
     {
         $this->authorize('update', $guestHouse);
 
@@ -97,6 +99,7 @@ class HostGuestHouseController extends Controller
             $this->syncSeasonalPrices($guestHouse, $request->input('seasonal_prices', []));
         }
 
+        $seo->syncGuestHouse($guestHouse);
         $guestHouse->load(['amenities', 'images', 'seasonalPrices']);
 
         return response()->json(['data' => new HostGuestHouseResource($guestHouse)]);
@@ -151,13 +154,12 @@ class HostGuestHouseController extends Controller
         return response()->json(['data' => new HostGuestHouseResource($guestHouse->fresh(['amenities', 'images', 'seasonalPrices']))]);
     }
 
-    public function uploadImages(Request $request, GuestHouse $guestHouse): JsonResponse
+    public function uploadImages(Request $request, GuestHouse $guestHouse, ListingSeoService $seo): JsonResponse
     {
         $this->authorize('update', $guestHouse);
 
         $request->validate([
             'thumbnail' => ['nullable', 'image', 'max:8192'],
-            'og_image' => ['nullable', 'image', 'max:8192'],
             'gallery' => ['nullable', 'array'],
             'gallery.*' => ['image', 'max:8192'],
             'gallery_order' => ['nullable', 'array'],
@@ -167,11 +169,6 @@ class HostGuestHouseController extends Controller
         if ($request->hasFile('thumbnail')) {
             $path = $request->file('thumbnail')->store('guesthouses/thumbnails', 'public');
             $guestHouse->update(['thumbnail' => $path]);
-        }
-
-        if ($request->hasFile('og_image')) {
-            $path = $request->file('og_image')->store('guesthouses/og', 'public');
-            $guestHouse->update(['og_image' => $path]);
         }
 
         if ($request->hasFile('gallery')) {
@@ -194,6 +191,10 @@ class HostGuestHouseController extends Controller
                     ->whereKey($imageId)
                     ->update(['sort_order' => $index]);
             }
+        }
+
+        if ($request->hasFile('thumbnail')) {
+            $seo->syncGuestHouse($guestHouse);
         }
 
         $guestHouse->load('images');
@@ -279,8 +280,6 @@ class HostGuestHouseController extends Controller
             'check_out_time' => ['nullable', 'date_format:H:i'],
             'cancellation_policy' => ['nullable', Rule::enum(GuestHouseCancellationPolicy::class)],
             'tax_rate_id' => ['nullable', 'exists:tax_rates,id'],
-            'meta_title' => ['nullable', 'string', 'max:255'],
-            'meta_description' => ['nullable', 'string', 'max:1000'],
             'amenity_ids' => ['nullable', 'array'],
             'amenity_ids.*' => ['integer', 'exists:guest_house_amenities,id'],
             'seasonal_prices' => ['nullable', 'array'],

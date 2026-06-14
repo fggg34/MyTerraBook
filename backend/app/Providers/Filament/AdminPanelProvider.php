@@ -65,6 +65,7 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->navigationGroups([
+                NavigationGroup::make('Marketing'),
                 NavigationGroup::make('Content')
                     ->collapsible()
                     ->collapsed(),
@@ -93,6 +94,7 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => view('filament.panel.admin-theme')->render()
                     .view('filament.panel.sidebar-hover-peek')->render()
+                    .view('filament.panel.sidebar-home-preview')->render()
                     .view('filament.panel.user-menu-styles')->render(),
             )
             ->renderHook(
@@ -106,10 +108,6 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::PAGE_START,
                 fn (): string => view('filament.panel.impact-rent-editor-quick-access')->render(),
-            )
-            ->renderHook(
-                PanelsRenderHook::SIDEBAR_FOOTER,
-                fn (): string => view('filament.panel.sidebar-preview-website')->render(),
             );
     }
 }

@@ -22,7 +22,7 @@ import { useToast } from '../../context/ToastContext'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
 import { formatLocationLine } from '../../utils/parseGooglePlace'
 
-const STEPS = ['Basics', 'Details', 'Pricing', 'Rules', 'Availability', 'SEO', 'Review']
+const STEPS = ['Basics', 'Details', 'Pricing', 'Rules', 'Availability', 'Review']
 
 const emptyForm = {
   name: '',
@@ -47,8 +47,6 @@ const emptyForm = {
   country: 'Iceland',
   latitude: '',
   longitude: '',
-  meta_title: '',
-  meta_description: '',
   amenity_ids: [],
 }
 
@@ -64,7 +62,6 @@ export default function HostGuestHouseEditorPage() {
   const [amenities, setAmenities] = useState([])
   const [taxRates, setTaxRates] = useState([])
   const [thumbnail, setThumbnail] = useState(null)
-  const [ogImage, setOgImage] = useState(null)
   const [gallery, setGallery] = useState([])
   const [seasonalPrices, setSeasonalPrices] = useState([])
   const [seasonalDraft, setSeasonalDraft] = useState({ name: '', date_from: '', date_to: '', price_per_night_euros: 120, minimum_nights: '' })
@@ -99,12 +96,9 @@ export default function HostGuestHouseEditorPage() {
       max_nights: data.max_nights || '',
       latitude: data.latitude ?? '',
       longitude: data.longitude ?? '',
-      meta_title: data.meta_title || '',
-      meta_description: data.meta_description || '',
       amenity_ids: data.amenity_ids || [],
     })
     setThumbnail(data.thumbnail || null)
-    setOgImage(data.og_image || null)
     setGallery(data.images || [])
     setSeasonalPrices(data.seasonal_prices || [])
   }
@@ -218,19 +212,6 @@ export default function HostGuestHouseEditorPage() {
       toast('Image removed', 'success')
     } catch {
       toast('Could not remove image', 'error')
-    }
-  }
-
-  const handleOgImage = async (event) => {
-    if (!recordId || !event.target.files?.[0]) return
-    const fd = new FormData()
-    fd.append('og_image', event.target.files[0])
-    try {
-      await uploadHostGuestHouseImages(recordId, fd)
-      reload(recordId)
-      toast('Share image uploaded', 'success')
-    } catch {
-      toast('Upload failed', 'error')
     }
   }
 
@@ -416,18 +397,6 @@ export default function HostGuestHouseEditorPage() {
           ) : <p className="text-sm text-slate-500">Save the guesthouse first to manage availability.</p>
         )}
         {step === 5 && (
-          <>
-            <div className="host-field"><label>Meta title</label><input value={form.meta_title} onChange={(e) => setForm({ ...form, meta_title: e.target.value })} /></div>
-            <div className="host-field"><label>Meta description</label><textarea rows={3} value={form.meta_description} onChange={(e) => setForm({ ...form, meta_description: e.target.value })} /></div>
-            {recordId ? (
-              <div className="host-field"><label>Share image (OG)</label>
-                {ogImage && <img src={resolveStorageUrl(ogImage)} alt="Share" className="mb-2 h-24 w-auto rounded-lg object-cover" />}
-                <input type="file" accept="image/*" onChange={handleOgImage} />
-              </div>
-            ) : <p className="text-sm text-slate-500">Save the guesthouse first to upload a share image.</p>}
-          </>
-        )}
-        {step === 6 && (
           <div>
             <p className="text-sm text-slate-600">Review your listing, save changes, then submit for admin approval.</p>
             <ul className="mt-4 space-y-2 text-sm">

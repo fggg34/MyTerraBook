@@ -199,7 +199,7 @@ class HostPanelTest extends TestCase
         $this->getJson("/api/cars/{$car->id}")->assertOk();
     }
 
-    public function test_host_car_persists_seo_and_pickup_dropoff_locations(): void
+    public function test_host_car_auto_generates_seo_and_pickup_dropoff_locations(): void
     {
         $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
         $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Camper', 'is_active' => true, 'is_search_filter' => true]);
@@ -210,10 +210,9 @@ class HostPanelTest extends TestCase
         Sanctum::actingAs($host);
 
         $created = $this->postJson('/api/host/cars', [
-            'name' => 'SEO Van',
+            'name' => 'Highland Explorer',
             'sub_category_id' => $category->id,
-            'meta_title' => 'Best Van',
-            'meta_description' => 'A great van to rent.',
+            'description' => '<p>Perfect for two travellers exploring Iceland.</p>',
         ])->assertCreated()->json('data');
 
         $carId = $created['id'];
@@ -224,13 +223,13 @@ class HostPanelTest extends TestCase
         ])->assertOk();
 
         $response = $this->getJson("/api/host/cars/{$carId}")->assertOk();
-        $response->assertJsonPath('data.meta_title', 'Best Van');
-        $response->assertJsonPath('data.meta_description', 'A great van to rent.');
+        $response->assertJsonPath('data.meta_title', 'Highland Explorer, Car & 4×4 in Iceland');
+        $response->assertJsonPath('data.meta_description', 'Perfect for two travellers exploring Iceland.');
         $response->assertJsonPath('data.pickup_location_ids', [$pickup->id]);
         $response->assertJsonPath('data.dropoff_location_ids', [$dropoff->id]);
     }
 
-    public function test_host_guesthouse_persists_seo_and_seasonal_prices(): void
+    public function test_host_guesthouse_auto_generates_seo_and_seasonal_prices(): void
     {
         $host = User::factory()->host()->create();
 
@@ -252,15 +251,14 @@ class HostPanelTest extends TestCase
         Sanctum::actingAs($host);
 
         $this->patchJson("/api/host/guest-houses/{$house->id}", [
-            'meta_title' => 'Cozy Stay',
-            'meta_description' => 'Cozy place near the centre.',
+            'short_description' => 'Cozy place near the centre.',
             'seasonal_prices' => [
                 ['name' => 'Summer', 'date_from' => '2026-06-01', 'date_to' => '2026-08-31', 'price_per_night_euros' => 200, 'minimum_nights' => 3],
             ],
         ])->assertOk();
 
         $response = $this->getJson("/api/host/guest-houses/{$house->id}")->assertOk();
-        $response->assertJsonPath('data.meta_title', 'Cozy Stay');
+        $response->assertJsonPath('data.meta_title', 'Seasonal House, Guesthouse in Iceland');
         $response->assertJsonPath('data.meta_description', 'Cozy place near the centre.');
         $response->assertJsonPath('data.seasonal_prices.0.name', 'Summer');
         $response->assertJsonPath('data.seasonal_prices.0.price_per_night', 20000);

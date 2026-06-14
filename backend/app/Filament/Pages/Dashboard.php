@@ -7,11 +7,14 @@ use App\Filament\Widgets\DashboardOverviewStats;
 use App\Filament\Widgets\OperationsOverviewChartWidget;
 use App\Filament\Widgets\RecentOrdersWidget;
 use App\Filament\Widgets\WelcomeHeaderWidget;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Illuminate\Contracts\Support\Htmlable;
 
 class Dashboard extends BaseDashboard
 {
+    protected static ?string $navigationLabel = 'Home';
+
     protected static ?string $title = 'Dashboard';
 
     public static function canAccess(): bool
@@ -22,6 +25,19 @@ class Dashboard extends BaseDashboard
     public function getHeading(): string|Htmlable
     {
         return '';
+    }
+
+    /**
+     * @return array<NavigationItem>
+     */
+    public static function getNavigationItems(): array
+    {
+        return array_map(
+            fn (NavigationItem $item): NavigationItem => $item->extraAttributes([
+                'class' => 'fi-sidebar-item-home',
+            ]),
+            parent::getNavigationItems(),
+        );
     }
 
     /**
