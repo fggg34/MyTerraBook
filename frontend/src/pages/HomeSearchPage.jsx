@@ -40,7 +40,7 @@ export default function HomeSearchPage() {
             </h1>
             <p className="mt-4 text-lg text-slate-300">
               Search from our fleet of economy, SUV, and luxury vehicles. Pick up at the airport
-              or city center — your journey starts here.
+              or city center, your journey starts here.
             </p>
           </div>
 

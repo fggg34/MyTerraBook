@@ -14,12 +14,12 @@
 <body>
     <h1>Guest house booking confirmation</h1>
     <p><strong>Reference:</strong> {{ $booking->booking_reference }}</p>
-    <p><strong>Guest:</strong> {{ $booking->guest_name }} — {{ $booking->guest_email }}</p>
+    <p><strong>Guest:</strong> {{ $booking->guest_name }}, {{ $booking->guest_email }}</p>
     @if ($booking->guest_phone)
         <p><strong>Phone:</strong> {{ $booking->guest_phone }}</p>
     @endif
-    <p><strong>Property:</strong> {{ $booking->guestHouse?->name ?? '—' }}</p>
-    <p><strong>Address:</strong> {{ $booking->guestHouse?->address ?? '—' }}, {{ $booking->guestHouse?->city ?? '' }}</p>
+    <p><strong>Property:</strong> {{ $booking->guestHouse?->name ?? '-' }}</p>
+    <p><strong>Address:</strong> {{ $booking->guestHouse?->address ?? '-' }}, {{ $booking->guestHouse?->city ?? '' }}</p>
     <p><strong>Check-in:</strong> {{ $booking->check_in->format('Y-m-d') }} from {{ $booking->guestHouse?->check_in_time ?? '15:00' }}</p>
     <p><strong>Check-out:</strong> {{ $booking->check_out->format('Y-m-d') }} by {{ $booking->guestHouse?->check_out_time ?? '11:00' }}</p>
     <p><strong>Guests:</strong> {{ $booking->guests_count }} · <strong>Nights:</strong> {{ $booking->nights }}</p>

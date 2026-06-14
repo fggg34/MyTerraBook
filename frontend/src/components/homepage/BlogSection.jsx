@@ -23,14 +23,14 @@ export default function BlogSection({ heading, subtitle, allLabel, allHref, post
   useBlogBentoEffects()
 
   const allLink = allHref?.startsWith('/') ? (
-    <Link className="blog-all" to={allHref}>
+    <Link className="section-all" to={allHref}>
       {allLabel}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 12h14M13 6l6 6-6 6" />
       </svg>
     </Link>
   ) : (
-    <a className="blog-all" href={allHref || '#'}>
+    <a className="section-all" href={allHref || '#'}>
       {allLabel}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 12h14M13 6l6 6-6 6" />

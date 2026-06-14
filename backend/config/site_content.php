@@ -48,6 +48,8 @@ $seoFields = [
 
 $pageSeoSection = ['label' => 'SEO', 'fields' => $seoFields];
 
+$iconImageField = ['key' => 'iconImage', 'type' => 'image', 'label' => 'Custom icon image (optional)', 'allowSvg' => true, 'helperText' => 'Overrides the preset icon'];
+
 $trustIconOptions = ['star' => 'Star rating', 'check' => 'Check', 'shield' => 'Shield', 'phone' => 'Phone'];
 $whyFeatureIconOptions = ['campervan' => 'Campervan', 'car' => 'Car', 'house' => 'Guesthouse', 'host' => 'Host', 'shield' => 'Shield', 'phone' => 'Phone'];
 $specTypeOptions = ['gearbox' => 'Gearbox', 'seat' => 'Seats', 'bed' => 'Beds', 'bag' => 'Bags', 'drive' => 'Drive', 'wifi' => 'Wi-Fi', 'room' => 'Rooms', 'bath' => 'Bath'];
@@ -55,6 +57,7 @@ $socialIconOptions = ['facebook' => 'Facebook', 'instagram' => 'Instagram', 'twi
 
 $trustItemFields = [
     ['key' => 'icon', 'type' => 'select', 'label' => 'Icon', 'options' => $trustIconOptions],
+    $iconImageField,
     ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
     ['key' => 'subtitle', 'type' => 'text', 'label' => 'Subtitle'],
     ['key' => 'stars', 'type' => 'number', 'label' => 'Star count', 'visibleWhen' => ['field' => 'icon', 'value' => 'star']],
@@ -62,6 +65,7 @@ $trustItemFields = [
 
 $whyFeatureFields = [
     ['key' => 'icon', 'type' => 'select', 'label' => 'Icon', 'options' => $whyFeatureIconOptions],
+    $iconImageField,
     ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
     ['key' => 'description', 'type' => 'textarea', 'label' => 'Description', 'columnSpanFull' => true],
     ['key' => 'expandedText', 'type' => 'textarea', 'label' => 'Expanded text', 'columnSpanFull' => true],
@@ -468,6 +472,7 @@ return [
                 'pillars' => ['label' => 'Values', 'fields' => [
                     ['key' => 'pillars', 'type' => 'repeater', 'label' => 'Pillars', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
                         ['key' => 'icon', 'type' => 'select', 'label' => 'Icon', 'options' => ['shield' => 'Shield', 'price' => 'Price', 'route' => 'Route']],
+                        $iconImageField,
                         ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
                         ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
                     ]],
@@ -524,6 +529,7 @@ return [
                         ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
                         ['key' => 'href', 'type' => 'text', 'label' => 'Link'],
                         ['key' => 'icon', 'type' => 'select', 'label' => 'Icon', 'options' => ['chat' => 'Chat', 'book' => 'Book', 'home' => 'Home']],
+                        $iconImageField,
                     ]],
                 ]],
                 'emptyState' => ['label' => 'Empty search state', 'fields' => [
@@ -663,7 +669,7 @@ return [
             ],
         ],
         'search-campervan' => [
-            'label' => 'Search — Campervans',
+            'label' => 'Search, Campervans',
             'group' => 'Transactional',
             'preview_route' => '/campervans',
             'sort_order' => 10,
@@ -674,7 +680,7 @@ return [
             ],
         ],
         'search-car' => [
-            'label' => 'Search — Cars',
+            'label' => 'Search, Cars',
             'group' => 'Transactional',
             'preview_route' => '/cars',
             'sort_order' => 11,
@@ -685,7 +691,7 @@ return [
             ],
         ],
         'search-guesthouse' => [
-            'label' => 'Search — Guesthouses',
+            'label' => 'Search, Guesthouses',
             'group' => 'Transactional',
             'preview_route' => '/guesthouses',
             'sort_order' => 12,
@@ -698,7 +704,7 @@ return [
             ],
         ],
         'listing-campervan' => [
-            'label' => 'Listing — Campervan',
+            'label' => 'Listing, Campervan',
             'group' => 'Transactional',
             'preview_route' => '/campervans',
             'sort_order' => 13,
@@ -716,7 +722,7 @@ return [
             ],
         ],
         'listing-car' => [
-            'label' => 'Listing — Car',
+            'label' => 'Listing, Car',
             'group' => 'Transactional',
             'preview_route' => '/cars',
             'sort_order' => 14,
@@ -734,7 +740,7 @@ return [
             ],
         ],
         'listing-guesthouse' => [
-            'label' => 'Listing — Guesthouse',
+            'label' => 'Listing, Guesthouse',
             'group' => 'Transactional',
             'preview_route' => '/guesthouses',
             'sort_order' => 15,

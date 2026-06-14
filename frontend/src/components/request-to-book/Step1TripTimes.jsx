@@ -172,7 +172,7 @@ export default function Step1TripTimes({
             <span className="cbx"><Check aria-hidden /></span>
             <span>
               Return to the <b>same location</b> I picked up from
-              {pickupLocName && pickupLocName !== '—' ? ` — ${pickupLocName}.` : '.'}
+              {pickupLocName && pickupLocName !== '-' ? `, ${pickupLocName}.` : '.'}
             </span>
           </label>
           {!form.sameReturn && (

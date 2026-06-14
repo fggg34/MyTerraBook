@@ -11,6 +11,7 @@ use App\Filament\GuestHouse\Resources\GuestHouseResource\Pages\ListGuestHouses;
 use App\Filament\GuestHouse\Resources\Schemas\GuestHouseForm;
 use App\Filament\Pages\ListingReviewPage;
 use App\Models\GuestHouse;
+use App\Support\AdminTableBadgeColors;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -46,7 +47,7 @@ class GuestHouseResource extends Resource
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return 'warning';
+        return 'primary';
     }
 
     public static function form(Schema $schema): Schema
@@ -66,11 +67,17 @@ class GuestHouseResource extends Resource
                 TextColumn::make('city')->searchable()->sortable(),
                 TextColumn::make('max_guests')->label('Sleeps')->sortable(),
                 TextColumn::make('bedrooms')->sortable(),
-                TextColumn::make('type')->badge(),
+                TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (): string => AdminTableBadgeColors::neutral())
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('base_price_per_night')
                     ->label('Price/night')
                     ->formatStateUsing(fn ($state) => '€ '.number_format($state / 100, 2)),
-                TextColumn::make('status')->badge(),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (mixed $state): string => AdminTableBadgeColors::guestHouseStatus($state))
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('host.name')->label('Host')->toggleable(),
                 TextColumn::make('submitted_at')->dateTime()->toggleable(),
             ])
@@ -113,7 +120,7 @@ class GuestHouseResource extends Resource
                     }),
                 Action::make('requestChanges')
                     ->label('Request changes')
-                    ->color('warning')
+                    ->color('primary')
                     ->modalHeading('Request changes')
                     ->visible(fn (GuestHouse $record): bool => $record->status === GuestHouseStatus::PendingReview)
                     ->form(ListingReviewPage::requestChangesFormFields())

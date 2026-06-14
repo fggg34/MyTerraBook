@@ -10,7 +10,7 @@ header('X-Robots-Tag: noindex');
 
 $sf = isset($_SERVER['SCRIPT_FILENAME']) ? str_replace('\\', '/', (string) $_SERVER['SCRIPT_FILENAME']) : '';
 
-// Same folder as index.php — either filename proves the /{segment}/public/ segment.
+// Same folder as index.php , either filename proves the /{segment}/public/ segment.
 $prefixFromFs = preg_match('#/([^/]+)/public/(?:index\.php|deploy-check\.php)$#', $sf, $m) ? $m[1] : null;
 
 $examplePath = '/backend/admin/login';

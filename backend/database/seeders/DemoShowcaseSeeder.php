@@ -35,15 +35,15 @@ class DemoShowcaseSeeder extends Seeder
         $this->command?->info('Demo listings ready for review:');
         $this->command?->info('Cars:');
         foreach ($cars as $car) {
-            $this->command?->info("  /cars/{$car->id} — {$car->name}");
+            $this->command?->info("  /cars/{$car->id}, {$car->name}");
         }
         $this->command?->info('Campervans:');
         foreach ($campervans as $van) {
-            $this->command?->info("  /campervans/{$van->id} — {$van->name}");
+            $this->command?->info("  /campervans/{$van->id}, {$van->name}");
         }
         $this->command?->info('Guesthouses:');
         foreach ($guesthouses as $house) {
-            $this->command?->info("  /guesthouses/{$house->slug} — {$house->name}");
+            $this->command?->info("  /guesthouses/{$house->slug}, {$house->name}");
         }
     }
 
@@ -187,7 +187,7 @@ class DemoShowcaseSeeder extends Seeder
                 'base' => 18500,
                 'bedrooms' => 4,
                 'max_guests' => 8,
-                'short' => 'Spacious villa with hot tub — perfect for aurora watching.',
+                'short' => 'Spacious villa with hot tub, perfect for aurora watching.',
                 'thumb' => 'https://placehold.co/800x600/312e81/fff?text=Northern+Lights+Villa',
             ],
         ];
@@ -223,7 +223,7 @@ class DemoShowcaseSeeder extends Seeder
         $this->wireVehicle($car, $data['rate'], $data['chars']);
 
         $this->seedCarReviews($car, [
-            ['guest_name' => 'Anna K.', 'rating' => 5, 'body' => "Excellent {$kind} — smooth booking and clear pricing."],
+            ['guest_name' => 'Anna K.', 'rating' => 5, 'body' => "Excellent {$kind}, smooth booking and clear pricing."],
             ['guest_name' => 'Marco R.', 'rating' => 5, 'body' => 'Great vehicle, easy pickup and friendly handover.'],
         ]);
 
@@ -290,7 +290,7 @@ class DemoShowcaseSeeder extends Seeder
             ],
             [
                 'rating' => 5,
-                'body' => 'Wonderful stay — exactly as described. Would book again.',
+                'body' => 'Wonderful stay, exactly as described. Would book again.',
                 'is_approved' => true,
             ],
         );

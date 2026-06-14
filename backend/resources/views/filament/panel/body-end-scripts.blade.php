@@ -146,9 +146,9 @@
     }
 
     .ir-daily-fares-page .ir-fares-tab.is-active {
-        border-color: rgb(59 130 246 / 1);
-        background: rgb(59 130 246 / 0.1);
-        color: rgb(37 99 235 / 1);
+        border-color: rgb(69 160 106 / 1);
+        background: rgb(69 160 106 / 0.1);
+        color: rgb(58 141 93 / 1);
     }
 
     .ir-daily-fares-page .ir-fares-grid {
@@ -295,7 +295,7 @@
     }
 
     .ir-daily-fares-page .ir-fares-primary-btn {
-        background: rgb(37 99 235 / 1);
+        background: rgb(69 160 106 / 1);
         color: #fff;
         width: fit-content;
     }

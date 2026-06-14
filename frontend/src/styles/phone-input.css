@@ -14,7 +14,7 @@
   letter-spacing: 0.01em;
 }
 
-/* Unified composite control — one border, country prefix inside */
+/* Unified composite control, one border, country prefix inside */
 .phone-field .PhoneInput {
   --phone-border: var(--auth-line, #e2e7ef);
   --phone-focus: var(--auth-green, #45a06a);

@@ -28,11 +28,6 @@ export default function PriceRangeFilter({
 
   return (
     <div className="price-range-filter">
-      <p className="price-range-value">
-        {format(valueMin)} – {format(valueMax)}
-        <span className="price-range-per"> / {perLabel}</span>
-      </p>
-
       <div
         className={`price-range-track ${activeThumb ? 'is-dragging' : ''}`}
         style={{
@@ -40,6 +35,10 @@ export default function PriceRangeFilter({
           '--range-max': `${maxPercent}%`,
         }}
       >
+        <div className="price-range-rail-wrap" aria-hidden="true">
+          <div className="price-range-rail" />
+          <div className="price-range-fill" />
+        </div>
         <input
           type="range"
           className={`price-range-input price-range-input--min ${activeThumb === 'min' ? 'is-active' : ''}`}
@@ -52,6 +51,7 @@ export default function PriceRangeFilter({
           onPointerCancel={() => setActiveThumb(null)}
           onChange={(e) => handleMinChange(Number(e.target.value))}
           aria-label={`Minimum price per ${perLabel}`}
+          aria-valuetext={format(valueMin)}
         />
         <input
           type="range"
@@ -65,10 +65,11 @@ export default function PriceRangeFilter({
           onPointerCancel={() => setActiveThumb(null)}
           onChange={(e) => handleMaxChange(Number(e.target.value))}
           aria-label={`Maximum price per ${perLabel}`}
+          aria-valuetext={format(valueMax)}
         />
       </div>
 
-      <div className="price-range-bounds">
+      <div className="price-range-endpoints" aria-hidden="true">
         <span>{format(min)}</span>
         <span>{format(max)}</span>
       </div>

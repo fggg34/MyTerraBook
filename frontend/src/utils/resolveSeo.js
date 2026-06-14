@@ -57,7 +57,7 @@ export function resolveListingCategoryLabel(listingType) {
 export function resolveAutoTitle(source = {}, globalSeo = {}) {
   if (source.name && source.listingType) {
     const category = resolveListingCategoryLabel(source.listingType)
-    return `${source.name} — ${category} in Iceland`
+    return `${source.name}, ${category} in Iceland`
   }
 
   if (source.title) return source.title

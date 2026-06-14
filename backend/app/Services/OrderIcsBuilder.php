@@ -10,7 +10,7 @@ class OrderIcsBuilder
 {
     public function forOrder(Order $order): string
     {
-        $calendar = Calendar::create(config('app.name', 'Rentals').' — '.$order->reference)
+        $calendar = Calendar::create(config('app.name', 'Rentals').', '.$order->reference)
             ->productIdentifier('-//MyTerraBook//Rental Calendar//EN');
 
         $pickupName = 'Pick-up: '.($order->car?->name ?? 'Vehicle').' ('.$order->reference.')';

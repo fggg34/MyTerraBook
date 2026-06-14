@@ -49,12 +49,7 @@ class ListCars extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('listingApprovals')
-                ->label('Approval queue')
-                ->icon(Heroicon::OutlinedClipboardDocumentCheck)
-                ->color('warning')
-                ->url(ListingReviewPage::getUrl())
-                ->badge(fn (): ?string => ListingReviewPage::getNavigationBadge()),
+            ListingReviewPage::makeApprovalQueueHeaderAction(),
             Action::make('editViewFares')
                 ->label('Edit/View Fares')
                 ->icon(Heroicon::OutlinedCurrencyDollar)

@@ -64,7 +64,7 @@ export default function HostCtaSection({
               <span className="he-per">/ month on average</span>
             </div>
             <p className="host-earn-note">
-              Top campervan hosts clear <b>€3,200+</b>. You keep 85% — we handle bookings, payments and insurance.
+              Top campervan hosts clear <b>€3,200+</b>. You keep 85%, we handle bookings, payments and insurance.
             </p>
             <div className="host-points">
               {points.map((point) => (

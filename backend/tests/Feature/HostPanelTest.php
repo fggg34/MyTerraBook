@@ -13,6 +13,7 @@ use App\Models\GuestHouse;
 use App\Models\Location;
 use App\Models\LocationFee;
 use App\Models\OutOfHoursFee;
+use App\Models\PriceType;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -263,6 +264,143 @@ class HostPanelTest extends TestCase
         $response->assertJsonPath('data.meta_description', 'Cozy place near the centre.');
         $response->assertJsonPath('data.seasonal_prices.0.name', 'Summer');
         $response->assertJsonPath('data.seasonal_prices.0.price_per_night', 20000);
+    }
+
+    public function test_host_catalog_tax_rates_and_characteristics_load(): void
+    {
+        $taxRate = \App\Models\TaxRate::query()->create(['name' => 'Standard VAT (24%)', 'basis_points' => 2400]);
+        \App\Models\Characteristic::query()->create([
+            'name' => 'Air Conditioning',
+            'group' => 'Comfort & Convenience',
+            'sort_order' => 10,
+            'is_search_filter' => true,
+        ]);
+
+        Sanctum::actingAs(User::factory()->host()->create());
+
+        $this->getJson('/api/host/catalog/tax-rates')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $taxRate->id)
+            ->assertJsonPath('data.0.basis_points', 2400);
+
+        $this->getJson('/api/host/catalog/characteristics')
+            ->assertOk()
+            ->assertJsonPath('data.0.name', 'Air Conditioning')
+            ->assertJsonPath('data.0.group', 'Comfort & Convenience');
+    }
+
+    public function test_host_guesthouse_create_persists_seasonal_prices(): void
+    {
+        Sanctum::actingAs(User::factory()->host()->create());
+
+        $created = $this->postJson('/api/host/guest-houses', [
+            'name' => 'New Seasonal House',
+            'seasonal_prices' => [
+                ['name' => 'Winter', 'date_from' => '2026-12-01', 'date_to' => '2027-02-28', 'price_per_night_euros' => 150, 'minimum_nights' => 2],
+            ],
+        ])->assertCreated()->json('data');
+
+        $this->assertSame('Winter', $created['seasonal_prices'][0]['name']);
+        $this->assertSame(15000, $created['seasonal_prices'][0]['price_per_night']);
+
+        $this->assertDatabaseHas('guest_house_seasonal_prices', [
+            'guest_house_id' => $created['id'],
+            'name' => 'Winter',
+            'price_per_night' => 15000,
+        ]);
+    }
+
+    public function test_host_car_persists_capacity_fields(): void
+    {
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'SUV', 'is_active' => true, 'is_search_filter' => true]);
+
+        Sanctum::actingAs(User::factory()->host()->create());
+
+        $carId = $this->postJson('/api/host/cars', [
+            'name' => 'Family SUV',
+            'sub_category_id' => $category->id,
+            'seats' => 5,
+            'sleeps' => 0,
+            'bags' => 4,
+        ])->assertCreated()->json('data.id');
+
+        $this->assertDatabaseHas('cars', [
+            'id' => $carId,
+            'seats' => 5,
+            'bags' => 4,
+        ]);
+
+        $this->getJson("/api/host/cars/{$carId}")
+            ->assertOk()
+            ->assertJsonPath('data.seats', 5)
+            ->assertJsonPath('data.sleeps', 0)
+            ->assertJsonPath('data.bags', 4);
+    }
+
+    public function test_submit_car_requires_locations_units_and_pricing(): void
+    {
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'SUV', 'is_active' => true, 'is_search_filter' => true]);
+        $pickup = Location::query()->create([
+            'name' => 'Airport',
+            'slug' => 'airport-submit-test',
+            'is_active' => true,
+        ]);
+        $dropoff = Location::query()->create([
+            'name' => 'Downtown',
+            'slug' => 'downtown-submit-test',
+            'is_active' => true,
+        ]);
+        $priceType = PriceType::query()->create(['name' => 'Basic', 'is_active' => true]);
+        $host = User::factory()->host()->create();
+
+        Sanctum::actingAs($host);
+
+        $car = Car::query()->create([
+            'user_id' => $host->id,
+            'name' => 'Bare SUV',
+            'sub_category_id' => $category->id,
+            'listing_status' => ListingApprovalStatus::Draft,
+            'units_available' => 0,
+            'seats' => 5,
+        ]);
+        $carId = $car->id;
+
+        $this->postJson("/api/host/cars/{$carId}/submit")
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'At least one pickup location is required before submitting for review.');
+
+        $this->patchJson("/api/host/cars/{$carId}/relations", [
+            'pickup_location_ids' => [$pickup->id],
+            'dropoff_location_ids' => [$dropoff->id],
+        ])->assertOk();
+
+        $this->postJson("/api/host/cars/{$carId}/submit")
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'At least one available unit is required before submitting for review.');
+
+        $car->update(['units_available' => 2]);
+
+        $this->postJson("/api/host/cars/{$carId}/submit")
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'At least one daily fare is required before submitting for review.');
+
+        $this->postJson("/api/host/cars/{$carId}/daily-fares", [
+            'price_type_id' => $priceType->id,
+            'from_days' => 1,
+            'to_days' => 7,
+            'price_per_day_euros' => 120,
+        ])->assertCreated();
+
+        $this->postJson("/api/host/cars/{$carId}/submit")
+            ->assertOk()
+            ->assertJsonPath('data.listing_status', ListingApprovalStatus::PendingReview->value);
+
+        $this->assertDatabaseHas('cars', [
+            'id' => $carId,
+            'listing_status' => ListingApprovalStatus::PendingReview->value,
+        ]);
     }
 
     public function test_host_catalog_locations_include_opening_hours(): void

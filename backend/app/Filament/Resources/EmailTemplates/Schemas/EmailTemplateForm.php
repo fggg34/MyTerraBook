@@ -31,7 +31,7 @@ class EmailTemplateForm
                         ->visible(fn (?EmailTemplate $record): bool => $record === null),
                     Placeholder::make('key_display')
                         ->label('Template key')
-                        ->content(fn (?EmailTemplate $record): string => $record?->key ?? '—')
+                        ->content(fn (?EmailTemplate $record): string => $record?->key ?? '-')
                         ->visible(fn (?EmailTemplate $record): bool => $record !== null),
                     TextInput::make('name')
                         ->label('Name')
@@ -44,7 +44,7 @@ class EmailTemplateForm
                         ->visible(fn (?EmailTemplate $record): bool => $record === null),
                     Placeholder::make('category_display')
                         ->label('Category')
-                        ->content(fn (?EmailTemplate $record): string => self::categoryOptions()[$record?->category ?? ''] ?? ($record?->category ?? '—'))
+                        ->content(fn (?EmailTemplate $record): string => self::categoryOptions()[$record?->category ?? ''] ?? ($record?->category ?? '-'))
                         ->visible(fn (?EmailTemplate $record): bool => $record !== null),
                     Select::make('audience')
                         ->options(self::audienceOptions())
@@ -53,7 +53,7 @@ class EmailTemplateForm
                         ->visible(fn (?EmailTemplate $record): bool => $record === null),
                     Placeholder::make('audience_display')
                         ->label('Audience')
-                        ->content(fn (?EmailTemplate $record): string => self::audienceOptions()[$record?->audience ?? ''] ?? ($record?->audience ?? '—'))
+                        ->content(fn (?EmailTemplate $record): string => self::audienceOptions()[$record?->audience ?? ''] ?? ($record?->audience ?? '-'))
                         ->visible(fn (?EmailTemplate $record): bool => $record !== null),
                     Toggle::make('is_enabled')
                         ->label('Enabled')

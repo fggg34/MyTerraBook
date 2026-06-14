@@ -7,6 +7,7 @@ use App\Models\SiteContentPage;
 use App\Services\SiteContentFormBuilder;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Navigation\NavigationItem;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -35,6 +36,29 @@ class SiteContentHub extends Page
     public static function canAccess(): bool
     {
         return auth()->user()?->canManageSiteContent() ?? false;
+    }
+
+    /**
+     * @return array<NavigationItem>
+     */
+    public static function getNavigationItems(): array
+    {
+        if (! static::canAccess()) {
+            return [];
+        }
+
+        return collect(config('site_content.pages', []))
+            ->sortBy(fn (array $config): int => $config['sort_order'] ?? 99)
+            ->map(fn (array $config, string $key): NavigationItem => NavigationItem::make($key)
+                ->label($config['label'] ?? $key)
+                ->group('Content')
+                ->icon(static::$navigationIcon)
+                ->sort($config['sort_order'] ?? 99)
+                ->url(static::getUrl(['tab' => $key]))
+                ->isActiveWhen(fn (): bool => request()->routeIs(static::getRouteName())
+                    && request()->query('tab', 'global') === $key))
+            ->values()
+            ->all();
     }
 
     protected string $view = 'filament.pages.site-content-hub';
@@ -129,7 +153,7 @@ class SiteContentHub extends Page
         $label = config("site_content.pages.{$this->activePageKey}.label");
 
         return is_string($label) && $label !== ''
-            ? "Site content — {$label}"
+            ? "Site content, {$label}"
             : 'Site content';
     }
 
@@ -158,7 +182,7 @@ class SiteContentHub extends Page
             array_replace_recursive($defaults, $existing?->content ?? []),
         );
 
-        // Persist uploads before snapshot — getStateSnapshot() skips beforeStateDehydrated().
+        // Persist uploads before snapshot, getStateSnapshot() skips beforeStateDehydrated().
         $dehydrateState = ['data' => $this->data];
         $this->form->callBeforeStateDehydrated($dehydrateState);
 

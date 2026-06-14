@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Characteristics\Tables;
 
 use App\Models\Characteristic;
+use App\Support\AdminTableBadgeColors;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -24,6 +25,14 @@ class CharacteristicsTable
                     ->label('Text Next to Icon')
                     ->searchable()
                     ->limit(120),
+                TextColumn::make('group')
+                    ->label('Group')
+                    ->badge()
+                    ->color(fn (): string => AdminTableBadgeColors::neutral())
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state))
+                    ->placeholder('—')
+                    ->visible(fn (): bool => \Illuminate\Support\Facades\Schema::hasColumn('characteristics', 'group'))
+                    ->sortable(),
                 ImageColumn::make('icon_path')
                     ->label('Characteristic icon'),
                 TextColumn::make('sort_order')

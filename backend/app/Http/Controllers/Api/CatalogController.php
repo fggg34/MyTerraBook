@@ -60,7 +60,7 @@ class CatalogController extends Controller
         return response()->json(['data' => SubCategoryResource::collection($query->get())]);
     }
 
-    /** @deprecated Use subCategories() — kept for storefront filter compatibility. */
+    /** @deprecated Use subCategories(), kept for storefront filter compatibility. */
     public function categories(Request $request): JsonResponse
     {
         return $this->subCategories($request);

@@ -6,7 +6,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export BACKEND_PORT="${BACKEND_PORT:-8080}"
 export FRONTEND_PORT="${FRONTEND_PORT:-5174}"
 
-echo "MyTerraBook dev — backend http://127.0.0.1:${BACKEND_PORT}  frontend http://127.0.0.1:${FRONTEND_PORT}"
+echo "MyTerraBook dev, backend http://127.0.0.1:${BACKEND_PORT}  frontend http://127.0.0.1:${FRONTEND_PORT}"
 echo "Admin login: http://127.0.0.1:${BACKEND_PORT}/admin/login  (admin@terrabook.test / password)"
 echo ""
 

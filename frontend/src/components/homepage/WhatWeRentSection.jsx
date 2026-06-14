@@ -1,4 +1,7 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
+import { formatRentListingStats } from '../../utils/formatRentListingStats'
 
 function CardLink({ href, className, children }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
@@ -16,6 +19,16 @@ function CardLink({ href, className, children }) {
 }
 
 export default function WhatWeRentSection({ heading, subtitle, cards = [] }) {
+  const priceFormatter = useFormatPrice()
+  const enrichedCards = useMemo(
+    () =>
+      cards.map((card) => ({
+        ...card,
+        listingLabel: card.listingStats ? formatRentListingStats(card.listingStats, priceFormatter) : null,
+      })),
+    [cards, priceFormatter],
+  )
+
   return (
     <section className="rent">
       <div className="wrap">
@@ -24,11 +37,11 @@ export default function WhatWeRentSection({ heading, subtitle, cards = [] }) {
           {subtitle && <p className="sub">{subtitle}</p>}
         </div>
         <div className="cards">
-          {cards.map((card) => (
+          {enrichedCards.map((card) => (
             <CardLink key={card.name} href={card.href} className="rcard">
               <img src={card.image || '/images/homepage/cardcamper.jpg'} alt={card.alt || card.name} />
               <div className="meta">
-                {card.listingCount && <span className="listings">{card.listingCount}</span>}
+                {card.listingLabel && <span className="listings">{card.listingLabel}</span>}
                 <h3>{card.name}</h3>
                 {card.tagline && <span className="tag">{card.tagline}</span>}
               </div>

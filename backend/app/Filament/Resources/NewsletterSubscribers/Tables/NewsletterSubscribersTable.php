@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\NewsletterSubscribers\Tables;
 
 use App\Models\NewsletterSubscriber;
+use App\Support\AdminTableBadgeColors;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -27,6 +28,8 @@ class NewsletterSubscribersTable
                     ->boolean(),
                 TextColumn::make('source')
                     ->badge()
+                    ->color(fn (): string => AdminTableBadgeColors::neutral())
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state))
                     ->toggleable(),
                 TextColumn::make('subscribed_at')
                     ->dateTime()

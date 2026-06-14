@@ -1,4 +1,4 @@
-/* ── Content pages — aligned with MyTerraBook homepage palette ── */
+/* ── Content pages, aligned with MyTerraBook homepage palette ── */
 
 .content-page {
   background: var(--bg, #fbfcfe);
@@ -442,6 +442,12 @@
 .faq-quick-icon svg {
   width: 18px;
   height: 18px;
+}
+
+.faq-quick-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .faq-quick-arrow {
@@ -1856,6 +1862,12 @@
 .about-pillar-icon svg {
   width: 24px;
   height: 24px;
+}
+
+.about-pillar-icon-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .about-pillar h3 {

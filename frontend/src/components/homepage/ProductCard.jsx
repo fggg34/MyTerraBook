@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 const SPEC_ICONS = {
   seat: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0Zm10 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0Z" />
-      <path d="M5 17H3v-4l2-5h11l3 5v4h-2M9 17h6M3 11h17" />
+      <path d="M5 19v-2a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2" />
+      <path d="M7 15V9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v6" />
+      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
     </svg>
   ),
   bed: (

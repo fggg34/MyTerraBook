@@ -36,7 +36,7 @@ class ListingReviewController extends Controller
 
         return response()->json([
             'data' => new ListingReviewResource($review),
-            'message' => 'Thank you — your review has been posted.',
+            'message' => 'Thank you, your review has been posted.',
         ], 201);
     }
 
@@ -62,7 +62,7 @@ class ListingReviewController extends Controller
 
         return response()->json([
             'data' => new ListingReviewResource($review),
-            'message' => 'Thank you — your review has been posted.',
+            'message' => 'Thank you, your review has been posted.',
         ], 201);
     }
 

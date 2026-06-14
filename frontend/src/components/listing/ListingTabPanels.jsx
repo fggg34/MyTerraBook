@@ -294,7 +294,7 @@ export default function ListingTabPanels({
                     From <b>{listing.priceFrom}</b>
                   </>
                 ) : (
-                  <b>—</b>
+                  <b>-</b>
                 )}
               </span>
             </div>

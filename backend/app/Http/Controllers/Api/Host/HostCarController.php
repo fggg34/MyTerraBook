@@ -101,6 +101,10 @@ class HostCarController extends Controller
             return response()->json(['message' => 'Only draft or rejected listings can be submitted.'], 422);
         }
 
+        if ($submitError = $this->submitReadinessError($car)) {
+            return response()->json(['message' => $submitError], 422);
+        }
+
         $car->update([
             'listing_status' => ListingApprovalStatus::PendingReview,
             'submitted_at' => now(),
@@ -565,6 +569,9 @@ class HostCarController extends Controller
             'description' => ['nullable', 'string'],
             'transmission' => ['nullable', 'string', 'max:50'],
             'fuel_type' => ['nullable', 'string', 'max:50'],
+            'seats' => ['nullable', 'integer', 'min:0', 'max:50'],
+            'sleeps' => ['nullable', 'integer', 'min:0', 'max:20'],
+            'bags' => ['nullable', 'integer', 'min:0', 'max:50'],
             'units_available' => ['nullable', 'integer', 'min:1'],
             'ical_import_url' => ['nullable', 'url', 'max:500'],
             'meta_title' => ['nullable', 'string', 'max:255'],
@@ -649,6 +656,48 @@ class HostCarController extends Controller
             ->whereJsonContains('vehicle_ids', $car->id)
             ->orderBy('id')
             ->get();
+    }
+
+    private function submitReadinessError(Car $car): ?string
+    {
+        $car->loadMissing(['subCategory.mainCategory', 'locations']);
+
+        if (trim((string) $car->name) === '') {
+            return 'A vehicle name is required before submitting for review.';
+        }
+
+        if (! $car->sub_category_id) {
+            return 'A sub category is required before submitting for review.';
+        }
+
+        $hasPickup = $car->locations->contains(fn ($loc) => (bool) $loc->pivot->allows_pickup);
+        if (! $hasPickup) {
+            return 'At least one pickup location is required before submitting for review.';
+        }
+
+        $hasDropoff = $car->locations->contains(fn ($loc) => (bool) $loc->pivot->allows_dropoff);
+        if (! $hasDropoff) {
+            return 'At least one dropoff location is required before submitting for review.';
+        }
+
+        if (($car->units_available ?? 0) < 1) {
+            return 'At least one available unit is required before submitting for review.';
+        }
+
+        if (! $car->dailyFares()->exists()) {
+            return 'At least one daily fare is required before submitting for review.';
+        }
+
+        $isCampervan = $car->subCategory?->mainCategory?->slug === 'campervan';
+        if ($isCampervan) {
+            if (($car->sleeps ?? 0) < 1) {
+                return 'Sleeps (berths) must be at least 1 before submitting a campervan for review.';
+            }
+        } elseif (($car->seats ?? 0) < 1) {
+            return 'Seats must be at least 1 before submitting for review.';
+        }
+
+        return null;
     }
 
     private function validateTimeWindows(Car $car): void

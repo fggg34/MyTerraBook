@@ -45,7 +45,7 @@
         }
 
         .la-stat-value--warn {
-            color: #b45309;
+            color: var(--mtb-green-dark);
         }
 
         .la-panel {
@@ -484,7 +484,7 @@
                                         <div class="la-details">{{ $item['details'] }}</div>
                                     </td>
                                     <td class="la-muted" style="white-space: nowrap;">
-                                        {{ $item['submitted_at']?->format('d M Y · H:i') ?? '—' }}
+                                        {{ $item['submitted_at']?->format('d M Y · H:i') ?? '-' }}
                                     </td>
                                     <td>
                                         <div class="la-actions">

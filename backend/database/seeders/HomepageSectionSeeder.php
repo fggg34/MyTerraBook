@@ -42,7 +42,7 @@ class HomepageSectionSeeder extends Seeder
                 'sort_order' => 3,
                 'content' => [
                     'heading' => "Book with the world's leading roadtrip provider!",
-                    'subtitle' => 'Campervans, 4×4s and warm guesthouses — everything you need for the Ring Road, in one booking.',
+                    'subtitle' => 'Campervans, 4×4s and warm guesthouses, everything you need for the Ring Road, in one booking.',
                     'backgroundImage' => '/images/homepage/hero.jpg',
                     'tabs' => [
                         ['id' => 'campervan', 'label' => 'Campervan'],
@@ -131,7 +131,7 @@ class HomepageSectionSeeder extends Seeder
                 'sort_order' => 6,
                 'content' => [
                     'heading' => 'One local platform for every way to explore Iceland.',
-                    'subheading' => "Campervans, cars, guesthouses — even a way to earn from your own. All checked by a team that actually drives these roads.",
+                    'subheading' => "Campervans, cars, guesthouses, even a way to earn from your own. All checked by a team that actually drives these roads.",
                     'photo' => '/images/homepage/why-photo.jpg',
                     'badge' => [
                         'rating' => '4.9',
@@ -142,7 +142,7 @@ class HomepageSectionSeeder extends Seeder
                         [
                             'icon' => 'campervan',
                             'title' => 'Campervans',
-                            'description' => 'Sleep where you stop — kitted out for the Ring Road and beyond.',
+                            'description' => 'Sleep where you stop, kitted out for the Ring Road and beyond.',
                             'expandedText' => 'Heaters, gas hobs and proper bedding come as standard, and every van is winter-checked before pickup so you can chase the aurora without packing half a house.',
                         ],
                         [
@@ -155,7 +155,7 @@ class HomepageSectionSeeder extends Seeder
                             'icon' => 'house',
                             'title' => 'Guesthouses',
                             'description' => 'Warm, vetted beds spaced along your route across the island.',
-                            'expandedText' => "Hand-picked stays in Vík, Höfn, Akureyri and more — each within an easy day's drive of the last, so your itinerary plans itself.",
+                            'expandedText' => "Hand-picked stays in Vík, Höfn, Akureyri and more, each within an easy day's drive of the last, so your itinerary plans itself.",
                         ],
                     ],
                     'featuresRight' => [
@@ -169,13 +169,13 @@ class HomepageSectionSeeder extends Seeder
                             'icon' => 'shield',
                             'title' => 'Fully insured',
                             'description' => 'Gravel, ash and tyre protection bundled into one clear price.',
-                            'expandedText' => "Iceland's gravel and volcanic ash wreck more rentals than anything else — so that cover is included up front, not upsold at the counter.",
+                            'expandedText' => "Iceland's gravel and volcanic ash wreck more rentals than anything else, so that cover is included up front, not upsold at the counter.",
                         ],
                         [
                             'icon' => 'phone',
                             'title' => 'Local support, 24/7',
                             'description' => 'Real people in Reykjavík, any season, whenever the road turns.',
-                            'expandedText' => 'Flat tyre at midnight, a road closed by weather, a route rethink — one call reaches a local who knows exactly where you are and what to do.',
+                            'expandedText' => 'Flat tyre at midnight, a road closed by weather, a route rethink, one call reaches a local who knows exactly where you are and what to do.',
                         ],
                     ],
                 ],
@@ -184,7 +184,7 @@ class HomepageSectionSeeder extends Seeder
                 'section_key' => 'footer',
                 'sort_order' => 7,
                 'content' => [
-                    'tagline' => "Iceland's locally-run platform for campervans, 4×4s, cars and guesthouses — one booking, one team in Reykjavík behind it.",
+                    'tagline' => "Iceland's locally-run platform for campervans, 4×4s, cars and guesthouses, one booking, one team in Reykjavík behind it.",
                     'address' => "MyTerraBook ehf.\nLaugavegur 178 · 105 Reykjavík · Iceland\nKennitala 591284-0119 · VSK 142819",
                     'columns' => [
                         [
@@ -224,7 +224,7 @@ class HomepageSectionSeeder extends Seeder
                 'sort_order' => 8,
                 'content' => [
                     'title' => 'Guest houses & stays',
-                    'subtitle' => 'Hand-picked homes across Iceland — from cosy studios to private villas.',
+                    'subtitle' => 'Hand-picked homes across Iceland, from cosy studios to private villas.',
                     'featured_slugs' => [
                         'northern-lights-villa',
                         'harbour-view-apartment',

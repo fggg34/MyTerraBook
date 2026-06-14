@@ -16,7 +16,7 @@ const testimonials = [
   {
     name: 'Marco R.',
     location: 'Italy',
-    text: 'Picked up at Tirana Airport and dropped off in Vlorë — one-way rental made our vacation so much easier. Highly recommended!',
+    text: 'Picked up at Tirana Airport and dropped off in Vlorë, one-way rental made our vacation so much easier. Highly recommended!',
     rating: 5,
   },
 ]

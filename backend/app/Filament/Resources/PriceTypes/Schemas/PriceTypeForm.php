@@ -35,7 +35,7 @@ class PriceTypeForm
                     ->relationship('taxRate', 'name')
                     ->searchable()
                     ->preload()
-                    ->placeholder('— None —'),
+                    ->placeholder('- None -'),
             ]);
     }
 }

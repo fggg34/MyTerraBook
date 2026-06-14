@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BlogPosts\Tables;
 
+use App\Support\AdminTableBadgeColors;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
@@ -18,7 +19,10 @@ class BlogPostsTable
                 TextColumn::make('title')->searchable()->sortable(),
                 TextColumn::make('kicker')->toggleable(),
                 IconColumn::make('is_featured')->boolean()->label('Featured'),
-                TextColumn::make('status')->badge(),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (mixed $state): string => AdminTableBadgeColors::blogPostStatus($state))
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('published_at')->dateTime()->sortable(),
             ])
             ->recordActions([

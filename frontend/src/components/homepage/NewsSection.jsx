@@ -44,7 +44,7 @@ export default function NewsSection({
       <img
         className="news-bg"
         src={backgroundImage || '/images/homepage/hero.jpg'}
-        alt="Iceland terrain — campervan beneath dramatic peaks"
+        alt="Iceland terrain, campervan beneath dramatic peaks"
       />
       <div className="news-aurora" aria-hidden="true" />
       <div className="wrap">

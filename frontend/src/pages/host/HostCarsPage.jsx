@@ -62,13 +62,15 @@ export default function HostCarsPage() {
               items.map((item) => (
                 <tr key={item.id}>
                   <td>{item.name}</td>
-                  <td>{item.main_category?.name || '—'}</td>
-                  <td>{item.sub_category?.name || item.category?.name || '—'}</td>
+                  <td>{item.main_category?.name || '-'}</td>
+                  <td>{item.sub_category?.name || item.category?.name || '-'}</td>
                   <td><ListingStatusBadge status={item.listing_status} /></td>
                   <td>{item.units_count ?? item.units_available}</td>
-                  <td className="host-actions" style={{ margin: 0 }}>
-                    <Link to={`/host/cars/${item.id}/edit`} className="host-btn secondary">Edit</Link>
-                    <button type="button" className="host-btn danger" onClick={() => handleDelete(item.id)}>Delete</button>
+                  <td className="host-actions">
+                    <div className="host-table-actions">
+                      <Link to={`/host/cars/${item.id}/edit`} className="host-btn secondary">Edit</Link>
+                      <button type="button" className="host-btn danger" onClick={() => handleDelete(item.id)}>Delete</button>
+                    </div>
                   </td>
                 </tr>
               ))

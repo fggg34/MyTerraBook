@@ -6,7 +6,6 @@ use App\Enums\GuestHouseStatus;
 use App\Filament\GuestHouse\Resources\GuestHouseResource;
 use App\Filament\Pages\ListingReviewPage;
 use App\Models\GuestHouse;
-use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -38,12 +37,7 @@ class ListGuestHouses extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('listingApprovals')
-                ->label('Approval queue')
-                ->icon(Heroicon::OutlinedClipboardDocumentCheck)
-                ->color('warning')
-                ->url(ListingReviewPage::getUrl())
-                ->badge(fn (): ?string => ListingReviewPage::getNavigationBadge()),
+            ListingReviewPage::makeApprovalQueueHeaderAction(),
             CreateAction::make(),
         ];
     }

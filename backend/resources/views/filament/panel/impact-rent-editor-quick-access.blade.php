@@ -122,7 +122,7 @@
 
 @if ($inImpactRent)
     <style>
-        /* Hide native Filament cluster sub-nav tabs — replaced by the IR bar below */
+        /* Hide native Filament cluster sub-nav tabs, replaced by the IR bar below */
         .fi-page-sub-navigation-tabs {
             display: none !important;
         }
@@ -143,7 +143,7 @@
 
         .ir-tabs-outer::-webkit-scrollbar { display: none; }
 
-        /* ── Bar container — Vik-style: more substantial, evenly distributed ── */
+        /* ── Bar container, Vik-style: more substantial, evenly distributed ── */
         .ir-tabs {
             display: inline-flex;
             align-items: stretch;
@@ -196,13 +196,13 @@
         }
 
         .ir-tabs__item:focus-visible {
-            outline: 2px solid rgb(245 158 11);
+            outline: 2px solid var(--mtb-green);
             outline-offset: 2px;
         }
 
         .ir-tabs__item--active {
-            background-color: rgb(120 53 15 / 0.5);
-            color: rgb(251 191 36);
+            background-color: rgb(69 160 106 / 0.12);
+            color: var(--mtb-green-dark);
             font-weight: 600;
         }
 
@@ -228,7 +228,7 @@
             transform: rotate(180deg);
         }
 
-        /* ── Dropdown panel — position:fixed escapes any parent overflow ── */
+        /* ── Dropdown panel, position:fixed escapes any parent overflow ── */
         .ir-tabs__dropdown {
             display: none;
             position: fixed;
@@ -264,8 +264,8 @@
         }
 
         .ir-tabs__dropdown-item--active {
-            background-color: rgb(120 53 15 / 0.35);
-            color: rgb(251 191 36);
+            background-color: rgb(69 160 106 / 0.2);
+            color: #9fd4b3;
             font-weight: 500;
         }
 

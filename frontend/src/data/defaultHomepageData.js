@@ -45,7 +45,7 @@ export const defaultHomepageData = {
   hero: {
     heading: "Book with the world's leading roadtrip provider!",
     subtitle:
-      'Campervans, 4×4s and warm guesthouses — everything you need for the Ring Road, in one booking.',
+      'Campervans, 4×4s and warm guesthouses, everything you need for the Ring Road, in one booking.',
     backgroundImage: IMG.hero,
     tabs: [
       { id: 'campervan', label: 'Campervan' },
@@ -77,7 +77,6 @@ export const defaultHomepageData = {
       {
         image: IMG.cardCamper,
         alt: 'Campervan at dusk on a black-sand beach',
-        listingCount: '184 listings · from €89/night',
         name: 'Campervans',
         tagline: 'Sleep where you drive.',
         href: '/campervans',
@@ -85,7 +84,6 @@ export const defaultHomepageData = {
       {
         image: IMG.cardCar,
         alt: 'SUV on a winding road below snowy mountains',
-        listingCount: '96 listings · from €42/night',
         name: 'Cars & 4×4',
         tagline: 'Built for the ring road.',
         href: '/cars',
@@ -93,7 +91,6 @@ export const defaultHomepageData = {
       {
         image: IMG.cardHouse,
         alt: 'Lit guesthouse in the snow at dusk',
-        listingCount: '73 listings · from €110/night',
         name: 'Guesthouses',
         tagline: 'Warm beds between drives.',
         href: '/guesthouses',
@@ -103,14 +100,14 @@ export const defaultHomepageData = {
   whySection: {
     heading: 'One local platform for every way to explore Iceland.',
     subheading:
-      "Campervans, cars, guesthouses — even a way to earn from your own. All checked by a team that actually drives these roads.",
+      "Campervans, cars, guesthouses, even a way to earn from your own. All checked by a team that actually drives these roads.",
     photo: IMG.whyPhoto,
     badge: { rating: '4.9', reviewBold: '12,400+ travellers', reviewRest: 'who booked with us' },
     featuresLeft: [
       {
         icon: 'campervan',
         title: 'Campervans',
-        description: 'Sleep where you stop — kitted out for the Ring Road and beyond.',
+        description: 'Sleep where you stop, kitted out for the Ring Road and beyond.',
         expandedText:
           'Heaters, gas hobs and proper bedding come as standard, and every van is winter-checked before pickup so you can chase the aurora without packing half a house.',
       },
@@ -126,7 +123,7 @@ export const defaultHomepageData = {
         title: 'Guesthouses',
         description: 'Warm, vetted beds spaced along your route across the island.',
         expandedText:
-          "Hand-picked stays in Vík, Höfn, Akureyri and more — each within an easy day's drive of the last, so your itinerary plans itself.",
+          "Hand-picked stays in Vík, Höfn, Akureyri and more, each within an easy day's drive of the last, so your itinerary plans itself.",
       },
     ],
     featuresRight: [
@@ -142,14 +139,14 @@ export const defaultHomepageData = {
         title: 'Fully insured',
         description: 'Gravel, ash and tyre protection bundled into one clear price.',
         expandedText:
-          "Iceland's gravel and volcanic ash wreck more rentals than anything else — so that cover is included up front, not upsold at the counter.",
+          "Iceland's gravel and volcanic ash wreck more rentals than anything else, so that cover is included up front, not upsold at the counter.",
       },
       {
         icon: 'phone',
         title: 'Local support, 24/7',
         description: 'Real people in Reykjavík, any season, whenever the road turns.',
         expandedText:
-          'Flat tyre at midnight, a road closed by weather, a route rethink — one call reaches a local who knows exactly where you are and what to do.',
+          'Flat tyre at midnight, a road closed by weather, a route rethink, one call reaches a local who knows exactly where you are and what to do.',
       },
     ],
   },
@@ -285,7 +282,7 @@ export const defaultHomepageData = {
         num: '01',
         title: 'Find your match',
         description:
-          'Tell us your dates and how you like to travel. We surface only the vans, 4×4s and stays that fit your route — every one checked by our Reykjavík team and priced with insurance built in.',
+          'Tell us your dates and how you like to travel. We surface only the vans, 4×4s and stays that fit your route, every one checked by our Reykjavík team and priced with insurance built in.',
         image: IMG.stayHofn,
         imageAlt: 'Browsing vehicles for an Iceland trip',
         tags: ['Search', 'Compare', 'Instant quote'],
@@ -303,7 +300,7 @@ export const defaultHomepageData = {
         num: '03',
         title: 'Drive Iceland, fully backed',
         description:
-          'Hit the Ring Road with unlimited mileage and 24/7 local support in your pocket. Anything comes up — weather, a flat, a route change — and a real person in Iceland picks up.',
+          'Hit the Ring Road with unlimited mileage and 24/7 local support in your pocket. Anything comes up, weather, a flat, a route change, and a real person in Iceland picks up.',
         image: IMG.hero,
         imageAlt: 'Driving the Ring Road in Iceland',
         tags: ['Unlimited km', '24/7 support', 'Any season'],
@@ -313,7 +310,7 @@ export const defaultHomepageData = {
   staySection: {
     heading: 'A warm bed at the end of the road.',
     subtitle:
-      "Hand-picked guesthouses spaced a comfortable day's drive apart — so the only thing left to plan is where to watch the sky.",
+      "Hand-picked guesthouses spaced a comfortable day's drive apart, so the only thing left to plan is where to watch the sky.",
     allLabel: 'Browse all guesthouses',
     allHref: '/guesthouses',
     cards: [
@@ -391,7 +388,7 @@ export const defaultHomepageData = {
     heading: 'List your car or guesthouse.',
     lead: "Your van sits idle between trips and your spare room stays empty. Put them to work on the platform Iceland's travellers already trust.",
     earnAmount: '€1,900',
-    earnNote: 'Top campervan hosts clear €3,200+. You keep 85% — we handle bookings, payments and insurance.',
+    earnNote: 'Top campervan hosts clear €3,200+. You keep 85%, we handle bookings, payments and insurance.',
     points: ['Free to list', 'You set the calendar', 'Insurance included'],
     primaryLabel: 'Become a host',
     primaryHref: '/become-a-host',
@@ -405,7 +402,7 @@ export const defaultHomepageData = {
   reviewsSection: {
     eyebrow: 'Traveller stories',
     heading: 'Proof you can trust before you book.',
-    lead: 'Real reviews from campers, drivers, and guests who explored Iceland with us — polished into one calm, credible section.',
+    lead: 'Real reviews from campers, drivers, and guests who explored Iceland with us, polished into one calm, credible section.',
     rating: '4.9 / 5',
     ratingCount: '12,400+ reviews',
     reviews: [
@@ -418,7 +415,7 @@ export const defaultHomepageData = {
       },
       {
         quote:
-          '"Gravel roads, a river crossing, even a June snow flurry — the 4×4 and the insurance took it all in stride."',
+          '"Gravel roads, a river crossing, even a June snow flurry, the 4×4 and the insurance took it all in stride."',
         name: 'Tom Okafor',
         fill: '#bcdcab',
         relativeTime: '3 weeks ago',
@@ -464,14 +461,14 @@ export const defaultHomepageData = {
         num: '01',
         question: 'What do I need to rent and drive in Iceland?',
         answer:
-          "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup — that's it.",
+          "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup, that's it.",
         open: true,
       },
       {
         num: '02',
         question: 'Is gravel and ash damage covered?',
         answer:
-          "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter — they're the two things that catch most travellers out on Iceland's roads.",
+          "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter, they're the two things that catch most travellers out on Iceland's roads.",
       },
       {
         num: '03',
@@ -497,14 +494,14 @@ export const defaultHomepageData = {
     eyebrow: 'Field notes from Iceland',
     heading: 'Road conditions, seasonal deals & hidden detours.',
     headingAccent: 'hidden detours',
-    lead: "Aurora forecasts, last-minute van openings and local tips you won't find on a map — once a month, from our Reykjavík team.",
+    lead: "Aurora forecasts, last-minute van openings and local tips you won't find on a map, once a month, from our Reykjavík team.",
     backgroundImage: IMG.hero,
     placeholder: 'you@somewhere-cold.is',
     successMessage: 'Takk! Check your inbox to confirm.',
   },
   footer: {
     tagline:
-      'Campervans, cars and guesthouses across Iceland — booked in minutes, hosted with care.',
+      'Campervans, cars and guesthouses across Iceland, booked in minutes, hosted with care.',
     address: 'MyTerraBook ehf. · Laugavegur 178 · 105 Reykjavík · Iceland',
     columns: [
       {

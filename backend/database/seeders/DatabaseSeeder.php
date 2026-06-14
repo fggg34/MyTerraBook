@@ -22,13 +22,8 @@ class DatabaseSeeder extends Seeder
         if (! app()->environment('testing')) {
             $this->call([
                 CatalogSeeder::class,
-                CarSeeder::class,
-                OrderSeeder::class,
                 DemoExtrasSeeder::class,
                 GuestHouseAmenitySeeder::class,
-                GuestHouseSeeder::class,
-                DemoShowcaseSeeder::class,
-                HostTestDataSeeder::class,
             ]);
         }
     }

@@ -15,14 +15,14 @@ function buildImages(car, listingType) {
   const merged = [...urls, ...fallbacks].slice(0, 5)
   return merged.map((url, i) => ({
     url,
-    alt: i === 0 ? `${car.name} — main photo` : `${car.name} — photo ${i + 1}`,
+    alt: i === 0 ? `${car.name}, main photo` : `${car.name}, photo ${i + 1}`,
   }))
 }
 
 function buildDetailSpecs(car) {
   const specs = []
-  if (car.transmission && car.transmission !== '—') specs.push({ label: car.transmission })
-  if (car.fuel_type && car.fuel_type !== '—') specs.push({ label: car.fuel_type })
+  if (car.transmission && car.transmission !== '-') specs.push({ label: car.transmission })
+  if (car.fuel_type && car.fuel_type !== '-') specs.push({ label: car.fuel_type })
   if (car.seats != null) specs.push({ label: `${car.seats} seats` })
   if (car.sleeps != null) specs.push({ label: `Sleeps ${car.sleeps}` })
   if (car.bags != null) specs.push({ label: `${car.bags} bags` })
@@ -42,7 +42,7 @@ function buildAddons(car, priceFormatter) {
   return (car.rental_options || []).map((opt) => ({
     name: opt.name,
     sub: opt.is_daily_cost ? 'Per day' : 'One-time',
-    price: opt.cost ? format(Number.parseFloat(opt.cost)) : '—',
+    price: opt.cost ? format(Number.parseFloat(opt.cost)) : ',',
     free: false,
   }))
 }

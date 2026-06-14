@@ -88,7 +88,15 @@ class HostCatalogController extends Controller
 
     public function characteristics(): JsonResponse
     {
-        $rows = Characteristic::query()->orderBy('sort_order')->get(['id', 'name', 'slug', 'icon']);
+        $columns = ['id', 'name', 'slug', 'icon_path'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('characteristics', 'group')) {
+            $columns[] = 'group';
+        }
+
+        $rows = Characteristic::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get($columns);
 
         return response()->json(['data' => $rows]);
     }
@@ -116,7 +124,7 @@ class HostCatalogController extends Controller
 
     public function taxRates(): JsonResponse
     {
-        $rows = TaxRate::query()->orderBy('name')->get(['id', 'name', 'rate_bips']);
+        $rows = TaxRate::query()->orderBy('name')->get(['id', 'name', 'basis_points']);
 
         return response()->json(['data' => $rows]);
     }

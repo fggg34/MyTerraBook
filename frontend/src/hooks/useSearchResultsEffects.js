@@ -16,6 +16,7 @@ export default function useSearchResultsEffects({ rootRef, totalCount, visibleCo
     const resfloat = root.querySelector('#resfloat')
     const rfBar = root.querySelector('#rfBar')
     const intro = root.querySelector('.results-intro')
+    const progressTextEl = root.querySelector('#progressText')
 
     const onScroll = () => {
       const y = window.scrollY
@@ -34,7 +35,10 @@ export default function useSearchResultsEffects({ rootRef, totalCount, visibleCo
       const pct = docH > 0 ? Math.min(100, (y / docH) * 100) : 0
       if (progressEl) progressEl.style.width = `${pct}%`
 
-      const showFloat = y > 500 && visibleCount < totalCount
+      const progressTextVisible = progressTextEl
+        ? progressTextEl.getBoundingClientRect().top <= window.innerHeight - 80
+        : false
+      const showFloat = y > 500 && visibleCount < totalCount && !progressTextVisible
       resfloat?.classList.toggle('show', showFloat)
 
       const progress = totalCount > 0 ? visibleCount / totalCount : 0

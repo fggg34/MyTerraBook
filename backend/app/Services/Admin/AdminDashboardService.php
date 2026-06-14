@@ -402,4 +402,120 @@ class AdminDashboardService
             ],
         ];
     }
+
+    /**
+     * @param  array<string, mixed>  $chart
+     */
+    public function operationsOverviewChartHasActivity(array $chart): bool
+    {
+        foreach ($chart['datasets'] ?? [] as $dataset) {
+            foreach ($dataset['data'] ?? [] as $value) {
+                if ((float) $value > 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param  array<string, mixed>  $chart
+     * @return array<string, mixed>
+     */
+    public function operationsOverviewChartOptions(array $chart): array
+    {
+        $maxUnits = 1.0;
+        $maxRevenue = 1.0;
+
+        foreach ($chart['datasets'] ?? [] as $index => $dataset) {
+            $peak = max($dataset['data'] ?? [0]);
+
+            if ($index === 0) {
+                $maxRevenue = max($maxRevenue, (float) $peak);
+            } else {
+                $maxUnits = max($maxUnits, (float) $peak);
+            }
+        }
+
+        return [
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'interaction' => [
+                'mode' => 'index',
+                'intersect' => false,
+            ],
+            'elements' => [
+                'line' => [
+                    'borderJoinStyle' => 'round',
+                    'borderCapStyle' => 'round',
+                ],
+                'point' => [
+                    'hoverBorderWidth' => 2,
+                ],
+            ],
+            'plugins' => [
+                'legend' => [
+                    'position' => 'bottom',
+                    'align' => 'start',
+                    'labels' => [
+                        'boxWidth' => 10,
+                        'usePointStyle' => true,
+                        'pointStyle' => 'circle',
+                        'padding' => 16,
+                    ],
+                ],
+                'tooltip' => [
+                    'enabled' => true,
+                    'mode' => 'index',
+                    'intersect' => false,
+                ],
+            ],
+            'scales' => [
+                'x' => [
+                    'display' => true,
+                    'grid' => [
+                        'display' => false,
+                    ],
+                    'ticks' => [
+                        'maxRotation' => 0,
+                        'autoSkip' => true,
+                        'maxTicksLimit' => 8,
+                    ],
+                ],
+                'y' => [
+                    'type' => 'linear',
+                    'display' => true,
+                    'position' => 'left',
+                    'beginAtZero' => true,
+                    'max' => max(5, (int) ceil($maxUnits * 1.25)),
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Active units',
+                    ],
+                    'grid' => [
+                        'display' => true,
+                    ],
+                    'ticks' => [
+                        'precision' => 0,
+                        'stepSize' => 1,
+                    ],
+                ],
+                'y1' => [
+                    'type' => 'linear',
+                    'display' => true,
+                    'position' => 'right',
+                    'beginAtZero' => true,
+                    'max' => max(100, (int) ceil($maxRevenue * 1.25)),
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Revenue (€)',
+                    ],
+                    'grid' => [
+                        'drawOnChartArea' => false,
+                    ],
+                ],
+            ],
+        ];
+    }
 }

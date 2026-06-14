@@ -432,7 +432,7 @@ export default function HostGuestHouseEditorPage() {
             <p className="text-sm text-slate-600">Review your listing, save changes, then submit for admin approval.</p>
             <ul className="mt-4 space-y-2 text-sm">
               <li><strong>Name:</strong> {form.name}</li>
-              <li><strong>Location:</strong> {formatLocationLine(form) || '—'}</li>
+              <li><strong>Location:</strong> {formatLocationLine(form) || '-'}</li>
               <li><strong>Price:</strong> €{form.base_price_per_night_euros}/night</li>
             </ul>
           </div>

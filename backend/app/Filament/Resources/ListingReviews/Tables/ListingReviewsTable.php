@@ -37,7 +37,7 @@ class ListingReviewsTable
 
                 TextColumn::make('rating')
                     ->label('Rating')
-                    ->formatStateUsing(fn ($state): string => $state ? "{$state}/5" : '—')
+                    ->formatStateUsing(fn ($state): string => $state ? "{$state}/5" : '-')
                     ->sortable(),
 
                 TextColumn::make('reviewable_type')

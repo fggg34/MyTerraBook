@@ -7,7 +7,7 @@ const GUESTHOUSE_TYPE_LABELS = {
   studio: 'Studio',
 }
 
-const VEHICLE_ATTRIBUTE_FILTERS = [
+export const VEHICLE_ATTRIBUTE_FILTERS = [
   {
     id: '4x4',
     label: '4×4',
@@ -50,25 +50,21 @@ export function buildGuesthouseQuickFilters(houses = []) {
   }))
 }
 
-export function buildVehicleQuickFilters(cars = []) {
-  const attributeFilters = VEHICLE_ATTRIBUTE_FILTERS.filter((filter) => (
-    cars.some((car) => filter.match(car))
-  ))
+export function buildVehicleQuickFilters() {
+  return VEHICLE_ATTRIBUTE_FILTERS
+}
 
-  const categories = [...new Set(
-    cars
-      .map((car) => car.categoryName)
-      .filter(Boolean),
-  )].sort((a, b) => a.localeCompare(b))
+export function buildCategoryQuickFilters(categories = [], cars = []) {
+  const namesInResults = new Set(cars.map((car) => car.categoryName).filter(Boolean))
 
-  const categoryFilters = categories.map((name) => ({
-    id: `category:${name}`,
-    label: name,
-    kind: 'category',
-    match: (car) => car.categoryName === name,
-  }))
-
-  return [...attributeFilters, ...categoryFilters]
+  return categories
+    .filter((category) => namesInResults.has(category.name))
+    .map((category) => ({
+      id: `category:${category.id}`,
+      label: category.name,
+      kind: 'category',
+      match: (car) => car.categoryName === category.name,
+    }))
 }
 
 export function applyQuickFilters(list, quickFilters, quickFilterOptions = []) {
@@ -111,9 +107,11 @@ export function toggleQuickFilter(prev, id, quickFilterOptions = []) {
     return prev.filter((entry) => entry !== id)
   }
 
-  if (option.kind === 'type') {
-    const typeIds = new Set(quickFilterOptions.filter((entry) => entry.kind === 'type').map((entry) => entry.id))
-    return [...prev.filter((entry) => !typeIds.has(entry)), id]
+  if (option.kind === 'type' || option.kind === 'category') {
+    const exclusiveIds = new Set(
+      quickFilterOptions.filter((entry) => entry.kind === option.kind).map((entry) => entry.id),
+    )
+    return [...prev.filter((entry) => !exclusiveIds.has(entry)), id]
   }
 
   return [...prev, id]

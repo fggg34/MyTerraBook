@@ -9,7 +9,7 @@ function gearboxLabel(transmission) {
 
 function fuelLabel(fuelType) {
   const value = String(fuelType || '').toLowerCase()
-  if (!value || value === '—') return 'Petrol'
+  if (!value || value === '-') return 'Petrol'
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 

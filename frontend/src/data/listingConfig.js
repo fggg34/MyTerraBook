@@ -16,7 +16,7 @@ export const LISTING_TYPES = {
     reviewsTitle: 'Guest reviews',
     bookingModalTitle: 'Booking this camper in 4 steps',
     bookingModalLead:
-      "Your booking is confirmed instantly at checkout — here's exactly what happens after you book.",
+      "Your booking is confirmed instantly at checkout, here's exactly what happens after you book.",
     tabs: [
       { id: 'details', label: 'Details' },
       { id: 'amenities', label: 'Amenities' },
@@ -53,7 +53,7 @@ export const LISTING_TYPES = {
     reviewsTitle: 'Guest reviews',
     bookingModalTitle: 'Booking this car in 4 steps',
     bookingModalLead:
-      "Your booking is confirmed instantly at checkout — here's what happens after you book.",
+      "Your booking is confirmed instantly at checkout, here's what happens after you book.",
     tabs: [
       { id: 'details', label: 'Details' },
       { id: 'amenities', label: 'Features' },
@@ -89,7 +89,7 @@ export const LISTING_TYPES = {
     reviewsTitle: 'Guest reviews',
     bookingModalTitle: 'Booking this stay in 4 steps',
     bookingModalLead:
-      "Your stay is confirmed instantly at checkout — here's how it works.",
+      "Your stay is confirmed instantly at checkout, here's how it works.",
     tabs: [
       { id: 'details', label: 'Details' },
       { id: 'amenities', label: 'Amenities' },
@@ -99,7 +99,7 @@ export const LISTING_TYPES = {
     ],
     trustPoints: [
       { html: '<b>Verified hosts</b> along the Ring Road route' },
-      { html: 'Secure online payment — no hidden fees at check-in' },
+      { html: 'Secure online payment, no hidden fees at check-in' },
       { html: 'Flexible cancellation on most stays' },
       { html: 'Local support team based in <b>Reykjavík</b>' },
     ],

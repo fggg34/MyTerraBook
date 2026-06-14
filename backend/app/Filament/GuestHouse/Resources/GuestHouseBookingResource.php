@@ -7,6 +7,7 @@ use App\Filament\Clusters\GuestHouseCluster;
 use App\Filament\GuestHouse\Resources\GuestHouseBookingResource\Pages\ListGuestHouseBookings;
 use App\Filament\GuestHouse\Resources\GuestHouseBookingResource\Pages\ViewGuestHouseBooking;
 use App\Models\GuestHouseBooking;
+use App\Support\AdminTableBadgeColors;
 use App\Support\Money;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -75,7 +76,10 @@ class GuestHouseBookingResource extends Resource
                 TextColumn::make('total_amount')
                     ->label('Total')
                     ->formatStateUsing(fn ($state) => '€ '.Money::formatDecimalFromCents((int) $state)),
-                TextColumn::make('status')->badge(),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (mixed $state): string => AdminTableBadgeColors::guestHouseBookingStatus($state))
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
             ])
             ->filters([
                 SelectFilter::make('status')->options(collect(GuestHouseBookingStatus::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)])),

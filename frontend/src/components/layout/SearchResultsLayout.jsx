@@ -9,7 +9,7 @@ import useHomepageBodyClass from '../../hooks/useHomepageBodyClass'
 import BackToTop from './BackToTop'
 
 /**
- * Search listing layout — matches offline HTML: topbar scrolls away, then one sticky
+ * Search listing layout, matches offline HTML: topbar scrolls away, then one sticky
  * `.chrome` stack (nav + search bar + filters). Results grid lives below the chrome.
  */
 export default function SearchResultsLayout() {

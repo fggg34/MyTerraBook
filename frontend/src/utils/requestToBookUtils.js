@@ -2,7 +2,7 @@ const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MO = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 export function fmtDisplayDate(d) {
-  if (!d) return '—'
+  if (!d) return '-'
   const date = d instanceof Date ? d : new Date(d)
   return `${WD[date.getDay()]}, ${MO[date.getMonth()]} ${date.getDate()}`
 }

@@ -118,9 +118,10 @@ class MeProfileTest extends TestCase
         $this->patchJson('/api/me/profile', [
             'name' => 'Updated Customer',
             'email' => $customer->email,
-            'phone' => null,
+            'phone' => '+354 555 7777',
         ])
             ->assertOk()
-            ->assertJsonPath('user.role', UserRole::Customer->value);
+            ->assertJsonPath('user.role', UserRole::Customer->value)
+            ->assertJsonPath('user.phone', '+354 555 7777');
     }
 }

@@ -249,7 +249,7 @@
   .addon .ad-price{margin-left:auto;font-family:var(--serif);font-weight:700;font-size:15px;color:var(--navy);white-space:nowrap;}
   .addon .ad-price.free{color:var(--green-dark);}
 
-  /* ---------- Booking card (sticky) — scoped names avoid homepage .booking / .bcard bleed */
+  /* ---------- Booking card (sticky), scoped names avoid homepage .booking / .bcard bleed */
   .listing-page .listing-book{position:sticky;top:96px;margin-top:0;}
   .listing-page .listing-bcard{
     position:relative;border:1px solid var(--line);border-radius:18px;background:#fff;padding:22px;

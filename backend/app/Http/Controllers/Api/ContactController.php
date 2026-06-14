@@ -40,7 +40,7 @@ class ContactController extends Controller
         }
 
         return response()->json([
-            'message' => 'Thanks — we will get back to you shortly.',
+            'message' => 'Thanks, we will get back to you shortly.',
         ]);
     }
 }

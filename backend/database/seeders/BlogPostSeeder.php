@@ -36,7 +36,7 @@ HTML,
                 'slug' => 'golden-circle-in-a-day',
                 'title' => 'Golden Circle in a day',
                 'kicker' => 'Day trip',
-                'excerpt' => 'Þingvellir, Geysir, and Gullfoss — the classic day loop from Reykjavík.',
+                'excerpt' => 'Þingvellir, Geysir, and Gullfoss, the classic day loop from Reykjavík.',
                 'body' => <<<'HTML'
 <p>The Golden Circle is the easiest introduction to Iceland if you are short on time. Start early to beat coach crowds at Þingvellir National Park.</p>
 <p>Pair with a soak at a local pool or Secret Lagoon near Flúðir if you want a relaxed finish before driving back to the capital.</p>
@@ -52,10 +52,10 @@ HTML,
                 'slug' => 'do-you-need-a-4x4',
                 'title' => 'Do you need a 4×4?',
                 'kicker' => 'Gear',
-                'excerpt' => 'When a camper or 2WD car is enough — and when F-roads mean you need more.',
+                'excerpt' => 'When a camper or 2WD car is enough, and when F-roads mean you need more.',
                 'body' => <<<'HTML'
 <p>For the Ring Road in summer, many travellers are fine in a 2WD car or standard campervan. You need a 4×4 if you plan to drive F-roads (mountain tracks) or visit the highlands.</p>
-<p>Check road.is daily — closures change quickly. Gravel protection is included on MyTerraBook rentals either way.</p>
+<p>Check road.is daily, closures change quickly. Gravel protection is included on MyTerraBook rentals either way.</p>
 HTML,
                 'featured_image' => '/images/homepage/why-photo.jpg',
                 'image_alt' => '4x4 camper on gravel',
@@ -84,7 +84,7 @@ HTML,
                 'slug' => 'campervan-vs-guesthouse',
                 'title' => 'Campervan vs guesthouse',
                 'kicker' => 'Compare',
-                'excerpt' => 'Flexibility vs comfort — how to mix vans and stays on one trip.',
+                'excerpt' => 'Flexibility vs comfort, how to mix vans and stays on one trip.',
                 'body' => <<<'HTML'
 <p>Campervans offer freedom and campsite culture; guesthouses give you a warm bed, kitchen access, and local hosts. Many travellers book both: van for the loop, stays in Vík or Akureyri for recovery nights.</p>
 <p>MyTerraBook lets you manage cars, vans, and guesthouses in one account.</p>

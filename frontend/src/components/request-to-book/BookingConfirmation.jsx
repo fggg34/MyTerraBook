@@ -67,7 +67,7 @@ export default function BookingConfirmation({
               <div className="cf">
                 <span className="cfk">{config.step1.dateStartLabel}</span>
                 <span className="cfv">
-                  {form.startDate ? `${fmtDisplayDate(form.startDate)} · ${form.startDate.getFullYear()}` : '—'}
+                  {form.startDate ? `${fmtDisplayDate(form.startDate)} · ${form.startDate.getFullYear()}` : ','}
                 </span>
                 <span className="cfs">
                   {bookingType === 'guesthouse'
@@ -78,7 +78,7 @@ export default function BookingConfirmation({
               <div className="cf">
                 <span className="cfk">{config.step1.dateEndLabel}</span>
                 <span className="cfv">
-                  {form.endDate ? `${fmtDisplayDate(form.endDate)} · ${form.endDate.getFullYear()}` : '—'}
+                  {form.endDate ? `${fmtDisplayDate(form.endDate)} · ${form.endDate.getFullYear()}` : ','}
                 </span>
                 <span className="cfs">
                   {bookingType === 'guesthouse'
@@ -132,7 +132,7 @@ export default function BookingConfirmation({
           </div>
           <div className="help-card">
             <h5>Questions before you go?</h5>
-            <p>Message your host directly — they know the local roads, seasons and shortcuts.</p>
+            <p>Message your host directly, they know the local roads, seasons and shortcuts.</p>
             <div className="hc-host">
               <span className="hc-av">{hostInitial}</span>
               <span className="hc-meta">

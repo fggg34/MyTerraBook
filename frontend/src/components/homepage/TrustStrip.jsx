@@ -1,4 +1,7 @@
-function TrustIcon({ type }) {
+function TrustIcon({ type, image }) {
+  if (image) {
+    return <img src={image} alt="" className="trust-ic-img" aria-hidden="true" />
+  }
   const icons = {
     star: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -34,7 +37,7 @@ export default function TrustStrip({ items = [] }) {
         {items.map((item, index) => (
           <div className="trust-item" key={`${item.title}-${index}`}>
             <span className="trust-ic">
-              <TrustIcon type={item.icon} />
+              <TrustIcon type={item.icon} image={item.iconImage} />
             </span>
             <div className="trust-text">
               <div className="tt-top">

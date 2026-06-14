@@ -6,7 +6,7 @@
     RewriteEngine On
 
     # Do not set RewriteBase here when the parent …/backend/.htaccess already rewrites into
-    # public/ — a wrong base breaks the front controller on some hosts (404).
+    # public/ , a wrong base breaks the front controller on some hosts (404).
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

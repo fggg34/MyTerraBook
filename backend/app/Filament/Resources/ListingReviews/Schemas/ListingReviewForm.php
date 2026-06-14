@@ -42,11 +42,11 @@ class ListingReviewForm
 
                 Select::make('rating')
                     ->options([
-                        1 => '1 — Poor',
-                        2 => '2 — Fair',
-                        3 => '3 — Good',
-                        4 => '4 — Great',
-                        5 => '5 — Excellent',
+                        1 => '1, Poor',
+                        2 => '2, Fair',
+                        3 => '3, Good',
+                        4 => '4, Great',
+                        5 => '5, Excellent',
                     ])
                     ->required()
                     ->native(false),

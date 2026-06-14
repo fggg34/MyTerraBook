@@ -59,7 +59,7 @@ export default function BookingSummarySidebar({
   const totalDisplay = () => {
     if (quoteLoading) return '…'
     const amount = totalAmount()
-    if (amount == null) return '—'
+    if (amount == null) return '-'
     if (bookingType === 'guesthouse') return quote.total_formatted || price.format(amount)
     return price.format(amount)
   }
@@ -122,13 +122,13 @@ export default function BookingSummarySidebar({
         <div className="strip">
           <div className="leg">
             <div className="lk">{config.step1.dateStartLabel}</div>
-            <div className="ld">{form.startDate ? fmtDisplayDate(form.startDate) : '—'}</div>
+            <div className="ld">{form.startDate ? fmtDisplayDate(form.startDate) : ','}</div>
             <div className="lt">{pickDetail}</div>
           </div>
           <span className="arrowic"><ArrowRight aria-hidden /></span>
           <div className="leg">
             <div className="lk">{config.step1.dateEndLabel}</div>
-            <div className="ld">{form.endDate ? fmtDisplayDate(form.endDate) : '—'}</div>
+            <div className="ld">{form.endDate ? fmtDisplayDate(form.endDate) : ','}</div>
             <div className="lt">{dropDetail}</div>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function BookingSummarySidebar({
             <>
               <div className="lrow">
                 <span className="ll">
-                  {rateDisplay || '—'} × {nights} night{nights !== 1 ? 's' : ''}
+                  {rateDisplay || '-'} × {nights} night{nights !== 1 ? 's' : ''}
                 </span>
                 <span className="lv">{formatCurrencyFromCents(quote.base_total, quote.currency)}</span>
               </div>

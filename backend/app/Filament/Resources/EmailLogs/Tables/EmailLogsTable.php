@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmailLogs\Tables;
 
+use App\Support\AdminTableBadgeColors;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -19,7 +20,7 @@ class EmailLogsTable
                 TextColumn::make('template_key')
                     ->label('Template')
                     ->badge()
-                    ->color('gray')
+                    ->color(fn (): string => AdminTableBadgeColors::neutral())
                     ->searchable(),
                 TextColumn::make('recipient')
                     ->searchable(),
@@ -28,11 +29,8 @@ class EmailLogsTable
                     ->toggleable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'queued', 'sent' => 'success',
-                        'failed' => 'danger',
-                        default => 'gray',
-                    }),
+                    ->color(fn (string $state): string => AdminTableBadgeColors::emailLogStatus($state))
+                    ->formatStateUsing(fn (string $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('error')
                     ->limit(60)
                     ->toggleable(isToggledHiddenByDefault: true),

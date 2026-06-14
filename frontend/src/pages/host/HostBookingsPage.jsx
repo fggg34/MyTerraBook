@@ -61,10 +61,12 @@ export default function HostBookingsPage() {
                   <td>{formatDate(o.pickup_at)} – {formatDate(o.dropoff_at)}</td>
                   <td><StatusBadge status={o.order_status} /></td>
                   <td>{formatCurrency(o.total_cents / 100, o.currency)}</td>
-                  <td className="host-actions" style={{ margin: 0 }}>
-                    {o.order_status === 'confirmed' && (
-                      <button type="button" className="host-btn secondary" onClick={() => openPdf(`/host/bookings/cars/${o.id}/contract.pdf`, `contract-${o.reference}.pdf`)}>PDF</button>
-                    )}
+                  <td className="host-actions">
+                    <div className="host-table-actions">
+                      {o.order_status === 'confirmed' && (
+                        <button type="button" className="host-btn secondary" onClick={() => openPdf(`/host/bookings/cars/${o.id}/contract.pdf`, `contract-${o.reference}.pdf`)}>PDF</button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -83,10 +85,12 @@ export default function HostBookingsPage() {
                   <td>{formatDate(b.check_in)} – {formatDate(b.check_out)}</td>
                   <td><StatusBadge status={b.status} /></td>
                   <td>{formatCurrency(b.total_amount / 100)}</td>
-                  <td className="host-actions" style={{ margin: 0 }}>
-                    {['confirmed', 'completed'].includes(b.status) && (
-                      <button type="button" className="host-btn secondary" onClick={() => openPdf(`/host/bookings/guest-houses/${b.id}/contract.pdf`, `contract-${b.booking_reference}.pdf`)}>PDF</button>
-                    )}
+                  <td className="host-actions">
+                    <div className="host-table-actions">
+                      {['confirmed', 'completed'].includes(b.status) && (
+                        <button type="button" className="host-btn secondary" onClick={() => openPdf(`/host/bookings/guest-houses/${b.id}/contract.pdf`, `contract-${b.booking_reference}.pdf`)}>PDF</button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

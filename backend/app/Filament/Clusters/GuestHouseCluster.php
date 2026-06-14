@@ -32,7 +32,7 @@ class GuestHouseCluster extends Cluster
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return 'warning';
+        return 'primary';
     }
 
     public function mount(): void

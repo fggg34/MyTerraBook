@@ -69,7 +69,7 @@ export const faqItems = [
     num: '05',
     question: 'Do I have to accept every booking?',
     answer:
-      "Never. You control your own calendar and can block any dates you need the vehicle or room for yourself. Turn on instant booking for convenience, or review each request by hand — it's entirely up to you.",
+      "Never. You control your own calendar and can block any dates you need the vehicle or room for yourself. Turn on instant booking for convenience, or review each request by hand, it's entirely up to you.",
   },
 ]
 

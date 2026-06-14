@@ -44,7 +44,7 @@ class GuestHouseForm
                         ->reorderable()
                         ->panelLayout('grid')
                         ->maxSize(8192)
-                        ->helperText('Select multiple photos at once. Drag thumbnails to reorder — first image is used as cover when none is set above.'),
+                        ->helperText('Select multiple photos at once. Drag thumbnails to reorder, first image is used as cover when none is set above.'),
                 ]),
 
             Section::make('Product card')

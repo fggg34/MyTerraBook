@@ -8,6 +8,7 @@ import { useFormatPrice } from './useFormatPrice'
 import { mapCarToResultCard } from '../utils/mapCarToResultCard'
 import {
   applyQuickFilters,
+  buildCategoryQuickFilters,
   buildVehicleQuickFilters,
   pruneQuickFilters,
   toggleQuickFilter,
@@ -128,9 +129,16 @@ export default function useSearchResultsPage(vehicleType) {
       })
   }, [cars, categoryMap, config, searchQuery, priceFormatter, vehicleType])
 
+  const attributeQuickFilters = useMemo(() => buildVehicleQuickFilters(), [])
+
+  const categoryFilterOptions = useMemo(
+    () => buildCategoryQuickFilters(categories, vehicleCards),
+    [categories, vehicleCards],
+  )
+
   const quickFilterOptions = useMemo(
-    () => buildVehicleQuickFilters(vehicleCards),
-    [vehicleCards],
+    () => [...attributeQuickFilters, ...categoryFilterOptions],
+    [attributeQuickFilters, categoryFilterOptions],
   )
 
   const priceBounds = useMemo(() => computePriceBounds(vehicleCards), [vehicleCards])
@@ -231,6 +239,8 @@ export default function useSearchResultsPage(vehicleType) {
     sortLabel,
     sortOptions: SORT_OPTIONS,
     quickFilterOptions,
+    attributeQuickFilters,
+    categoryFilterOptions,
     filters,
     setFilters,
     quickFilters,

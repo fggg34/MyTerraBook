@@ -255,4 +255,68 @@ class SiteContentApiTest extends TestCase
         $response->assertJsonPath('reviewsSection.source', 'demo');
         $this->assertNotEmpty($response->json('reviewsSection.reviews'));
     }
+
+    public function test_homepage_rent_section_returns_live_listing_stats(): void
+    {
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => SiteContentDefaults::forPage('home'),
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $camperMain = \App\Models\MainCategory::query()->firstOrCreate(
+            ['slug' => 'campervan'],
+            ['name' => 'Campervan', 'is_active' => true],
+        );
+        $camperSub = \App\Models\SubCategory::query()->create([
+            'main_category_id' => $camperMain->id,
+            'name' => 'Camper',
+            'is_active' => true,
+            'is_search_filter' => true,
+        ]);
+        $camper = \App\Models\Car::query()->create([
+            'name' => 'Ring Road Camper',
+            'slug' => 'ring-road-camper',
+            'sub_category_id' => $camperSub->id,
+            'is_active' => true,
+        ]);
+        \App\Models\DailyFare::query()->create([
+            'car_id' => $camper->id,
+            'price_type_id' => \App\Models\PriceType::factory()->create()->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 8900,
+        ]);
+
+        \App\Models\GuestHouse::query()->create([
+            'name' => 'Harbour Stay',
+            'slug' => 'harbour-stay',
+            'type' => \App\Enums\GuestHouseType::Apartment,
+            'status' => \App\Enums\GuestHouseStatus::Active,
+            'city' => 'Reykjavik',
+            'max_guests' => 2,
+            'base_price_per_night' => 11000,
+        ]);
+
+        $response = $this->getJson('/api/homepage');
+
+        $response->assertOk();
+        $response->assertJsonPath('rentSection.cards.0.listingStats.count', 1);
+        $response->assertJsonPath('rentSection.cards.0.listingStats.minPriceCents', 8900);
+        $response->assertJsonPath('rentSection.cards.0.listingStats.priceUnit', 'day');
+        $response->assertJsonPath('rentSection.cards.2.listingStats.count', 1);
+        $response->assertJsonPath('rentSection.cards.2.listingStats.minPriceCents', 11000);
+        $response->assertJsonPath('rentSection.cards.2.listingStats.priceUnit', 'night');
+        $response->assertJsonMissingPath('rentSection.cards.0.listingCount');
+    }
 }

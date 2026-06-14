@@ -8,8 +8,8 @@ use Tests\TestCase;
 
 /**
  * Production serves the Laravel app under https://myterrabook.com/backend. Livewire signs its
- * temporary file-upload (and preview) URL with URL::temporarySignedRoute() — which uses
- * URL::forceRootUrl(.../backend) — while FileUploadController validates it with
+ * temporary file-upload (and preview) URL with URL::temporarySignedRoute(), which uses
+ * URL::forceRootUrl(.../backend), while FileUploadController validates it with
  * request()->hasValidSignature(), re-hashing request()->url().
  *
  * The 401 "failed to upload" happened because public/index.php used to strip /backend from

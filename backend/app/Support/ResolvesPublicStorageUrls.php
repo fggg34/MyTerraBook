@@ -149,6 +149,8 @@ trait ResolvesPublicStorageUrls
             $content['footer']['social'] = $this->resolveListImages($content['footer']['social'], 'iconImage');
         }
 
+        $content = $this->resolveIconImagesRecursively($content);
+
         if (isset($content['proof']['stats']) && is_array($content['proof']['stats'])) {
             $content['proof']['stats'] = array_map(function (array $stat): array {
                 if (isset($stat['tall']['image'])) {
@@ -166,6 +168,30 @@ trait ResolvesPublicStorageUrls
 
                 return $stat;
             }, $content['proof']['stats']);
+        }
+
+        return $content;
+    }
+
+    /**
+     * Walk the whole content tree and resolve any `iconImage` value to a public URL.
+     * Lets custom per-item icon uploads work in every repeater uniformly.
+     *
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    protected function resolveIconImagesRecursively(array $content): array
+    {
+        foreach ($content as $key => $value) {
+            if ($key === 'iconImage') {
+                $content[$key] = $this->resolvePublicUrl($value);
+
+                continue;
+            }
+
+            if (is_array($value)) {
+                $content[$key] = $this->resolveIconImagesRecursively($value);
+            }
         }
 
         return $content;

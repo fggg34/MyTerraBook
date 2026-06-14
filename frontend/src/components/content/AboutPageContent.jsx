@@ -22,7 +22,10 @@ function parseParagraphs(html) {
   ).filter(Boolean)
 }
 
-function PillarIcon({ type }) {
+function PillarIcon({ type, image }) {
+  if (image) {
+    return <img src={image} alt="" className="about-pillar-icon-img" aria-hidden="true" />
+  }
   const icons = {
     shield: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -218,7 +221,7 @@ export default function AboutPageContent() {
                 style={{ '--d': `${0.06 + index * 0.08}s` }}
               >
                 <span className="about-pillar-icon">
-                  <PillarIcon type={pillar.icon} />
+                  <PillarIcon type={pillar.icon} image={pillar.iconImage} />
                 </span>
                 <h3>{pillar.title}</h3>
                 <p>{pillar.text}</p>

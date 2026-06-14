@@ -16,8 +16,24 @@ class Characteristic extends Model
         'slug',
         'icon_path',
         'display_text',
+        'group',
         'sort_order',
         'is_search_filter',
+    ];
+
+    /**
+     * Canonical groups used to organise the characteristic catalogue in the
+     * admin panel and host editor. Free-text values are still allowed.
+     *
+     * @var list<string>
+     */
+    public const GROUPS = [
+        'Comfort & Convenience',
+        'Safety & Driver Assistance',
+        'Technology & Connectivity',
+        'Winter & Iceland',
+        'Capacity & Practicality',
+        'Drivetrain & Performance',
     ];
 
     protected function casts(): array

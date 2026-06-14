@@ -76,7 +76,19 @@ class ListingReviewPage extends Page
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return 'warning';
+        return 'primary';
+    }
+
+    public static function makeApprovalQueueHeaderAction(): Action
+    {
+        return Action::make('listingApprovals')
+            ->label('Approval queue')
+            ->icon(Heroicon::OutlinedClipboardDocumentCheck)
+            ->color('gray')
+            ->outlined()
+            ->url(static::getUrl())
+            ->badge(fn (): ?string => static::getNavigationBadge())
+            ->badgeColor('primary');
     }
 
     public function setActiveTab(string $tab): void
@@ -98,15 +110,15 @@ class ListingReviewPage extends Page
             'type_label' => 'Guesthouse',
             'type_color' => 'purple',
             'name' => $house->name,
-            'host_name' => $house->host?->name ?? '—',
+            'host_name' => $house->host?->name ?? '-',
             'host_email' => $house->host?->email,
             'context_label' => 'Location',
             'context_value' => collect([$house->address, $house->city, $house->country])
                 ->filter(fn (?string $part) => filled(trim((string) $part)))
-                ->implode(', ') ?: '—',
+                ->implode(', ') ?: ',',
             'details' => sprintf(
                 '%s · %d guests · %d bed · €%s/night',
-                ucfirst($house->type?->value ?? '—'),
+                ucfirst($house->type?->value ?? '-'),
                 $house->max_guests,
                 $house->bedrooms,
                 number_format($house->base_price_per_night / 100, 2),
@@ -123,14 +135,14 @@ class ListingReviewPage extends Page
             'type_label' => $car->subCategory?->mainCategory?->name ?? 'Vehicle',
             'type_color' => 'blue',
             'name' => $car->name,
-            'host_name' => $car->host?->name ?? '—',
+            'host_name' => $car->host?->name ?? '-',
             'host_email' => $car->host?->email,
             'context_label' => 'Category',
-            'context_value' => $car->subCategory?->name ?? '—',
+            'context_value' => $car->subCategory?->name ?? '-',
             'details' => sprintf(
                 '%s · %s · %d unit(s)',
-                ucfirst($car->transmission ?? '—'),
-                ucfirst($car->fuel_type ?? '—'),
+                ucfirst($car->transmission ?? '-'),
+                ucfirst($car->fuel_type ?? '-'),
                 $car->units_available,
             ),
             'submitted_at' => $car->submitted_at,
@@ -240,7 +252,7 @@ class ListingReviewPage extends Page
     {
         return Action::make('requestGuestHouseChanges')
             ->label('Request changes (guesthouse)')
-            ->color('warning')
+            ->color('primary')
             ->modalHeading('Request changes')
             ->form(self::requestChangesFormFields())
             ->action(function (array $arguments, array $data): void {
@@ -291,7 +303,7 @@ class ListingReviewPage extends Page
     {
         return Action::make('requestCarChanges')
             ->label('Request changes (vehicle)')
-            ->color('warning')
+            ->color('primary')
             ->modalHeading('Request changes')
             ->form(self::requestChangesFormFields())
             ->action(function (array $arguments, array $data): void {

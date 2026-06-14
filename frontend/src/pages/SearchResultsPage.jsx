@@ -46,6 +46,8 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     setFilters,
     sortOptions,
     quickFilterOptions,
+    attributeQuickFilters,
+    categoryFilterOptions,
     guestsLabel,
     priceBounds,
     transmissionOptions,
@@ -109,6 +111,8 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
               sortLabel={sortLabel}
               sortOptions={sortOptions}
               quickFilterOptions={quickFilterOptions}
+              attributeQuickFilters={attributeQuickFilters}
+              categoryFilterOptions={categoryFilterOptions}
               guestsLabel={guestsLabel}
               quickFilters={quickFilters}
               toggleQuick={toggleQuick}
@@ -145,43 +149,6 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
                   <p className="ri-sub reveal-desc" data-reveal-now="1">
                     {config.subtitle}
                   </p>
-                </div>
-                <div className="ri-tags reveal-tags">
-                  {isGuesthouse ? (
-                    <>
-                      <span className="ri-tag">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M4 20V9l8-6 8 6v11" />
-                          <path d="M2 20h20" />
-                        </svg>
-                        Verified hosts
-                      </span>
-                      <span className="ri-tag">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
-                          <path d="M12 7v5l3 2" />
-                        </svg>
-                        Flexible cancellation
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="ri-tag">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11Z" />
-                          <path d="m8.5 11.5 2.5 2.5L16 8.5" />
-                        </svg>
-                        Insurance included
-                      </span>
-                      <span className="ri-tag">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0Z" />
-                          <path d="M12 7v5l3 2" />
-                        </svg>
-                        Free cancellation
-                      </span>
-                    </>
-                  )}
                 </div>
               </div>
             </section>

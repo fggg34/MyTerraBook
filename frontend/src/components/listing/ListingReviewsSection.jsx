@@ -108,7 +108,7 @@ function ListingReviewForm({ onSubmit, disabled }) {
     <form className="rev-write" onSubmit={handleSubmit}>
       <div className="rev-write-head">
         <h3>Share your experience</h3>
-        <p>Add a review and optional photo — it is saved and shown in guest reviews and guest photos.</p>
+        <p>Add a review and optional photo, it is saved and shown in guest reviews and guest photos.</p>
       </div>
       <div className="rev-write-grid">
         <label className="rev-field">
@@ -177,7 +177,7 @@ function ListingReviewForm({ onSubmit, disabled }) {
         </div>
       </div>
       {error ? <p className="rev-write-error">{error}</p> : null}
-      {submitted ? <p className="rev-write-success">Thanks — your review has been posted.</p> : null}
+      {submitted ? <p className="rev-write-success">Thanks, your review has been posted.</p> : null}
       <button className="rev-submit" type="submit" disabled={disabled || submitting}>
         {submitting ? 'Posting…' : 'Post review'}
       </button>

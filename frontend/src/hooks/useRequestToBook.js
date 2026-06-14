@@ -536,7 +536,7 @@ export default function useRequestToBook() {
   }, [item, bookingType])
 
   const locationName = useCallback(
-    (id) => allLocations.find((l) => String(l.id) === String(id))?.name || '—',
+    (id) => allLocations.find((l) => String(l.id) === String(id))?.name || '-',
     [allLocations],
   )
 
@@ -570,7 +570,7 @@ export default function useRequestToBook() {
         return `+${formatCurrencyFromCents(loc.pickup_fee_cents, quote?.currency || 'EUR')}`
       }
 
-      return id === baseId ? 'Free' : '—'
+      return id === baseId ? 'Free' : ','
     },
     [pickupLocations, allLocations, form.pickup_location_id, form.dropoff_location_id, form.sameReturn, quote],
   )

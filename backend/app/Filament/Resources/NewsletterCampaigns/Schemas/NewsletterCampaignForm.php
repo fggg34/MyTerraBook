@@ -34,7 +34,7 @@ class NewsletterCampaignForm
                 ->visible(fn (?NewsletterCampaign $record): bool => $record !== null && ! $record->isDraft()),
             Placeholder::make('sent_at_display')
                 ->label('Sent at')
-                ->content(fn (?NewsletterCampaign $record): string => $record?->sent_at?->format('Y-m-d H:i') ?? '—')
+                ->content(fn (?NewsletterCampaign $record): string => $record?->sent_at?->format('Y-m-d H:i') ?? '-')
                 ->visible(fn (?NewsletterCampaign $record): bool => $record !== null && ! $record->isDraft()),
         ]);
     }

@@ -18,7 +18,7 @@ class NewsletterApiTest extends TestCase
         ]);
 
         $response->assertOk()->assertJsonFragment([
-            'message' => 'Thanks — you are on the list.',
+            'message' => 'Thanks, you are on the list.',
         ]);
 
         $this->assertDatabaseHas('newsletter_subscribers', [

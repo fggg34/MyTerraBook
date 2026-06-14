@@ -26,7 +26,7 @@ class NewsletterController extends Controller
         );
 
         return response()->json([
-            'message' => 'Thanks — you are on the list.',
+            'message' => 'Thanks, you are on the list.',
         ]);
     }
 

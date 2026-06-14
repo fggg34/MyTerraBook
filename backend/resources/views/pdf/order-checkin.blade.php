@@ -16,11 +16,11 @@
 <body>
     <h1>Vehicle check-in report</h1>
     <p><strong>Reference:</strong> {{ $order->reference }}</p>
-    <p><strong>Customer:</strong> {{ $order->customer_name }} — {{ $order->customer_email }}</p>
-    <p><strong>Vehicle:</strong> {{ $order->car?->name ?? '—' }}</p>
+    <p><strong>Customer:</strong> {{ $order->customer_name }}, {{ $order->customer_email }}</p>
+    <p><strong>Vehicle:</strong> {{ $order->car?->name ?? '-' }}</p>
     <p><strong>Assigned unit ID:</strong> {{ $order->car_unit_id ?? 'Not assigned' }}</p>
-    <p><strong>Pick-up:</strong> {{ $order->pickup_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }} ({{ $order->pickupLocation?->name ?? '—' }})</p>
-    <p><strong>Drop-off:</strong> {{ $order->dropoff_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }} ({{ $order->dropoffLocation?->name ?? '—' }})</p>
+    <p><strong>Pick-up:</strong> {{ $order->pickup_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }} ({{ $order->pickupLocation?->name ?? '-' }})</p>
+    <p><strong>Drop-off:</strong> {{ $order->dropoff_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }} ({{ $order->dropoffLocation?->name ?? '-' }})</p>
 
     <h2>Distinctive unit features</h2>
     @if ($order->carUnit && $order->carUnit->distinctiveValues->isNotEmpty())
@@ -60,8 +60,8 @@
                     <tr>
                         <td>{{ $marker->diagram_key ?? 'car_inspection' }}</td>
                         <td>X {{ $marker->position_x }}, Y {{ $marker->position_y }}</td>
-                        <td>{{ $marker->description ?? '—' }}</td>
-                        <td>{{ $marker->marked_at ? $marker->marked_at->timezone(config('app.timezone'))->format('Y-m-d H:i') : '—' }}</td>
+                        <td>{{ $marker->description ?? '-' }}</td>
+                        <td>{{ $marker->marked_at ? $marker->marked_at->timezone(config('app.timezone'))->format('Y-m-d H:i') : ',' }}</td>
                     </tr>
                 @endforeach
             </tbody>

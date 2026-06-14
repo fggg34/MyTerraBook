@@ -6,6 +6,7 @@ use App\Enums\ListingApprovalStatus;
 use App\Filament\Pages\ListingReviewPage;
 use App\Filament\Resources\Cars\CarResource;
 use App\Models\Car;
+use App\Support\AdminTableBadgeColors;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Actions\BulkActionGroup;
@@ -48,7 +49,10 @@ class CarsTable
                     ->searchable(),
                 IconColumn::make('is_active')
                     ->boolean(),
-                TextColumn::make('listing_status')->badge(),
+                TextColumn::make('listing_status')
+                    ->badge()
+                    ->color(fn (mixed $state): string => AdminTableBadgeColors::listingApprovalStatus($state))
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('host.name')->label('Host')->toggleable(),
                 TextColumn::make('submitted_at')->dateTime()->toggleable(),
                 TextColumn::make('created_at')
@@ -99,7 +103,7 @@ class CarsTable
                     }),
                 Action::make('requestChanges')
                     ->label('Request changes')
-                    ->color('warning')
+                    ->color('primary')
                     ->modalHeading('Request changes')
                     ->visible(fn (Car $record): bool => $record->listing_status === ListingApprovalStatus::PendingReview)
                     ->form(ListingReviewPage::requestChangesFormFields())

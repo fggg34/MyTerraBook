@@ -5,6 +5,7 @@ namespace App\Filament\GuestHouse\Resources;
 use App\Filament\Clusters\GuestHouseCluster;
 use App\Filament\GuestHouse\Resources\GuestHouseAmenityResource\Pages\ManageGuestHouseAmenities;
 use App\Models\GuestHouseAmenity;
+use App\Support\AdminTableBadgeColors;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -41,7 +42,10 @@ class GuestHouseAmenityResource extends Resource
             ->columns([
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('icon'),
-                TextColumn::make('group')->badge(),
+                TextColumn::make('group')
+                    ->badge()
+                    ->color(fn (): string => AdminTableBadgeColors::neutral())
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
             ])
             ->defaultSort('group');
     }

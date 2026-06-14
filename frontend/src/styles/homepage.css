@@ -181,14 +181,27 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     font-family:var(--serif);font-size:13px;font-weight:700;color:var(--navy);
     margin:0 0 12px;letter-spacing:.02em;
   }
-  .lc-opts{display:flex;flex-wrap:wrap;gap:8px;}
+  .lc-opts{display:flex;flex-direction:column;gap:6px;}
   .lc-opt{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
     cursor:pointer;border:1.5px solid var(--line);border-radius:10px;
     background:#fff;font-family:var(--sans);font-weight:600;font-size:14px;color:var(--ink);
-    padding:9px 14px;transition:border-color .15s,background .15s,color .15s;
+    padding:10px 12px;text-align:left;transition:border-color .15s,background .15s,color .15s;
   }
-  .lc-opt:hover{border-color:#c3cfdf;}
+  .lc-opt-main{display:flex;align-items:center;gap:8px;min-width:0;}
+  .lc-opt-symbol{
+    display:inline-flex;align-items:center;justify-content:center;min-width:28px;
+    font-size:15px;font-weight:700;color:var(--navy);
+  }
+  .lc-opt-code{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--ink);}
+  .lc-opt-name{
+    font-size:12px;font-weight:500;color:var(--muted,#64748b);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .lc-opt:hover{border-color:#c3cfdf;background:#f8fafc;}
   .lc-opt.sel{border-color:var(--green);background:rgba(69,160,106,.1);color:var(--green-dark);}
+  .lc-opt.sel .lc-opt-symbol,.lc-opt.sel .lc-opt-code{color:var(--green-dark);}
+  .lc-opt.sel .lc-opt-name{color:var(--green);}
   .hamburger{
     display:none;background:none;border:none;cursor:pointer;color:var(--navy);
     padding:8px;margin:-8px 0 -8px -8px;border-radius:10px;
@@ -415,6 +428,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     display:grid;place-items:center;color:#8fd3a9;
   }
   .trust-ic svg{width:19px;height:19px;}
+  .trust-ic-img{width:22px;height:22px;object-fit:contain;}
   .trust-text .tt-top{
     font-family:var(--serif);font-weight:700;font-size:16px;color:#fff;
     letter-spacing:-0.01em;line-height:1.1;display:flex;align-items:center;gap:7px;
@@ -508,6 +522,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     transition:background .2s,color .2s,transform .2s;
   }
   .wf-ic svg{width:25px;height:25px;}
+  .wf-ic-img{width:28px;height:28px;object-fit:contain;}
   .wf:hover .wf-ic{background:var(--green);color:#fff;transform:translateY(-3px);}
   .wf-tx{flex:1 1 auto;}
   .wf-tx h3{font-size:18px;letter-spacing:-0.01em;margin-bottom:6px;}
@@ -716,16 +731,6 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   }
   .stay-head h2{color:#fff;font-size:48px;line-height:1.05;letter-spacing:-0.02em;max-width:560px;text-wrap:balance;}
   .stay-head .stay-sub{color:#aebdd2;font-size:17px;line-height:1.6;margin-top:18px;max-width:480px;}
-  .stay-all{
-    display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;
-    background:none;border:none;
-    color:#fff;font-family:var(--serif);font-weight:700;font-size:16px;
-    padding:0;white-space:nowrap;
-    text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1.5px;
-    transition:color .18s;
-  }
-  .stay-all:hover{color:var(--green);}
-  .stay-all svg{width:17px;height:17px;}
 
   .stay-panel{
     position:relative;
@@ -1088,13 +1093,15 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   }
   .blog-head h2{font-size:50px;line-height:1.02;letter-spacing:-0.02em;}
   .blog-head .blog-sub{font-size:18px;color:var(--slate);margin-top:14px;}
-  .blog-all{
+
+  /* Shared “view all” link for section headers (blog, stay, etc.) */
+  .section-all{
     display:inline-flex;align-items:center;gap:9px;flex:0 0 auto;
     font-family:var(--serif);font-weight:700;font-size:17px;color:var(--green);
     transition:gap .25s ease,color .15s;white-space:nowrap;
   }
-  .blog-all:hover{gap:14px;color:var(--green-dark);}
-  .blog-all svg{width:18px;height:18px;}
+  .section-all:hover{gap:14px;color:var(--green-dark);}
+  .section-all svg{width:18px;height:18px;}
 
   .bento{
     display:grid;
@@ -1112,7 +1119,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   .bcard.featured{grid-row:span 2;}
   .bcard:hover{box-shadow:0 32px 64px -26px rgba(15,32,54,.7);}
 
-  /* media layers — photo holds still; only the ambient drift/haze move it */
+  /* media layers, photo holds still; only the ambient drift/haze move it */
   .bcard-media{
     position:absolute;inset:0;z-index:0;overflow:hidden;
     transform:scale(1);
@@ -1159,7 +1166,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     transition:opacity .35s ease;
   }
 
-  /* (cursor spotlight removed — kept inert) */
+  /* (cursor spotlight removed, kept inert) */
   .bcard-glow{display:none;}
   .bcard:hover .bcard-glow{opacity:0;}
   .bcard-shine{display:none;}
@@ -1346,7 +1353,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     background:linear-gradient(to top,rgba(7,16,29,.62),transparent 52%),
               linear-gradient(115deg,rgba(7,16,29,.34),transparent 46%);}
 
-  /* the campervan "parked outside" — inset card overlapping bottom-left */
+  /* the campervan "parked outside", inset card overlapping bottom-left */
   .host-van{
     position:absolute;left:-6px;bottom:-26px;z-index:4;
     width:240px;height:172px;border-radius:20px;overflow:hidden;
@@ -1419,7 +1426,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     100%{opacity:0;transform:translate(-50%,-130px) scale(.96);}
   }
 
-  /* ---- scroll-reveal entrance (bold, staggered) — animation-based for reliability ---- */
+  /* ---- scroll-reveal entrance (bold, staggered), animation-based for reliability ---- */
   .host-stage,.host-van,.host-chip,.host-copy > *{opacity:0;}
   @keyframes hostStageRise{from{opacity:0;transform:translateY(40px) scale(.965);}to{opacity:1;transform:none;}}
   @keyframes hostVanIn{from{opacity:0;transform:translate(46px,34px) scale(.9);}to{opacity:1;transform:none;}}
@@ -1681,7 +1688,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     display:grid;grid-template-columns:0.82fr 1.18fr;gap:76px;align-items:start;
     position:relative;z-index:2;
   }
-  /* big translucent FAQ watermark — fades out toward the bottom */
+  /* big translucent FAQ watermark, fades out toward the bottom */
   .faq-watermark{
     position:absolute;left:8px;bottom:-40px;z-index:0;pointer-events:none;user-select:none;
     font-family:var(--serif);font-weight:700;font-size:clamp(150px,18vw,280px);

@@ -124,5 +124,15 @@ class AdminDashboardServiceTest extends TestCase
         $this->assertSame(1.0, $chart['datasets'][1]['data'][6]);
         $this->assertSame('Guest stays', $chart['datasets'][2]['label']);
         $this->assertSame(1.0, $chart['datasets'][2]['data'][6]);
+
+        $this->assertTrue(app(AdminDashboardService::class)->operationsOverviewChartHasActivity($chart));
+        $this->assertNotEmpty(app(AdminDashboardService::class)->operationsOverviewChartOptions($chart)['scales']);
+    }
+
+    public function test_operations_overview_chart_reports_empty_state_when_no_activity(): void
+    {
+        $chart = app(AdminDashboardService::class)->operationsOverviewChart(7);
+
+        $this->assertFalse(app(AdminDashboardService::class)->operationsOverviewChartHasActivity($chart));
     }
 }

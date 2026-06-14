@@ -39,7 +39,7 @@
       "signInHref": "/login"
     },
     "footer": {
-      "tagline": "Campervans, cars and guesthouses across Iceland — booked in minutes, hosted with care.",
+      "tagline": "Campervans, cars and guesthouses across Iceland, booked in minutes, hosted with care.",
       "address": "MyTerraBook ehf. · Laugavegur 178 · 105 Reykjavík · Iceland",
       "columns": [
         {
@@ -117,7 +117,7 @@
       "eyebrow": "Field notes from Iceland",
       "heading": "Road conditions, seasonal deals & hidden detours.",
       "headingAccent": "hidden detours",
-      "lead": "Aurora forecasts, last-minute van openings and local tips you won't find on a map — once a month, from our Reykjavík team.",
+      "lead": "Aurora forecasts, last-minute van openings and local tips you won't find on a map, once a month, from our Reykjavík team.",
       "backgroundImage": "/images/homepage/hero.jpg",
       "placeholder": "you@somewhere-cold.is",
       "successMessage": "Takk! Check your inbox to confirm."
@@ -132,13 +132,13 @@
         {
           "num": "01",
           "question": "What do I need to rent and drive in Iceland?",
-          "answer": "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup — that's it.",
+          "answer": "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup, that's it.",
           "open": true
         },
         {
           "num": "02",
           "question": "Is gravel and ash damage covered?",
-          "answer": "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter — they're the two things that catch most travellers out on Iceland's roads."
+          "answer": "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter, they're the two things that catch most travellers out on Iceland's roads."
         },
         {
           "num": "03",
@@ -160,14 +160,14 @@
     "seo": {
       "siteName": "MyTerraBook",
       "titleSuffix": " | MyTerraBook",
-      "defaultDescription": "Book campervans, cars, 4×4s and guesthouses across Iceland — transparent pricing, gravel cover included, and a Reykjavík team behind every trip.",
+      "defaultDescription": "Book campervans, cars, 4×4s and guesthouses across Iceland, transparent pricing, gravel cover included, and a Reykjavík team behind every trip.",
       "defaultOgImage": "/images/homepage/hero.jpg"
     }
   },
   "home": {
     "hero": {
       "heading": "Book with the world's leading roadtrip provider!",
-      "subtitle": "Campervans, 4×4s and warm guesthouses — everything you need for the Ring Road, in one booking.",
+      "subtitle": "Campervans, 4×4s and warm guesthouses, everything you need for the Ring Road, in one booking.",
       "backgroundImage": "/images/homepage/hero.jpg",
       "tabs": [
         {
@@ -250,7 +250,7 @@
     },
     "whySection": {
       "heading": "One local platform for every way to explore Iceland.",
-      "subheading": "Campervans, cars, guesthouses — even a way to earn from your own. All checked by a team that actually drives these roads.",
+      "subheading": "Campervans, cars, guesthouses, even a way to earn from your own. All checked by a team that actually drives these roads.",
       "photo": "/images/homepage/why-photo.jpg",
       "badge": {
         "rating": "4.9",
@@ -261,7 +261,7 @@
         {
           "icon": "campervan",
           "title": "Campervans",
-          "description": "Sleep where you stop — kitted out for the Ring Road and beyond.",
+          "description": "Sleep where you stop, kitted out for the Ring Road and beyond.",
           "expandedText": "Heaters, gas hobs and proper bedding come as standard, and every van is winter-checked before pickup so you can chase the aurora without packing half a house."
         },
         {
@@ -274,7 +274,7 @@
           "icon": "house",
           "title": "Guesthouses",
           "description": "Warm, vetted beds spaced along your route across the island.",
-          "expandedText": "Hand-picked stays in Vík, Höfn, Akureyri and more — each within an easy day's drive of the last, so your itinerary plans itself."
+          "expandedText": "Hand-picked stays in Vík, Höfn, Akureyri and more, each within an easy day's drive of the last, so your itinerary plans itself."
         }
       ],
       "featuresRight": [
@@ -288,13 +288,13 @@
           "icon": "shield",
           "title": "Fully insured",
           "description": "Gravel, ash and tyre protection bundled into one clear price.",
-          "expandedText": "Iceland's gravel and volcanic ash wreck more rentals than anything else — so that cover is included up front, not upsold at the counter."
+          "expandedText": "Iceland's gravel and volcanic ash wreck more rentals than anything else, so that cover is included up front, not upsold at the counter."
         },
         {
           "icon": "phone",
           "title": "Local support, 24/7",
           "description": "Real people in Reykjavík, any season, whenever the road turns.",
-          "expandedText": "Flat tyre at midnight, a road closed by weather, a route rethink — one call reaches a local who knows exactly where you are and what to do."
+          "expandedText": "Flat tyre at midnight, a road closed by weather, a route rethink, one call reaches a local who knows exactly where you are and what to do."
         }
       ]
     },
@@ -727,7 +727,7 @@
         {
           "num": "01",
           "title": "Find your match",
-          "description": "Tell us your dates and how you like to travel. We surface only the vans, 4×4s and stays that fit your route — every one checked by our Reykjavík team and priced with insurance built in.",
+          "description": "Tell us your dates and how you like to travel. We surface only the vans, 4×4s and stays that fit your route, every one checked by our Reykjavík team and priced with insurance built in.",
           "image": "/images/homepage/stay-hofn.jpg",
           "imageAlt": "Browsing vehicles for an Iceland trip",
           "tags": [
@@ -751,7 +751,7 @@
         {
           "num": "03",
           "title": "Drive Iceland, fully backed",
-          "description": "Hit the Ring Road with unlimited mileage and 24/7 local support in your pocket. Anything comes up — weather, a flat, a route change — and a real person in Iceland picks up.",
+          "description": "Hit the Ring Road with unlimited mileage and 24/7 local support in your pocket. Anything comes up, weather, a flat, a route change, and a real person in Iceland picks up.",
           "image": "/images/homepage/hero.jpg",
           "imageAlt": "Driving the Ring Road in Iceland",
           "tags": [
@@ -764,7 +764,7 @@
     },
     "staySection": {
       "heading": "A warm bed at the end of the road.",
-      "subtitle": "Hand-picked guesthouses spaced a comfortable day's drive apart — so the only thing left to plan is where to watch the sky.",
+      "subtitle": "Hand-picked guesthouses spaced a comfortable day's drive apart, so the only thing left to plan is where to watch the sky.",
       "allLabel": "Browse all guesthouses",
       "allHref": "/guesthouses",
       "cards": [
@@ -853,7 +853,7 @@
       "heading": "List your car or guesthouse.",
       "lead": "Your van sits idle between trips and your spare room stays empty. Put them to work on the platform Iceland's travellers already trust.",
       "earnAmount": "€1,900",
-      "earnNote": "Top campervan hosts clear €3,200+. You keep 85% — we handle bookings, payments and insurance.",
+      "earnNote": "Top campervan hosts clear €3,200+. You keep 85%, we handle bookings, payments and insurance.",
       "points": [
         "Free to list",
         "You set the calendar",
@@ -882,7 +882,7 @@
           "ty": "30px"
         },
         {
-          "quote": "\"Gravel roads, a river crossing, even a June snow flurry — the 4×4 and the insurance took it all in stride.\"",
+          "quote": "\"Gravel roads, a river crossing, even a June snow flurry, the 4×4 and the insurance took it all in stride.\"",
           "name": "Tom Okafor",
           "fill": "#bcdcab",
           "rot": "-5.5deg",
@@ -935,7 +935,7 @@
     "hero": {
       "eyebrow": "Our story",
       "title": "About MyTerraBook",
-      "lead": "Iceland's locally-run platform for campervans, cars, 4×4s and guesthouses — one booking, one team in Reykjavík behind it.",
+      "lead": "Iceland's locally-run platform for campervans, cars, 4×4s and guesthouses, one booking, one team in Reykjavík behind it.",
       "primaryLabel": "Talk to the team",
       "primaryHref": "/contact",
       "secondaryLabel": "Become a host",
@@ -993,7 +993,7 @@
     ],
     "offeringsSection": {
       "tag": "Three ways to explore",
-      "heading": "Everything you need for the Ring Road — and the roads off it."
+      "heading": "Everything you need for the Ring Road, and the roads off it."
     },
     "offerings": [
       {
@@ -1025,7 +1025,7 @@
     },
     "seo": {
       "title": "About MyTerraBook",
-      "description": "Iceland's locally-run platform for campervans, cars, 4×4s and guesthouses — one booking, one team in Reykjavík behind it.",
+      "description": "Iceland's locally-run platform for campervans, cars, 4×4s and guesthouses, one booking, one team in Reykjavík behind it.",
       "robots": "index"
     }
   },
@@ -1034,19 +1034,19 @@
       "eyebrow": "Good to know",
       "title": "Questions & answers",
       "lead": "Still curious before you book? Our team in Reykjavík is one message away.",
-      "searchPlaceholder": "Search questions — licence, gravel, campsites…"
+      "searchPlaceholder": "Search questions, licence, gravel, campsites…"
     },
     "items": [
       {
         "num": "01",
         "question": "What do I need to rent and drive in Iceland?",
-        "answer": "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup — that's it.",
+        "answer": "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup, that's it.",
         "open": true
       },
       {
         "num": "02",
         "question": "Is gravel and ash damage covered?",
-        "answer": "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter — they're the two things that catch most travellers out on Iceland's roads."
+        "answer": "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter, they're the two things that catch most travellers out on Iceland's roads."
       },
       {
         "num": "03",
@@ -1111,7 +1111,7 @@
     "helpCard": {
       "tag": "Need a human?",
       "title": "Our Reykjavík team answers seven days a week.",
-      "body": "Route changes, pickup questions, or anything before you book — we're on Iceland time.",
+      "body": "Route changes, pickup questions, or anything before you book, we're on Iceland time.",
       "phone": "+354 519 1010",
       "email": "support@myterrabook.is",
       "buttonLabel": "Send a message",
@@ -1149,7 +1149,7 @@
     },
     "seo": {
       "title": "Questions & Answers",
-      "description": "Driving licence, gravel cover, campsites, pickup near Keflavík — answers from our Reykjavík team before you book.",
+      "description": "Driving licence, gravel cover, campsites, pickup near Keflavík, answers from our Reykjavík team before you book.",
       "robots": "index"
     }
   },
@@ -1185,7 +1185,7 @@
     "body": "<h2>1. Bookings</h2>\n<p>By completing a booking on MyTerraBook you enter into an agreement with the listed host or fleet partner, facilitated by MyTerraBook ehf. Prices shown include mandatory insurance bundles unless stated otherwise.</p>\n<h2>2. Driver requirements</h2>\n<p>All drivers must hold a valid licence for at least one year and meet the minimum age for the selected vehicle category. Additional drivers must be declared before pickup.</p>\n<h2>3. Cancellations</h2>\n<p>Free cancellation up to 48 hours before pickup or check-in applies on most listings unless a stricter policy is shown on the listing page. Late cancellations may incur fees set by the host.</p>\n<h2>4. Deposits & payments</h2>\n<p>Security deposits are pre-authorised on your card at pickup or check-in. Final charges are settled according to the booking confirmation and any agreed extras.</p>\n<h2>5. Liability</h2>\n<p>Travellers are responsible for fines, tolls, and damage outside covered insurance events. MyTerraBook acts as booking agent unless otherwise stated on your confirmation.</p>",
     "seo": {
       "title": "Terms & Conditions",
-      "description": "Rental and stay terms for bookings made through MyTerraBook — cancellations, deposits, driver requirements, and liability.",
+      "description": "Rental and stay terms for bookings made through MyTerraBook, cancellations, deposits, driver requirements, and liability.",
       "robots": "index"
     }
   },
@@ -1195,7 +1195,7 @@
       "title": "Privacy policy",
       "lead": "How we collect, use, and protect your personal data."
     },
-    "body": "<h2>Data we collect</h2>\n<p>We collect information you provide when creating an account, making a booking, or contacting support — including name, email, phone, payment details, and travel dates.</p>\n<h2>How we use it</h2>\n<p>Your data is used to process bookings, communicate about your trip, prevent fraud, and improve our services. We share necessary details with hosts and payment providers to fulfil your booking.</p>\n<h2>Retention</h2>\n<p>We retain booking records as required by Icelandic law and for legitimate business purposes. You may request access or deletion where applicable by emailing support@myterrabook.is.</p>\n<h2>Cookies</h2>\n<p>See our <a href=\"/cookies\">cookie policy</a> for details on analytics and preference cookies.</p>",
+    "body": "<h2>Data we collect</h2>\n<p>We collect information you provide when creating an account, making a booking, or contacting support, including name, email, phone, payment details, and travel dates.</p>\n<h2>How we use it</h2>\n<p>Your data is used to process bookings, communicate about your trip, prevent fraud, and improve our services. We share necessary details with hosts and payment providers to fulfil your booking.</p>\n<h2>Retention</h2>\n<p>We retain booking records as required by Icelandic law and for legitimate business purposes. You may request access or deletion where applicable by emailing support@myterrabook.is.</p>\n<h2>Cookies</h2>\n<p>See our <a href=\"/cookies\">cookie policy</a> for details on analytics and preference cookies.</p>",
     "seo": {
       "title": "Privacy Policy",
       "description": "How MyTerraBook collects, uses, and protects your personal data when you book or contact us.",
@@ -1217,7 +1217,7 @@
   },
   "become-a-host": {
     "topbar": {
-      "text": "Iceland hosts earned €2.4M+ last season — list your van or guesthouse today."
+      "text": "Iceland hosts earned €2.4M+ last season, list your van or guesthouse today."
     },
     "hero": {
       "title": "Earn from your van or guesthouse",
@@ -1428,7 +1428,7 @@
       {
         "num": "05",
         "question": "Do I have to accept every booking?",
-        "answer": "Never. You control your own calendar and can block any dates you need the vehicle or room for yourself. Turn on instant booking for convenience, or review each request by hand — it's entirely up to you."
+        "answer": "Never. You control your own calendar and can block any dates you need the vehicle or room for yourself. Turn on instant booking for convenience, or review each request by hand, it's entirely up to you."
       }
     ],
     "cta": {
@@ -1441,7 +1441,7 @@
     },
     "seo": {
       "title": "Become a Host",
-      "description": "List your campervan, car or guesthouse on MyTerraBook and earn between trips — bookings, payments and insurance handled for you.",
+      "description": "List your campervan, car or guesthouse on MyTerraBook and earn between trips, bookings, payments and insurance handled for you.",
       "robots": "index"
     }
   },
@@ -1451,8 +1451,8 @@
       "lead": "Practical advice from our Reykjavík team."
     },
     "seo": {
-      "title": "Good to Know — Iceland Travel Guides",
-      "description": "Practical Iceland travel guides from our Reykjavík team — Ring Road routes, 4×4 tips, northern lights, and campervan advice.",
+      "title": "Good to Know, Iceland Travel Guides",
+      "description": "Practical Iceland travel guides from our Reykjavík team, Ring Road routes, 4×4 tips, northern lights, and campervan advice.",
       "robots": "index"
     }
   },
@@ -1475,7 +1475,7 @@
     "defaultBags": 2,
     "seo": {
       "title": "Campervan Rentals in Iceland",
-      "description": "Browse hand-checked campervans for the Ring Road — winter-ready, gravel cover included, unlimited mileage on most listings.",
+      "description": "Browse hand-checked campervans for the Ring Road, winter-ready, gravel cover included, unlimited mileage on most listings.",
       "robots": "index"
     }
   },
@@ -1495,14 +1495,14 @@
     "unitSingular": "car",
     "unitPlural": "cars",
     "titleLead": "Cars for Iceland’s roads",
-    "subtitle": "Compact runabouts to full-size 4×4s — winter tyres, unlimited mileage and local support included in every price.",
+    "subtitle": "Compact runabouts to full-size 4×4s, winter tyres, unlimited mileage and local support included in every price.",
     "loadMoreLabel": "Show more cars",
     "defaultSeats": 5,
     "defaultSleeps": 0,
     "defaultBags": 2,
     "seo": {
       "title": "Car & 4×4 Rentals in Iceland",
-      "description": "Compact runabouts to F-road 4×4s — winter tyres, gravel cover and local Reykjavík support included in every price.",
+      "description": "Compact runabouts to F-road 4×4s, winter tyres, gravel cover and local Reykjavík support included in every price.",
       "robots": "index"
     }
   },
@@ -1515,7 +1515,7 @@
     "unitSingular": "stay",
     "unitPlural": "stays",
     "titleLead": "Guesthouses along the route",
-    "subtitle": "Hand-picked stays spaced a comfortable day’s drive apart — book a warm bed when you want a night off the road.",
+    "subtitle": "Hand-picked stays spaced a comfortable day’s drive apart, book a warm bed when you want a night off the road.",
     "loadMoreLabel": "Show more stays",
     "introLocationDefault": "Iceland",
     "seo": {
@@ -1541,7 +1541,7 @@
     "guestPhotosTitle": "Guest photos",
     "reviewsTitle": "Guest reviews",
     "bookingModalTitle": "Booking this camper in 4 steps",
-    "bookingModalLead": "Every reservation on MyTerraBook is reviewed by the host before it's confirmed — here's exactly what happens after you hit request.",
+    "bookingModalLead": "Every reservation on MyTerraBook is reviewed by the host before it's confirmed, here's exactly what happens after you hit request.",
     "tabs": [
       {
         "id": "details",
@@ -1585,7 +1585,7 @@
       },
       {
         "title": "The host confirms availability",
-        "text": "Your host reviews your trip and approves it — usually within an hour. You'll get a message and email the moment it's accepted.",
+        "text": "Your host reviews your trip and approves it, usually within an hour. You'll get a message and email the moment it's accepted.",
         "tag": "Avg. reply under 1 hour"
       },
       {
@@ -1621,7 +1621,7 @@
     "guestPhotosTitle": "Guest photos",
     "reviewsTitle": "Guest reviews",
     "bookingModalTitle": "Booking this car in 4 steps",
-    "bookingModalLead": "Every reservation on MyTerraBook is reviewed before it's confirmed — here's what happens after you request.",
+    "bookingModalLead": "Every reservation on MyTerraBook is reviewed before it's confirmed, here's what happens after you request.",
     "tabs": [
       {
         "id": "details",
@@ -1661,7 +1661,7 @@
       },
       {
         "title": "We confirm availability",
-        "text": "Our team checks the vehicle for your dates and confirms — usually within an hour."
+        "text": "Our team checks the vehicle for your dates and confirms, usually within an hour."
       },
       {
         "title": "Pay securely",
@@ -1688,7 +1688,7 @@
     "guestPhotosTitle": "Guest photos",
     "reviewsTitle": "Guest reviews",
     "bookingModalTitle": "Booking this stay in 4 steps",
-    "bookingModalLead": "Every stay on MyTerraBook is confirmed by the host before you're charged — here's how it works.",
+    "bookingModalLead": "Every stay on MyTerraBook is confirmed by the host before you're charged, here's how it works.",
     "tabs": [
       {
         "id": "details",
@@ -1716,7 +1716,7 @@
         "html": "<b>Verified hosts</b> along the Ring Road route"
       },
       {
-        "html": "Secure online payment — no hidden fees at check-in"
+        "html": "Secure online payment, no hidden fees at check-in"
       },
       {
         "html": "Flexible cancellation on most stays"
@@ -1732,7 +1732,7 @@
       },
       {
         "title": "The host confirms",
-        "text": "Your host reviews your stay and accepts — most replies within a few hours."
+        "text": "Your host reviews your stay and accepts, most replies within a few hours."
       },
       {
         "title": "Pay securely",
@@ -1863,12 +1863,12 @@
         "label": "Dashboard"
       },
       {
-        "to": "/host/guesthouses",
-        "label": "Guesthouses"
-      },
-      {
         "to": "/host/cars",
         "label": "Cars & vans"
+      },
+      {
+        "to": "/host/guesthouses",
+        "label": "Guesthouses"
       },
       {
         "to": "/host/bookings",

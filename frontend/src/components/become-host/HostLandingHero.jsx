@@ -6,7 +6,7 @@ import { useToast } from '../../context/ToastContext'
 import { formatPhoneForApi } from '../../utils/phone'
 
 const TRUST_POINTS = [
-  'Free to list — no upfront costs',
+  'Free to list, no upfront costs',
   'You keep 85% of every booking',
   'Insurance and 24/7 support included',
 ]

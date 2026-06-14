@@ -72,8 +72,8 @@
         }
 
         .ts-tab.is-active {
-            color: #0f7cab;
-            border-bottom-color: #0f7cab;
+            color: #45a06a;
+            border-bottom-color: #45a06a;
         }
 
         .ts-section-title {
@@ -111,7 +111,7 @@
         }
 
         .ts-demand-stat strong {
-            color: #0f7cab;
+            color: #45a06a;
             font-size: 30px;
             line-height: 1;
             font-weight: 500;
@@ -195,7 +195,7 @@
         }
 
         .ts-table th {
-            background: #0f7cab;
+            background: #45a06a;
             color: #fff;
             font-weight: 700;
             text-align: left;

@@ -14,8 +14,8 @@
 <body>
     <h1>Rental agreement</h1>
     <p><strong>Reference:</strong> {{ $order->reference }}</p>
-    <p><strong>Customer:</strong> {{ $order->customer_name }} — {{ $order->customer_email }}</p>
-    <p><strong>Vehicle:</strong> {{ $order->car?->name ?? '—' }}</p>
+    <p><strong>Customer:</strong> {{ $order->customer_name }}, {{ $order->customer_email }}</p>
+    <p><strong>Vehicle:</strong> {{ $order->car?->name ?? '-' }}</p>
     <p><strong>Pick-up:</strong> {{ $order->pickup_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }}</p>
     <p><strong>Drop-off:</strong> {{ $order->dropoff_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }}</p>
     <p><strong>Status:</strong> {{ $order->order_status->value }}</p>

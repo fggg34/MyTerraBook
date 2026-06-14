@@ -116,7 +116,7 @@
 
         .fo-table thead th {
             border: 1px solid #1f6f95;
-            background: #0f7cab;
+            background: #45a06a;
             color: #fff;
             text-align: center;
             font-weight: 700;
@@ -125,7 +125,7 @@
 
         .fo-table thead th.fo-date-head {
             width: 108px;
-            background: #0f7cab;
+            background: #45a06a;
             border-color: #1f6f95;
         }
 

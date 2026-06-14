@@ -55,11 +55,11 @@
                     <h3 class="ir-fares-editor-title">{{ __('Daily fares input') }}</h3>
                     <div class="ir-fares-fields-two">
                         <div>
-                            <label class="ir-fares-label">{{ __('Days — from') }}</label>
+                            <label class="ir-fares-label">{{ __('Days, from') }}</label>
                             <input type="number" min="1" wire:model="insertFromDays" class="ir-fares-input" />
                         </div>
                         <div>
-                            <label class="ir-fares-label">{{ __('Days — to') }}</label>
+                            <label class="ir-fares-label">{{ __('Days, to') }}</label>
                             <input type="number" min="1" wire:model="insertToDays" class="ir-fares-input" />
                         </div>
                     </div>
@@ -78,11 +78,11 @@
                     <p class="ir-fares-help">{{ __('Rental length under 24 hours: define a window in whole hours and the total ISK for that window.') }}</p>
                     <div class="ir-fares-fields-two">
                         <div>
-                            <label class="ir-fares-label">{{ __('Hours — from') }}</label>
+                            <label class="ir-fares-label">{{ __('Hours, from') }}</label>
                             <input type="number" min="1" max="72" wire:model="insertHourlyFromHours" class="ir-fares-input" />
                         </div>
                         <div>
-                            <label class="ir-fares-label">{{ __('Hours — to') }}</label>
+                            <label class="ir-fares-label">{{ __('Hours, to') }}</label>
                             <input type="number" min="1" max="72" wire:model="insertHourlyToHours" class="ir-fares-input" />
                         </div>
                     </div>

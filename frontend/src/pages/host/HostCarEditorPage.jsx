@@ -54,6 +54,9 @@ const emptyForm = {
   description: '',
   transmission: 'manual',
   fuel_type: 'diesel',
+  seats: 5,
+  sleeps: 0,
+  bags: 2,
   units_available: 1,
   ical_import_url: '',
   meta_title: '',
@@ -193,6 +196,9 @@ export default function HostCarEditorPage() {
           pickup_time_to: data.pickup_time_to || '',
           dropoff_time_from: data.dropoff_time_from || '',
           dropoff_time_to: data.dropoff_time_to || '',
+          seats: data.seats ?? 5,
+          sleeps: data.sleeps ?? 0,
+          bags: data.bags ?? 2,
           characteristic_ids: data.characteristic_ids || [],
           rental_option_ids: data.rental_option_ids || [],
         })
@@ -216,6 +222,9 @@ export default function HostCarEditorPage() {
         description: form.description,
         transmission: form.transmission,
         fuel_type: form.fuel_type,
+        seats: form.seats,
+        sleeps: form.sleeps,
+        bags: form.bags,
         units_available: form.units_available,
         ical_import_url: form.ical_import_url,
         meta_title: form.meta_title,
@@ -344,6 +353,19 @@ export default function HostCarEditorPage() {
     (sub) => !form.main_category_id || String(sub.main_category_id) === String(form.main_category_id),
   )
 
+  const selectedMainCategory = useMemo(
+    () => catalog.mainCategories.find((c) => String(c.id) === String(form.main_category_id)),
+    [catalog.mainCategories, form.main_category_id],
+  )
+
+  const isCampervan = selectedMainCategory?.slug === 'campervan'
+
+  const setCapacity = (key, rawValue, max) => {
+    const parsed = parseInt(rawValue, 10)
+    const next = Number.isNaN(parsed) ? 0 : Math.max(0, Math.min(parsed, max))
+    setForm((prev) => ({ ...prev, [key]: next }))
+  }
+
   const selectedPickupLocations = useMemo(
     () => catalog.locations.filter((loc) => hasId(form.pickup_location_ids, loc.id)),
     [catalog.locations, form.pickup_location_ids],
@@ -399,7 +421,14 @@ export default function HostCarEditorPage() {
             <div className="host-field"><label>Main category</label>
               <HostSelect
                 value={String(form.main_category_id || '')}
-                onChange={(v) => setForm({ ...form, main_category_id: v, sub_category_id: '' })}
+                onChange={(v) => {
+                  const main = catalog.mainCategories.find((c) => String(c.id) === v)
+                  const next = { ...form, main_category_id: v, sub_category_id: '' }
+                  if (main?.slug === 'campervan' && (!form.sleeps || form.sleeps === 0)) {
+                    next.sleeps = form.seats || 2
+                  }
+                  setForm(next)
+                }}
                 options={catalog.mainCategories.map((c) => ({ value: String(c.id), label: c.name }))}
                 placeholder="Select main category"
                 ariaLabel="Main category"
@@ -456,6 +485,49 @@ export default function HostCarEditorPage() {
                 options={['petrol', 'diesel', 'electric', 'hybrid'].map((v) => ({ value: v, label: v }))}
                 ariaLabel="Fuel type"
               />
+            </div>
+            <div className="host-field">
+              <label>Capacity</label>
+              <div className="host-capacity-grid">
+                <div>
+                  <label className="host-capacity-label" htmlFor="car-seats">Seats</label>
+                  <input
+                    id="car-seats"
+                    type="number"
+                    min={0}
+                    max={50}
+                    value={form.seats}
+                    onChange={(e) => setCapacity('seats', e.target.value, 50)}
+                  />
+                </div>
+                <div>
+                  <label className="host-capacity-label" htmlFor="car-sleeps">
+                    {isCampervan ? 'Sleeps (berths)' : 'Sleeps'}
+                  </label>
+                  <input
+                    id="car-sleeps"
+                    type="number"
+                    min={0}
+                    max={20}
+                    value={form.sleeps}
+                    onChange={(e) => setCapacity('sleeps', e.target.value, 20)}
+                  />
+                </div>
+                <div>
+                  <label className="host-capacity-label" htmlFor="car-bags">Bags</label>
+                  <input
+                    id="car-bags"
+                    type="number"
+                    min={0}
+                    max={50}
+                    value={form.bags}
+                    onChange={(e) => setCapacity('bags', e.target.value, 50)}
+                  />
+                </div>
+              </div>
+              {isCampervan && (
+                <p className="host-capacity-hint">Sleeps is how many people can stay overnight in the campervan.</p>
+              )}
             </div>
             <div className="host-field"><label>Characteristics</label>
               <div className="grid grid-cols-2 gap-2">

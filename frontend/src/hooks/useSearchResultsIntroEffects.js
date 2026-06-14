@@ -19,12 +19,8 @@ function loadScript(src) {
 }
 
 function revealStatic(root) {
-  root.querySelectorAll('.reveal-title, .reveal-desc, .ri-tags').forEach((el) => {
+  root.querySelectorAll('.reveal-title, .reveal-desc').forEach((el) => {
     el.style.opacity = '1'
-  })
-  root.querySelectorAll('.ri-tag').forEach((el) => {
-    el.style.opacity = '1'
-    el.style.transform = 'none'
   })
 }
 
@@ -59,7 +55,6 @@ export default function useSearchResultsIntroEffects(rootRef) {
 
       const titles = Array.from(root.querySelectorAll('.reveal-title'))
       const descs = Array.from(root.querySelectorAll('.reveal-desc'))
-      const tags = Array.from(root.querySelectorAll('.ri-tag'))
 
       const safety = window.setTimeout(() => revealStatic(root), 2500)
 
@@ -115,17 +110,6 @@ export default function useSearchResultsIntroEffects(rootRef) {
           animateDesc(el)
         }
       })
-
-      if (tags.length) {
-        gsap.from(tags, {
-          opacity: 0,
-          y: 14,
-          duration: 0.55,
-          stagger: 0.08,
-          delay: 0.35,
-          ease: 'power2.out',
-        })
-      }
     }
 
     init()

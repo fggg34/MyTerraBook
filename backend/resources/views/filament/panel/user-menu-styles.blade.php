@@ -12,14 +12,14 @@
 
     .fi-sidebar .fi-user-menu-trigger:hover,
     .fi-sidebar .fi-user-menu-trigger:focus-visible {
-        border-color: rgb(251 191 36 / 0.55);
-        background: rgb(255 251 235 / 1);
+        border-color: rgb(69 160 106 / 0.45);
+        background: rgb(69 160 106 / 0.08);
     }
 
     .dark .fi-sidebar .fi-user-menu-trigger:hover,
     .dark .fi-sidebar .fi-user-menu-trigger:focus-visible {
-        border-color: rgb(251 191 36 / 0.45);
-        background: rgb(41 37 36 / 0.85);
+        border-color: rgb(69 160 106 / 0.35);
+        background: rgb(69 160 106 / 0.12);
     }
 
     .fi-sidebar .fi-user-menu-trigger-text {

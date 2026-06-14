@@ -1,4 +1,4 @@
-# Dynamic gaps — manual / out-of-scope items
+# Dynamic gaps, manual / out-of-scope items
 
 These items were identified in the dynamic audit. Code changes are complete where possible; the following still require action outside this repository or are intentionally limited.
 
@@ -23,9 +23,9 @@ These items were identified in the dynamic audit. Code changes are complete wher
 
 ## Verified API endpoints (new/expanded)
 
-- `GET /api/public-config` — currency, prepay %, deposit, exchange rates, shop flags
-- `GET /api/payment-methods` — enabled checkout methods
-- `GET /api/custom-fields` — active checkout fields
-- `GET /api/booking-restrictions` — min/max days + CTA/CTD restriction rows
-- `GET /api/cars/{id}/availability-calendar` — used by checkout date picker
-- `GET /api/homepage` — Google reviews + featured blog (when configured)
+- `GET /api/public-config`, currency, prepay %, deposit, exchange rates, shop flags
+- `GET /api/payment-methods`, enabled checkout methods
+- `GET /api/custom-fields`, active checkout fields
+- `GET /api/booking-restrictions`, min/max days + CTA/CTD restriction rows
+- `GET /api/cars/{id}/availability-calendar`, used by checkout date picker
+- `GET /api/homepage`, Google reviews + featured blog (when configured)

@@ -14,7 +14,13 @@ function CurrencyPanel({ currency, onSelectCurrency }) {
             className={`lc-opt ${currency.code === item.code ? 'sel' : ''}`}
             onClick={() => onSelectCurrency(item)}
           >
-            {item.label}
+            <span className="lc-opt-main">
+              <span className="lc-opt-symbol" aria-hidden="true">
+                {item.symbol || item.code}
+              </span>
+              <span className="lc-opt-code">{item.code}</span>
+            </span>
+            <span className="lc-opt-name">{item.name}</span>
           </button>
         ))}
       </div>
@@ -64,7 +70,13 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
         </button>
 
         <div className={`lang-cur-panel lang-cur-panel--mobile ${open ? 'show' : ''}`} role="dialog" aria-label="Currency">
-          <CurrencyPanel currency={currency} onSelectCurrency={setCurrency} />
+          <CurrencyPanel
+            currency={currency}
+            onSelectCurrency={(item) => {
+              setCurrency(item)
+              setOpen(false)
+            }}
+          />
         </div>
       </div>
     )
@@ -86,7 +98,13 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
       </button>
 
       <div className={`lang-cur-panel ${open ? 'show' : ''}`} role="dialog" aria-label="Currency">
-        <CurrencyPanel currency={currency} onSelectCurrency={setCurrency} />
+        <CurrencyPanel
+          currency={currency}
+          onSelectCurrency={(item) => {
+            setCurrency(item)
+            setOpen(false)
+          }}
+        />
       </div>
     </div>
   )

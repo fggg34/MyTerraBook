@@ -164,9 +164,9 @@ class HostTestDataSeeder extends Seeder
             );
 
             $this->command?->info("Host {$host->email} (password: password)");
-            $this->command?->info("  Car:       /cars/{$car->id} — {$car->name} [{$profile['listing_status']->value}]");
-            $this->command?->info("  Campervan: /campervans/{$campervan->id} — {$campervan->name} [{$profile['listing_status']->value}]");
-            $this->command?->info("  Stay:      /guesthouses/{$guesthouse->slug} — {$guesthouse->name} [{$profile['guesthouse_status']->value}]");
+            $this->command?->info("  Car:       /cars/{$car->id}, {$car->name} [{$profile['listing_status']->value}]");
+            $this->command?->info("  Campervan: /campervans/{$campervan->id}, {$campervan->name} [{$profile['listing_status']->value}]");
+            $this->command?->info("  Stay:      /guesthouses/{$guesthouse->slug}, {$guesthouse->name} [{$profile['guesthouse_status']->value}]");
         }
     }
 
@@ -198,7 +198,7 @@ class HostTestDataSeeder extends Seeder
         string $fuelType,
     ): Car {
         $slug = "{$prefix}-host-{$kind}";
-        $name = ucfirst($kind).' — '.ucfirst(str_replace('.', ' ', explode('@', $host->email)[0]));
+        $name = ucfirst($kind).', '.ucfirst(str_replace('.', ' ', explode('@', $host->email)[0]));
         $imageBase = 'https://placehold.co/1200x800/'.($kind === 'car' ? '1e40af' : '7c2d12').'/fff?text='.urlencode($name);
 
         $submittedAt = in_array($listingStatus, [ListingApprovalStatus::PendingReview, ListingApprovalStatus::Approved], true)
@@ -362,7 +362,7 @@ class HostTestDataSeeder extends Seeder
         }
 
         OutOfHoursFee::query()->updateOrCreate(
-            ['name' => "Late hours — {$slug}"],
+            ['name' => "Late hours, {$slug}"],
             [
                 'time_from' => '20:00:00',
                 'time_to' => '08:00:00',
@@ -509,12 +509,12 @@ class HostTestDataSeeder extends Seeder
         $this->call(TaxRateSeeder::class);
 
         if (PriceType::query()->where('slug', 'basic')->doesntExist()) {
-            $this->command?->info('Catalog missing — running CatalogSeeder…');
+            $this->command?->info('Catalog missing, running CatalogSeeder…');
             $this->call(CatalogSeeder::class);
         }
 
         if (GuestHouseAmenity::query()->doesntExist()) {
-            $this->command?->info('Guesthouse amenities missing — running GuestHouseAmenitySeeder…');
+            $this->command?->info('Guesthouse amenities missing, running GuestHouseAmenitySeeder…');
             $this->call(GuestHouseAmenitySeeder::class);
         }
     }

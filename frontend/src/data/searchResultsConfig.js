@@ -25,7 +25,7 @@ export const VEHICLE_TYPES = {
     unitPlural: 'cars',
     titleLead: 'Cars for Iceland’s roads',
     subtitle:
-      'Compact runabouts to full-size 4×4s — winter tyres, unlimited mileage and local support included in every price.',
+      'Compact runabouts to full-size 4×4s, winter tyres, unlimited mileage and local support included in every price.',
     loadMoreLabel: 'Show more cars',
     defaultSeats: 5,
     defaultSleeps: 0,
@@ -41,7 +41,7 @@ export const VEHICLE_TYPES = {
     unitPlural: 'stays',
     titleLead: 'Guesthouses along the route',
     subtitle:
-      'Hand-picked stays spaced a comfortable day’s drive apart — book a warm bed when you want a night off the road.',
+      'Hand-picked stays spaced a comfortable day’s drive apart, book a warm bed when you want a night off the road.',
     loadMoreLabel: 'Show more stays',
     introLocationDefault: 'Iceland',
   },

@@ -32,6 +32,14 @@ class GuestHouseAmenitySeeder extends Seeder
             ['name' => 'Workspace', 'icon' => 'laptop', 'group' => 'general'],
             ['name' => 'Fireplace', 'icon' => 'flame', 'group' => 'general'],
             ['name' => 'Sea View', 'icon' => 'waves', 'group' => 'outdoor'],
+            ['name' => 'Geothermal Hot Tub', 'icon' => 'bath', 'group' => 'outdoor'],
+            ['name' => 'Sauna', 'icon' => 'thermometer', 'group' => 'general'],
+            ['name' => 'Northern Lights View', 'icon' => 'sparkles', 'group' => 'outdoor'],
+            ['name' => 'Mountain View', 'icon' => 'mountain', 'group' => 'outdoor'],
+            ['name' => 'Glacier View', 'icon' => 'snowflake', 'group' => 'outdoor'],
+            ['name' => 'Drying Room', 'icon' => 'wind', 'group' => 'general'],
+            ['name' => 'EV Charger', 'icon' => 'plug-zap', 'group' => 'general'],
+            ['name' => 'Ski & Gear Storage', 'icon' => 'package', 'group' => 'general'],
         ];
 
         foreach ($amenities as $amenity) {

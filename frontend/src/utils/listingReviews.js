@@ -46,7 +46,7 @@ export function computeRating(baseRating, allReviews) {
   if (!allReviews.length) {
     return {
       ...baseRating,
-      score: '—',
+      score: ',',
       label: 'No reviews yet',
       reviewCount: 0,
       reviewLinkLabel: 'Be the first to review',

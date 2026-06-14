@@ -51,6 +51,17 @@ class CharacteristicForm
 
                                 TextInput::make('display_text')
                                     ->label('Text Next to Icon'),
+
+                                Select::make('group')
+                                    ->label('Group')
+                                    ->options(array_combine(
+                                        \App\Models\Characteristic::GROUPS,
+                                        \App\Models\Characteristic::GROUPS,
+                                    ))
+                                    ->searchable()
+                                    ->nullable()
+                                    ->visible(fn (): bool => DatabaseSchema::hasColumn('characteristics', 'group'))
+                                    ->helperText('Used to organise characteristics into sections for hosts and search filters.'),
                             ]),
 
                         Section::make('Settings')

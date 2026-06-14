@@ -17,8 +17,8 @@ const ICONS = {
 
 const DEFAULT_NAV = [
   { to: '/host', label: 'Dashboard', end: true },
-  { to: '/host/guesthouses', label: 'Guesthouses' },
   { to: '/host/cars', label: 'Cars & vans' },
+  { to: '/host/guesthouses', label: 'Guesthouses' },
   { to: '/host/bookings', label: 'Bookings' },
   { to: '/host/settings', label: 'Settings' },
 ]

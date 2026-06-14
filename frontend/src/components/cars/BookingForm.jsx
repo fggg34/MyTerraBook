@@ -127,7 +127,7 @@ export default function BookingForm({
             >
               {priceTypes.map((pt) => (
                 <option key={pt.id} value={pt.id}>
-                  {pt.name} — from {formatCurrency(pt.from_price_per_day)}/day
+                  {pt.name}, from {formatCurrency(pt.from_price_per_day)}/day
                 </option>
               ))}
             </select>

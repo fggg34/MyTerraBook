@@ -108,7 +108,7 @@ export default function RegisterPage() {
       variant="register"
       features={REGISTER_FEATURES}
       heroTitle={copy.heroTitle ?? 'Create your account'}
-      heroText={copy.heroText ?? 'Join travelers who book guesthouses, campervans and cars across Iceland — all in one trusted marketplace.'}
+      heroText={copy.heroText ?? 'Join travelers who book guesthouses, campervans and cars across Iceland, all in one trusted marketplace.'}
     >
       <div className="auth-form-head">
         <h1>{copy.title ?? 'Create an account'}</h1>

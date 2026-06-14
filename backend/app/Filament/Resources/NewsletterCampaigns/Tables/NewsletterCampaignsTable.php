@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\NewsletterCampaigns\Tables;
 
 use App\Enums\NewsletterCampaignStatus;
+use App\Support\AdminTableBadgeColors;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -18,10 +19,8 @@ class NewsletterCampaignsTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (NewsletterCampaignStatus $state): string => match ($state) {
-                        NewsletterCampaignStatus::Draft => 'gray',
-                        NewsletterCampaignStatus::Sent => 'success',
-                    }),
+                    ->color(fn (NewsletterCampaignStatus $state): string => AdminTableBadgeColors::newsletterCampaignStatus($state))
+                    ->formatStateUsing(fn (NewsletterCampaignStatus $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('recipient_count')
                     ->label('Recipients')
                     ->numeric()

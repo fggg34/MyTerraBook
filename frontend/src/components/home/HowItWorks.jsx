@@ -28,7 +28,7 @@ export default function HowItWorks() {
         <div className="text-center">
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">How It Works</h2>
           <p className="mx-auto mt-2 max-w-xl text-slate-400">
-            Rent a car in three simple steps — fast, transparent, and hassle-free.
+            Rent a car in three simple steps, fast, transparent, and hassle-free.
           </p>
         </div>
         <div className="mt-12 grid gap-8 md:grid-cols-3">

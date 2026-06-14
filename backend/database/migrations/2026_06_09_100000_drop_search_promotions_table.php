@@ -12,6 +12,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Intentionally left empty — search promotions were removed from the product.
+        // Intentionally left empty, search promotions were removed from the product.
     }
 };

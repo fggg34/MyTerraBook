@@ -48,7 +48,7 @@ export default function ClientLayout() {
             <p className="text-sm font-semibold text-slate-500">{copy.eyebrow ?? 'My account'}</p>
             <h1 className="text-2xl font-bold text-brand-950">Welcome back, {firstName}</h1>
             <p className="mt-1 text-sm text-slate-500">
-              {copy.heroText ?? 'Your cars, campervans and guesthouse stays — all in one place.'}
+              {copy.heroText ?? 'Your cars, campervans and guesthouse stays, all in one place.'}
             </p>
           </div>
           <button type="button" className="host-btn secondary" onClick={handleLogout}>

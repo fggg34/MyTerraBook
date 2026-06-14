@@ -38,7 +38,7 @@ class CarResource extends Resource
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return 'warning';
+        return 'primary';
     }
 
     public static function form(Schema $schema): Schema

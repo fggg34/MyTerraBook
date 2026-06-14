@@ -32,30 +32,44 @@ const DEFAULT_FEATURES = [
   },
 ]
 
+const DEFAULT_HERO_IMAGES = {
+  login: '/images/homepage/hero.jpg',
+  register: '/images/homepage/hero.jpg',
+  'host-register': '/images/homepage/host-van.jpg',
+}
+
 export default function AuthPageLayout({
   variant = 'login',
-  heroImage = '/images/homepage/hero.jpg',
+  heroImage,
   heroTitle,
   heroText,
+  heroStat,
   features = DEFAULT_FEATURES,
   children,
   footer,
 }) {
+  const resolvedHeroImage = heroImage ?? DEFAULT_HERO_IMAGES[variant] ?? DEFAULT_HERO_IMAGES.login
   const title = heroTitle ?? (variant === 'register'
     ? 'Create your MyTerraBook account'
     : 'Sign in to MyTerraBook')
   const text = heroText ?? (variant === 'register'
-    ? 'Join travelers who book guesthouses, campervans and cars across Iceland — all in one trusted marketplace.'
+    ? 'Join travelers who book guesthouses, campervans and cars across Iceland, all in one trusted marketplace.'
     : 'Pick up where you left off. Your bookings, saved listings and trip details are waiting.')
 
   return (
     <div className={`auth-layout auth-layout--${variant}`}>
       <aside className="auth-layout__hero" aria-hidden="true">
-        <img className="auth-layout__hero-img" src={heroImage} alt="" />
+        <img className="auth-layout__hero-img" src={resolvedHeroImage} alt="" />
         <div className="auth-layout__hero-overlay" />
         <div className="auth-layout__hero-content">
           <h2 className="auth-layout__hero-title">{title}</h2>
           <p className="auth-layout__hero-text">{text}</p>
+          {heroStat && (
+            <div className="auth-layout__hero-stat">
+              <span className="auth-layout__hero-stat-amt">{heroStat.amount}</span>
+              <span className="auth-layout__hero-stat-suffix">{heroStat.suffix}</span>
+            </div>
+          )}
           <ul className="auth-layout__features">
             {features.map((feature) => (
               <li key={feature.title} className="auth-layout__feature">

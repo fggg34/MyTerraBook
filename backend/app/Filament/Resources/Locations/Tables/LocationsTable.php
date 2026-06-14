@@ -21,24 +21,24 @@ class LocationsTable
                 TextColumn::make('address')
                     ->label('Location Address')
                     ->searchable()
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('cars_count')
                     ->label('Linked vehicles')
                     ->counts('cars')
                     ->sortable(),
                 TextColumn::make('taxRate.name')
                     ->label('Override Tax Rate')
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('default_opening_time')
                     ->label('Opens')
                     ->time('H:i')
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('default_closing_time')
                     ->label('Closes')
                     ->time('H:i')
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

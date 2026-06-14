@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmailTemplates\Tables;
 
+use App\Support\AdminTableBadgeColors;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -25,16 +26,12 @@ class EmailTemplatesTable
                 TextColumn::make('category')
                     ->badge()
                     ->sortable()
-                    ->color(fn (string $state): string => match ($state) {
-                        'account' => 'info',
-                        'orders' => 'success',
-                        'bookings' => 'warning',
-                        'listings' => 'primary',
-                        default => 'gray',
-                    }),
+                    ->color(fn (): string => AdminTableBadgeColors::neutral())
+                    ->formatStateUsing(fn (string $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('audience')
                     ->badge()
-                    ->color('gray'),
+                    ->color(fn (): string => AdminTableBadgeColors::neutral())
+                    ->formatStateUsing(fn (string $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('subject')
                     ->limit(50)
                     ->toggleable(),

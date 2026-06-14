@@ -63,6 +63,10 @@ class HostGuestHouseController extends Controller
             $house->amenities()->sync($request->input('amenity_ids', []));
         }
 
+        if ($request->has('seasonal_prices')) {
+            $this->syncSeasonalPrices($house, $request->input('seasonal_prices', []));
+        }
+
         $house->load(['amenities', 'images', 'seasonalPrices']);
 
         return response()->json(['data' => new HostGuestHouseResource($house)], 201);

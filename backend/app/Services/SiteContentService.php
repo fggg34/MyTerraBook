@@ -3,9 +3,13 @@
 namespace App\Services;
 
 use App\Data\SiteContentDefaults;
+use App\Models\Car;
+use App\Models\DailyFare;
+use App\Models\GuestHouse;
 use App\Models\SiteContentPage;
 use App\Support\ResolvesPublicStorageUrls;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class SiteContentService
 {
@@ -70,7 +74,7 @@ class SiteContentService
             'header' => $global['header'] ?? [],
             'hero' => $home['hero'] ?? [],
             'trustItems' => $home['trustItems'] ?? [],
-            'rentSection' => $home['rentSection'] ?? [],
+            'rentSection' => $this->resolveRentSection($home['rentSection'] ?? []),
             'whySection' => $home['whySection'] ?? [],
             'picksSection' => $home['picksSection'] ?? [],
             'howSection' => $home['howSection'] ?? [],
@@ -233,7 +237,7 @@ class SiteContentService
 
         foreach ($incoming as $key => $value) {
             if (is_array($value) && array_is_list($value)) {
-                // File uploads dehydrate as [] before save — never replace a stored scalar path.
+                // File uploads dehydrate as [] before save, never replace a stored scalar path.
                 if (
                     $value === []
                     && array_key_exists($key, $merged)
@@ -262,7 +266,7 @@ class SiteContentService
                 continue;
             }
 
-            // Inactive tabs often submit null/empty for untouched fields — do not erase stored values.
+            // Inactive tabs often submit null/empty for untouched fields, do not erase stored values.
             if ($this->isMissingIncomingValue($value) && array_key_exists($key, $merged) && ! $this->isMissingIncomingValue($merged[$key])) {
                 continue;
             }
@@ -330,5 +334,90 @@ class SiteContentService
         }
 
         return $content;
+    }
+
+    /**
+     * @param  array<string, mixed>  $section
+     * @return array<string, mixed>
+     */
+    private function resolveRentSection(array $section): array
+    {
+        $cards = $section['cards'] ?? [];
+
+        if (! is_array($cards) || $cards === []) {
+            return $section;
+        }
+
+        $stats = $this->rentCatalogStats();
+
+        $section['cards'] = array_map(function (array $card) use ($stats): array {
+            $key = $this->rentCardStatsKey($card['href'] ?? null);
+
+            if ($key !== null && isset($stats[$key])) {
+                $card['listingStats'] = $stats[$key];
+            }
+
+            unset($card['listingCount']);
+
+            return $card;
+        }, $cards);
+
+        return $section;
+    }
+
+    /**
+     * @return array<string, array{count: int, minPriceCents: ?int, priceUnit: string}>
+     */
+    private function rentCatalogStats(): array
+    {
+        $guestHouseMinPrice = GuestHouse::query()->active()->min('base_price_per_night');
+
+        return [
+            'campervan' => $this->vehicleRentStats('campervan'),
+            'car' => $this->vehicleRentStats('car'),
+            'guesthouse' => [
+                'count' => GuestHouse::query()->active()->count(),
+                'minPriceCents' => $guestHouseMinPrice !== null ? (int) $guestHouseMinPrice : null,
+                'priceUnit' => 'night',
+            ],
+        ];
+    }
+
+    /**
+     * @return array{count: int, minPriceCents: ?int, priceUnit: string}
+     */
+    private function vehicleRentStats(string $mainCategorySlug): array
+    {
+        $minPrices = DailyFare::query()
+            ->select('car_id', DB::raw('MIN(price_per_day_cents) as min_daily_price_cents'))
+            ->groupBy('car_id');
+
+        $base = Car::query()
+            ->publiclyVisible()
+            ->whereHas('subCategory.mainCategory', fn ($query) => $query->where('slug', $mainCategorySlug));
+
+        $count = (clone $base)->count();
+
+        $minPrice = (clone $base)
+            ->leftJoinSub($minPrices, 'min_fares', 'min_fares.car_id', '=', 'cars.id')
+            ->min('min_fares.min_daily_price_cents');
+
+        return [
+            'count' => $count,
+            'minPriceCents' => $minPrice !== null ? (int) $minPrice : null,
+            'priceUnit' => 'day',
+        ];
+    }
+
+    private function rentCardStatsKey(?string $href): ?string
+    {
+        $normalized = strtolower(rtrim(trim((string) $href), '/'));
+
+        return match ($normalized) {
+            '/campervans' => 'campervan',
+            '/cars' => 'car',
+            '/guesthouses' => 'guesthouse',
+            default => null,
+        };
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Widgets;
 
-use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
+use App\Support\AdminTableBadgeColors;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\CanPoll;
@@ -14,11 +14,14 @@ class RecentOrdersWidget extends TableWidget
 {
     use CanPoll;
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 4;
 
     protected static ?string $heading = 'Recent orders';
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = [
+        'default' => 12,
+        '@xl' => 8,
+    ];
 
     protected string $view = 'filament.widgets.recent-orders-widget';
 
@@ -48,16 +51,8 @@ class RecentOrdersWidget extends TableWidget
                 TextColumn::make('order_status')
                     ->label('Status')
                     ->badge()
-                    ->color(function (mixed $state): string {
-                        $value = $state instanceof OrderStatus ? $state->value : (string) $state;
-
-                        return match ($value) {
-                            'confirmed' => 'success',
-                            'stand_by' => 'warning',
-                            'cancelled' => 'danger',
-                            default => 'gray',
-                        };
-                    }),
+                    ->color(fn (mixed $state): string => AdminTableBadgeColors::orderStatus($state))
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('total_cents')
                     ->label('Total')
                     ->state(fn (Order $record): string => '€'.number_format($record->total_cents / 100, 2)),

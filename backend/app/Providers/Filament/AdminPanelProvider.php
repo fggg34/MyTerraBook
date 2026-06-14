@@ -6,11 +6,13 @@ use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\ListingReviews\ListingReviewResource;
 use App\Http\Middleware\RestrictDesignerFilamentAccess;
+use App\Services\Admin\AdminBrandingService;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -38,10 +40,17 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Profile settings')
                     ->icon(Heroicon::OutlinedCog6Tooth),
             ])
-            ->brandName(config('app.name', 'MyTerraBook'))
+            ->brandName('')
+            ->brandLogo(fn (): \Illuminate\Contracts\Support\Htmlable => app(AdminBrandingService::class)->logoHtml())
+            ->brandLogoHeight('2.25rem')
+            ->favicon(fn (): ?string => app(AdminBrandingService::class)->faviconUrl())
+            ->font(
+                'Open Sans',
+                url: 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Quicksand:wght@700&display=swap',
+            )
             ->sidebarFullyCollapsibleOnDesktop()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#45a06a'),
             ])
             ->darkMode(false, true)
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
@@ -54,6 +63,11 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/GuestHouse/Pages'), for: 'App\Filament\GuestHouse\Pages')
             ->pages([
                 Dashboard::class,
+            ])
+            ->navigationGroups([
+                NavigationGroup::make('Content')
+                    ->collapsible()
+                    ->collapsed(),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->middleware([
@@ -77,7 +91,8 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
-                fn (): string => view('filament.panel.sidebar-hover-peek')->render()
+                fn (): string => view('filament.panel.admin-theme')->render()
+                    .view('filament.panel.sidebar-hover-peek')->render()
                     .view('filament.panel.user-menu-styles')->render(),
             )
             ->renderHook(

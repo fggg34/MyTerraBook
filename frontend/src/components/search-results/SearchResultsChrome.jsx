@@ -3,11 +3,19 @@ import DateRangePicker from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
 import FilterPopover from './FilterPopover'
+import FilterSidePanel from './FilterSidePanel'
 import PriceRangeFilter from './PriceRangeFilter'
 import useSearchChromeDraft from '../../hooks/useSearchChromeDraft'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { SORT_OPTIONS } from '../../data/searchResultsConfig'
 import { defaultPriceFilters, isPriceFilterActive } from '../../utils/searchPriceBounds'
+
+const SEAT_OPTIONS = [0, 2, 4, 5, 7, 9]
+const SLEEP_OPTIONS = [0, 2, 3, 4, 5, 6, 7]
+
+function countPanelFilters({ quickFilters, filters }) {
+  return quickFilters.length + (filters.minSeats > 0 ? 1 : 0) + (filters.minSleeps > 0 ? 1 : 0)
+}
 
 const PIN_ICON = (
   <svg className="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -48,6 +56,8 @@ export default function SearchResultsChrome({
   sortLabel,
   sortOptions = SORT_OPTIONS,
   quickFilterOptions = [],
+  attributeQuickFilters = [],
+  categoryFilterOptions = [],
   quickFilters,
   toggleQuick,
   clearFilters,
@@ -62,6 +72,8 @@ export default function SearchResultsChrome({
   const [openPop, setOpenPop] = useState(null)
   const priceWrapRef = useRef(null)
   const transWrapRef = useRef(null)
+  const allFiltersWrapRef = useRef(null)
+  const allFiltersMenuRef = useRef(null)
   const priceFormatter = useFormatPrice()
 
   const {
@@ -110,23 +122,46 @@ export default function SearchResultsChrome({
     return formatTransmissionLabel(filters.transmission)
   }, [filters.transmission])
 
+  const activeCategory = useMemo(
+    () => categoryFilterOptions.find((option) => quickFilters.includes(option.id)),
+    [categoryFilterOptions, quickFilters],
+  )
+
+  const inlineQuickFilters = isGuesthouse ? quickFilterOptions : attributeQuickFilters
+
+  const panelActiveCount = useMemo(
+    () => countPanelFilters({ quickFilters, filters }),
+    [quickFilters, filters],
+  )
+
+  const showAllFilters = !isGuesthouse
+
   useEffect(() => {
     if (!openPop) return undefined
 
     const onPointerDown = (event) => {
       const inPrice = priceWrapRef.current?.contains(event.target)
       const inTrans = transWrapRef.current?.contains(event.target)
+      const inAllFilters = allFiltersWrapRef.current?.contains(event.target)
+        || allFiltersMenuRef.current?.contains(event.target)
       if (openPop === 'price' && !inPrice) setOpenPop(null)
       if (openPop === 'trans' && !inTrans) setOpenPop(null)
+      if (openPop === 'all' && !inAllFilters) setOpenPop(null)
     }
 
     const onKeyDown = (event) => {
       if (event.key === 'Escape') setOpenPop(null)
     }
 
-    document.addEventListener('mousedown', onPointerDown)
+    // Defer so the same click that opened a popover does not instantly close it.
+    const attachTimer = window.setTimeout(() => {
+      document.addEventListener('mousedown', onPointerDown)
+    }, 0)
+
     document.addEventListener('keydown', onKeyDown)
+
     return () => {
+      window.clearTimeout(attachTimer)
       document.removeEventListener('mousedown', onPointerDown)
       document.removeEventListener('keydown', onKeyDown)
     }
@@ -145,9 +180,33 @@ export default function SearchResultsChrome({
     setOpenPop(null)
   }
 
+  const handleSeatsSelect = (minSeats) => {
+    setFilters((prev) => ({ ...prev, minSeats }))
+  }
+
+  const handleSleepsSelect = (minSleeps) => {
+    setFilters((prev) => ({ ...prev, minSleeps }))
+  }
+
   const togglePop = (id) => {
+    setSortOpen(false)
     setOpenPop((prev) => (prev === id ? null : id))
   }
+
+  const closeAllFilters = () => setOpenPop(null)
+
+  const allFiltersFooter = (
+    <>
+      {hasActiveFilters && (
+        <button className="filter-side-clear" type="button" onClick={clearFilters}>
+          Clear all
+        </button>
+      )}
+      <button className="filter-side-apply" type="button" onClick={closeAllFilters}>
+        Show {totalCount} {totalCount === 1 ? config.unitSingular : config.unitPlural}
+      </button>
+    </>
+  )
 
   return (
     <>
@@ -311,7 +370,6 @@ export default function SearchResultsChrome({
                   {CARET_ICON}
                 </button>
                 <FilterPopover open={openPop === 'trans'}>
-                  <p className="fpop-eyebrow">Vehicle type</p>
                   <h5>Transmission</h5>
                   <div className="fopts">
                     <button
@@ -336,8 +394,8 @@ export default function SearchResultsChrome({
               </div>
             )}
 
-            {quickFilterOptions.length > 0 && <span className="chip-div" />}
-            {quickFilterOptions.map((qf) => (
+            {inlineQuickFilters.length > 0 && <span className="chip-div" />}
+            {inlineQuickFilters.map((qf) => (
               <button
                 key={qf.id}
                 className={`chip quick ${quickFilters.includes(qf.id) ? 'active' : ''}`}
@@ -347,12 +405,156 @@ export default function SearchResultsChrome({
                 {qf.label}
               </button>
             ))}
+
+            {showAllFilters && (
+              <div className="chip-wrap chip-wrap--all-filters" ref={allFiltersWrapRef}>
+                <button
+                  className={`chip chip--filter chip--all-filters ${openPop === 'all' ? 'open' : ''} ${panelActiveCount > 0 ? 'active' : ''}`}
+                  type="button"
+                  aria-expanded={openPop === 'all'}
+                  onClick={() => togglePop('all')}
+                >
+                  <span className="chip-label">All filters</span>
+                  {panelActiveCount > 0 && <span className="chip-count">{panelActiveCount}</span>}
+                </button>
+              </div>
+            )}
+
+            {showAllFilters && (
+              <FilterSidePanel
+                open={openPop === 'all'}
+                onClose={closeAllFilters}
+                title="Filters"
+                side="right"
+                panelRef={allFiltersMenuRef}
+                footer={allFiltersFooter}
+              >
+                {categoryFilterOptions.length > 0 && (
+                  <div className="fpop-section">
+                    <h5>Vehicle type</h5>
+                    <div className="fopts">
+                      <button
+                        type="button"
+                        className={`fopt ${!activeCategory ? 'sel' : ''}`}
+                        onClick={() => { if (activeCategory) toggleQuick(activeCategory.id) }}
+                      >
+                        Any
+                      </button>
+                      {categoryFilterOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          className={`fopt ${quickFilters.includes(option.id) ? 'sel' : ''}`}
+                          onClick={() => toggleQuick(option.id)}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {attributeQuickFilters.length > 0 && (
+                  <div className="fpop-section">
+                    <h5>Features</h5>
+                    <div className="fopts">
+                      {attributeQuickFilters.map((qf) => (
+                        <button
+                          key={qf.id}
+                          type="button"
+                          className={`fopt ${quickFilters.includes(qf.id) ? 'sel' : ''}`}
+                          onClick={() => toggleQuick(qf.id)}
+                        >
+                          {qf.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="fpop-section">
+                  <h5>Transmission</h5>
+                  <div className="fopts">
+                    <button
+                      type="button"
+                      className={`fopt ${!filters.transmission ? 'sel' : ''}`}
+                      onClick={() => setFilters((prev) => ({ ...prev, transmission: '' }))}
+                    >
+                      Any
+                    </button>
+                    {transmissionOptions.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        className={`fopt ${filters.transmission === t ? 'sel' : ''}`}
+                        onClick={() => setFilters((prev) => ({ ...prev, transmission: t }))}
+                      >
+                        {formatTransmissionLabel(t)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="fpop-section">
+                  <h5>Minimum seats</h5>
+                  <div className="fopts">
+                    {SEAT_OPTIONS.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        className={`fopt ${filters.minSeats === value ? 'sel' : ''}`}
+                        onClick={() => handleSeatsSelect(value)}
+                      >
+                        {value ? `${value}+` : 'Any'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="fpop-section">
+                  <h5>Minimum sleeps</h5>
+                  <div className="fopts">
+                    {SLEEP_OPTIONS.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        className={`fopt ${filters.minSleeps === value ? 'sel' : ''}`}
+                        onClick={() => handleSleepsSelect(value)}
+                      >
+                        {value ? `${value}+` : 'Any'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="fpop-section">
+                  <h5>Price per {perLabel}</h5>
+                  <PriceRangeFilter
+                    min={priceBounds.min}
+                    max={priceBounds.max}
+                    step={priceBounds.step}
+                    valueMin={filters.minPrice}
+                    valueMax={filters.maxPrice}
+                    onChange={handlePriceChange}
+                    formatPrice={priceFormatter.format}
+                    perLabel={perLabel}
+                  />
+                  {priceActive && (
+                    <button className="fpop-reset fpop-reset--block" type="button" onClick={resetPriceFilter}>
+                      Reset range
+                    </button>
+                  )}
+                </div>
+              </FilterSidePanel>
+            )}
+
             {hasActiveFilters && (
               <button className="chip clear" type="button" onClick={clearFilters}>
                 Clear all ✕
               </button>
             )}
           </div>
+
           <div className="fb-right">
             <span className="result-count" id="resultCount">
               <b>{totalCount}</b> {totalCount === 1 ? config.unitSingular : config.unitPlural}

@@ -108,7 +108,7 @@ export function getRequestToBookConfig(bookingType, prepayPercent = 15) {
       title: isGuesthouse ? 'When is your stay?' : 'When & where is your trip?',
       subtitle: isGuesthouse
         ? 'Confirm your check-in and check-out dates. Minimum stay rules apply for this property.'
-        : 'Confirm your dates and choose your pick-up and drop-off times. Office hours are 08:00–20:00 daily — out-of-hours handover is available for a small fee.',
+        : 'Confirm your dates and choose your pick-up and drop-off times. Office hours are 08:00–20:00 daily, out-of-hours handover is available for a small fee.',
       dateStartLabel: listing.dateStartLabel,
       dateEndLabel: listing.dateEndLabel,
       rateUnit: listing.rateUnit,
@@ -125,8 +125,8 @@ export function getRequestToBookConfig(bookingType, prepayPercent = 15) {
     step2: {
       title: 'Add extras & choose your cover',
       subtitle: isGuesthouse
-        ? 'Everything below is optional. Add what you need for your stay — you can change these before check-in.'
-        : 'Everything below is optional. Add what you need for the road — you can change these right up until pick-up.',
+        ? 'Everything below is optional. Add what you need for your stay, you can change these before check-in.'
+        : 'Everything below is optional. Add what you need for the road, you can change these right up until pick-up.',
       protectionSubtitle: 'CDW included on every trip',
       addonsSubtitle: 'Optional extras',
       showProtection: isVehicle,
@@ -147,7 +147,7 @@ export function getRequestToBookConfig(bookingType, prepayPercent = 15) {
     },
     step4: {
       title: 'Payment',
-      subtitle: `Choose how you'd like to pay. We charge a ${prepayPercent}% prepayment at checkout to confirm your booking — the remaining balance is paid on pick-up or check-in.`,
+      subtitle: `Choose how you'd like to pay. We charge a ${prepayPercent}% prepayment at checkout to confirm your booking, the remaining balance is paid on pick-up or check-in.`,
       submitLabel: 'Complete Booking',
       isGuesthouse,
     },
@@ -156,10 +156,10 @@ export function getRequestToBookConfig(bookingType, prepayPercent = 15) {
         return `Guesthouse · ${item?.city || 'Iceland'}`
       }
       if (bookingType === 'campervan') {
-        return `Campervan · Sleeps ${item?.units_available || '—'}`
+        return `Campervan · Sleeps ${item?.units_available || '-'}`
       }
       const cat = item?.category?.name || 'Car'
-      const trans = item?.transmission && item.transmission !== '—' ? item.transmission : ''
+      const trans = item?.transmission && item.transmission !== '-' ? item.transmission : ''
       return trans ? `${cat} · ${trans}` : cat
     },
     backLink: (item, bt) => {
@@ -199,7 +199,7 @@ export const OOH_TIME_VALUE = '20:30'
 export const OOH_FEE_DISPLAY = '€35'
 
 export function formatOohTimeOption(feeDisplay = OOH_FEE_DISPLAY) {
-  return `${OOH_TIME_VALUE} — out of hours (+${feeDisplay})`
+  return `${OOH_TIME_VALUE}, out of hours (+${feeDisplay})`
 }
 
 export { COUNTRY_NAMES as COUNTRIES } from './countries'

@@ -95,7 +95,7 @@
   box-shadow: none;
 }
 
-/* ~25% shorter — homepage hero search fields */
+/* ~25% shorter, homepage hero search fields */
 .date-range-picker.compact .date-field {
   gap: 9px;
 }

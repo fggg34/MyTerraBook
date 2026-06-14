@@ -25,7 +25,7 @@ const listing = resolveSeo({
   pathname: '/campervans/ring-road-camper',
 })
 
-assert.match(listing.title, /Ring Road Camper — Campervan in Iceland \| MyTerraBook/)
+assert.match(listing.title, /Ring Road Camper, Campervan in Iceland \| MyTerraBook/)
 assert.match(listing.description, /Perfect for two travellers/)
 assert.equal(listing.robots, 'index')
 assert.equal(listing.canonical, buildCanonical('/campervans/ring-road-camper'))

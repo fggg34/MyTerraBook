@@ -19,8 +19,8 @@
         }
 
         .ir-global-tab[data-active="true"] {
-            background: #0f7cab;
-            border-color: #0f7cab;
+            background: #45a06a;
+            border-color: #45a06a;
             color: #ffffff;
         }
 
@@ -93,8 +93,8 @@
         }
 
         .ir-global-save {
-            border: 1px solid #0f7cab;
-            background: #0f7cab;
+            border: 1px solid #45a06a;
+            background: #45a06a;
             color: #ffffff;
             border-radius: 0.4rem;
             padding: 0.5rem 1rem;

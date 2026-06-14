@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
-use App\Enums\OrderStatus;
+use App\Support\AdminTableBadgeColors;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Actions\BulkActionGroup;
@@ -25,7 +25,7 @@ class OrdersTable
                 TextColumn::make('id')
                     ->label('ID')
                     ->badge()
-                    ->color('gray')
+                    ->color(fn (): string => AdminTableBadgeColors::neutral())
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('created_at')
@@ -66,7 +66,8 @@ class OrdersTable
                 TextColumn::make('order_status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn ($state): string => static::statusColor($state))
+                    ->color(fn (mixed $state): string => AdminTableBadgeColors::orderStatus($state))
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state))
                     ->searchable(),
                 TextColumn::make('updated_at')
                     ->dateTime()
@@ -125,17 +126,5 @@ class OrdersTable
     private static function formatMoney(int $cents, string $currency): string
     {
         return $currency.' '.number_format((int) floor($cents / 100), 0, '.', ',');
-    }
-
-    private static function statusColor(mixed $state): string
-    {
-        $value = $state instanceof OrderStatus ? $state->value : (string) $state;
-
-        return match ($value) {
-            'confirmed' => 'success',
-            'stand_by' => 'warning',
-            'cancelled' => 'danger',
-            default => 'gray',
-        };
     }
 }

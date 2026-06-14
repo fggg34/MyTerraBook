@@ -17,9 +17,9 @@ require __DIR__.'/../vendor/autoload.php';
 /**
  * The app is served under a URL prefix (e.g. /backend). Expose that prefix to Symfony as
  * the base URL so routes still match (/admin, /api/…) while request()->url() keeps the
- * prefix — required for signed-URL validation (Livewire file uploads/previews) to match the
+ * prefix , required for signed-URL validation (Livewire file uploads/previews) to match the
  * signatures generated with URL::forceRootUrl(.../backend).
- * Live servers often omit the path in APP_URL or cache a wrong .env — prefer SCRIPT_NAME.
+ * Live servers often omit the path in APP_URL or cache a wrong .env , prefer SCRIPT_NAME.
  */
 if (PHP_SAPI !== 'cli' && is_file(__DIR__.'/../.env')) {
     Dotenv::createImmutable(__DIR__.'/..')->safeLoad();
@@ -89,7 +89,7 @@ if (PHP_SAPI !== 'cli') {
             // Expose /{prefix} as the application base URL instead of removing it from
             // REQUEST_URI. Symfony derives the base path from SCRIPT_NAME (basename matches
             // the real index.php), so the path Laravel routes on still drops the prefix
-            // (/admin, /api, /livewire-…) exactly like before — BUT request()->url() keeps
+            // (/admin, /api, /livewire-…) exactly like before , BUT request()->url() keeps
             // the /{prefix} segment. That is what makes signed URLs validate: Livewire signs
             // temporary upload/preview URLs (and any signed route) with
             // URL::forceRootUrl(.../{prefix}) and validation re-hashes request()->url();

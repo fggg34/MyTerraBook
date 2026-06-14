@@ -67,9 +67,11 @@ export default function HostGuestHousesPage() {
                   <td>{item.city}</td>
                   <td><ListingStatusBadge status={item.status} /></td>
                   <td>€{item.base_price_per_night_euros}</td>
-                  <td className="host-actions" style={{ margin: 0 }}>
-                    <Link to={`/host/guesthouses/${item.id}/edit`} className="host-btn secondary">Edit</Link>
-                    <button type="button" className="host-btn danger" onClick={() => handleDelete(item.id)}>Delete</button>
+                  <td className="host-actions">
+                    <div className="host-table-actions">
+                      <Link to={`/host/guesthouses/${item.id}/edit`} className="host-btn secondary">Edit</Link>
+                      <button type="button" className="host-btn danger" onClick={() => handleDelete(item.id)}>Delete</button>
+                    </div>
                   </td>
                 </tr>
               ))

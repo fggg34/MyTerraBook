@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom'
 import { usePageContent } from '../../context/SiteContentContext'
 import useSectionReveal from '../../hooks/useSectionReveal'
 
-function QuickIcon({ type }) {
+function QuickIcon({ type, image }) {
+  if (image) {
+    return <img src={image} alt="" className="faq-quick-icon-img" aria-hidden="true" />
+  }
   const icons = {
     chat: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -164,7 +167,7 @@ export default function FaqPageContent() {
                 {quickLinks.map((link) => (
                   <Link key={link.href} to={link.href} className="faq-quick-link">
                     <span className="faq-quick-icon" aria-hidden="true">
-                      <QuickIcon type={link.icon} />
+                      <QuickIcon type={link.icon} image={link.iconImage} />
                     </span>
                     {link.label}
                     <svg className="faq-quick-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

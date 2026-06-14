@@ -136,7 +136,7 @@ function buildSleeping(house) {
 
 function buildRating(house, reviews) {
   const count = reviews?.length ?? house.listing_reviews?.length ?? 0
-  const score = house.rating != null ? String(house.rating) : count > 0 ? '5.0' : '—'
+  const score = house.rating != null ? String(house.rating) : count > 0 ? '5.0' : ','
   return {
     score,
     label: count > 0 ? 'Guest rating' : 'New listing',
@@ -150,7 +150,7 @@ export function mapGuestHouseToListing(house, listingReviews, priceFormatter) {
   const listingType = 'guesthouse'
   const images = (house.images || []).map((img, i) => ({
     url: resolveStorageUrl(img.path || house.thumbnail),
-    alt: img.caption || `${house.name} — photo ${i + 1}`,
+    alt: img.caption || `${house.name}, photo ${i + 1}`,
   }))
   if (!images.length && house.thumbnail) {
     images.push({ url: resolveStorageUrl(house.thumbnail), alt: house.name })

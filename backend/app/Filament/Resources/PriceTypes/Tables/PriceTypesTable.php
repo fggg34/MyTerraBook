@@ -21,11 +21,11 @@ class PriceTypesTable
                 TextColumn::make('attribute_label')
                     ->label('Price Attributes')
                     ->searchable()
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('taxRate.name')
                     ->label('Tax Rate')
                     ->searchable()
-                    ->placeholder('—'),
+                    ->placeholder('-'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

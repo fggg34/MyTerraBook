@@ -14,7 +14,7 @@ class SitePageSeeder extends Seeder
                 'slug' => 'about',
                 'title' => 'About MyTerraBook',
                 'eyebrow' => 'Our story',
-                'lead' => "Iceland's locally-run platform for campervans, cars, 4×4s and guesthouses — one booking, one team in Reykjavík behind it.",
+                'lead' => "Iceland's locally-run platform for campervans, cars, 4×4s and guesthouses, one booking, one team in Reykjavík behind it.",
                 'body' => <<<'HTML'
 <p>MyTerraBook started with a simple idea: travellers should be able to plan an entire Iceland trip in one place, with real people on the other end of the phone when the weather turns.</p>
 <p>We are a Reykjavík-based team working with trusted local hosts and fleet partners across the island. Every listing is hand-checked, every price is transparent, and every booking comes with gravel protection, local support, and clear cancellation terms.</p>
@@ -35,13 +35,13 @@ HTML,
                         [
                             'num' => '01',
                             'question' => 'What do I need to rent and drive in Iceland?',
-                            'answer' => "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup — that's it.",
+                            'answer' => "A full driving licence held for at least one year and a card in the main driver's name. Most vehicles ask that you're 20+, or 23+ for the larger 4×4s. Bring your licence and passport to pickup, that's it.",
                             'open' => true,
                         ],
                         [
                             'num' => '02',
                             'question' => 'Is gravel and ash damage covered?',
-                            'answer' => "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter — they're the two things that catch most travellers out on Iceland's roads.",
+                            'answer' => "Yes. Gravel protection and sand-and-ash cover are built into every booking, not sold separately at the counter, they're the two things that catch most travellers out on Iceland's roads.",
                         ],
                         [
                             'num' => '03',
@@ -101,7 +101,7 @@ HTML,
                 'lead' => 'How we collect, use, and protect your personal data.',
                 'body' => <<<'HTML'
 <h2>Data we collect</h2>
-<p>We collect information you provide when creating an account, making a booking, or contacting support — including name, email, phone, payment details, and travel dates.</p>
+<p>We collect information you provide when creating an account, making a booking, or contacting support, including name, email, phone, payment details, and travel dates.</p>
 <h2>How we use it</h2>
 <p>Your data is used to process bookings, communicate about your trip, prevent fraud, and improve our services. We share necessary details with hosts and payment providers to fulfil your booking.</p>
 <h2>Retention</h2>

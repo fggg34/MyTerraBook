@@ -19,7 +19,7 @@ const features = [
   {
     icon: Car,
     title: 'Wide Selection',
-    description: 'Economy to luxury — find the perfect car for every trip.',
+    description: 'Economy to luxury, find the perfect car for every trip.',
   },
 ]
 
