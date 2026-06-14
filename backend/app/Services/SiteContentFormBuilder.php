@@ -259,8 +259,8 @@ class SiteContentFormBuilder
             return $key;
         }
 
-        if ($isRootSection) {
-            return $key;
+        if ($isRootSection || $sectionKey === '') {
+            return (string) $key;
         }
 
         return "{$sectionKey}.{$key}";

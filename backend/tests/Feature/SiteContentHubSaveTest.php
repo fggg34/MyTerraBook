@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Data\SiteContentDefaults;
 use App\Enums\UserRole;
 use App\Filament\Pages\SiteContentHub;
 use App\Models\SiteContentPage;
 use App\Models\User;
+use App\Services\SiteContentService;
 use Filament\Schemas\Components\Component;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -143,5 +145,79 @@ class SiteContentHubSaveTest extends TestCase
 
         $this->assertSame($path, $favicon);
         $this->assertNotSame([], $favicon);
+    }
+
+    public function test_save_persists_rent_section_card_image(): void
+    {
+        Storage::fake('public');
+
+        $service = app(SiteContentService::class);
+        $defaults = SiteContentDefaults::forPage('home');
+        $baseline = $service->normalizePageContent('home', $defaults);
+        $path = 'site-content/home/rent-card.jpg';
+        Storage::disk('public')->put($path, 'fake-jpg');
+
+        $incoming = [
+            'rentSection' => [
+                'cards' => [
+                    array_replace($defaults['rentSection']['cards'][0], ['image' => [$path]]),
+                ],
+            ],
+        ];
+
+        $merged = $service->mergeSavedPageContent($baseline, $incoming);
+        $normalized = $service->normalizePageContent('home', $merged);
+
+        $this->assertSame($path, $normalized['rentSection']['cards'][0]['image'] ?? null);
+    }
+
+    public function test_save_persists_how_section_step_image(): void
+    {
+        Storage::fake('public');
+
+        $service = app(SiteContentService::class);
+        $defaults = SiteContentDefaults::forPage('home');
+        $baseline = $service->normalizePageContent('home', $defaults);
+        $path = 'site-content/home/how-step.jpg';
+        Storage::disk('public')->put($path, 'fake-jpg');
+
+        $incoming = [
+            'howSection' => [
+                'steps' => [
+                    array_replace($defaults['howSection']['steps'][0], ['image' => [$path]]),
+                ],
+            ],
+        ];
+
+        $merged = $service->mergeSavedPageContent($baseline, $incoming);
+        $normalized = $service->normalizePageContent('home', $merged);
+
+        $this->assertSame($path, $normalized['howSection']['steps'][0]['image'] ?? null);
+    }
+
+    public function test_merge_preserves_step_image_when_incoming_upload_is_empty(): void
+    {
+        $service = app(SiteContentService::class);
+        $defaults = SiteContentDefaults::forPage('home');
+        $baseline = $service->normalizePageContent('home', array_replace_recursive($defaults, [
+            'howSection' => [
+                'steps' => [
+                    array_replace($defaults['howSection']['steps'][0], ['image' => 'site-content/home/existing.jpg']),
+                ],
+            ],
+        ]));
+
+        $incoming = [
+            'howSection' => [
+                'steps' => [
+                    array_replace($defaults['howSection']['steps'][0], ['image' => []]),
+                ],
+            ],
+        ];
+
+        $merged = $service->mergeSavedPageContent($baseline, $incoming);
+        $normalized = $service->normalizePageContent('home', $merged);
+
+        $this->assertSame('site-content/home/existing.jpg', $normalized['howSection']['steps'][0]['image'] ?? null);
     }
 }

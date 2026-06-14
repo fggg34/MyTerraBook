@@ -256,6 +256,54 @@ class SiteContentApiTest extends TestCase
         $this->assertNotEmpty($response->json('reviewsSection.reviews'));
     }
 
+    public function test_homepage_rent_and_how_section_images_resolve_from_storage(): void
+    {
+        $path = 'site-content/home/custom-card.jpg';
+        \Illuminate\Support\Facades\Storage::disk('public')->put($path, 'fake-jpg');
+
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        $defaults = SiteContentDefaults::forPage('home');
+        $content = array_replace_recursive($defaults, [
+            'rentSection' => [
+                'cards' => [
+                    array_replace($defaults['rentSection']['cards'][0], ['image' => $path]),
+                ],
+            ],
+            'howSection' => [
+                'steps' => [
+                    array_replace($defaults['howSection']['steps'][0], ['image' => $path]),
+                ],
+            ],
+        ]);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => $content,
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $homeResponse = $this->getJson('/api/site-content');
+        $homeResponse->assertOk();
+        $rentImage = $homeResponse->json('data.home.rentSection.cards.0.image');
+        $howImage = $homeResponse->json('data.home.howSection.steps.0.image');
+        $this->assertStringContainsString('/storage/'.$path, (string) $rentImage);
+        $this->assertStringContainsString('/storage/'.$path, (string) $howImage);
+
+        $homepageResponse = $this->getJson('/api/homepage');
+        $homepageResponse->assertOk();
+        $this->assertStringContainsString('/storage/'.$path, (string) $homepageResponse->json('rentSection.cards.0.image'));
+        $this->assertStringContainsString('/storage/'.$path, (string) $homepageResponse->json('howSection.steps.0.image'));
+    }
+
     public function test_homepage_rent_section_returns_live_listing_stats(): void
     {
         SiteContentPage::query()->create([

@@ -22,7 +22,11 @@ function deepMerge(base, patch) {
     }
 
     if (Array.isArray(value)) {
-      result[key] = value.length ? value : result[key]
+      result[key] = value.length
+        ? value.map((item, i) =>
+            typeof item === 'object' && item !== null ? deepMerge(base?.[i] ?? {}, item) : item,
+          )
+        : result[key]
       continue
     }
 

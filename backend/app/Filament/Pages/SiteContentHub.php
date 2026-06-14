@@ -165,9 +165,11 @@ class SiteContentHub extends Page
         $defaults = SiteContentDefaults::forPage($this->activePageKey);
         $service = app(\App\Services\SiteContentService::class);
 
-        $this->data = $service->normalizePageContent(
-            $this->activePageKey,
-            array_replace_recursive($defaults, $page?->content ?? []),
+        $this->data = $service->prepareFormUploadState(
+            $service->normalizePageContent(
+                $this->activePageKey,
+                array_replace_recursive($defaults, $page?->content ?? []),
+            ),
         );
         $this->form->fill($this->data);
     }

@@ -47,4 +47,23 @@ class SiteContentServiceTest extends TestCase
         $this->assertNull($normalized['branding']['logoImage']);
         $this->assertNull($normalized['branding']['favicon']);
     }
+
+    public function test_prepare_form_upload_state_wraps_storage_paths_for_file_upload(): void
+    {
+        $service = new SiteContentService;
+
+        $prepared = $service->prepareFormUploadState([
+            'rentSection' => [
+                'cards' => [
+                    ['image' => 'site-content/home/card.jpg'],
+                ],
+            ],
+            'hero' => [
+                'backgroundImage' => '/images/homepage/hero.jpg',
+            ],
+        ]);
+
+        $this->assertSame(['site-content/home/card.jpg'], $prepared['rentSection']['cards'][0]['image']);
+        $this->assertSame('/images/homepage/hero.jpg', $prepared['hero']['backgroundImage']);
+    }
 }

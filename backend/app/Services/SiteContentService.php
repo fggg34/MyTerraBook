@@ -156,6 +156,17 @@ class SiteContentService
     }
 
     /**
+     * Filament FileUpload fields expect a list of paths; stored content uses scalars.
+     *
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    public function prepareFormUploadState(array $content): array
+    {
+        return $this->mapUploadFieldsForForm($content);
+    }
+
+    /**
      * Filament repeaters occasionally persist blank-string keys on nested rows.
      *
      * @param  array<string, mixed>  $content
@@ -315,6 +326,17 @@ class SiteContentService
                     continue;
                 }
 
+                if (
+                    ! empty($merged[$key])
+                    && is_array($merged[$key])
+                    && array_is_list($merged[$key])
+                    && array_is_list($value)
+                ) {
+                    $merged[$key] = $this->mergeSavedList($merged[$key], $value);
+
+                    continue;
+                }
+
                 $merged[$key] = $value;
 
                 continue;
@@ -340,6 +362,93 @@ class SiteContentService
     private function isMissingIncomingValue(mixed $value): bool
     {
         return $value === null || $value === [] || $value === '';
+    }
+
+    /**
+     * @param  list<mixed>  $existing
+     * @param  list<mixed>  $incoming
+     * @return list<mixed>
+     */
+    private function mergeSavedList(array $existing, array $incoming): array
+    {
+        $result = [];
+        $count = max(count($existing), count($incoming));
+
+        for ($index = 0; $index < $count; $index++) {
+            $base = $existing[$index] ?? null;
+            $patch = $incoming[$index] ?? null;
+
+            if ($patch === null) {
+                if ($base !== null) {
+                    $result[] = $base;
+                }
+
+                continue;
+            }
+
+            if (! is_array($patch)) {
+                $result[] = $patch;
+
+                continue;
+            }
+
+            if (! is_array($base)) {
+                $result[] = $patch;
+
+                continue;
+            }
+
+            $result[] = $this->mergeSavedPageContent($base, $patch);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function mapUploadFieldsForForm(array $content): array
+    {
+        $uploadKeys = [
+            'image',
+            'photo',
+            'backgroundImage',
+            'logoImage',
+            'favicon',
+            'houseImage',
+            'vanImage',
+            'iconImage',
+            'featured_image',
+            'ogImage',
+            'defaultOgImage',
+        ];
+
+        foreach ($content as $key => $value) {
+            if (
+                in_array($key, $uploadKeys, true)
+                && is_string($value)
+                && $value !== ''
+                && ! str_starts_with($value, '/images/')
+            ) {
+                $content[$key] = [$value];
+
+                continue;
+            }
+
+            if (! is_array($value)) {
+                continue;
+            }
+
+            $content[$key] = array_is_list($value)
+                ? array_map(
+                    fn (mixed $item): mixed => is_array($item) ? $this->mapUploadFieldsForForm($item) : $item,
+                    $value,
+                )
+                : $this->mapUploadFieldsForForm($value);
+        }
+
+        return $content;
     }
 
     /**
