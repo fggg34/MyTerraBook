@@ -6,8 +6,6 @@ import useBlogPosts from '../hooks/useBlogPosts'
 import usePageSeo from '../hooks/usePageSeo'
 import '../styles/content-pages.css'
 
-const FALLBACK_IMAGE = '/images/homepage/hero.jpg'
-
 function formatDate(iso) {
   if (!iso) return null
   try {
@@ -54,14 +52,14 @@ export default function GoodToKnowPostPage() {
     )
   }
 
-  const heroImage = post.featured_image || FALLBACK_IMAGE
+  const showCover = post.aurora || post.featured_image
   const publishedLabel = formatDate(post.published_at)
 
   return (
     <>
       <PageHead {...seo} />
       <div className="content-page gtk-article-page">
-      <article className="gtk-article">
+      <article className={`gtk-article ${showCover ? '' : 'gtk-article--text'}`}>
         <div className="wrap gtk-article-wrap">
           <Link to="/good-to-know" className="gtk-article-back">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -82,15 +80,17 @@ export default function GoodToKnowPostPage() {
             )}
           </header>
 
-          <figure className="gtk-article-cover">
-            {post.aurora ? (
-              <div className="gtk-card-aurora gtk-article-aurora" aria-hidden="true">
-                <span className="stars" />
-              </div>
-            ) : (
-              <img src={heroImage} alt={post.image_alt || post.title} />
-            )}
-          </figure>
+          {showCover && (
+            <figure className="gtk-article-cover">
+              {post.aurora ? (
+                <div className="gtk-card-aurora gtk-article-aurora" aria-hidden="true">
+                  <span className="stars" />
+                </div>
+              ) : (
+                <img src={post.featured_image} alt={post.image_alt || post.title} />
+              )}
+            </figure>
+          )}
 
           <div className="gtk-article-content">
             {post.excerpt && <p className="gtk-article-lead">{post.excerpt}</p>}

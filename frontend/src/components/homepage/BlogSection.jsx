@@ -1,19 +1,24 @@
 import { Link } from 'react-router-dom'
 import useBlogBentoEffects from '../../hooks/useBlogBentoEffects'
 
-const FALLBACK_IMAGE = '/images/homepage/hero.jpg'
+function hasCardMedia(post) {
+  return post.aurora || post.image
+}
 
 function BlogCardLink({ post, children }) {
   if (post.slug) {
     return (
-      <Link to={`/good-to-know/${post.slug}`} className={`bcard ${post.featured ? 'featured' : ''}`}>
+      <Link
+        to={`/good-to-know/${post.slug}`}
+        className={`bcard ${post.featured ? 'featured' : ''} ${hasCardMedia(post) ? '' : 'bcard--text'}`}
+      >
         {children}
       </Link>
     )
   }
 
   return (
-    <article className={`bcard ${post.featured ? 'featured' : ''}`}>
+    <article className={`bcard ${post.featured ? 'featured' : ''} ${hasCardMedia(post) ? '' : 'bcard--text'}`}>
       {children}
     </article>
   )
@@ -49,16 +54,21 @@ export default function BlogSection({ heading, subtitle, allLabel, allHref, post
           {allLabel && allLink}
         </div>
         <div className="bento" id="bento">
-          {posts.map((post) => (
+          {posts.map((post) => {
+            const showMedia = hasCardMedia(post)
+
+            return (
             <BlogCardLink key={post.slug || post.title} post={post}>
-              {post.aurora ? (
-                <div className="bcard-aurora">
-                  <span className="stars" />
-                </div>
-              ) : (
-                <div className="bcard-media">
-                  <img src={post.image || FALLBACK_IMAGE} alt={post.imageAlt || post.title} />
-                </div>
+              {showMedia && (
+                post.aurora ? (
+                  <div className="bcard-aurora">
+                    <span className="stars" />
+                  </div>
+                ) : (
+                  <div className="bcard-media">
+                    <img src={post.image} alt={post.imageAlt || post.title} />
+                  </div>
+                )
               )}
               <span className="bcard-glow" />
               <span className="bcard-read" aria-hidden="true">
@@ -67,6 +77,12 @@ export default function BlogSection({ heading, subtitle, allLabel, allHref, post
                 </svg>
               </span>
               <div className="bcard-body">
+                {!showMedia && post.kicker && (
+                  <span className="bcard-kicker">
+                    <span className="k-dot" aria-hidden="true" />
+                    {post.kicker}
+                  </span>
+                )}
                 <h3>{post.title}</h3>
                 {post.description && <p className="bcard-desc">{post.description}</p>}
                 {post.meta && (
@@ -82,7 +98,8 @@ export default function BlogSection({ heading, subtitle, allLabel, allHref, post
                 )}
               </div>
             </BlogCardLink>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

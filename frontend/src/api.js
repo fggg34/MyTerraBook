@@ -22,13 +22,41 @@ const API_BASE_URL = resolveApiBaseUrl()
  * Build a public URL for a path stored via Filament disk (e.g. `cars/photo.jpg`).
  * Absolute URLs are returned unchanged.
  */
-export function resolveStorageUrl(path) {
+function normalizeStoragePath(path) {
   if (path == null || path === '') return ''
-  const p = String(path).trim()
+  if (Array.isArray(path)) {
+    const first = path.find((item) => item != null && item !== '')
+    return first == null ? '' : String(first).trim()
+  }
+  return String(path).trim()
+}
+
+export function resolveStorageUrl(path) {
+  const p = normalizeStoragePath(path)
   if (!p) return ''
-  if (/^https?:\/\//i.test(p)) return p
+  // Bundled frontend assets (Vite public folder)
+  if (p.startsWith('/images/')) return p
   const appBase = resolveApiBaseUrl().replace(/\/api\/?$/i, '')
+  // Rewrite API absolute storage URLs to the current app base (fixes wrong APP_URL on live).
+  if (/^https?:\/\//i.test(p)) {
+    const storageMatch = p.match(/\/storage\/(.+)$/i)
+    if (storageMatch) {
+      return `${appBase}/storage/${storageMatch[1]}`
+    }
+    return p
+  }
+  if (p.startsWith('/storage/')) {
+    return `${appBase}${p}`
+  }
   return `${appBase}/storage/${p.replace(/^\/+/, '')}`
+}
+
+/** Resolve a CMS upload path, falling back to bundled defaults when empty. */
+export function resolveCmsImage(value, fallback) {
+  const merged = value == null || value === '' ? fallback : value
+  if (merged == null || merged === '') return fallback || ''
+  const resolved = resolveStorageUrl(merged)
+  return resolved || fallback || ''
 }
 
 /**

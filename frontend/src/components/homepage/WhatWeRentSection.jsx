@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { resolveCmsImage } from '../../api'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { formatRentListingStats } from '../../utils/formatRentListingStats'
 
@@ -17,6 +18,12 @@ function CardLink({ href, className, children }) {
     </a>
   )
 }
+
+const CARD_IMAGE_FALLBACKS = [
+  '/images/homepage/cardcamper.jpg',
+  '/images/homepage/cardcar.jpg',
+  '/images/homepage/cardhouse.jpg',
+]
 
 export default function WhatWeRentSection({ heading, subtitle, cards = [] }) {
   const priceFormatter = useFormatPrice()
@@ -37,9 +44,12 @@ export default function WhatWeRentSection({ heading, subtitle, cards = [] }) {
           {subtitle && <p className="sub">{subtitle}</p>}
         </div>
         <div className="cards">
-          {enrichedCards.map((card) => (
+          {enrichedCards.map((card, index) => (
             <CardLink key={card.name} href={card.href} className="rcard">
-              <img src={card.image || '/images/homepage/cardcamper.jpg'} alt={card.alt || card.name} />
+              <img
+                src={resolveCmsImage(card.image, CARD_IMAGE_FALLBACKS[index])}
+                alt={card.alt || card.name}
+              />
               <div className="meta">
                 {card.listingLabel && <span className="listings">{card.listingLabel}</span>}
                 <h3>{card.name}</h3>

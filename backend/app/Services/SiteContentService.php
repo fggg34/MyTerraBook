@@ -220,7 +220,67 @@ class SiteContentService
             }
         }
 
+        foreach ([
+            ['rentSection', 'cards', 'image'],
+            ['howSection', 'steps', 'image'],
+            ['staySection', 'cards', 'image'],
+            ['blogSection', 'posts', 'image'],
+            ['hostCtaSection', null, 'houseImage'],
+            ['hostCtaSection', null, 'vanImage'],
+            ['whySection', null, 'photo'],
+        ] as [$section, $listKey, $fieldKey]) {
+            $content = $this->normalizeNestedUploadField($content, $section, $listKey, $fieldKey);
+        }
+
         return $content;
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function normalizeNestedUploadField(array $content, string $section, ?string $listKey, string $fieldKey): array
+    {
+        if (! isset($content[$section]) || ! is_array($content[$section])) {
+            return $content;
+        }
+
+        if ($listKey === null) {
+            $value = $content[$section][$fieldKey] ?? null;
+            $content[$section][$fieldKey] = $this->normalizeUploadValue($value);
+
+            return $content;
+        }
+
+        $items = $content[$section][$listKey] ?? null;
+        if (! is_array($items)) {
+            return $content;
+        }
+
+        foreach ($items as $index => $item) {
+            if (! is_array($item) || ! array_key_exists($fieldKey, $item)) {
+                continue;
+            }
+
+            $content[$section][$listKey][$index][$fieldKey] = $this->normalizeUploadValue($item[$fieldKey]);
+        }
+
+        return $content;
+    }
+
+    private function normalizeUploadValue(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            $first = reset($value);
+
+            return is_string($first) && $first !== '' ? $first : null;
+        }
+
+        if ($value === '') {
+            return null;
+        }
+
+        return $value;
     }
 
     /**

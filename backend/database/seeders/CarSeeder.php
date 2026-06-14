@@ -18,6 +18,8 @@ use Illuminate\Database\Seeder;
 
 class CarSeeder extends Seeder
 {
+    private const COLORS = ['White', 'Black', 'Silver', 'Blue', 'Red', 'Grey'];
+
     /** @var list<array{0: string, 1: string, 2: int, 3: string, 4: string, 5: string, 6: int}> */
     private array $catalog = [
         ['Toyota', 'Corolla', 2022, 'Economy', 'automatic', 'hybrid', 3500],
@@ -50,18 +52,19 @@ class CarSeeder extends Seeder
         $plusPriceType = PriceType::query()->where('slug', 'plus')->firstOrFail();
         $maxPriceType = PriceType::query()->where('slug', 'max')->firstOrFail();
 
-        foreach ($this->catalog as [$make, $model, $year, $categoryName, $transmission, $fuel, $dailyRateCents]) {
+        foreach ($this->catalog as $index => [$make, $model, $year, $categoryName, $transmission, $fuel, $dailyRateCents]) {
             $name = "{$make} {$model} {$year}";
             $category = $categories->get($categoryName) ?? $categories->first();
+            $unitsAvailable = ($index % 3) + 1;
 
             $car = Car::query()->firstOrCreate(
                 ['name' => $name],
                 [
                     'sub_category_id' => $category->id,
-                    'description' => fake()->paragraph(2),
+                    'description' => "Reliable {$make} {$model} ({$year}) for exploring Iceland. {$transmission} transmission, {$fuel} fuel.",
                     'transmission' => $transmission,
                     'fuel_type' => $fuel,
-                    'units_available' => fake()->numberBetween(1, 3),
+                    'units_available' => $unitsAvailable,
                     'is_active' => true,
                 ]
             );
@@ -140,12 +143,12 @@ class CarSeeder extends Seeder
 
                 CarUnitDistinctiveValue::query()->firstOrCreate(
                     ['car_unit_id' => $unit->id, 'car_distinctive_feature_definition_id' => $plateDef->id],
-                    ['value' => strtoupper(fake()->bothify('??-###-??'))]
+                    ['value' => sprintf('IS-%03d-%02d', $car->id, $i + 1)]
                 );
 
                 CarUnitDistinctiveValue::query()->firstOrCreate(
                     ['car_unit_id' => $unit->id, 'car_distinctive_feature_definition_id' => $colorDef->id],
-                    ['value' => fake()->randomElement(['White', 'Black', 'Silver', 'Blue', 'Red', 'Grey'])]
+                    ['value' => self::COLORS[($index + $i) % count(self::COLORS)]]
                 );
             }
         }

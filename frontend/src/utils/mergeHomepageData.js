@@ -1,18 +1,32 @@
+import { resolveCmsImage, resolveStorageUrl } from '../api'
 import { defaultHomepageData } from '../data/defaultHomepageData'
 import { normalizeHomepageHref, normalizeLinkList } from './normalizeHomepageHref'
-
-function mergeImages(value, fallback) {
-  if (value === null || value === undefined || value === '') return fallback
-  return value
-}
 
 function mergeCards(cards, fallbackCards) {
   if (!Array.isArray(cards) || !cards.length) return fallbackCards
   return cards.map((card, index) => ({
     ...fallbackCards[index],
     ...card,
-    image: mergeImages(card.image, fallbackCards[index]?.image),
+    image: resolveCmsImage(card.image, fallbackCards[index]?.image),
     href: normalizeHomepageHref(card.href ?? fallbackCards[index]?.href),
+  }))
+}
+
+function mergeSteps(steps, fallbackSteps) {
+  if (!Array.isArray(steps) || !steps.length) return fallbackSteps
+  return steps.map((step, index) => ({
+    ...fallbackSteps[index],
+    ...step,
+    image: resolveCmsImage(step.image, fallbackSteps[index]?.image),
+  }))
+}
+
+function mergeTrustItems(items, fallbackItems) {
+  if (!Array.isArray(items) || !items.length) return fallbackItems
+  return items.map((item, index) => ({
+    ...fallbackItems[index],
+    ...item,
+    iconImage: item.iconImage ? resolveStorageUrl(item.iconImage) : fallbackItems[index]?.iconImage,
   }))
 }
 
@@ -46,7 +60,7 @@ function mapFeaturedBlogPost(post) {
     description: post.excerpt,
     meta: post.read_time,
     kicker: post.kicker,
-    image: post.featured_image,
+    image: resolveCmsImage(post.featured_image, null),
     imageAlt: post.image_alt,
     aurora: post.aurora,
   }
@@ -58,7 +72,7 @@ export function mergeHomepageData(apiData = {}) {
   const hero = {
     ...defaults.hero,
     ...apiData.hero,
-    backgroundImage: mergeImages(apiData.hero?.backgroundImage, defaults.hero.backgroundImage),
+    backgroundImage: resolveCmsImage(apiData.hero?.backgroundImage, defaults.hero.backgroundImage),
     footerLinkHref: normalizeHomepageHref(apiData.hero?.footerLinkHref ?? defaults.hero.footerLinkHref),
   }
 
@@ -71,7 +85,7 @@ export function mergeHomepageData(apiData = {}) {
   const whySection = {
     ...defaults.whySection,
     ...apiData.whySection,
-    photo: mergeImages(apiData.whySection?.photo, defaults.whySection.photo),
+    photo: resolveCmsImage(apiData.whySection?.photo, defaults.whySection.photo),
     badge: {
       ...defaults.whySection.badge,
       ...apiData.whySection?.badge,
@@ -116,6 +130,8 @@ export function mergeHomepageData(apiData = {}) {
   const hostCtaSection = {
     ...defaults.hostCtaSection,
     ...apiData.hostCtaSection,
+    houseImage: resolveCmsImage(apiData.hostCtaSection?.houseImage, defaults.hostCtaSection.houseImage),
+    vanImage: resolveCmsImage(apiData.hostCtaSection?.vanImage, defaults.hostCtaSection.vanImage),
     primaryHref: normalizeHomepageHref(
       apiData.hostCtaSection?.primaryHref ?? defaults.hostCtaSection.primaryHref,
     ),
@@ -144,11 +160,15 @@ export function mergeHomepageData(apiData = {}) {
     topbar,
     header,
     hero,
-    trustItems: apiData.trustItems?.length ? apiData.trustItems : defaults.trustItems,
+    trustItems: mergeTrustItems(apiData.trustItems, defaults.trustItems),
     rentSection,
     whySection,
     picksSection,
-    howSection: { ...defaults.howSection, ...apiData.howSection },
+    howSection: {
+      ...defaults.howSection,
+      ...apiData.howSection,
+      steps: mergeSteps(apiData.howSection?.steps, defaults.howSection.steps),
+    },
     staySection,
     blogSection: {
       ...defaults.blogSection,
@@ -171,7 +191,7 @@ export function mergeHomepageData(apiData = {}) {
     newsSection: {
       ...defaults.newsSection,
       ...apiData.newsSection,
-      backgroundImage: mergeImages(
+      backgroundImage: resolveCmsImage(
         apiData.newsSection?.backgroundImage,
         defaults.newsSection.backgroundImage,
       ),

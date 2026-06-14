@@ -60,7 +60,7 @@ export default function useHostCtaEffects(sectionRef) {
       const vh = window.innerHeight || 1
       const prog = Math.max(-1, Math.min(1, (rect.top + rect.height / 2 - vh / 2) / vh))
       if (photoImg) photoImg.style.setProperty('--ph-par', `${(prog * -46).toFixed(1)}px`)
-      if (vanImg) vanImg.style.setProperty('--van-par', `${(prog * 26).toFixed(1)}px`)
+      if (vanImg) vanImg.style.setProperty('--van-par', `${(prog * 16).toFixed(1)}px`)
     }
 
     const onParallaxScroll = () => {

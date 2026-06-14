@@ -1,27 +1,32 @@
 import { Link } from 'react-router-dom'
 import { usePageContent } from '../../context/SiteContentContext'
 
-const FALLBACK_IMAGE = '/images/homepage/hero.jpg'
+function hasCardMedia(post) {
+  return post.aurora || post.featured_image
+}
 
 function ArticleCard({ post, featured = false }) {
-  const image = post.featured_image || FALLBACK_IMAGE
+  const showMedia = hasCardMedia(post)
 
   return (
     <Link
       to={`/good-to-know/${post.slug}`}
-      className={`gtk-card ${featured ? 'gtk-card--featured' : ''}`}
+      className={`gtk-card ${featured ? 'gtk-card--featured' : ''} ${showMedia ? '' : 'gtk-card--text'}`}
     >
-      <div className="gtk-card-media">
-        {post.aurora ? (
-          <div className="gtk-card-aurora" aria-hidden="true">
-            <span className="stars" />
-          </div>
-        ) : (
-          <img src={image} alt={post.image_alt || post.title} loading="lazy" />
-        )}
-        {post.kicker && <span className="gtk-card-tag">{post.kicker}</span>}
-      </div>
+      {showMedia && (
+        <div className="gtk-card-media">
+          {post.aurora ? (
+            <div className="gtk-card-aurora" aria-hidden="true">
+              <span className="stars" />
+            </div>
+          ) : (
+            <img src={post.featured_image} alt={post.image_alt || post.title} loading="lazy" />
+          )}
+          {post.kicker && <span className="gtk-card-tag">{post.kicker}</span>}
+        </div>
+      )}
       <div className="gtk-card-body">
+        {!showMedia && post.kicker && <span className="gtk-card-kicker">{post.kicker}</span>}
         <h3>{post.title}</h3>
         {post.excerpt && <p className="gtk-card-excerpt">{post.excerpt}</p>}
         <div className="gtk-card-foot">
