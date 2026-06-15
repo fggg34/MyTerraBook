@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Car, Download, Home, Tent } from 'lucide-react'
 import ClientHistoryCard from '../../components/client/ClientHistoryCard'
-import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { api } from '../../api'
 import { getMeHistory, getMeHistoryExportUrl } from '../../api/me'
 import { usePageContent } from '../../context/SiteContentContext'
@@ -77,9 +76,7 @@ export default function ClientHistoryPage() {
     }
   }
 
-  if (loading) return <PageLoader message="Loading your trips…" />
-
-  if (error) {
+  if (error && !loading) {
     return (
       <div className="client-empty">
         <p>{error}</p>
@@ -162,7 +159,7 @@ export default function ClientHistoryPage() {
         </div>
       </div>
 
-      {!hasItems ? (
+      {!loading && !hasItems ? (
         <div className="client-empty">
           <div className="client-empty-icon">
             <Car size={28} />

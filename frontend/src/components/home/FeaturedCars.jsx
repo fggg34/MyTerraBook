@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
 import CarCard from '../cars/CarCard'
-import { CarGridSkeleton } from '../ui/Skeleton'
 
 export default function FeaturedCars() {
   const [cars, setCars] = useState([])
@@ -39,9 +38,7 @@ export default function FeaturedCars() {
         </div>
 
         <div className="mt-10">
-          {loading ? (
-            <CarGridSkeleton count={6} />
-          ) : (
+          {!loading && (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {cars.map((car) => (
                 <CarCard

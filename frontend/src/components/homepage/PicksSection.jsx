@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import { usePicksListings } from '../../hooks/useHomepageListings'
 import ProductCard from './ProductCard'
 
@@ -19,7 +20,6 @@ function SectionLink({ href, className, children }) {
 }
 
 export default function PicksSection({ heading, tabs = [] }) {
-  const trackRef = useRef(null)
   const { items, loading } = usePicksListings()
   const tabList = useMemo(() => {
     const availableTabs = tabs.filter((tab) => (items[tab.id] || []).length > 0)
@@ -28,20 +28,13 @@ export default function PicksSection({ heading, tabs = [] }) {
   const [activeTab, setActiveTab] = useState(tabList[0]?.id || 'camper')
   const activeItems = items[activeTab] || []
   const activeTabMeta = tabList.find((t) => t.id === activeTab) || tabList[0]
+  const { trackRef, scroll, atStart, atEnd } = useHorizontalCarousel({ itemCount: activeItems.length })
 
   useEffect(() => {
     if (!tabList.some((tab) => tab.id === activeTab)) {
       setActiveTab(tabList[0]?.id || 'camper')
     }
   }, [activeTab, tabList])
-
-  const scroll = (direction) => {
-    const track = trackRef.current
-    if (!track) return
-    const card = track.querySelector('.pcard')
-    const step = card ? card.getBoundingClientRect().width + 24 : 360
-    track.scrollBy({ left: direction * step, behavior: 'smooth' })
-  }
 
   return (
     <section className="picks">
@@ -63,23 +56,21 @@ export default function PicksSection({ heading, tabs = [] }) {
         </div>
 
         <div className="picks-panel">
-          <button className="carousel-nav prev" type="button" aria-label="Previous" onClick={() => scroll(-1)}>
+          <button className="carousel-nav prev" type="button" aria-label="Previous" disabled={atStart} onClick={() => scroll(-1)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 6l-6 6 6 6" />
             </svg>
           </button>
           <div className="track" ref={trackRef}>
-            {loading ? (
-              <p className="picks-empty" role="status">Loading listings…</p>
-            ) : activeItems.length ? (
+            {activeItems.length ? (
               activeItems.map((item) => (
                 <ProductCard key={item.id || item.name} {...item} />
               ))
-            ) : (
+            ) : !loading ? (
               <p className="picks-empty" role="status">No listings available yet.</p>
-            )}
+            ) : null}
           </div>
-          <button className="carousel-nav next" type="button" aria-label="Next" onClick={() => scroll(1)}>
+          <button className="carousel-nav next" type="button" aria-label="Next" disabled={atEnd} onClick={() => scroll(1)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>

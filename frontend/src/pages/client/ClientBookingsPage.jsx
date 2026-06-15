@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Car } from 'lucide-react'
 import ClientBookingCard from '../../components/client/ClientBookingCard'
-import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { usePageContent } from '../../context/SiteContentContext'
 import { getMeOrders } from '../../api/me'
 
@@ -19,9 +18,7 @@ export default function ClientBookingsPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <PageLoader message="Loading your bookings…" />
-
-  if (error) {
+  if (error && !loading) {
     return (
       <div className="client-empty">
         <p>{error}</p>
@@ -36,7 +33,7 @@ export default function ClientBookingsPage() {
         <p>Car and campervan rentals you have booked through MyTerraBook.</p>
       </div>
 
-      {orders.length === 0 ? (
+      {!loading && orders.length === 0 ? (
         <div className="client-empty">
           <div className="client-empty-icon">
             <Car size={28} />

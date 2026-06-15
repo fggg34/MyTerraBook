@@ -21,7 +21,6 @@ export const LISTING_TYPES = {
       { id: 'details', label: 'Details' },
       { id: 'amenities', label: 'Amenities' },
       { id: 'conditions', label: 'Rental conditions' },
-      { id: 'sleeping', label: 'Sleeping arrangement' },
       { id: 'addons', label: 'Host add-ons' },
     ],
     trustPoints: [
@@ -94,8 +93,7 @@ export const LISTING_TYPES = {
       { id: 'details', label: 'Details' },
       { id: 'amenities', label: 'Amenities' },
       { id: 'conditions', label: 'House rules' },
-      { id: 'sleeping', label: 'Rooms & beds' },
-      { id: 'addons', label: 'Extras' },
+      { id: 'room_details', label: 'Room details' },
     ],
     trustPoints: [
       { html: '<b>Verified hosts</b> along the Ring Road route' },

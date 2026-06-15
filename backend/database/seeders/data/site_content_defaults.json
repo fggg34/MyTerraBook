@@ -1556,10 +1556,6 @@
         "label": "Rental conditions"
       },
       {
-        "id": "sleeping",
-        "label": "Sleeping arrangement"
-      },
-      {
         "id": "addons",
         "label": "Host add-ons"
       }
@@ -1701,10 +1697,6 @@
       {
         "id": "conditions",
         "label": "House rules"
-      },
-      {
-        "id": "sleeping",
-        "label": "Rooms & beds"
       },
       {
         "id": "addons",

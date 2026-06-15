@@ -74,6 +74,17 @@ export function guideToElement(el, focusEl) {
   }
 }
 
+export function parseRentalOptionIds(searchParams) {
+  const raw = searchParams.getAll('rental_option_ids')
+  const ids = raw.flatMap((value) =>
+    String(value)
+      .split(',')
+      .map((part) => Number(part.trim()))
+      .filter((id) => Number.isInteger(id) && id > 0),
+  )
+  return [...new Set(ids)]
+}
+
 export function groupCardNumber(v) {
   const digits = v.replace(/\D/g, '').slice(0, 16)
   return digits.replace(/(.{4})/g, '$1 ').trim()

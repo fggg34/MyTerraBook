@@ -234,6 +234,12 @@ export default function BookingForm({
 export function buildCheckoutParams(form) {
   const params = new URLSearchParams()
   Object.entries(form).forEach(([k, v]) => {
+    if (Array.isArray(v)) {
+      v.forEach((item) => {
+        if (item != null && item !== '') params.append(k, String(item))
+      })
+      return
+    }
     if (v) params.set(k, String(v))
   })
   return params.toString()

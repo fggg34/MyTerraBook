@@ -1,7 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { api, resolveCmsImage } from '../../api'
+import { useSiteLayout } from '../../context/SiteLayoutContext'
 import { usePageContent } from '../../context/SiteContentContext'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
 import useSectionReveal from '../../hooks/useSectionReveal'
+import { formatRentListingStats } from '../../utils/formatRentListingStats'
+import { mergeHomepageData } from '../../utils/mergeHomepageData'
 
 const FALLBACK_IMAGES = {
   hero: '/images/homepage/why-photo.jpg',
@@ -51,9 +56,38 @@ function PillarIcon({ type, image }) {
 
 export default function AboutPageContent() {
   const { page } = usePageContent('about')
+  const { siteData } = useSiteLayout()
+  const priceFormatter = useFormatPrice()
+  const [homepageData, setHomepageData] = useState(null)
   const storyRef = useRef(null)
   const valuesRef = useRef(null)
   const offerRef = useRef(null)
+
+  useEffect(() => {
+    api
+      .get('/homepage')
+      .then((res) => setHomepageData(res.data || null))
+      .catch(() => setHomepageData(null))
+  }, [])
+
+  const rentSection = useMemo(
+    () => mergeHomepageData({ ...siteData, ...homepageData }).rentSection ?? {},
+    [siteData, homepageData],
+  )
+
+  const offerCards = useMemo(() => {
+    const cards = rentSection.cards ?? []
+    const fallbacks = [FALLBACK_IMAGES.camper, FALLBACK_IMAGES.car, FALLBACK_IMAGES.house]
+    return cards.map((card, index) => ({
+      href: card.href,
+      image: resolveCmsImage(card.image, fallbacks[index % fallbacks.length]),
+      label: card.name,
+      tag: card.tagline,
+      listingLabel: card.listingStats
+        ? formatRentListingStats(card.listingStats, priceFormatter)
+        : null,
+    }))
+  }, [rentSection.cards, priceFormatter])
 
   useSectionReveal(storyRef, { revealDoneMs: 1400, threshold: 0.1 })
   useSectionReveal(valuesRef, { revealDoneMs: 1200, threshold: 0.12 })
@@ -65,7 +99,6 @@ export default function AboutPageContent() {
   const offeringsSection = page.offeringsSection ?? {}
   const stats = page.stats ?? []
   const pillars = page.pillars ?? []
-  const offerings = page.offerings ?? []
   const cta = page.cta ?? {}
   const paragraphs = parseParagraphs(page.body)
   const chapterImages = [FALLBACK_IMAGES.camper, FALLBACK_IMAGES.car, FALLBACK_IMAGES.house]
@@ -193,9 +226,6 @@ export default function AboutPageContent() {
                       alt=""
                       loading="lazy"
                     />
-                    <span className="about-chapter-num" aria-hidden="true">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
                   </div>
                   <div className="about-chapter-body">
                     <p>{text}</p>
@@ -238,19 +268,22 @@ export default function AboutPageContent() {
             {offeringsSection.heading && <h2>{offeringsSection.heading}</h2>}
           </header>
           <div className="about-offer-grid">
-            {offerings.map((item, index) => (
+            {offerCards.map((item, index) => (
               <Link
-                key={item.href}
+                key={item.href || item.label}
                 to={item.href}
                 className="about-offer-card about-rise"
                 style={{ '--d': `${0.06 + index * 0.08}s` }}
               >
                 <div className="about-offer-media">
-                  <img src={item.image || chapterImages[index % chapterImages.length]} alt="" loading="lazy" />
+                  <img src={item.image} alt="" loading="lazy" />
                 </div>
                 <div className="about-offer-body">
-                  <span className="about-offer-tag">{item.tag}</span>
+                  {item.listingLabel && (
+                    <span className="about-offer-listings">{item.listingLabel}</span>
+                  )}
                   <h3>{item.label}</h3>
+                  {item.tag && <span className="about-offer-tag">{item.tag}</span>}
                   <span className="about-offer-link">
                     Browse listings
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Home } from 'lucide-react'
 import ClientStayCard from '../../components/client/ClientStayCard'
-import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { usePageContent } from '../../context/SiteContentContext'
 import { useToast } from '../../context/ToastContext'
 import { cancelMeGuestHouseBooking, getMeGuestHouseBookings } from '../../api/me'
@@ -45,9 +44,7 @@ export default function ClientStaysPage() {
     }
   }
 
-  if (loading) return <PageLoader message="Loading your stays…" />
-
-  if (error) {
+  if (error && !loading) {
     return (
       <div className="client-empty">
         <p>{error}</p>
@@ -62,7 +59,7 @@ export default function ClientStaysPage() {
         <p>Guesthouse reservations for your Iceland trip.</p>
       </div>
 
-      {bookings.length === 0 ? (
+      {!loading && bookings.length === 0 ? (
         <div className="client-empty">
           <div className="client-empty-icon">
             <Home size={28} />

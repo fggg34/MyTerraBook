@@ -111,7 +111,7 @@ export default function HostReservationsCalendar({
               }}
             >
               Vehicles
-              {!loading && <span className="host-calendar-tab-count">{carBookings.length}</span>}
+              <span className="host-calendar-tab-count">{carBookings.length}</span>
             </button>
             <button
               type="button"
@@ -124,7 +124,7 @@ export default function HostReservationsCalendar({
               }}
             >
               Guesthouses
-              {!loading && <span className="host-calendar-tab-count">{stayBookings.length}</span>}
+              <span className="host-calendar-tab-count">{stayBookings.length}</span>
             </button>
           </div>
         </div>
@@ -165,55 +165,47 @@ export default function HostReservationsCalendar({
       </div>
 
       <div className="host-calendar-body">
-        <div className={`host-calendar-main ${loading ? 'is-loading' : ''}`}>
-          {loading ? (
-            <div className="host-calendar-skeleton" aria-hidden />
-          ) : (
-            <>
-              <p className="host-calendar-meta">
-                {monthBusyCount} booked day{monthBusyCount === 1 ? '' : 's'} this month
-              </p>
-              <div className={`host-calendar-grid ${tab}`}>
-                <div className="host-calendar-weekdays">
-                  {WEEKDAYS.map((day) => (
-                    <span key={day}>{day}</span>
-                  ))}
-                </div>
-                <div className="host-calendar-cells">
-                  {cells.map((cell) => {
-                    const count = (dayMap.get(cell.key) || []).length
-                    const isSelected = selectedKey === cell.key
-                    const isToday = cell.key === todayKey
-                    return (
-                      <button
-                        key={cell.key}
-                        type="button"
-                        className={[
-                          'host-calendar-cell',
-                          !cell.inMonth ? 'out' : '',
-                          count > 0 ? 'busy' : '',
-                          isSelected ? 'selected' : '',
-                          isToday ? 'today' : '',
-                        ].filter(Boolean).join(' ')}
-                        onClick={() => setSelectedKey(cell.key)}
-                        title={count > 0 ? `${count} reservation${count === 1 ? '' : 's'}` : undefined}
-                      >
-                        {cell.day}
-                        {count > 0 && <i className="host-calendar-dot" />}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </>
-          )}
+        <div className="host-calendar-main">
+          <p className="host-calendar-meta">
+            {monthBusyCount} booked day{monthBusyCount === 1 ? '' : 's'} this month
+          </p>
+          <div className={`host-calendar-grid ${tab}`}>
+            <div className="host-calendar-weekdays">
+              {WEEKDAYS.map((day) => (
+                <span key={day}>{day}</span>
+              ))}
+            </div>
+            <div className="host-calendar-cells">
+              {cells.map((cell) => {
+                const count = (dayMap.get(cell.key) || []).length
+                const isSelected = selectedKey === cell.key
+                const isToday = cell.key === todayKey
+                return (
+                  <button
+                    key={cell.key}
+                    type="button"
+                    className={[
+                      'host-calendar-cell',
+                      !cell.inMonth ? 'out' : '',
+                      count > 0 ? 'busy' : '',
+                      isSelected ? 'selected' : '',
+                      isToday ? 'today' : '',
+                    ].filter(Boolean).join(' ')}
+                    onClick={() => setSelectedKey(cell.key)}
+                    title={count > 0 ? `${count} reservation${count === 1 ? '' : 's'}` : undefined}
+                  >
+                    {cell.day}
+                    {count > 0 && <i className="host-calendar-dot" />}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </div>
 
         <aside className="host-calendar-side">
           <h3>{selectedKey ? formatDate(selectedKey) : 'Upcoming'}</h3>
-          {loading ? (
-            <div className="host-calendar-side-skeleton" aria-hidden />
-          ) : (selectedKey ? selectedBookings : upcoming).length === 0 ? (
+          {(selectedKey ? selectedBookings : upcoming).length === 0 ? (
             <p className="host-calendar-empty">
               {selectedKey ? 'Nothing booked this day.' : 'No upcoming reservations.'}
             </p>

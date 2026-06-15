@@ -7,12 +7,12 @@ import HostReservationsCalendar from '../../components/host/HostReservationsCale
 import { formatCurrency } from '../../utils/format'
 import { normalizeHostCarBookings, normalizeHostStayBookings } from '../../utils/hostBookings'
 
-function OverviewCard({ tone, icon: Icon, title, href, metrics, loading, footer }) {
+function OverviewCard({ tone, icon: Icon, title, href, metrics, footer }) {
   const Tag = href ? Link : 'div'
   const tagProps = href ? { to: href } : {}
 
   return (
-    <Tag className={`host-overview-card host-overview-card--${tone} ${loading ? 'is-loading' : ''}`} {...tagProps}>
+    <Tag className={`host-overview-card host-overview-card--${tone}`} {...tagProps}>
       <div className="host-overview-card-head">
         <span className="host-overview-card-icon">
           <Icon size={16} />
@@ -114,7 +114,6 @@ export default function HostDashboardPage() {
             icon={Car}
             title="Vehicles"
             href="/host/cars"
-            loading={loading}
             metrics={[
               {
                 label: 'Live',
@@ -136,7 +135,6 @@ export default function HostDashboardPage() {
             tone="alert"
             icon={AlertCircle}
             title="Needs attention"
-            loading={loading}
             metrics={[
               {
                 label: 'Pending review',
@@ -150,7 +148,7 @@ export default function HostDashboardPage() {
               },
             ]}
             footer={
-              !loading && pendingReview > 0 ? (
+              pendingReview > 0 ? (
                 <div className="host-overview-card-foot">
                   <Link to="/host/cars" className="host-overview-foot-link">Review vehicles</Link>
                   <Link to="/host/guesthouses" className="host-overview-foot-link">Review guesthouses</Link>
@@ -164,7 +162,6 @@ export default function HostDashboardPage() {
             icon={Home}
             title="Guesthouses"
             href="/host/guesthouses"
-            loading={loading}
             metrics={[
               {
                 label: 'Live',

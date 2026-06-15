@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { Bath, Bed, MapPin, Star, Users } from 'lucide-react'
 import { api } from '../../api'
-import LoadingSpinner from '../../components/ui/LoadingSpinner'
+import useDragScroll from '../../hooks/useDragScroll'
 import { useToast } from '../../context/ToastContext'
 import { formatCurrencyFromCents, capitalize } from '../../utils/format'
 
@@ -26,6 +26,9 @@ export default function GuestHouseDetailPage() {
   const [quote, setQuote] = useState(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
   const [activeImage, setActiveImage] = useState(0)
+  const thumbTrackRef = useRef(null)
+
+  useDragScroll(thumbTrackRef, { enabled: Boolean(house?.images?.length > 1) })
 
   useEffect(() => {
     api
@@ -81,15 +84,8 @@ export default function GuestHouseDetailPage() {
     navigate(`/checkout?${params}`)
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
-  }
-
   if (!house) {
+    if (loading) return null
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <p className="text-red-600">Property not found.</p>
@@ -119,7 +115,7 @@ export default function GuestHouseDetailPage() {
             />
           </div>
           {images.length > 1 && (
-            <div className="mt-2 flex gap-2 overflow-x-auto">
+            <div className="mt-2 flex gap-2 overflow-x-auto drag-scroll" ref={thumbTrackRef}>
               {images.map((img, i) => (
                 <button
                   key={i}
@@ -247,7 +243,7 @@ export default function GuestHouseDetailPage() {
               onClick={fetchQuote}
               disabled={quoteLoading}
             >
-              {quoteLoading ? 'Calculating…' : 'Check availability & price'}
+              Check availability & price
             </button>
             {quote && (
               <div className="mt-4 space-y-1 border-t border-slate-100 pt-4 text-sm">

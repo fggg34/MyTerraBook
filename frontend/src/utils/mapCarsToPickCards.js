@@ -9,8 +9,8 @@ function gearboxLabel(transmission) {
 
 function fuelLabel(fuelType) {
   const value = String(fuelType || '').toLowerCase()
-  if (!value || value === '-') return 'Petrol'
-  return value.charAt(0).toUpperCase() + value.slice(1)
+  if (!value || value === '-') return 'PETROL'
+  return value.toUpperCase()
 }
 
 export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceFormatter } = {}) {
@@ -21,7 +21,7 @@ export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceForma
   })
   const base = detailBase.replace(/\/$/, '')
   return cars.map((car) => {
-    const specs = [{ type: 'gearbox', label: gearboxLabel(car.transmission) }, { type: 'drive', label: fuelLabel(car.fuel_type) }]
+    const specs = [{ type: 'gearbox', label: gearboxLabel(car.transmission) }, { type: 'fuel', label: fuelLabel(car.fuel_type) }]
     if (car.seats != null) specs.push({ type: 'seat', label: `Seats ${car.seats}` })
     else if (car.units_available > 1) specs.push({ type: 'seat', label: `${car.units_available} units` })
     if (car.sleeps != null && car.sleeps > 0) specs.push({ type: 'bed', label: `Sleeps ${car.sleeps}` })

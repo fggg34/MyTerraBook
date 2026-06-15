@@ -1,7 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import ContentProse from '../components/content/ContentProse'
 import PageHead from '../components/seo/PageHead'
-import LoadingSpinner from '../components/ui/LoadingSpinner'
 import useBlogPosts from '../hooks/useBlogPosts'
 import usePageSeo from '../hooks/usePageSeo'
 import '../styles/content-pages.css'
@@ -28,14 +27,7 @@ export default function GoodToKnowPostPage() {
   })
 
   if (loading) {
-    return (
-      <>
-        <PageHead {...seo} />
-        <div className="content-page content-state">
-          <LoadingSpinner />
-        </div>
-      </>
-    )
+    return <PageHead {...seo} />
   }
 
   if (error || !post) {

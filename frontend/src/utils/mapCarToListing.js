@@ -19,14 +19,25 @@ function buildImages(car, listingType) {
   }))
 }
 
+function formatSpecLabel(value) {
+  const text = String(value || '').trim()
+  if (!text || text === '-') return null
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 function buildDetailSpecs(car) {
   const specs = []
-  if (car.transmission && car.transmission !== '-') specs.push({ label: car.transmission })
-  if (car.fuel_type && car.fuel_type !== '-') specs.push({ label: car.fuel_type })
+  const transmission = formatSpecLabel(car.transmission)
+  const fuel = formatSpecLabel(car.fuel_type)
+  if (transmission) specs.push({ label: transmission })
+  if (fuel) specs.push({ label: fuel })
   if (car.seats != null) specs.push({ label: `${car.seats} seats` })
   if (car.sleeps != null) specs.push({ label: `Sleeps ${car.sleeps}` })
   if (car.bags != null) specs.push({ label: `${car.bags} bags` })
-  if (car.units_available != null) specs.push({ label: `${car.units_available} available` })
+  if (car.units_available != null) {
+    const n = Number(car.units_available)
+    specs.push({ label: `${n} unit${n === 1 ? '' : 's'} available` })
+  }
   return specs
 }
 
@@ -40,10 +51,14 @@ function buildAmenities(car) {
 function buildAddons(car, priceFormatter) {
   const format = priceFormatter?.format ?? ((v) => String(v))
   return (car.rental_options || []).map((opt) => ({
+    id: opt.id,
     name: opt.name,
+    description: opt.description || '',
     sub: opt.is_daily_cost ? 'Per day' : 'One-time',
     price: opt.cost ? format(Number.parseFloat(opt.cost)) : ',',
-    free: false,
+    cost_cents: opt.cost_cents ?? 0,
+    is_daily_cost: !!opt.is_daily_cost,
+    free: (opt.cost_cents ?? 0) === 0,
   }))
 }
 

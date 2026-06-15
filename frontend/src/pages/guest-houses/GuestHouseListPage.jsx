@@ -4,7 +4,6 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { api } from '../../api'
 import GuestHouseCard from '../../components/guest-houses/GuestHouseCard'
-import LoadingSpinner from '../../components/ui/LoadingSpinner'
 import EmptyState from '../../components/ui/EmptyState'
 import { Home } from 'lucide-react'
 
@@ -158,11 +157,7 @@ export default function GuestHouseListPage() {
         </div>
       </form>
 
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <LoadingSpinner size="lg" />
-        </div>
-      ) : houses.length === 0 ? (
+      {!loading && houses.length === 0 ? (
         <EmptyState
           icon={Home}
           title="No stays found"

@@ -14,7 +14,6 @@ import SiteLayout from './components/layout/SiteLayout'
 import ContentLayout from './components/layout/ContentLayout'
 import BookingLayout from './components/layout/BookingLayout'
 import SearchResultsLayout from './components/layout/SearchResultsLayout'
-import LoadingSpinner from './components/ui/LoadingSpinner'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import BecomeHostPage from './pages/BecomeHostPage'
 import ListingPage from './pages/ListingPage'
@@ -68,7 +67,7 @@ function ProtectedRoute({ children, role, customerOnly = false }) {
 }
 
 function AppRoutes() {
-  const [previewUnlocked, setPreviewUnlocked] = useState(null)
+  const [previewUnlocked, setPreviewUnlocked] = useState(true)
   const token = getStoredToken()
   setAuthToken(token)
 
@@ -89,14 +88,6 @@ function AppRoutes() {
   useEffect(() => {
     refreshPreview()
   }, [refreshPreview])
-
-  if (previewUnlocked === null) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-brand-950">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
-  }
 
   if (!previewUnlocked) {
     return (

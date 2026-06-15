@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import useDragScroll from '../../hooks/useDragScroll'
 import { submitListingReview } from '../../api/listingReviews'
 import {
   buildMarqueePhotos,
@@ -192,6 +193,12 @@ export default function ListingReviewsSection({ listing, typeConfig, reviewTarge
   const featureImage = useMemo(() => pickFeatureImage(allReviews), [allReviews])
   const hasReviews = allReviews.length > 0
   const marqueePhotos = useMemo(() => buildMarqueePhotos(guestPhotos), [guestPhotos])
+  const gpMarqueeRef = useRef(null)
+
+  useDragScroll(gpMarqueeRef, {
+    enabled: guestPhotos.length > 0,
+    convertAnimationFrom: '.gp-track',
+  })
 
   const onSubmitReview = useCallback(
     async (payload) => {
@@ -273,7 +280,7 @@ export default function ListingReviewsSection({ listing, typeConfig, reviewTarge
           <div className="wrap">
             <h2>{typeConfig.guestPhotosTitle}</h2>
           </div>
-          <div className="gp-marquee" id="gpMarquee">
+          <div className="gp-marquee" id="gpMarquee" ref={gpMarqueeRef}>
             <div className="gp-track">
               {marqueePhotos.map((url, i) => (
                 <div

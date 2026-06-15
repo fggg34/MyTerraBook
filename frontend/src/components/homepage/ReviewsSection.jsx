@@ -1,4 +1,5 @@
 import { useMemo, useRef } from 'react'
+import useDragScroll from '../../hooks/useDragScroll'
 import useSectionReveal from '../../hooks/useSectionReveal'
 
 const AVATAR_FILLS = ['#a9d4e6', '#bcdcab', '#f1d79a', '#cdbbea', '#a4ddcd', '#f4c1a4']
@@ -82,6 +83,7 @@ export default function ReviewsSection({
   trustLine = 'Trusted by travellers worldwide',
 }) {
   const sectionRef = useRef(null)
+  const trackWrapRef = useRef(null)
   useSectionReveal(sectionRef, { revealDoneMs: 1800 })
 
   const ratingValue = useMemo(() => {
@@ -93,6 +95,11 @@ export default function ReviewsSection({
   const ratingSourceLabel = source === 'google' && !isDemo ? 'Google' : 'MyTerraBook'
   const resolvedCtaLabel = ctaLabel || (source === 'google' && !isDemo ? 'Leave a Google Review' : null)
   const useMarquee = reviews.length > 3
+
+  useDragScroll(trackWrapRef, {
+    enabled: useMarquee,
+    convertAnimationFrom: '.rv-track--scroll',
+  })
 
   const trackReviews = useMemo(() => {
     if (!useMarquee) return reviews
@@ -155,6 +162,7 @@ export default function ReviewsSection({
         </div>
 
         <div
+          ref={trackWrapRef}
           className={`rv-track-wrap${useMarquee ? ' rv-track-wrap--marquee' : ''}`}
           onMouseEnter={(e) => e.currentTarget.classList.add('rv-track-wrap--paused')}
           onMouseLeave={(e) => e.currentTarget.classList.remove('rv-track-wrap--paused')}

@@ -41,7 +41,6 @@ import HostDatePicker from '../../components/host/HostDatePicker'
 import HostDateTimePicker from '../../components/host/HostDateTimePicker'
 import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
-import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
 import { intersectionForLocations, timeOptionsForWindow } from '../../utils/locationHours'
 
@@ -376,7 +375,6 @@ export default function HostCarEditorPage() {
 
   const canConfigureTimes = selectedPickupLocations.length > 0 && selectedDropoffLocations.length > 0
 
-  if (loading) return <PageLoader message="Loading editor…" />
 
   return (
     <div className="host-wizard">

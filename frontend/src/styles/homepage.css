@@ -642,6 +642,8 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     box-shadow:0 10px 24px -10px rgba(15,32,54,.4);transition:.18s;
   }
   .carousel-nav:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .carousel-nav:disabled{opacity:.4;cursor:default;background:#fff;color:var(--navy);border-color:var(--line);}
+  .carousel-nav:disabled:hover{background:#fff;color:var(--navy);border-color:var(--line);}
   .carousel-nav svg{width:20px;height:20px;}
   .carousel-nav.prev{left:-22px;}
   .carousel-nav.next{right:-22px;}

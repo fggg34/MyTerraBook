@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { deleteHostGuestHouse, listHostGuestHouses } from '../../api/host'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
-import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
 
 export default function HostGuestHousesPage() {
@@ -33,7 +32,6 @@ export default function HostGuestHousesPage() {
     }
   }
 
-  if (loading) return <PageLoader message="Loading guesthouses…" />
 
   return (
     <div>
@@ -53,7 +51,7 @@ export default function HostGuestHousesPage() {
             </tr>
           </thead>
           <tbody>
-            {items.length === 0 ? (
+            {loading || items.length === 0 ? (
               <tr>
                 <td colSpan={5}>No guesthouses yet.</td>
               </tr>

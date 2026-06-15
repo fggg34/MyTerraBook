@@ -5,7 +5,6 @@ import ContentProse from '../components/content/ContentProse'
 import FaqPageContent from '../components/content/FaqPageContent'
 import ContactForm from '../components/content/ContactForm'
 import PageHead from '../components/seo/PageHead'
-import LoadingSpinner from '../components/ui/LoadingSpinner'
 import usePageSeo from '../hooks/usePageSeo'
 import useSitePage from '../hooks/useSitePage'
 import '../styles/content-pages.css'
@@ -33,14 +32,7 @@ export default function SitePagePage({ forcedSlug }) {
   })
 
   if (loading) {
-    return (
-      <>
-        <PageHead {...seo} />
-        <div className="content-page content-state">
-          <LoadingSpinner />
-        </div>
-      </>
-    )
+    return <PageHead {...seo} />
   }
 
   if (error || !page) {

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api'
 import { getHostCarBookings, getHostGuestHouseBookings } from '../../api/host'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
 import { formatCurrency, formatDate } from '../../utils/format'
 
@@ -41,7 +40,6 @@ export default function HostBookingsPage() {
     }
   }
 
-  if (loading) return <PageLoader message="Loading bookings…" />
 
   return (
     <div>
@@ -54,7 +52,7 @@ export default function HostBookingsPage() {
           <table className="host-table">
             <thead><tr><th>Reference</th><th>Vehicle</th><th>Dates</th><th>Status</th><th>Total</th><th /></tr></thead>
             <tbody>
-              {carOrders.length === 0 ? <tr><td colSpan={6}>No car orders yet.</td></tr> : carOrders.map((o) => (
+              {loading || carOrders.length === 0 ? <tr><td colSpan={6}>No car orders yet.</td></tr> : carOrders.map((o) => (
                 <tr key={o.id}>
                   <td>{o.reference}</td>
                   <td>{o.car?.name}</td>
@@ -78,7 +76,7 @@ export default function HostBookingsPage() {
           <table className="host-table">
             <thead><tr><th>Reference</th><th>Property</th><th>Stay</th><th>Status</th><th>Total</th><th /></tr></thead>
             <tbody>
-              {guestBookings.length === 0 ? <tr><td colSpan={6}>No guesthouse bookings yet.</td></tr> : guestBookings.map((b) => (
+              {loading || guestBookings.length === 0 ? <tr><td colSpan={6}>No guesthouse bookings yet.</td></tr> : guestBookings.map((b) => (
                 <tr key={b.id}>
                   <td>{b.booking_reference}</td>
                   <td>{b.guest_house?.name}</td>

@@ -49,7 +49,6 @@ export default function NewsletterUnsubscribePage() {
         <div className="auth-intro">
           <SiteLogo variant="auth" className="logo-text" />
           <h1>{copy.title ?? 'Newsletter'}</h1>
-          {status === 'loading' && <p>Unsubscribing…</p>}
           {status === 'missing' && <p>Missing unsubscribe link.</p>}
           {(status === 'success' || status === 'error') && <p>{message}</p>}
         </div>

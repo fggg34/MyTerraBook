@@ -17,7 +17,6 @@ import AddressAutocomplete from '../../components/host/AddressAutocomplete'
 import HostDatePicker from '../../components/host/HostDatePicker'
 import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
-import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
 import { formatLocationLine } from '../../utils/parseGooglePlace'
@@ -222,7 +221,6 @@ export default function HostGuestHouseEditorPage() {
     }))
   }
 
-  if (loading) return <PageLoader message="Loading editor…" />
 
   return (
     <div className="host-wizard">

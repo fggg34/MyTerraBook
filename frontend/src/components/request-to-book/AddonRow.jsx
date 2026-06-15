@@ -28,8 +28,24 @@ export default function AddonRow({ option, selected, nights, onToggle }) {
     ? `${option.description || ''}${option.description ? ' · ' : ''}${formatCurrencyFromCents(unitCents)} / day × ${nights}`
     : option.description
 
+  const handleToggle = () => onToggle(option.id)
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleToggle()
+    }
+  }
+
   return (
-    <div className={`addon-row${selected ? ' on' : ''}`}>
+    <div
+      className={`addon-row${selected ? ' on' : ''}`}
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
+      onClick={handleToggle}
+      onKeyDown={handleKeyDown}
+    >
       <span className="aic"><Icon aria-hidden /></span>
       <span className="atx">
         <span className="an">{option.name}</span>
@@ -39,7 +55,14 @@ export default function AddonRow({ option, selected, nights, onToggle }) {
         {price}
         <small>{unitLabel}</small>
       </span>
-      <button type="button" className="add-toggle" onClick={() => onToggle(option.id)}>
+      <button
+        type="button"
+        className="add-toggle"
+        onClick={(e) => {
+          e.stopPropagation()
+          handleToggle()
+        }}
+      >
         {selected ? 'Added ✓' : 'Add'}
       </button>
     </div>

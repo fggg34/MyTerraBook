@@ -156,9 +156,7 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
 
           <div className="wrap">
             <section className="results-wrap">
-              {loading ? (
-                <p className="results-progress-text">Loading {config.unitPlural}…</p>
-              ) : (
+              {!loading && (
                 <div className="results-grid" id="resultsGrid">
                   {visibleCards.map((card, index) => (
                     <div key={card.id} className="cell reveal" style={{ '--d': `${(index % 9) * 0.05}s` }}>

@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom'
+import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
+import { useToast } from '../../context/ToastContext'
+import { sharePage } from '../../utils/sharePage'
 import ProductCard from '../homepage/ProductCard'
 import { mapCarToResultCard } from '../../utils/mapCarToResultCard'
 import { mapGuestHouseToResultCard } from '../../utils/mapGuestHouseToResultCard'
@@ -18,7 +21,23 @@ export default function ListingPageContent({
   initialDropoff,
   bookingDatesRef,
   openCalendarRef,
+  selectedAddonIds = [],
+  onToggleAddon,
 }) {
+  const { toast } = useToast()
+  const { trackRef: simTrackRef, scroll: scrollSimilar, atStart: simAtStart, atEnd: simAtEnd } = useHorizontalCarousel({
+    itemCount: related.length,
+  })
+
+  const handleShare = async () => {
+    const result = await sharePage({ title: listing.name, text: listing.name })
+    if (result.ok && result.method === 'clipboard') {
+      toast('Link copied to clipboard', 'success')
+    } else if (!result.ok && !result.aborted) {
+      toast('Could not share this page', 'error')
+    }
+  }
+
   const detailBase =
     listing.listingType === 'car' ? '/cars' : listing.listingType === 'guesthouse' ? '/guesthouses' : '/campervans'
   const relatedCards = related.map((item) => {
@@ -51,7 +70,7 @@ export default function ListingPageContent({
             {typeConfig.archiveLabel}
           </Link>
           <div className="subactions">
-            <button className="sa-btn" type="button">
+            <button className="sa-btn" type="button" onClick={handleShare}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
                 <path d="M12 3v13M8 7l4-4 4 4" />
@@ -73,6 +92,8 @@ export default function ListingPageContent({
             initialDropoff={initialDropoff}
             bookingDatesRef={bookingDatesRef}
             openCalendarRef={openCalendarRef}
+            selectedAddonIds={selectedAddonIds}
+            onToggleAddon={onToggleAddon}
           />
         </div>
       </div>
@@ -90,19 +111,31 @@ export default function ListingPageContent({
             <div className="similar-head">
               <h2>{typeConfig.similarTitle}</h2>
               <div className="sim-nav">
-                <button className="sim-arrow" id="simPrev" type="button" aria-label="Previous">
+                <button
+                  className="sim-arrow"
+                  type="button"
+                  aria-label="Previous"
+                  disabled={simAtStart}
+                  onClick={() => scrollSimilar(-1)}
+                >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m15 18-6-6 6-6" />
                   </svg>
                 </button>
-                <button className="sim-arrow" id="simNext" type="button" aria-label="Next">
+                <button
+                  className="sim-arrow"
+                  type="button"
+                  aria-label="Next"
+                  disabled={simAtEnd}
+                  onClick={() => scrollSimilar(1)}
+                >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m9 18 6-6-6-6" />
                   </svg>
                 </button>
               </div>
             </div>
-            <div className="sim-track" id="simTrack">
+            <div className="sim-track" ref={simTrackRef}>
               {relatedCards.map((card) => (
                 <ProductCard key={card.id} {...card} />
               ))}

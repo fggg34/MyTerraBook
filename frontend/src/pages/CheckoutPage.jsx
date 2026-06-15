@@ -9,7 +9,6 @@ import Step2ExtrasCover from '../components/request-to-book/Step2ExtrasCover'
 import Step3YourDetails from '../components/request-to-book/Step3YourDetails'
 import Step4Payment from '../components/request-to-book/Step4Payment'
 import BookingConfirmation from '../components/request-to-book/BookingConfirmation'
-import { PageLoader } from '../components/ui/LoadingSpinner'
 import PageHead from '../components/seo/PageHead'
 import { useToast } from '../context/ToastContext'
 import usePageSeo from '../hooks/usePageSeo'
@@ -20,12 +19,7 @@ export default function CheckoutPage() {
   const rtb = useRequestToBook()
 
   if (rtb.loadState === 'loading') {
-    return (
-      <>
-        <PageHead {...seo} />
-        <PageLoader message="Loading checkout…" />
-      </>
-    )
+    return <PageHead {...seo} />
   }
 
   if (rtb.loadState === 'error' || !rtb.bookingType) {

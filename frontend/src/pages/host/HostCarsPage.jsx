@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { deleteHostCar, listHostCars } from '../../api/host'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
-import { PageLoader } from '../../components/ui/LoadingSpinner'
 import { useToast } from '../../context/ToastContext'
 
 export default function HostCarsPage() {
@@ -33,7 +32,6 @@ export default function HostCarsPage() {
     }
   }
 
-  if (loading) return <PageLoader message="Loading vehicles…" />
 
   return (
     <div>
@@ -54,7 +52,7 @@ export default function HostCarsPage() {
             </tr>
           </thead>
           <tbody>
-            {items.length === 0 ? (
+            {loading || items.length === 0 ? (
               <tr>
                 <td colSpan={6}>No vehicles yet.</td>
               </tr>

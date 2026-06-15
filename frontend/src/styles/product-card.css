@@ -133,19 +133,28 @@
   flex: 0 0 auto;
 }
 
-.spec.spec-gearbox {
+.spec.spec-gearbox,
+.spec.spec-fuel {
   justify-content: center;
 }
 
-.spec .gbox {
+.spec .gbox,
+.spec .fbox {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: #fff;
-  background: var(--navy);
   border-radius: 5px;
   padding: 4px 7px;
   line-height: 1;
+}
+
+.spec .gbox {
+  background: var(--navy);
+}
+
+.spec .fbox {
+  background: var(--green);
 }
 
 .pcard-cta {
@@ -298,4 +307,68 @@ body.homepage-active .pcard-book svg {
 body.search-results-active .pcard-book {
   color: #fff;
   text-decoration: none;
+}
+
+/* Drag-to-scroll (mouse) for horizontal carousels */
+.track,
+.sim-track,
+.drag-scroll,
+.gp-marquee.is-manual-scroll,
+.rv-track-wrap--marquee.is-manual-scroll,
+.host-proof-marquee.is-manual-scroll {
+  cursor: grab;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.track img,
+.sim-track img,
+.drag-scroll img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.track.is-dragging,
+.sim-track.is-dragging,
+.drag-scroll.is-dragging,
+.gp-marquee.is-manual-scroll.is-dragging,
+.rv-track-wrap--marquee.is-manual-scroll.is-dragging,
+.host-proof-marquee.is-manual-scroll.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto !important;
+  scroll-snap-type: none !important;
+  user-select: none;
+}
+
+.track.is-dragging .pcard,
+.sim-track.is-dragging .pcard {
+  scroll-snap-align: none !important;
+}
+
+.track.is-dragging *,
+.sim-track.is-dragging *,
+.drag-scroll.is-dragging * {
+  pointer-events: none;
+  user-select: none;
+}
+
+.gp-marquee.is-manual-scroll,
+.rv-track-wrap--marquee.is-manual-scroll,
+.host-proof-marquee.is-manual-scroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.gp-marquee.is-manual-scroll::-webkit-scrollbar,
+.rv-track-wrap--marquee.is-manual-scroll::-webkit-scrollbar,
+.host-proof-marquee.is-manual-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.gp-marquee.is-manual-scroll .gp-track,
+.rv-track-wrap--marquee.is-manual-scroll .rv-track--scroll,
+.host-proof-marquee.is-manual-scroll .host-proof-track {
+  animation: none !important;
+  transform: none !important;
 }

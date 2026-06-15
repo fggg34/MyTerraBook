@@ -1828,28 +1828,6 @@
   transform: scale(1);
 }
 
-.about-chapter-num {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  font-family: var(--serif, 'Quicksand', sans-serif);
-  font-size: 3.5rem;
-  line-height: 1;
-  color: #fff;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
-  opacity: 0;
-  transform: translateY(12px);
-  transition:
-    opacity 0.7s cubic-bezier(0.33, 1, 0.68, 1),
-    transform 0.7s cubic-bezier(0.33, 1, 0.68, 1);
-  transition-delay: 0.22s;
-}
-
-.about-chapter.is-revealed .about-chapter-num {
-  opacity: 0.92;
-  transform: translateY(0);
-}
-
 .about-chapter-body p {
   margin: 0;
   font-size: 1.12rem;
@@ -1988,6 +1966,15 @@
   padding: 22px 24px 24px;
 }
 
+.about-offer-listings {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--blue, #346298);
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
 .about-offer-tag {
   display: inline-block;
   font-size: 11px;
@@ -1995,7 +1982,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--green, #45a06a);
-  margin-bottom: 8px;
+  margin-top: 8px;
 }
 
 .about-offer-body h3 {
@@ -2148,8 +2135,7 @@
   .about-offer-media img,
   .about-chapter-media,
   .about-chapter-body,
-  .about-chapter-media img,
-  .about-chapter-num {
+  .about-chapter-media img {
     transition: none;
   }
 
@@ -2158,8 +2144,7 @@
   .about-offerings.revealed .about-rise,
   .about-chapter.is-revealed .about-chapter-media,
   .about-chapter.is-revealed .about-chapter-body,
-  .about-chapter.is-revealed .about-chapter-media img,
-  .about-chapter.is-revealed .about-chapter-num {
+  .about-chapter.is-revealed .about-chapter-media img {
     opacity: 1;
     transform: none;
   }

@@ -102,27 +102,6 @@ export default function useListingEffects(rootRef, { enabled = true }) {
     maybeFill()
     setTimeout(maybeFill, 400)
 
-    const simTrack = root.querySelector('#simTrack')
-    const simPrev = root.querySelector('#simPrev')
-    const simNext = root.querySelector('#simNext')
-    const simUpdate = () => {
-      if (!simTrack) return
-      const max = simTrack.scrollWidth - simTrack.clientWidth - 2
-      if (simPrev) simPrev.disabled = simTrack.scrollLeft <= 2
-      if (simNext) simNext.disabled = simTrack.scrollLeft >= max
-    }
-    const simStep = () => {
-      const c = simTrack?.querySelector('.pcard')
-      return c ? c.getBoundingClientRect().width + 22 : 320
-    }
-    const onSimPrev = () => simTrack?.scrollBy({ left: -simStep(), behavior: 'smooth' })
-    const onSimNext = () => simTrack?.scrollBy({ left: simStep(), behavior: 'smooth' })
-    simPrev?.addEventListener('click', onSimPrev)
-    simNext?.addEventListener('click', onSimNext)
-    simTrack?.addEventListener('scroll', simUpdate, { passive: true })
-    window.addEventListener('resize', simUpdate)
-    simUpdate()
-
     const bpOverlay = root.querySelector('#bpOverlay')
     const bpLink = root.querySelector('#bookProcessLink')
     const bpClose = root.querySelector('#bpClose')
@@ -153,7 +132,6 @@ export default function useListingEffects(rootRef, { enabled = true }) {
       document.body.style.overflow = ''
       window.removeEventListener('resize', onResize)
       window.removeEventListener('scroll', maybeFill)
-      window.removeEventListener('resize', simUpdate)
       document.removeEventListener('keydown', onEsc)
       tabs.forEach((t) => t.removeEventListener('click', onTabClick))
       showMore?.removeEventListener('click', onShowMore)

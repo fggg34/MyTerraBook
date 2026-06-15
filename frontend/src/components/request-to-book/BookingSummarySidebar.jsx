@@ -133,7 +133,6 @@ export default function BookingSummarySidebar({
           </div>
         </div>
         <div className="lines">
-          {quoteLoading && <div className="lrow muted"><span className="ll">Calculating…</span></div>}
           {quote && isVehicle && (
             <>
               <div className="lrow">

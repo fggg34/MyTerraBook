@@ -8,7 +8,7 @@ import { usePageContent } from '../context/SiteContentContext'
 import { getRequestToBookConfig, resolveBookingType, resolveTimeOptions } from '../data/requestToBookConfig'
 import { formatCurrency, formatCurrencyFromCents } from '../utils/format'
 import { formatPhoneForApi, validatePhone } from '../utils/phone'
-import { combineDateAndTime, nightsBetween, toDateOnlyString } from '../utils/requestToBookUtils'
+import { combineDateAndTime, nightsBetween, parseRentalOptionIds, toDateOnlyString } from '../utils/requestToBookUtils'
 import { toApiDateTime, parseDateTimeLocal } from '../utils/format'
 import { useBookingRules } from './useBookingRules'
 import { expandBlockedWindows } from '../utils/bookingRestrictions'
@@ -109,6 +109,7 @@ export default function useRequestToBook() {
     dropoff_location_id: searchParams.get('dropoff_location_id') || '',
     price_type_id: searchParams.get('price_type_id') || '',
     guests_count: Number(searchParams.get('guests_count')) || 2,
+    rental_option_ids: parseRentalOptionIds(searchParams),
     customer_name: user?.name || '',
     customer_email: user?.email || '',
     customer_phone: user?.phone || '',

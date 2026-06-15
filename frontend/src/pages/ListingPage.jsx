@@ -1,10 +1,9 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { buildCheckoutParams } from '../components/cars/BookingForm'
 import ListingPageContent from '../components/listing/ListingPageContent'
 import PageHead from '../components/seo/PageHead'
 import EmptyState from '../components/ui/EmptyState'
-import { PageLoader } from '../components/ui/LoadingSpinner'
 import { useToast } from '../context/ToastContext'
 import useListingEffects from '../hooks/useListingEffects'
 import useListingPage from '../hooks/useListingPage'
@@ -36,6 +35,17 @@ export default function ListingPage({ listingType = 'campervan' }) {
     [car, listing, listingType],
   )
   const seo = usePageSeo(null, { skipPageSeo: true, source: listingSource })
+
+  const [selectedAddonIds, setSelectedAddonIds] = useState([])
+
+  const toggleAddon = useCallback((id) => {
+    if (listingType === 'guesthouse' || id == null || id === '') return
+    const numId = Number(id)
+    if (Number.isNaN(numId)) return
+    setSelectedAddonIds((prev) =>
+      prev.includes(numId) ? prev.filter((x) => x !== numId) : [...prev, numId],
+    )
+  }, [listingType])
 
   const openDatePicker = useCallback(() => {
     openCalendarRef.current?.open?.()
@@ -89,10 +99,11 @@ export default function ListingPage({ listingType = 'campervan' }) {
         dropoff_location_id: queryDefaults.dropoff_location_id || queryDefaults.pickup_location_id || '',
         pickup_at,
         dropoff_at,
+        rental_option_ids: selectedAddonIds,
       })
       navigate(`/checkout?${params}`)
     },
-    [car, listing, listingType, queryDefaults, navigate, toast, openDatePicker],
+    [car, listing, listingType, queryDefaults, navigate, toast, openDatePicker, selectedAddonIds],
   )
 
   useListingEffects(rootRef, {
@@ -100,12 +111,7 @@ export default function ListingPage({ listingType = 'campervan' }) {
   })
 
   if (loadState === 'loading') {
-    return (
-      <>
-        <PageHead {...seo} />
-        <PageLoader message="Loading listing…" />
-      </>
-    )
+    return <PageHead {...seo} />
   }
 
   if (loadState === 'error' || !listing) {
@@ -143,6 +149,8 @@ export default function ListingPage({ listingType = 'campervan' }) {
         initialDropoff={queryDefaults.dropoff_at || queryDefaults.check_out}
         bookingDatesRef={bookingDatesRef}
         openCalendarRef={openCalendarRef}
+        selectedAddonIds={selectedAddonIds}
+        onToggleAddon={listingType === 'guesthouse' ? undefined : toggleAddon}
       />
       </div>
     </>

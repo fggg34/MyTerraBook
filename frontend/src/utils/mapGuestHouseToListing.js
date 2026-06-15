@@ -212,6 +212,7 @@ export function mapGuestHouseToListing(house, listingReviews, priceFormatter) {
     amenities: amenities.length ? amenities : base.amenities,
     conditions: conditions.length ? conditions : base.conditions,
     sleeping,
+    addons: [],
     priceFrom: formatPriceDisplay(house),
     description: { short: shortDesc || 'Description coming soon.', more: moreDesc },
     rating: buildRating(house, reviews),

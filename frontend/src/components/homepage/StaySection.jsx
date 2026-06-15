@@ -1,5 +1,5 @@
-import { useRef } from 'react'
 import { Link } from 'react-router-dom'
+import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import { useStayListings } from '../../hooks/useHomepageListings'
 import ProductCard from './ProductCard'
 
@@ -19,16 +19,8 @@ function SectionLink({ href, className, children }) {
 }
 
 export default function StaySection({ heading, subtitle, allLabel, allHref }) {
-  const trackRef = useRef(null)
   const { cards, loading } = useStayListings()
-
-  const scroll = (direction) => {
-    const track = trackRef.current
-    if (!track) return
-    const card = track.querySelector('.pcard')
-    const step = card ? card.getBoundingClientRect().width + 24 : 360
-    track.scrollBy({ left: direction * step, behavior: 'smooth' })
-  }
+  const { trackRef, scroll, atStart, atEnd } = useHorizontalCarousel({ itemCount: cards.length })
 
   return (
     <section className="stay">
@@ -48,15 +40,13 @@ export default function StaySection({ heading, subtitle, allLabel, allHref }) {
           )}
         </div>
         <div className="stay-panel">
-          <button className="carousel-nav prev" type="button" aria-label="Previous" onClick={() => scroll(-1)}>
+          <button className="carousel-nav prev" type="button" aria-label="Previous" disabled={atStart} onClick={() => scroll(-1)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 6l-6 6 6 6" />
             </svg>
           </button>
           <div className="track" ref={trackRef}>
-            {loading ? (
-              <p className="stay-empty" role="status">Loading guesthouses…</p>
-            ) : cards.length ? (
+            {cards.length ? (
               cards.map((card) => (
                 <ProductCard
                   key={card.slug || card.id || card.name}
@@ -69,11 +59,11 @@ export default function StaySection({ heading, subtitle, allLabel, allHref }) {
                   href={card.href}
                 />
               ))
-            ) : (
+            ) : !loading ? (
               <p className="stay-empty" role="status">No guesthouses available yet.</p>
-            )}
+            ) : null}
           </div>
-          <button className="carousel-nav next" type="button" aria-label="Next" onClick={() => scroll(1)}>
+          <button className="carousel-nav next" type="button" aria-label="Next" disabled={atEnd} onClick={() => scroll(1)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>

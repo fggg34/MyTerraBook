@@ -1,6 +1,5 @@
 import GoodToKnowSection from '../components/content/GoodToKnowSection'
 import PageHead from '../components/seo/PageHead'
-import LoadingSpinner from '../components/ui/LoadingSpinner'
 import useBlogPosts from '../hooks/useBlogPosts'
 import usePageSeo from '../hooks/usePageSeo'
 import '../styles/content-pages.css'
@@ -12,13 +11,7 @@ export default function GoodToKnowPage() {
   return (
     <div className="content-page gtk-page">
       <PageHead {...seo} />
-      {loading && (
-        <div className="content-state">
-          <LoadingSpinner />
-        </div>
-      )}
-
-      {!loading && error && (
+      {error && !loading && (
         <div className="content-state">
           <p>Unable to load articles right now.</p>
         </div>

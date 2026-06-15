@@ -5,7 +5,6 @@ import { api } from '../api'
 import CarCard from '../components/cars/CarCard'
 import SearchBar from '../components/cars/SearchBar'
 import EmptyState from '../components/ui/EmptyState'
-import { CarGridSkeleton } from '../components/ui/Skeleton'
 import { toApiDateTime } from '../utils/format'
 
 export default function CarListingPage() {
@@ -231,9 +230,7 @@ export default function CarListingPage() {
             {filtersOpen ? 'Hide filters' : 'Show filters'}
           </button>
 
-          {loading ? (
-            <CarGridSkeleton count={6} />
-          ) : filteredCars.length === 0 ? (
+          {!loading && filteredCars.length === 0 ? (
             <EmptyState
               title="No cars match your filters"
               description="Try adjusting your filters or search dates."

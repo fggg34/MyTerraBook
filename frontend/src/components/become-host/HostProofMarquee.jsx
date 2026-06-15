@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import useDragScroll from '../../hooks/useDragScroll'
 import useSectionReveal from '../../hooks/useSectionReveal'
 import HostPhoto from './HostPhoto'
 
@@ -46,13 +47,19 @@ function ProofPair({ pair, duplicate = false }) {
 
 export default function HostProofMarquee({ stats = [] }) {
   const sectionRef = useRef(null)
+  const marqueeRef = useRef(null)
   useSectionReveal(sectionRef, { revealDoneMs: 1200, threshold: 0.08 })
+
+  useDragScroll(marqueeRef, {
+    enabled: stats.length > 0,
+    convertAnimationFrom: '.host-proof-track',
+  })
 
   if (!stats.length) return null
 
   return (
     <section className="host-proof" ref={sectionRef}>
-      <div className="host-proof-marquee">
+      <div className="host-proof-marquee" ref={marqueeRef}>
         <div className="host-proof-track">
           {stats.map((pair) => (
             <ProofPair key={pair.tall.name} pair={pair} />

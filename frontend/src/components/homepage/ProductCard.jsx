@@ -59,10 +59,11 @@ function normalizeSpec(spec) {
 }
 
 function specIcon(type, label, key) {
-  if (type === 'gearbox') {
+  if (type === 'gearbox' || type === 'fuel') {
+    const badgeClass = type === 'fuel' ? 'fbox' : 'gbox'
     return (
-      <span className="spec spec-gearbox" key={key}>
-        <span className="gbox">{label}</span>
+      <span className={`spec spec-${type}`} key={key}>
+        <span className={badgeClass}>{label}</span>
       </span>
     )
   }

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { usePageContent } from '../context/SiteContentContext'
 import PageHead from '../components/seo/PageHead'
-import { PageLoader } from '../components/ui/LoadingSpinner'
 import usePageSeo from '../hooks/usePageSeo'
 import { formatCurrency } from '../utils/format'
 
@@ -38,16 +37,7 @@ export default function AdminDashboardPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) {
-    return (
-      <>
-        <PageHead {...seo} />
-        <PageLoader message="Loading admin dashboard…" />
-      </>
-    )
-  }
-
-  if (error) {
+  if (error && !loading) {
     return (
       <>
         <PageHead {...seo} />
@@ -62,9 +52,9 @@ export default function AdminDashboardPage() {
 
   const statsLabels = copy.statsLabels ?? {}
   const cards = [
-    { label: statsLabels.orders ?? 'Total Orders', value: stats.total_orders ?? stats.total_bookings, icon: BarChart3 },
-    { label: statsLabels.revenue ?? 'Revenue', value: formatCurrency(stats.revenue), icon: TrendingUp },
-    { label: statsLabels.activeRentals ?? 'Active Rentals', value: stats.active_rentals, icon: Car },
+    { label: statsLabels.orders ?? 'Total Orders', value: stats ? (stats.total_orders ?? stats.total_bookings) : '—', icon: BarChart3 },
+    { label: statsLabels.revenue ?? 'Revenue', value: stats ? formatCurrency(stats.revenue) : '—', icon: TrendingUp },
+    { label: statsLabels.activeRentals ?? 'Active Rentals', value: stats ? stats.active_rentals : '—', icon: Car },
   ]
 
   return (

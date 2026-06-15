@@ -4,6 +4,9 @@ import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { buildStaticMapUrl } from '../../utils/parseGooglePlace'
+import ListingDetailSpecs from './ListingDetailSpecs'
+import ListingAmenities from './ListingAmenities'
+import ListingSleepingPanel from './ListingSleepingPanel'
 
 export default function ListingTabPanels({
   listing,
@@ -12,8 +15,10 @@ export default function ListingTabPanels({
   initialDropoff,
   bookingDatesRef,
   openCalendarRef,
+  selectedAddonIds = [],
+  onToggleAddon,
 }) {
-  const { typeConfig, rating, detailSpecs, description, amenities, conditions, sleeping, addons, location, pickupLocations, owner } = listing
+  const { typeConfig, rating, detailSpecs, description, amenities, conditions, addons, sleeping, location, pickupLocations, owner, listingType } = listing
   const { mapsApiKey } = useMapsConfig()
   const price = useFormatPrice()
   const [startDate, setStartDate] = useState(() => parseDateOnly(initialPickup))
@@ -106,6 +111,7 @@ export default function ListingTabPanels({
 
           <div className="tabcard" id="tabcard">
             <div className="tpanel active" data-panel="0">
+              <div className="listing-details-head">
               {rating ? (
               <div className="rating-strip">
                 <div className="rblock">
@@ -127,33 +133,10 @@ export default function ListingTabPanels({
                     <a href="#reviews">{rating.reviewLinkLabel}</a>
                   </div>
                 </div>
-                <div className="spec-grid">
-                  {detailSpecs.map((spec) => (
-                    <div key={spec.label} className="spec">
-                      <span className="spec-lbl">{spec.label}</span>
-                    </div>
-                  ))}
-                  {(pickupLocations || []).map((loc) => (
-                    <div key={`pickup-${loc.id}`} className="spec">
-                      <span className="spec-lbl">Pick-up: {loc.name}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
-              ) : (
-                <div className="spec-grid">
-                  {detailSpecs.map((spec) => (
-                    <div key={spec.label} className="spec">
-                      <span className="spec-lbl">{spec.label}</span>
-                    </div>
-                  ))}
-                  {(pickupLocations || []).map((loc) => (
-                    <div key={`pickup-${loc.id}`} className="spec">
-                      <span className="spec-lbl">Pick-up: {loc.name}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ) : null}
+              <ListingDetailSpecs detailSpecs={detailSpecs} pickupLocations={pickupLocations} />
+              </div>
               <div className="descwrap">
                 <p className="desc" id="desc">
                   {description.short}
@@ -171,20 +154,7 @@ export default function ListingTabPanels({
             </div>
 
             <div className="tpanel" data-panel="1">
-              <div className="amen-grid">
-                {amenities.length ? amenities.map((a) => (
-                  <div key={a.name} className={`amen ${a.featured ? 'feat' : ''}`}>
-                    <span className="a-ic" aria-hidden>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="m5 12 4 4 10-10" />
-                      </svg>
-                    </span>
-                    {a.name}
-                  </div>
-                )) : (
-                  <p className="listing-empty-hint">No amenities listed for this vehicle.</p>
-                )}
-              </div>
+              <ListingAmenities amenities={amenities} />
             </div>
 
             <div className="tpanel" data-panel="2">
@@ -207,62 +177,46 @@ export default function ListingTabPanels({
               </div>
             </div>
 
-            {sleeping && (
-              <div className="tpanel" data-panel="3">
-                <div className="sleep-grid">
-                  {sleeping.beds.map((bed, i) => (
-                    <div
-                      key={bed.title}
-                      className={`bedcard ${i === 0 ? 'sel' : ''}`}
-                      data-bed={i}
-                      data-cap={`${bed.title} · ${bed.dim}`}
-                    >
-                      <span className="b-pick" aria-hidden>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m5 12 4 4 10-10" />
-                        </svg>
-                      </span>
-                      <h4>{bed.title}</h4>
-                      <p>{bed.text}</p>
-                      <span className="b-dim">{bed.dim}</span>
-                    </div>
-                  ))}
+            <div className="tpanel" data-panel="3">
+              {sleeping?.beds?.length ? (
+                <ListingSleepingPanel sleeping={sleeping} />
+              ) : addons.length ? (
+                <div className="addon-list">
+                  {addons.map((a) => {
+                    const selected = selectedAddonIds.includes(Number(a.id))
+                    return (
+                      <button
+                        key={a.id || a.name}
+                        type="button"
+                        className={`addon${selected ? ' on' : ''}`}
+                        aria-pressed={selected}
+                        onClick={() => onToggleAddon?.(a.id)}
+                      >
+                        <span className="ad-ic" aria-hidden>
+                          {selected ? (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="m5 12 4 4 10-10" />
+                            </svg>
+                          ) : (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 5v14M5 12h14" />
+                            </svg>
+                          )}
+                        </span>
+                        <span className="ad-tx">
+                          <span className="ad-name">{a.name}</span>
+                          <span className="ad-sub">{a.sub}</span>
+                        </span>
+                        <span className={`ad-price ${a.free ? 'free' : ''}`}>{a.price}</span>
+                      </button>
+                    )
+                  })}
                 </div>
-                <div className="sleep-preview">
-                  {sleeping.beds.map((bed, i) => (
-                    <img
-                      key={bed.title}
-                      className={`sleep-shot ${i === 0 ? 'active' : ''}`}
-                      src={bed.image}
-                      alt={bed.title}
-                    />
-                  ))}
-                  <span className="sleep-cap" id="sleepCap">
-                    {sleeping.beds[0] ? `${sleeping.beds[0].title} · ${sleeping.beds[0].dim}` : ''}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <div className="tpanel" data-panel={sleeping ? 4 : 3}>
-              <div className="addon-list">
-                {addons.length ? addons.map((a) => (
-                  <div key={a.name} className="addon">
-                    <span className="ad-ic" aria-hidden>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 5v14M5 12h14" />
-                      </svg>
-                    </span>
-                    <span className="ad-tx">
-                      <span className="ad-name">{a.name}</span>
-                      <span className="ad-sub">{a.sub}</span>
-                    </span>
-                    <span className={`ad-price ${a.free ? 'free' : ''}`}>{a.price}</span>
-                  </div>
-                )) : (
-                  <p className="listing-empty-hint">No add-ons available for this vehicle.</p>
-                )}
-              </div>
+              ) : (
+                <p className="listing-empty-hint">
+                  {listingType === 'guesthouse' ? 'No room details listed.' : 'No add-ons available for this vehicle.'}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -298,6 +252,11 @@ export default function ListingTabPanels({
                 )}
               </span>
             </div>
+            {listingType !== 'guesthouse' && selectedAddonIds.length > 0 && (
+              <p className="listing-extras-note">
+                {selectedAddonIds.length} extra{selectedAddonIds.length !== 1 ? 's' : ''} selected
+              </p>
+            )}
             <button
               className="book-btn"
               id="listingBookBtn"
