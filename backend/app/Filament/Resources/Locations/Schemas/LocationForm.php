@@ -94,7 +94,6 @@ class LocationForm
                             ->schema([
 
                                 Fieldset::make('Opening Time')
-                                    ->hint('Locations are available 24/7. Hosts set pickup and drop-off windows per vehicle.')
                                     ->schema([
                                         Grid::make([
                                             'default' => 1,
@@ -104,7 +103,10 @@ class LocationForm
                                                 TimePicker::make('default_opening_time')
                                                     ->label('From')
                                                     ->seconds(false)
-                                                    ->default('00:00'),
+                                                    ->default('00:00')
+                                                    ->helperText(
+                                                        'Locations are available 24/7. Hosts set pickup and drop-off windows per vehicle.'
+                                                    ),
 
                                                 TimePicker::make('default_closing_time')
                                                     ->label('To')
