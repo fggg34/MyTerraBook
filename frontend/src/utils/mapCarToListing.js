@@ -125,6 +125,12 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
     addons: buildAddons(car, priceFormatter),
     pickupLocations: car.pickup_locations || [],
     dropoffLocations: car.dropoff_locations || [],
+    pickupTimeWindow: car.pickup_time_from && car.pickup_time_to
+      ? { from: car.pickup_time_from, to: car.pickup_time_to }
+      : null,
+    dropoffTimeWindow: car.dropoff_time_from && car.dropoff_time_to
+      ? { from: car.dropoff_time_from, to: car.dropoff_time_to }
+      : null,
     priceFrom,
     priceTypes: car.price_types || [],
     reviews,

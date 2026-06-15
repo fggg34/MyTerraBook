@@ -102,6 +102,58 @@
   }
   .allphotos:hover{background:var(--navy);transform:translateY(-2px);}
   .allphotos svg{width:17px;height:17px;}
+  .gslot img[role="button"]{cursor:pointer;}
+
+  /* ---------- Gallery lightbox ---------- */
+  .glx-overlay{
+    position:fixed;inset:0;z-index:300;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;background:rgba(11,21,37,.82);backdrop-filter:blur(6px);
+    opacity:0;pointer-events:none;transition:opacity .25s ease;
+  }
+  .glx-overlay.open{opacity:1;pointer-events:auto;}
+  .glx-modal{
+    position:relative;width:100%;max-width:1100px;max-height:92vh;
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .glx-head{display:flex;align-items:center;justify-content:space-between;gap:16px;color:#fff;}
+  .glx-count{font-size:14.5px;font-weight:700;letter-spacing:.01em;color:rgba(255,255,255,.85);}
+  .glx-close{
+    width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.35);
+    background:rgba(255,255,255,.08);color:#fff;cursor:pointer;
+    display:grid;place-items:center;transition:.15s;
+  }
+  .glx-close:hover{background:#fff;color:var(--navy);border-color:#fff;}
+  .glx-close svg{width:20px;height:20px;}
+  .glx-stage{
+    position:relative;flex:1 1 auto;min-height:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .glx-image{
+    max-width:100%;max-height:78vh;object-fit:contain;
+    border-radius:16px;box-shadow:0 40px 90px -30px rgba(0,0,0,.8);
+  }
+  .glx-nav{
+    position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+    width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.35);
+    background:rgba(11,21,37,.55);backdrop-filter:blur(6px);color:#fff;cursor:pointer;
+    display:grid;place-items:center;transition:.15s;
+  }
+  .glx-nav:hover{background:#fff;color:var(--navy);border-color:#fff;}
+  .glx-nav svg{width:24px;height:24px;}
+  .glx-prev{left:12px;}
+  .glx-next{right:12px;}
+  .glx-thumbs{
+    display:flex;gap:10px;overflow-x:auto;padding:4px 2px 6px;flex:0 0 auto;
+    scrollbar-width:thin;
+  }
+  .glx-thumb{
+    flex:0 0 auto;width:96px;height:66px;padding:0;border-radius:10px;overflow:hidden;
+    border:2px solid transparent;background:none;cursor:pointer;opacity:.62;transition:.15s;
+  }
+  .glx-thumb:hover{opacity:1;}
+  .glx-thumb.on{opacity:1;border-color:#fff;}
+  .glx-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
 
   /* ---------- Tab bar ---------- */
   .layout{padding:34px 0 90px;}
@@ -546,6 +598,13 @@
     .amen-grid{grid-template-columns:1fr;}
     .tpanel{padding:24px 20px 26px;}
     .tab{font-size:14px;}
+    .glx-overlay{padding:14px;}
+    .glx-image{max-height:64vh;}
+    .glx-nav{width:40px;height:40px;}
+    .glx-nav svg{width:20px;height:20px;}
+    .glx-prev{left:6px;}
+    .glx-next{right:6px;}
+    .glx-thumb{width:72px;height:50px;}
   }
 
 /* Gallery / review images (replaces offline image-slot) */

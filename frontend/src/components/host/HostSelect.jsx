@@ -7,6 +7,7 @@ export default function HostSelect({
   placeholder = 'Select',
   disabled = false,
   ariaLabel,
+  searchable = false,
 }) {
   return (
     <div className="host-select-wrap">
@@ -17,6 +18,7 @@ export default function HostSelect({
         placeholder={placeholder}
         disabled={disabled}
         ariaLabel={ariaLabel}
+        searchable={searchable}
         className="host-select"
       />
     </div>

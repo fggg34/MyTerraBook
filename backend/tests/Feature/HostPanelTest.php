@@ -392,6 +392,17 @@ class HostPanelTest extends TestCase
         ])->assertCreated();
 
         $this->postJson("/api/host/cars/{$carId}/submit")
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Pickup and drop-off times are required before submitting for review.');
+
+        $this->patchJson("/api/host/cars/{$carId}", [
+            'pickup_time_from' => '09:00',
+            'pickup_time_to' => '17:00',
+            'dropoff_time_from' => '10:00',
+            'dropoff_time_to' => '16:00',
+        ])->assertOk();
+
+        $this->postJson("/api/host/cars/{$carId}/submit")
             ->assertOk()
             ->assertJsonPath('data.listing_status', ListingApprovalStatus::PendingReview->value);
 
@@ -463,6 +474,12 @@ class HostPanelTest extends TestCase
         $this->patchJson("/api/host/cars/{$carId}", [
             'pickup_time_from' => '07:00',
             'pickup_time_to' => '17:00',
+        ])->assertOk()
+            ->assertJsonPath('data.pickup_time_from', '07:00');
+
+        $this->patchJson("/api/host/cars/{$carId}", [
+            'pickup_time_from' => '17:00',
+            'pickup_time_to' => '09:00',
         ])->assertUnprocessable();
 
         $fee = $this->postJson("/api/host/cars/{$carId}/location-fees", [

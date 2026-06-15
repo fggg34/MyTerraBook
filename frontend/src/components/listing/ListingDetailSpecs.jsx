@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react'
 
-export default function ListingDetailSpecs({ detailSpecs = [], pickupLocations = [] }) {
+function formatTimeWindow(window, label) {
+  if (!window?.from || !window?.to) return null
+  return `${label}: ${window.from} – ${window.to}`
+}
+
+export default function ListingDetailSpecs({
+  detailSpecs = [],
+  pickupLocations = [],
+  pickupTimeWindow = null,
+  dropoffTimeWindow = null,
+}) {
   const [expanded, setExpanded] = useState(false)
   const pickups = pickupLocations || []
   const firstPickup = pickups[0]
@@ -17,6 +27,16 @@ export default function ListingDetailSpecs({ detailSpecs = [], pickupLocations =
       key: `pickup-${firstPickup.id}`,
       label: `Pick-up: ${firstPickup.name}`,
     })
+  }
+
+  const pickupTimesLabel = formatTimeWindow(pickupTimeWindow, 'Pick-up times')
+  if (pickupTimesLabel) {
+    primaryItems.push({ key: 'pickup-times', label: pickupTimesLabel })
+  }
+
+  const dropoffTimesLabel = formatTimeWindow(dropoffTimeWindow, 'Drop-off times')
+  if (dropoffTimesLabel) {
+    primaryItems.push({ key: 'dropoff-times', label: dropoffTimesLabel })
   }
 
   useEffect(() => {

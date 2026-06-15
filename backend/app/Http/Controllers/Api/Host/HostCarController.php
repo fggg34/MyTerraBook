@@ -17,7 +17,6 @@ use App\Models\OutOfHoursFee;
 use App\Models\SpecialPrice;
 use App\Services\Email\EmailService;
 use App\Services\ListingSeoService;
-use App\Services\LocationHoursService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -82,7 +81,6 @@ class HostCarController extends Controller
         $car->update($data);
         $this->syncRelations($request, $car);
         $seo->syncCar($car);
-        $this->validateTimeWindows($car->fresh(['locations']));
         $this->loadCarRelations($car->fresh());
 
         return response()->json(['data' => new HostCarResource($car)]);
@@ -573,12 +571,13 @@ class HostCarController extends Controller
             'seats' => ['nullable', 'integer', 'min:0', 'max:50'],
             'sleeps' => ['nullable', 'integer', 'min:0', 'max:20'],
             'bags' => ['nullable', 'integer', 'min:0', 'max:50'],
+            'year' => ['nullable', 'integer', 'min:1990', 'max:2026'],
             'units_available' => ['nullable', 'integer', 'min:1'],
             'ical_import_url' => ['nullable', 'url', 'max:500'],
             'pickup_time_from' => ['nullable', 'date_format:H:i'],
-            'pickup_time_to' => ['nullable', 'date_format:H:i'],
+            'pickup_time_to' => ['nullable', 'date_format:H:i', 'after:pickup_time_from'],
             'dropoff_time_from' => ['nullable', 'date_format:H:i'],
-            'dropoff_time_to' => ['nullable', 'date_format:H:i'],
+            'dropoff_time_to' => ['nullable', 'date_format:H:i', 'after:dropoff_time_from'],
             'location_ids' => ['nullable', 'array'],
             'location_ids.*' => ['integer', 'exists:locations,id'],
             'pickup_location_ids' => ['nullable', 'array'],
@@ -687,6 +686,12 @@ class HostCarController extends Controller
             return 'At least one daily fare is required before submitting for review.';
         }
 
+        foreach (['pickup_time_from', 'pickup_time_to', 'dropoff_time_from', 'dropoff_time_to'] as $field) {
+            if (blank($car->{$field})) {
+                return 'Pickup and drop-off times are required before submitting for review.';
+            }
+        }
+
         $isCampervan = $car->subCategory?->mainCategory?->slug === 'campervan';
         if ($isCampervan) {
             if (($car->sleeps ?? 0) < 1) {
@@ -697,28 +702,6 @@ class HostCarController extends Controller
         }
 
         return null;
-    }
-
-    private function validateTimeWindows(Car $car): void
-    {
-        $hours = app(LocationHoursService::class);
-
-        $pickupLocations = $car->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_pickup);
-        $dropoffLocations = $car->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_dropoff);
-
-        $hours->assertWindowWithinBounds(
-            $car->pickup_time_from,
-            $car->pickup_time_to,
-            $hours->intersectionForLocations($pickupLocations),
-            'pickup_time',
-        );
-
-        $hours->assertWindowWithinBounds(
-            $car->dropoff_time_from,
-            $car->dropoff_time_to,
-            $hours->intersectionForLocations($dropoffLocations),
-            'dropoff_time',
-        );
     }
 
     /**

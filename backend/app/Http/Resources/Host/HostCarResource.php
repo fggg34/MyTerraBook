@@ -21,6 +21,7 @@ class HostCarResource extends JsonResource
             'seats' => $this->seats,
             'sleeps' => $this->sleeps,
             'bags' => $this->bags,
+            'year' => $this->year,
             'main_image_path' => $this->main_image_path,
             'details_image_paths' => $this->details_image_paths ?? [],
             'og_image' => $this->og_image,

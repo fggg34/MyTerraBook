@@ -76,6 +76,13 @@ export function formatDateOnly(value) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
+export function parseTimeParts(time) {
+  if (!time) return null
+  const match = String(time).match(/^(\d{1,2}):(\d{2})/)
+  if (!match) return null
+  return { hours: Number(match[1]), minutes: Number(match[2]) }
+}
+
 export function formatDateTimeAt(value, hours = 10, minutes = 0) {
   if (!value) return ''
   const d = value instanceof Date ? new Date(value) : new Date(String(value).slice(0, 10))

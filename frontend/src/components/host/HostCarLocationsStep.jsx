@@ -1,6 +1,5 @@
 import HostMultiSelect from './HostMultiSelect'
 import HostSelect from './HostSelect'
-import { formatWindowLabel } from '../../utils/locationHours'
 
 function toLocationOptions(locations = []) {
   return locations.map((loc) => ({
@@ -10,20 +9,12 @@ function toLocationOptions(locations = []) {
   }))
 }
 
-function toTimeOptions(times = []) {
-  return times.map((t) => ({ value: t, label: t }))
-}
-
 export default function HostCarLocationsStep({
   catalogLocations,
   form,
   setForm,
   selectedPickupLocations,
   selectedDropoffLocations,
-  pickupBounds,
-  dropoffBounds,
-  pickupTimeOptions,
-  dropoffTimeOptions,
   canConfigureTimes,
   recordId,
   locationFees,
@@ -86,49 +77,43 @@ export default function HostCarLocationsStep({
         <section className="host-subsection">
           <div className="host-subsection-head">
             <h3>Pickup & drop-off times</h3>
-            <p>Times must fall within admin opening hours for all selected locations.</p>
+            <p>Set the pickup and drop-off time windows guests can book for this vehicle.</p>
           </div>
           <div className="host-locations-grid">
             <div className="host-field">
               <label>Pickup from</label>
-              <p className="host-field-hint">Allowed: {formatWindowLabel(pickupBounds)}</p>
-              <HostSelect
+              <input
+                type="time"
                 value={form.pickup_time_from}
-                onChange={(v) => setForm({ ...form, pickup_time_from: v })}
-                options={toTimeOptions(pickupTimeOptions)}
-                placeholder="Select time"
-                ariaLabel="Pickup from"
+                onChange={(e) => setForm({ ...form, pickup_time_from: e.target.value })}
+                aria-label="Pickup from"
               />
             </div>
             <div className="host-field">
               <label>Pickup to</label>
-              <HostSelect
+              <input
+                type="time"
                 value={form.pickup_time_to}
-                onChange={(v) => setForm({ ...form, pickup_time_to: v })}
-                options={toTimeOptions(pickupTimeOptions)}
-                placeholder="Select time"
-                ariaLabel="Pickup to"
+                onChange={(e) => setForm({ ...form, pickup_time_to: e.target.value })}
+                aria-label="Pickup to"
               />
             </div>
             <div className="host-field">
               <label>Drop-off from</label>
-              <p className="host-field-hint">Allowed: {formatWindowLabel(dropoffBounds)}</p>
-              <HostSelect
+              <input
+                type="time"
                 value={form.dropoff_time_from}
-                onChange={(v) => setForm({ ...form, dropoff_time_from: v })}
-                options={toTimeOptions(dropoffTimeOptions)}
-                placeholder="Select time"
-                ariaLabel="Drop-off from"
+                onChange={(e) => setForm({ ...form, dropoff_time_from: e.target.value })}
+                aria-label="Drop-off from"
               />
             </div>
             <div className="host-field">
               <label>Drop-off to</label>
-              <HostSelect
+              <input
+                type="time"
                 value={form.dropoff_time_to}
-                onChange={(v) => setForm({ ...form, dropoff_time_to: v })}
-                options={toTimeOptions(dropoffTimeOptions)}
-                placeholder="Select time"
-                ariaLabel="Drop-off to"
+                onChange={(e) => setForm({ ...form, dropoff_time_to: e.target.value })}
+                aria-label="Drop-off to"
               />
             </div>
           </div>

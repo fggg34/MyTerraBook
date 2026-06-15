@@ -16,17 +16,24 @@ export default function FieldSelect({
   ariaLabel,
   disabled = false,
   className = '',
+  searchable = false,
 }) {
   const listId = useId()
   const rootRef = useRef(null)
   const triggerRef = useRef(null)
   const menuRef = useRef(null)
+  const searchRef = useRef(null)
   const [open, setOpen] = useState(false)
   const [highlight, setHighlight] = useState(-1)
   const [menuStyle, setMenuStyle] = useState(null)
+  const [query, setQuery] = useState('')
 
   const selected = options.find((opt) => opt.value === value)
   const hasValue = Boolean(value && selected)
+
+  const visibleOptions = searchable && query.trim()
+    ? options.filter((opt) => String(opt.label).toLowerCase().includes(query.trim().toLowerCase()))
+    : options
 
   const updateMenuPosition = useCallback(() => {
     const el = triggerRef.current
@@ -44,12 +51,14 @@ export default function FieldSelect({
   const closeMenu = useCallback(() => {
     setOpen(false)
     setHighlight(-1)
+    setQuery('')
   }, [])
 
   const openMenu = useCallback(() => {
     if (disabled) return
     updateMenuPosition()
     setOpen(true)
+    setQuery('')
     const idx = options.findIndex((opt) => opt.value === value)
     setHighlight(idx >= 0 ? idx : 0)
   }, [disabled, options, updateMenuPosition, value])
@@ -58,6 +67,14 @@ export default function FieldSelect({
     onChange?.(opt.value)
     closeMenu()
   }
+
+  useEffect(() => {
+    if (open && searchable) {
+      const id = window.requestAnimationFrame(() => searchRef.current?.focus())
+      return () => window.cancelAnimationFrame(id)
+    }
+    return undefined
+  }, [open, searchable])
 
   useEffect(() => {
     if (!open) return undefined
@@ -93,27 +110,48 @@ export default function FieldSelect({
       closeMenu()
       return
     }
-    if (!open || !options.length) return
+    if (!open || !visibleOptions.length) return
     if (event.key === 'ArrowDown') {
       event.preventDefault()
-      setHighlight((prev) => (prev + 1) % options.length)
+      setHighlight((prev) => (prev + 1) % visibleOptions.length)
     } else if (event.key === 'ArrowUp') {
       event.preventDefault()
-      setHighlight((prev) => (prev <= 0 ? options.length - 1 : prev - 1))
-    } else if ((event.key === 'Enter' || event.key === ' ') && highlight >= 0) {
+      setHighlight((prev) => (prev <= 0 ? visibleOptions.length - 1 : prev - 1))
+    } else if (event.key === 'Enter' && highlight >= 0) {
       event.preventDefault()
-      selectOption(options[highlight])
+      selectOption(visibleOptions[highlight])
+    } else if (event.key === ' ' && !searchable && highlight >= 0) {
+      event.preventDefault()
+      selectOption(visibleOptions[highlight])
     }
   }
 
   const menu = open && menuStyle && (
     <ul ref={menuRef} id={listId} className="field-select-menu" style={menuStyle} role="listbox">
-      {options.length === 0 ? (
+      {searchable && (
+        <li className="field-select-search" role="presentation">
+          <input
+            ref={searchRef}
+            type="text"
+            className="field-select-search-input"
+            value={query}
+            placeholder="Search…"
+            aria-label={ariaLabel ? `Search ${ariaLabel}` : 'Search'}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              setHighlight(0)
+            }}
+            onKeyDown={onKeyDown}
+            onMouseDown={(event) => event.stopPropagation()}
+          />
+        </li>
+      )}
+      {visibleOptions.length === 0 ? (
         <li className="field-select-status" role="presentation">
-          No options available
+          {searchable && query.trim() ? 'No matches' : 'No options available'}
         </li>
       ) : (
-        options.map((opt, index) => (
+        visibleOptions.map((opt, index) => (
           <li key={opt.value} role="presentation">
             <button
               type="button"

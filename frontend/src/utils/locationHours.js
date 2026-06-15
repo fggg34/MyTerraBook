@@ -49,13 +49,13 @@ export function intersectionForLocations(locations) {
   return { from: minutesToTime(fromMinutes), to: minutesToTime(toMinutes) }
 }
 
-export function timeOptionsForWindow(from, to) {
+export function timeOptionsForWindow(from, to, stepMinutes = 15) {
   const start = timeToMinutes(from)
   const end = timeToMinutes(to)
   if (start === null || end === null || start >= end) return []
 
   const options = []
-  for (let m = start; m <= end; m += 30) {
+  for (let m = start; m <= end; m += stepMinutes) {
     options.push(minutesToTime(m))
   }
   return options

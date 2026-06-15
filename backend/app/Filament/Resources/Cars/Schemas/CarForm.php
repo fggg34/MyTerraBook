@@ -166,6 +166,15 @@ class CarForm
                                         );
                                     }),
 
+                                Select::make('year')
+                                    ->label('Year')
+                                    ->options(fn (): array => collect(range(2026, 1990))
+                                        ->mapWithKeys(fn (int $year): array => [$year => (string) $year])
+                                        ->all())
+                                    ->searchable()
+                                    ->native(false)
+                                    ->placeholder('Select a year'),
+
                                 CheckboxList::make('characteristics')
                                     ->label('Characteristics')
                                     ->relationship(

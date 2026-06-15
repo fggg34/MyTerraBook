@@ -969,6 +969,29 @@ a.host-overview-card:hover .host-overview-card-link {
   color: #64748b;
 }
 
+.field-select-search {
+  padding: 4px 4px 8px;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+
+.field-select-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid #e2e7ef;
+  border-radius: 8px;
+  outline: none;
+}
+
+.field-select-search-input:focus {
+  border-color: #3a8d5d;
+}
+
 .host-multi-trigger {
   display: flex;
   align-items: center;

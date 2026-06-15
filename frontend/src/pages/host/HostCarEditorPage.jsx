@@ -42,7 +42,34 @@ import HostDateTimePicker from '../../components/host/HostDateTimePicker'
 import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { useToast } from '../../context/ToastContext'
-import { intersectionForLocations, timeOptionsForWindow } from '../../utils/locationHours'
+
+function timeToMinutes(time) {
+  if (!time) return null
+  const [h, m] = String(time).split(':').map(Number)
+  if (Number.isNaN(h) || Number.isNaN(m)) return null
+  return h * 60 + m
+}
+
+function validateCarTimes(form) {
+  const hasPickup = form.pickup_location_ids.length > 0
+  const hasDropoff = form.dropoff_location_ids.length > 0
+  if (!hasPickup || !hasDropoff) return null
+
+  const fields = ['pickup_time_from', 'pickup_time_to', 'dropoff_time_from', 'dropoff_time_to']
+  if (fields.some((field) => !form[field])) {
+    return 'Set pickup and drop-off times for all four fields.'
+  }
+
+  if (timeToMinutes(form.pickup_time_from) >= timeToMinutes(form.pickup_time_to)) {
+    return 'Pickup end time must be after the start time.'
+  }
+
+  if (timeToMinutes(form.dropoff_time_from) >= timeToMinutes(form.dropoff_time_to)) {
+    return 'Drop-off end time must be after the start time.'
+  }
+
+  return null
+}
 
 const STEPS = ['Vehicle', 'Specs', 'Locations', 'Units', 'Pricing', 'Availability', 'Review']
 
@@ -56,8 +83,8 @@ const emptyForm = {
   seats: 5,
   sleeps: 0,
   bags: 2,
+  year: '',
   units_available: 1,
-  ical_import_url: '',
   details_image_paths: [],
   pickup_location_ids: [],
   dropoff_location_ids: [],
@@ -192,6 +219,7 @@ export default function HostCarEditorPage() {
           seats: data.seats ?? 5,
           sleeps: data.sleeps ?? 0,
           bags: data.bags ?? 2,
+          year: data.year ?? '',
           characteristic_ids: data.characteristic_ids || [],
           rental_option_ids: data.rental_option_ids || [],
         })
@@ -206,6 +234,12 @@ export default function HostCarEditorPage() {
   }, [id, isNew, toast])
 
   const save = async () => {
+    const timeError = validateCarTimes(form)
+    if (timeError) {
+      toast(timeError, 'error')
+      return null
+    }
+
     setSaving(true)
     try {
       const payload = {
@@ -217,8 +251,8 @@ export default function HostCarEditorPage() {
         seats: form.seats,
         sleeps: form.sleeps,
         bags: form.bags,
+        year: form.year ? Number(form.year) : null,
         units_available: form.units_available,
-        ical_import_url: form.ical_import_url,
         pickup_time_from: form.pickup_time_from || null,
         pickup_time_to: form.pickup_time_to || null,
         dropoff_time_from: form.dropoff_time_from || null,
@@ -256,6 +290,12 @@ export default function HostCarEditorPage() {
   }
 
   const handleSubmitReview = async () => {
+    const timeError = validateCarTimes(form)
+    if (timeError) {
+      toast(timeError, 'error')
+      return
+    }
+
     let carId = recordId
     if (!carId) {
       carId = await save()
@@ -337,6 +377,14 @@ export default function HostCarEditorPage() {
 
   const isCampervan = selectedMainCategory?.slug === 'campervan'
 
+  const yearOptions = useMemo(
+    () => Array.from({ length: 2026 - 1990 + 1 }, (_, i) => {
+      const year = 2026 - i
+      return { value: String(year), label: String(year) }
+    }),
+    [],
+  )
+
   const setCapacity = (key, rawValue, max) => {
     const parsed = parseInt(rawValue, 10)
     const next = Number.isNaN(parsed) ? 0 : Math.max(0, Math.min(parsed, max))
@@ -351,26 +399,6 @@ export default function HostCarEditorPage() {
   const selectedDropoffLocations = useMemo(
     () => catalog.locations.filter((loc) => hasId(form.dropoff_location_ids, loc.id)),
     [catalog.locations, form.dropoff_location_ids],
-  )
-
-  const pickupBounds = useMemo(
-    () => intersectionForLocations(selectedPickupLocations),
-    [selectedPickupLocations],
-  )
-
-  const dropoffBounds = useMemo(
-    () => intersectionForLocations(selectedDropoffLocations),
-    [selectedDropoffLocations],
-  )
-
-  const pickupTimeOptions = useMemo(
-    () => timeOptionsForWindow(pickupBounds?.from, pickupBounds?.to),
-    [pickupBounds],
-  )
-
-  const dropoffTimeOptions = useMemo(
-    () => timeOptionsForWindow(dropoffBounds?.from, dropoffBounds?.to),
-    [dropoffBounds],
   )
 
   const canConfigureTimes = selectedPickupLocations.length > 0 && selectedDropoffLocations.length > 0
@@ -505,6 +533,16 @@ export default function HostCarEditorPage() {
                 <p className="host-capacity-hint">Sleeps is how many people can stay overnight in the campervan.</p>
               )}
             </div>
+            <div className="host-field"><label>Year</label>
+              <HostSelect
+                value={String(form.year || '')}
+                onChange={(v) => setForm({ ...form, year: v })}
+                options={yearOptions}
+                placeholder="Select a year"
+                searchable
+                ariaLabel="Year"
+              />
+            </div>
             <div className="host-field"><label>Characteristics</label>
               <div className="grid grid-cols-2 gap-2">
                 {catalog.characteristics.map((c) => (
@@ -534,10 +572,6 @@ export default function HostCarEditorPage() {
             setForm={setForm}
             selectedPickupLocations={selectedPickupLocations}
             selectedDropoffLocations={selectedDropoffLocations}
-            pickupBounds={pickupBounds}
-            dropoffBounds={dropoffBounds}
-            pickupTimeOptions={pickupTimeOptions}
-            dropoffTimeOptions={dropoffTimeOptions}
             canConfigureTimes={canConfigureTimes}
             recordId={recordId}
             locationFees={locationFees}
@@ -695,8 +729,6 @@ export default function HostCarEditorPage() {
                   </li>
                 ))}
               </ul>
-
-              <div className="host-field mt-6"><label>iCal import URL</label><input value={form.ical_import_url} onChange={(e) => setForm({ ...form, ical_import_url: e.target.value })} /></div>
             </>
           ) : <p className="text-sm text-slate-500">Save the vehicle first to manage pricing.</p>
         )}

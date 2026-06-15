@@ -18,7 +18,7 @@ export default function ListingTabPanels({
   selectedAddonIds = [],
   onToggleAddon,
 }) {
-  const { typeConfig, rating, detailSpecs, description, amenities, conditions, addons, sleeping, location, pickupLocations, owner, listingType } = listing
+  const { typeConfig, rating, detailSpecs, description, amenities, conditions, addons, sleeping, location, pickupLocations, pickupTimeWindow, dropoffTimeWindow, owner, listingType } = listing
   const { mapsApiKey } = useMapsConfig()
   const price = useFormatPrice()
   const [startDate, setStartDate] = useState(() => parseDateOnly(initialPickup))
@@ -135,7 +135,12 @@ export default function ListingTabPanels({
                 </div>
               </div>
               ) : null}
-              <ListingDetailSpecs detailSpecs={detailSpecs} pickupLocations={pickupLocations} />
+              <ListingDetailSpecs
+                detailSpecs={detailSpecs}
+                pickupLocations={pickupLocations}
+                pickupTimeWindow={pickupTimeWindow}
+                dropoffTimeWindow={dropoffTimeWindow}
+              />
               </div>
               <div className="descwrap">
                 <p className="desc" id="desc">

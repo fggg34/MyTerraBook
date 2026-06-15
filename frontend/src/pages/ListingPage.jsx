@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext'
 import useListingEffects from '../hooks/useListingEffects'
 import useListingPage from '../hooks/useListingPage'
 import usePageSeo from '../hooks/usePageSeo'
-import { formatDateOnly, formatDateTimeAt } from '../utils/format'
+import { formatDateOnly, formatDateTimeAt, parseTimeParts } from '../utils/format'
 import '../styles/listing.css'
 
 export default function ListingPage({ listingType = 'campervan' }) {
@@ -80,8 +80,10 @@ export default function ListingPage({ listingType = 'campervan' }) {
 
       const priceTypeId =
         car.price_types?.[0]?.id || listing?.priceTypes?.[0]?.id || queryDefaults.price_type_id
-      const pickup_at = formatDateTimeAt(selectedPickup, 11, 0) || queryDefaults.pickup_at || ''
-      const dropoff_at = formatDateTimeAt(selectedDropoff, 10, 0) || queryDefaults.dropoff_at || ''
+      const pickupParts = parseTimeParts(car.pickup_time_from) || { hours: 9, minutes: 0 }
+      const dropoffParts = parseTimeParts(car.dropoff_time_from) || { hours: 10, minutes: 0 }
+      const pickup_at = formatDateTimeAt(selectedPickup, pickupParts.hours, pickupParts.minutes) || queryDefaults.pickup_at || ''
+      const dropoff_at = formatDateTimeAt(selectedDropoff, dropoffParts.hours, dropoffParts.minutes) || queryDefaults.dropoff_at || ''
       if (!pickup_at || !dropoff_at) {
         openDatePicker()
         toast('Select pick-up and drop-off dates to continue', 'info')
