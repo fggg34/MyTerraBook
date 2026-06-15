@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { AlertCircle, ArrowRight, CalendarDays, Clock, Plus, Timer, Trash2 } from 'lucide-react'
 import {
   addHostCarAvailability,
   addHostCarSpecialPrice,
@@ -404,6 +405,9 @@ export default function HostCarEditorPage() {
   const canConfigureTimes = selectedPickupLocations.length > 0 && selectedDropoffLocations.length > 0
 
 
+  const dailyRangeInvalid = Number(fareDraft.to_days) <= Number(fareDraft.from_days)
+  const hourlyRangeInvalid = Number(hourlyDraft.max_minutes) <= Number(hourlyDraft.min_minutes)
+
   return (
     <div className="host-wizard">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -647,89 +651,167 @@ export default function HostCarEditorPage() {
         )}
         {step === 4 && (
           recordId ? (
-            <>
-              <h3 className="mb-2 font-semibold text-brand-950">Daily fares</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="host-field"><label>Price type</label>
-                  <HostSelect
-                    value={String(fareDraft.price_type_id || '')}
-                    onChange={(v) => setFareDraft({ ...fareDraft, price_type_id: v })}
-                    options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
-                    placeholder="Select"
-                    ariaLabel="Daily fare price type"
-                  />
+            <div className="host-pricing">
+              {/* Daily fares */}
+              <section className="host-fare-section">
+                <div className="host-fare-head">
+                  <span className="host-fare-head-icon"><CalendarDays size={18} /></span>
+                  <div className="host-fare-head-text">
+                    <h3>Daily fares</h3>
+                    <p>Set a price per day based on how long the guest rents. You can add multiple tiers — e.g. a lower rate for longer bookings.</p>
+                  </div>
                 </div>
-                <div className="host-field"><label>From days</label><input type="number" value={fareDraft.from_days} onChange={(e) => setFareDraft({ ...fareDraft, from_days: Number(e.target.value) })} /></div>
-                <div className="host-field"><label>To days</label><input type="number" value={fareDraft.to_days} onChange={(e) => setFareDraft({ ...fareDraft, to_days: Number(e.target.value) })} /></div>
-                <div className="host-field"><label>€ / day</label><input type="number" value={fareDraft.price_per_day_euros} onChange={(e) => setFareDraft({ ...fareDraft, price_per_day_euros: Number(e.target.value) })} /></div>
-              </div>
-              <button type="button" className="host-btn secondary" disabled={!fareDraft.price_type_id} onClick={async () => {
-                await createHostCarDailyFare(recordId, fareDraft)
-                loadPricing(recordId)
-              }}>Add daily fare</button>
-              <ul className="mt-3 space-y-2 text-sm">
-                {dailyFares.map((f) => (
-                  <li key={f.id} className="flex justify-between">
-                    <span>{f.price_type?.name}: days {f.from_days}-{f.to_days} @ €{(f.price_per_day_cents / 100).toFixed(2)}</span>
-                    <button type="button" className="host-btn danger" onClick={async () => { await deleteHostCarDailyFare(recordId, f.id); loadPricing(recordId) }}>Remove</button>
-                  </li>
-                ))}
-              </ul>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="host-field"><label>Price type</label>
+                    <HostSelect
+                      value={String(fareDraft.price_type_id || '')}
+                      onChange={(v) => setFareDraft({ ...fareDraft, price_type_id: v })}
+                      options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
+                      placeholder="Select"
+                      ariaLabel="Daily fare price type"
+                    />
+                  </div>
+                  <div className="host-field"><label>€ / day</label><input type="number" min={0} value={fareDraft.price_per_day_euros} onChange={(e) => setFareDraft({ ...fareDraft, price_per_day_euros: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>From days</label><input type="number" min={1} className={dailyRangeInvalid ? 'has-error' : ''} value={fareDraft.from_days} onChange={(e) => setFareDraft({ ...fareDraft, from_days: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>To days</label><input type="number" min={1} className={dailyRangeInvalid ? 'has-error' : ''} value={fareDraft.to_days} onChange={(e) => setFareDraft({ ...fareDraft, to_days: Number(e.target.value) })} /></div>
+                </div>
+                {dailyRangeInvalid && (
+                  <p className="host-field-error"><AlertCircle size={14} /> “From days” must be lower than “To days”.</p>
+                )}
+                <div className="host-fare-preview">
+                  <span className="host-fare-preview-label">Preview</span>
+                  <span className="host-fare-tag is-preview">
+                    <CalendarDays size={14} className="host-fare-tag-icon" />
+                    <span className="host-fare-tag-text">Days {fareDraft.from_days}–{fareDraft.to_days} <ArrowRight size={12} /> <strong>€{Number(fareDraft.price_per_day_euros || 0).toFixed(0)}/day</strong></span>
+                  </span>
+                </div>
+                <span className="host-tooltip-wrap" data-tooltip={!fareDraft.price_type_id ? 'Select a price type to add a fare' : undefined}>
+                  <button type="button" className="host-btn-add" disabled={!fareDraft.price_type_id || dailyRangeInvalid} onClick={async () => {
+                    await createHostCarDailyFare(recordId, fareDraft)
+                    loadPricing(recordId)
+                  }}><Plus size={16} /> Add daily fare</button>
+                </span>
+                {dailyFares.length > 0 && (
+                  <ul className="host-fare-list">
+                    {dailyFares.map((f) => (
+                      <li key={f.id} className="host-fare-tag">
+                        <CalendarDays size={14} className="host-fare-tag-icon" />
+                        <span className="host-fare-tag-text">
+                          {f.price_type?.name && <em>{f.price_type.name}</em>}
+                          Days {f.from_days}–{f.to_days} <ArrowRight size={12} /> <strong>€{(f.price_per_day_cents / 100).toFixed(2)}/day</strong>
+                        </span>
+                        <button type="button" className="host-fare-tag-remove" aria-label="Remove fare" title="Remove fare" onClick={async () => { await deleteHostCarDailyFare(recordId, f.id); loadPricing(recordId) }}><Trash2 size={14} /></button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
 
-              <h3 className="mb-2 mt-6 font-semibold text-brand-950">Hourly fares</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="host-field"><label>Price type</label>
-                  <HostSelect
-                    value={String(hourlyDraft.price_type_id || '')}
-                    onChange={(v) => setHourlyDraft({ ...hourlyDraft, price_type_id: v })}
-                    options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
-                    placeholder="Select"
-                    ariaLabel="Hourly fare price type"
-                  />
+              {/* Hourly fares */}
+              <section className="host-fare-section">
+                <div className="host-fare-head">
+                  <span className="host-fare-head-icon"><Clock size={18} /></span>
+                  <div className="host-fare-head-text">
+                    <h3>Hourly fares</h3>
+                    <p>Set a flat price for short rentals within a duration window. Guests pay this when the trip lasts between the minimum and maximum.</p>
+                  </div>
                 </div>
-                <div className="host-field"><label>Min minutes</label><input type="number" value={hourlyDraft.min_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, min_minutes: Number(e.target.value) })} /></div>
-                <div className="host-field"><label>Max minutes</label><input type="number" value={hourlyDraft.max_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, max_minutes: Number(e.target.value) })} /></div>
-                <div className="host-field"><label>Total € price</label><input type="number" value={hourlyDraft.total_price_euros} onChange={(e) => setHourlyDraft({ ...hourlyDraft, total_price_euros: Number(e.target.value) })} /></div>
-              </div>
-              <button type="button" className="host-btn secondary" disabled={!hourlyDraft.price_type_id} onClick={async () => {
-                await createHostCarHourlyFare(recordId, hourlyDraft)
-                loadPricing(recordId)
-              }}>Add hourly fare</button>
-              <ul className="mt-3 space-y-2 text-sm">
-                {hourlyFares.map((f) => (
-                  <li key={f.id} className="flex justify-between">
-                    <span>{f.price_type?.name}: {f.min_minutes}-{f.max_minutes} min @ €{(f.total_price_cents / 100).toFixed(2)}</span>
-                    <button type="button" className="host-btn danger" onClick={async () => { await deleteHostCarHourlyFare(recordId, f.id); loadPricing(recordId) }}>Remove</button>
-                  </li>
-                ))}
-              </ul>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="host-field"><label>Price type</label>
+                    <HostSelect
+                      value={String(hourlyDraft.price_type_id || '')}
+                      onChange={(v) => setHourlyDraft({ ...hourlyDraft, price_type_id: v })}
+                      options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
+                      placeholder="Select"
+                      ariaLabel="Hourly fare price type"
+                    />
+                  </div>
+                  <div className="host-field"><label>Total € price</label><input type="number" min={0} value={hourlyDraft.total_price_euros} onChange={(e) => setHourlyDraft({ ...hourlyDraft, total_price_euros: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>Minimum rental duration <span className="host-field-note">(e.g. 60 min = 1 hour)</span></label><input type="number" min={0} className={hourlyRangeInvalid ? 'has-error' : ''} value={hourlyDraft.min_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, min_minutes: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>Maximum rental duration <span className="host-field-note">(e.g. 240 min = 4 hours)</span></label><input type="number" min={0} className={hourlyRangeInvalid ? 'has-error' : ''} value={hourlyDraft.max_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, max_minutes: Number(e.target.value) })} /></div>
+                </div>
+                {hourlyRangeInvalid && (
+                  <p className="host-field-error"><AlertCircle size={14} /> Minimum duration must be lower than the maximum.</p>
+                )}
+                <div className="host-fare-preview">
+                  <span className="host-fare-preview-label">Preview</span>
+                  <span className="host-fare-tag is-preview">
+                    <Clock size={14} className="host-fare-tag-icon" />
+                    <span className="host-fare-tag-text">{hourlyDraft.min_minutes}–{hourlyDraft.max_minutes} min <ArrowRight size={12} /> <strong>€{Number(hourlyDraft.total_price_euros || 0).toFixed(0)}</strong></span>
+                  </span>
+                </div>
+                <span className="host-tooltip-wrap" data-tooltip={!hourlyDraft.price_type_id ? 'Select a price type to add a fare' : undefined}>
+                  <button type="button" className="host-btn-add" disabled={!hourlyDraft.price_type_id || hourlyRangeInvalid} onClick={async () => {
+                    await createHostCarHourlyFare(recordId, hourlyDraft)
+                    loadPricing(recordId)
+                  }}><Plus size={16} /> Add hourly fare</button>
+                </span>
+                {hourlyFares.length > 0 && (
+                  <ul className="host-fare-list">
+                    {hourlyFares.map((f) => (
+                      <li key={f.id} className="host-fare-tag">
+                        <Clock size={14} className="host-fare-tag-icon" />
+                        <span className="host-fare-tag-text">
+                          {f.price_type?.name && <em>{f.price_type.name}</em>}
+                          {f.min_minutes}–{f.max_minutes} min <ArrowRight size={12} /> <strong>€{(f.total_price_cents / 100).toFixed(2)}</strong>
+                        </span>
+                        <button type="button" className="host-fare-tag-remove" aria-label="Remove fare" title="Remove fare" onClick={async () => { await deleteHostCarHourlyFare(recordId, f.id); loadPricing(recordId) }}><Trash2 size={14} /></button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
 
-              <h3 className="mb-2 mt-6 font-semibold text-brand-950">Extra-hour fares</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="host-field"><label>Price type</label>
-                  <HostSelect
-                    value={String(extraDraft.price_type_id || '')}
-                    onChange={(v) => setExtraDraft({ ...extraDraft, price_type_id: v })}
-                    options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
-                    placeholder="Select"
-                    ariaLabel="Extra-hour fare price type"
-                  />
+              {/* Extra-hour fares */}
+              <section className="host-fare-section">
+                <div className="host-fare-head">
+                  <span className="host-fare-head-icon"><Timer size={18} /></span>
+                  <div className="host-fare-head-text">
+                    <h3>Extra-hour fares</h3>
+                    <p>Set the amount charged for each hour a guest keeps the vehicle beyond their booked window.</p>
+                  </div>
                 </div>
-                <div className="host-field"><label>€ / extra hour</label><input type="number" value={extraDraft.charge_per_extra_hour_euros} onChange={(e) => setExtraDraft({ ...extraDraft, charge_per_extra_hour_euros: Number(e.target.value) })} /></div>
-              </div>
-              <button type="button" className="host-btn secondary" disabled={!extraDraft.price_type_id} onClick={async () => {
-                await createHostCarExtraHourFare(recordId, extraDraft)
-                loadPricing(recordId)
-              }}>Add extra-hour fare</button>
-              <ul className="mt-3 space-y-2 text-sm">
-                {extraHourFares.map((f) => (
-                  <li key={f.id} className="flex justify-between">
-                    <span>{f.price_type?.name}: €{(f.charge_per_extra_hour_cents / 100).toFixed(2)} / extra hour</span>
-                    <button type="button" className="host-btn danger" onClick={async () => { await deleteHostCarExtraHourFare(recordId, f.id); loadPricing(recordId) }}>Remove</button>
-                  </li>
-                ))}
-              </ul>
-            </>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="host-field"><label>Price type</label>
+                    <HostSelect
+                      value={String(extraDraft.price_type_id || '')}
+                      onChange={(v) => setExtraDraft({ ...extraDraft, price_type_id: v })}
+                      options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
+                      placeholder="Select"
+                      ariaLabel="Extra-hour fare price type"
+                    />
+                  </div>
+                  <div className="host-field"><label>€ / extra hour</label><input type="number" min={0} value={extraDraft.charge_per_extra_hour_euros} onChange={(e) => setExtraDraft({ ...extraDraft, charge_per_extra_hour_euros: Number(e.target.value) })} /></div>
+                </div>
+                <div className="host-fare-preview">
+                  <span className="host-fare-preview-label">Preview</span>
+                  <span className="host-fare-tag is-preview">
+                    <Timer size={14} className="host-fare-tag-icon" />
+                    <span className="host-fare-tag-text"><strong>€{Number(extraDraft.charge_per_extra_hour_euros || 0).toFixed(0)}</strong> / extra hour</span>
+                  </span>
+                </div>
+                <span className="host-tooltip-wrap" data-tooltip={!extraDraft.price_type_id ? 'Select a price type to add a fare' : undefined}>
+                  <button type="button" className="host-btn-add" disabled={!extraDraft.price_type_id} onClick={async () => {
+                    await createHostCarExtraHourFare(recordId, extraDraft)
+                    loadPricing(recordId)
+                  }}><Plus size={16} /> Add extra-hour fare</button>
+                </span>
+                {extraHourFares.length > 0 && (
+                  <ul className="host-fare-list">
+                    {extraHourFares.map((f) => (
+                      <li key={f.id} className="host-fare-tag">
+                        <Timer size={14} className="host-fare-tag-icon" />
+                        <span className="host-fare-tag-text">
+                          {f.price_type?.name && <em>{f.price_type.name}</em>}
+                          <strong>€{(f.charge_per_extra_hour_cents / 100).toFixed(2)}</strong> / extra hour
+                        </span>
+                        <button type="button" className="host-fare-tag-remove" aria-label="Remove fare" title="Remove fare" onClick={async () => { await deleteHostCarExtraHourFare(recordId, f.id); loadPricing(recordId) }}><Trash2 size={14} /></button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            </div>
           ) : <p className="text-sm text-slate-500">Save the vehicle first to manage pricing.</p>
         )}
         {step === 5 && (

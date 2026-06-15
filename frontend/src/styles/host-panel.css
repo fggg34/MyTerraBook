@@ -1282,6 +1282,235 @@ a.host-overview-card:hover .host-overview-card-link {
   color: #64748b;
 }
 
+/* ── Pricing step (fares) ───────────────────────────── */
+.host-pricing {
+  display: flex;
+  flex-direction: column;
+}
+
+.host-fare-section {
+  padding: 24px 0;
+}
+
+.host-fare-section:first-child {
+  padding-top: 4px;
+}
+
+.host-fare-section:last-child {
+  padding-bottom: 4px;
+}
+
+.host-fare-section + .host-fare-section {
+  border-top: 1px solid #eef2f8;
+}
+
+.host-fare-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.host-fare-head-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: #e8f5ee;
+  color: #3a8d5d;
+}
+
+.host-fare-head-text h3 {
+  margin: 0 0 3px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f2036;
+}
+
+.host-fare-head-text p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+  max-width: 60ch;
+}
+
+.host-field-note {
+  font-size: 11px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.host-field input.has-error {
+  border-color: #f5c2c7;
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.08);
+}
+
+.host-field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -6px 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b42318;
+}
+
+.host-field-error svg {
+  flex: 0 0 auto;
+}
+
+.host-fare-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.host-fare-preview-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.host-btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 1.5px solid #c9d3e2;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #334e68;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.host-btn-add:hover:not(:disabled) {
+  border-color: #45a06a;
+  background: rgba(69, 160, 106, 0.06);
+  color: #3a8d5d;
+}
+
+.host-btn-add:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.host-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.host-tooltip-wrap[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: #0f2036;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(15, 32, 54, 0.18);
+  z-index: 20;
+}
+
+.host-tooltip-wrap[data-tooltip]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #0f2036;
+  z-index: 20;
+}
+
+.host-fare-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.host-fare-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px 7px 12px;
+  border: 1px solid #dbe3ee;
+  border-radius: 999px;
+  background: #f8fafc;
+  font-size: 13px;
+  color: #0f2036;
+}
+
+.host-fare-tag .host-fare-tag-icon {
+  flex: 0 0 auto;
+  color: #5a6b82;
+}
+
+.host-fare-tag-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.host-fare-tag-text em {
+  font-style: normal;
+  font-weight: 700;
+  color: #334e68;
+  margin-right: 2px;
+}
+
+.host-fare-tag-text strong {
+  font-weight: 800;
+  color: #0f2036;
+}
+
+.host-fare-tag.is-preview {
+  background: #eef2f8;
+  border-style: dashed;
+  border-color: #c9d3e2;
+  padding: 7px 14px;
+  color: #5a6b82;
+}
+
+.host-fare-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.host-fare-tag-remove:hover {
+  background: #fef2f2;
+  color: #b42318;
+}
+
 @media (max-width: 900px) {
   .host-shell { grid-template-columns: 1fr; }
   .host-sidebar { border-right: none; border-bottom: 1px solid #e2e7ef; }
