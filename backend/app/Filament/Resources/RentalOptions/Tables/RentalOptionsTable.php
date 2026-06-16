@@ -11,6 +11,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class RentalOptionsTable
 {
@@ -21,6 +22,20 @@ class RentalOptionsTable
                 TextColumn::make('name')
                     ->label('Option Name')
                     ->searchable(),
+                TextColumn::make('icon')
+                    ->label('Icon')
+                    ->placeholder('—')
+                    ->formatStateUsing(function (?string $state): HtmlString|string {
+                        if (! $state || ! function_exists('svg')) {
+                            return '—';
+                        }
+
+                        try {
+                            return new HtmlString(svg('lucide-'.$state, 'w-5 h-5')->toHtml());
+                        } catch (\Throwable) {
+                            return $state;
+                        }
+                    }),
                 TextColumn::make('cost_cents')
                     ->label('Option Price')
                     ->money('ISK')

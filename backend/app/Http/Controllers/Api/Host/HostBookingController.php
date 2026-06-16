@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Api\Host;
 
-use App\Enums\GuestHouseBookingStatus;
-use App\Enums\OrderStatus;
 use App\Http\Controllers\Api\Admin\GuestHouseBookingPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\Controller;
@@ -15,7 +13,6 @@ use App\Models\GuestHouseBooking;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class HostBookingController extends Controller
 {
@@ -71,49 +68,6 @@ class HostBookingController extends Controller
                 'total' => $bookings->total(),
             ],
         ]);
-    }
-
-    public function updateCarOrderStatus(Request $request, Order $order): JsonResponse
-    {
-        $this->authorize('updateStatus', $order);
-
-        $validated = $request->validate([
-            'status' => ['required', Rule::enum(OrderStatus::class)],
-        ]);
-
-        $status = OrderStatus::from($validated['status']);
-        $order->transitionOrderStatus($status);
-        $order->save();
-        $order->load(['car', 'pickupLocation', 'dropoffLocation']);
-
-        return response()->json(['data' => new OrderResource($order)]);
-    }
-
-    public function updateGuestHouseBookingStatus(Request $request, GuestHouseBooking $booking): JsonResponse
-    {
-        $this->authorize('updateStatus', $booking);
-
-        $validated = $request->validate([
-            'status' => ['required', Rule::enum(GuestHouseBookingStatus::class)],
-            'cancellation_reason' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        $status = GuestHouseBookingStatus::from($validated['status']);
-        $updates = ['status' => $status];
-
-        if ($status === GuestHouseBookingStatus::Confirmed) {
-            $updates['confirmed_at'] = now();
-        }
-
-        if ($status === GuestHouseBookingStatus::Cancelled) {
-            $updates['cancelled_at'] = now();
-            $updates['cancellation_reason'] = $validated['cancellation_reason'] ?? 'Cancelled by host';
-        }
-
-        $booking->update($updates);
-        $booking->load('guestHouse');
-
-        return response()->json(['data' => new GuestHouseBookingResource($booking)]);
     }
 
     public function carContractPdf(Order $order, OrderContractPdfController $pdfController)

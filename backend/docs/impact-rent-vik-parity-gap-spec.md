@@ -1,5 +1,9 @@
 # Impact Rent strict-parity gap spec
 
+> Refreshed 2026-06-16: several rows previously marked "Partial/Missing" are in
+> fact implemented (hourly/extra-hour pricing, availability projection, iCal
+> import). The matrix below reflects the current code, not the original backlog.
+
 ## Scope
 
 This document maps Vik Rent Car reference capabilities to the current `Impact Rent` Laravel implementation and highlights strict-parity gaps before execution work.
@@ -17,13 +21,13 @@ This document maps Vik Rent Car reference capabilities to the current `Impact Re
 | Fleet | Characteristics | Implemented | `app/Models/Characteristic.php`, `database/migrations/2026_04_13_110020_create_characteristics_table.php` | No critical parity gap. |
 | Fleet | Cars list, units, iCal URL field | Implemented | `app/Models/Car.php`, `database/migrations/2026_04_13_110090_create_cars_table.php`, `app/Filament/Resources/Cars/Schemas/CarForm.php` | External iCal URL exists but import-to-availability not complete. |
 | Pricing | Daily fares table | Implemented | `app/Models/DailyFare.php`, `database/migrations/2026_04_13_120040_create_daily_fares_table.php` | No critical parity gap. |
-| Pricing | Hourly fares (<24h) | Partial | `database/migrations/2026_04_13_120050_create_hourly_fares_table.php`, `app/Models/HourlyFare.php` | Quote flow currently rounds to rental days and ignores hourly fare path. |
-| Pricing | Extra hours (>24h) + gratuity period | Partial | `database/migrations/2026_04_13_120060_create_extra_hour_fares_table.php`, `app/Models/ExtraHourFare.php` | Quote flow does not execute explicit extra-hour charge algorithm yet. |
+| Pricing | Hourly fares (<24h) | Implemented | `app/Services/RentalQuoteService.php` (`resolveBaseRentalCharge`), `app/Models/HourlyFare.php` | Sub-24h rentals match an hourly fare by minute band, falling back to the 1-day fare when none is configured. |
+| Pricing | Extra hours (>24h) + gratuity period | Implemented | `app/Services/RentalQuoteService.php` (`resolveBaseRentalCharge`), `app/Models/ExtraHourFare.php` | Full days are charged from daily fares; leftover hours beyond the gratuity period use the extra-hour fare, falling back to the next-day fare. |
 | Pricing | Special prices (charge/discount, weekday/date, round integer, year) | Implemented (algorithm simplifiable) | `app/Models/SpecialPrice.php`, `app/Services/RentalQuoteService.php` | Core works, but day override behavior can be expanded for strict parity. |
 | Pricing | Pickup/dropoff fees (inverted, one-way) | Partial | `app/Models/LocationFee.php`, `database/migrations/2026_04_13_120080_create_location_fees_table.php`, `app/Services/RentalQuoteService.php` | `apply_inverted` and day overrides are not fully enforced in quote logic. |
 | Pricing | Out-of-hours fees with weekday filters | Implemented | `app/Models/OutOfHoursFee.php`, `app/Services/RentalQuoteService.php` | Requires tax-line integration for strict parity. |
-| Orders/availability | Pending/stand-by/confirmed/cancelled + rental statuses | Implemented | `app/Enums/OrderStatus.php`, `app/Enums/RentalStatus.php`, `app/Models/Order.php` | Locking and availability projection need a unified blocker model. |
-| Orders/availability | Availability overview API | Partial | `app/Http/Controllers/Api/CatalogController.php` | Returns `blocked: []`; does not include stand-by lock, close-car blocks, imported iCal blocks. |
+| Orders/availability | Pending/stand-by/confirmed/cancelled + rental statuses | Implemented | `app/Enums/OrderStatus.php`, `app/Enums/RentalStatus.php`, `app/Models/Order.php` | Booking creation now re-checks capacity under a row lock inside the transaction (`PublicOrderController::store`) to prevent double-booking. |
+| Orders/availability | Availability overview API | Implemented | `app/Http/Controllers/Api/CatalogController.php` (`availabilityCalendar`), `app/Services/OrderAvailabilityService.php` | Returns confirmed bookings, manual + iCal availability blocks, and stand-by payment locks. |
 | Orders/availability | Quick reservation / close-car blocking | Missing | (no dedicated model yet) | No explicit close-car reservation/block table and flow yet. |
 | Management | Coupons | Implemented | `app/Models/Coupon.php`, `app/Services/RentalQuoteService.php` | No critical parity gap. |
 | Management | Dashboard widgets | Partial | Filament default resources | No custom containerized widget composer equivalent yet. |
@@ -33,7 +37,7 @@ This document maps Vik Rent Car reference capabilities to the current `Impact Re
 | Technical | PDF contract/invoice | Implemented | `app/Http/Controllers/Api/Admin/OrderContractPdfController.php`, `resources/views/pdf/order-contract.blade.php` | Needs check-in PDF parity and richer template tag behavior. |
 | Technical | Distinctive features + unit assignment | Implemented | `app/Models/CarDistinctiveFeatureDefinition.php`, `app/Models/CarUnitDistinctiveValue.php`, `app/Models/Order.php` | No critical parity gap. |
 | Technical | Car damages/check-in workflow | Partial | `app/Models/CarDamageMarker.php`, `database/migrations/2026_04_13_120030_create_car_damage_markers_table.php` | Missing full inspection/check-in operation flow and PDF integration. |
-| Technical | iCal sync import/export | Partial | `app/Services/OrderIcsBuilder.php`, `app/Console/Commands/ImportExternalIcalendarCommand.php` | Import command parses local file only and does not write availability blocks yet. |
+| Technical | iCal sync import/export | Implemented | `app/Services/OrderIcsBuilder.php`, `app/Console/Commands/ImportExternalIcalendarCommand.php` | Import reads file or URL feeds, writes `ical_import` availability blocks per car, deactivates stale events, and runs on the daily schedule (02:15). Per-car export feed is the remaining nice-to-have. |
 
 ## Execution order
 

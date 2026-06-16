@@ -5,9 +5,12 @@ namespace App\Filament\Resources\ListingReviews\Tables;
 use App\Models\Car;
 use App\Models\GuestHouse;
 use App\Models\ListingReview;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -99,10 +102,28 @@ class ListingReviewsTable
                     ->label('Visible on site'),
             ])
             ->recordActions([
+                Action::make('approve')
+                    ->label('Approve')
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->visible(fn (ListingReview $record): bool => ! $record->is_approved)
+                    ->action(fn (ListingReview $record) => $record->update(['is_approved' => true])),
                 EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('approve')
+                        ->label('Approve selected')
+                        ->icon('heroicon-o-check')
+                        ->color('success')
+                        ->action(fn (Collection $records) => $records->each->update(['is_approved' => true]))
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('hide')
+                        ->label('Hide selected')
+                        ->icon('heroicon-o-eye-slash')
+                        ->color('warning')
+                        ->action(fn (Collection $records) => $records->each->update(['is_approved' => false]))
+                        ->deselectRecordsAfterCompletion(),
                     DeleteBulkAction::make(),
                 ]),
             ]);

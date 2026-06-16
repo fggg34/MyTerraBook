@@ -15,7 +15,6 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -79,12 +78,8 @@ class OrderForm
                                 Select::make('price_type_id')
                                     ->relationship('priceType', 'name'),
                                 Placeholder::make('stop_rentals_hint')
-                                    ->label('Stop Rentals on these dates')
-                                    ->content('Enable this by adding an availability block for the selected car.'),
-                                Toggle::make('stop_rentals_dates')
-                                    ->label('Stop Rentals on these dates')
-                                    ->dehydrated(false)
-                                    ->default(false),
+                                    ->label('Stop rentals on these dates')
+                                    ->content('To block dates for this car, add an availability block from the car\'s record. Blocked dates appear in red on the calendar.'),
                                 Select::make('pickup_location_id')
                                     ->label('Pickup Location')
                                     ->relationship('pickupLocation', 'name')

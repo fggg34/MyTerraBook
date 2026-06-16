@@ -15,6 +15,9 @@ import {
 } from '../../api/host'
 import AddressAutocomplete from '../../components/host/AddressAutocomplete'
 import HostDatePicker from '../../components/host/HostDatePicker'
+import HostDisclosure from '../../components/host/HostDisclosure'
+import HostIconMultiSelect from '../../components/host/HostIconMultiSelect'
+import HostReadinessChecklist from '../../components/host/HostReadinessChecklist'
 import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { useToast } from '../../context/ToastContext'
@@ -163,10 +166,9 @@ export default function HostGuestHouseEditorPage() {
   }
 
   const handleSubmitReview = async () => {
-    let houseId = recordId
-    if (!houseId) {
-      houseId = await save()
-    }
+    // Always persist the latest form state (including seasonal prices and other
+    // unsaved edits) before submitting, so nothing is silently dropped.
+    const houseId = await save()
     if (!houseId) return
     try {
       const res = await submitHostGuestHouse(houseId)
@@ -221,6 +223,19 @@ export default function HostGuestHouseEditorPage() {
     }))
   }
 
+  const readinessItems = [
+    { label: 'Listing name', done: !!String(form.name || '').trim() },
+    {
+      label: 'Full address, city & country',
+      done: String(form.address || '').trim().length >= 5
+        && !!String(form.city || '').trim()
+        && !!String(form.country || '').trim(),
+    },
+    { label: 'Nightly price above zero', done: Number(form.base_price_per_night_euros) > 0 },
+    { label: 'At least one photo (cover or gallery)', done: !!thumbnail || gallery.length > 0 },
+    { label: 'At least one amenity', done: (form.amenity_ids || []).length > 0 },
+  ]
+  const isReady = readinessItems.every((i) => i.done)
 
   return (
     <div className="host-wizard">
@@ -239,6 +254,7 @@ export default function HostGuestHouseEditorPage() {
       <div className="host-form-card">
         {step === 0 && (
           <>
+            <p className="host-step-note">Name, address and a cover photo are required to publish. Save first to enable photo uploads.</p>
             <div className="host-field"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="host-field"><label>Slug</label><input value={form.slug} placeholder="Auto-generated from name" onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
             <div className="host-field"><label>Type</label>
@@ -285,6 +301,7 @@ export default function HostGuestHouseEditorPage() {
         )}
         {step === 1 && (
           <>
+            <p className="host-step-note">Add at least one amenity. The description and exact room counts are optional but recommended.</p>
             <div className="host-field"><label>Full description</label><textarea rows={6} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="host-field"><label>Max guests</label><input type="number" value={form.max_guests} onChange={(e) => setForm({ ...form, max_guests: Number(e.target.value) })} /></div>
@@ -293,19 +310,19 @@ export default function HostGuestHouseEditorPage() {
               <div className="host-field"><label>Total beds</label><input type="number" value={form.beds} onChange={(e) => setForm({ ...form, beds: Number(e.target.value) })} /></div>
             </div>
             <div className="host-field"><label>Amenities</label>
-              <div className="grid grid-cols-2 gap-2">
-                {amenities.map((a) => (
-                  <label key={a.id} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.amenity_ids.includes(a.id)} onChange={(e) => toggleAmenity(a.id, e.target.checked)} />
-                    {a.name}
-                  </label>
-                ))}
-              </div>
+              <HostIconMultiSelect
+                items={amenities}
+                selectedIds={form.amenity_ids}
+                onToggle={(id) => toggleAmenity(id, !form.amenity_ids.includes(id))}
+                placeholder="Search amenities…"
+                emptyLabel="No amenities match your search."
+              />
             </div>
           </>
         )}
         {step === 2 && (
           <>
+            <p className="host-step-note">Set a <strong>nightly price above zero</strong> to publish. Cleaning fee, deposit and seasonal prices are optional.</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="host-field"><label>Nightly price (€)</label><input type="number" value={form.base_price_per_night_euros} onChange={(e) => setForm({ ...form, base_price_per_night_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Cleaning fee (€)</label><input type="number" value={form.cleaning_fee_euros} onChange={(e) => setForm({ ...form, cleaning_fee_euros: Number(e.target.value) })} /></div>
@@ -321,7 +338,12 @@ export default function HostGuestHouseEditorPage() {
               </div>
             </div>
 
-            <h3 className="mb-2 mt-6 font-semibold text-brand-950">Seasonal prices</h3>
+            <HostDisclosure
+              title="Seasonal prices (optional)"
+              hint="Override the nightly rate for specific date ranges — e.g. peak season or a holiday discount. Saved when you click Save."
+              count={seasonalPrices.length}
+              defaultOpen={seasonalPrices.length > 0}
+            >
             <div className="grid grid-cols-2 gap-3">
               <div className="host-field"><label>Name</label><input value={seasonalDraft.name} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, name: e.target.value })} /></div>
               <div className="host-field"><label>Price / night (€)</label><input type="number" value={seasonalDraft.price_per_night_euros} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, price_per_night_euros: Number(e.target.value) })} /></div>
@@ -341,7 +363,7 @@ export default function HostGuestHouseEditorPage() {
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-xs text-slate-500">Seasonal prices are saved when you click Save.</p>
+            </HostDisclosure>
           </>
         )}
         {step === 3 && (
@@ -396,9 +418,14 @@ export default function HostGuestHouseEditorPage() {
         )}
         {step === 5 && (
           <div>
-            <p className="text-sm text-slate-600">Review your listing, save changes, then submit for admin approval.</p>
+            <p className="host-step-note">
+              {isReady
+                ? 'Everything looks ready. Save your changes, then submit for admin approval.'
+                : 'Complete the items below, then save and submit for admin approval.'}
+            </p>
+            <HostReadinessChecklist items={readinessItems} />
             <ul className="mt-4 space-y-2 text-sm">
-              <li><strong>Name:</strong> {form.name}</li>
+              <li><strong>Name:</strong> {form.name || '-'}</li>
               <li><strong>Location:</strong> {formatLocationLine(form) || '-'}</li>
               <li><strong>Price:</strong> €{form.base_price_per_night_euros}/night</li>
             </ul>

@@ -206,11 +206,3 @@ export function getHostCarBookings(params) {
 export function getHostGuestHouseBookings(params) {
   return api.get('/host/bookings/guest-houses', { params })
 }
-
-export function updateHostCarBookingStatus(orderId, status) {
-  return api.patch(`/host/bookings/cars/${orderId}/status`, { status })
-}
-
-export function updateHostGuestHouseBookingStatus(bookingId, payload) {
-  return api.patch(`/host/bookings/guest-houses/${bookingId}/status`, payload)
-}

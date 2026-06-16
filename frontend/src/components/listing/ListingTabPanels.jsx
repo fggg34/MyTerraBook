@@ -7,6 +7,8 @@ import { buildStaticMapUrl } from '../../utils/parseGooglePlace'
 import ListingDetailSpecs from './ListingDetailSpecs'
 import ListingAmenities from './ListingAmenities'
 import ListingSleepingPanel from './ListingSleepingPanel'
+import ListingRatingSummary from './ListingRatingSummary'
+import LucideIcon from '../../utils/iconCatalog'
 
 export default function ListingTabPanels({
   listing,
@@ -18,7 +20,7 @@ export default function ListingTabPanels({
   selectedAddonIds = [],
   onToggleAddon,
 }) {
-  const { typeConfig, rating, detailSpecs, description, amenities, conditions, addons, sleeping, location, pickupLocations, pickupTimeWindow, dropoffTimeWindow, owner, listingType } = listing
+  const { typeConfig, rating, detailSpecs, description, amenities, conditions, addons, sleeping, location, pickupLocations, dropoffLocations, pickupTimeWindow, dropoffTimeWindow, owner, listingType } = listing
   const { mapsApiKey } = useMapsConfig()
   const price = useFormatPrice()
   const [startDate, setStartDate] = useState(() => parseDateOnly(initialPickup))
@@ -69,6 +71,7 @@ export default function ListingTabPanels({
             </button>
           ))}
         </div>
+        <ListingRatingSummary rating={rating} variant="tabbar" />
       </div>
 
       <div className="split">
@@ -111,37 +114,13 @@ export default function ListingTabPanels({
 
           <div className="tabcard" id="tabcard">
             <div className="tpanel active" data-panel="0">
-              <div className="listing-details-head">
-              {rating ? (
-              <div className="rating-strip">
-                <div className="rblock">
-                  <div className="rscore">
-                    <svg className="star" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z" />
-                    </svg>
-                    <span className="num">{rating.score}</span>
-                  </div>
-                  <div className="rmeta">
-                    <span className="excellent">{rating.label}</span>
-                    <span className="ministars" aria-hidden>
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <svg key={n} viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.9l6.6-.8L12 2.5z" />
-                        </svg>
-                      ))}
-                    </span>
-                    <a href="#reviews">{rating.reviewLinkLabel}</a>
-                  </div>
-                </div>
-              </div>
-              ) : null}
               <ListingDetailSpecs
                 detailSpecs={detailSpecs}
                 pickupLocations={pickupLocations}
+                dropoffLocations={dropoffLocations}
                 pickupTimeWindow={pickupTimeWindow}
                 dropoffTimeWindow={dropoffTimeWindow}
               />
-              </div>
               <div className="descwrap">
                 <p className="desc" id="desc">
                   {description.short}
@@ -202,10 +181,10 @@ export default function ListingTabPanels({
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                               <path d="m5 12 4 4 10-10" />
                             </svg>
+                          ) : a.iconUrl ? (
+                            <img src={a.iconUrl} alt="" className="ad-ic-img" />
                           ) : (
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M12 5v14M5 12h14" />
-                            </svg>
+                            <LucideIcon name={a.icon} fallback="plus" size={20} strokeWidth={1.8} />
                           )}
                         </span>
                         <span className="ad-tx">

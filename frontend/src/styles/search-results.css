@@ -521,6 +521,14 @@ nav.main a.nav-collapsible{
 .reveal-on .search-results-page .reveal-desc{opacity:0;}
 .search-results-page .reveal-title .rl-line{will-change:transform;}
 .search-results-page .reveal-desc .rd-char{will-change:transform;}
+/* The GSAP line mask uses overflow:clip; with the tight title line-height this
+   crops descenders (e.g. the "g" in "along"). Pad the mask wrapper and offset
+   it with a negative margin so glyphs are fully visible without changing the
+   line spacing. */
+.search-results-page .reveal-title > *:has(> .rl-line){
+  padding-bottom:0.16em !important;
+  margin-bottom:-0.16em !important;
+}
 @media (prefers-reduced-motion: reduce){
   .reveal-on .search-results-page .reveal-title,
   .reveal-on .search-results-page .reveal-desc{opacity:1 !important;transform:none !important;}

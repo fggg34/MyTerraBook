@@ -38,6 +38,23 @@ class ListingReviewResource extends Resource
         return true;
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = ListingReview::query()->where('is_approved', false)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Reviews awaiting moderation';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ListingReviewForm::configure($schema);

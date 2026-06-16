@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\RentalOptions\Schemas;
 
+use App\Support\IconCatalog;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -33,6 +34,16 @@ class RentalOptionForm
                                 TextInput::make('name')
                                     ->label('Option Name')
                                     ->required(),
+
+                                Select::make('icon')
+                                    ->label('Icon')
+                                    ->options(IconCatalog::filamentOptions())
+                                    ->searchable()
+                                    ->allowHtml()
+                                    ->native(false)
+                                    ->preload()
+                                    ->placeholder('Search and pick an icon')
+                                    ->helperText('Pick an icon from the shared library. Used on the public listing page.'),
 
                                 FileUpload::make('image_path')
                                     ->label('Option Image')

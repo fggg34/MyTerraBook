@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import '../styles/request-to-book.css'
 import useRequestToBook from '../hooks/useRequestToBook'
 import RequestToBookSubbar from '../components/request-to-book/RequestToBookSubbar'
@@ -9,17 +9,28 @@ import Step2ExtrasCover from '../components/request-to-book/Step2ExtrasCover'
 import Step3YourDetails from '../components/request-to-book/Step3YourDetails'
 import Step4Payment from '../components/request-to-book/Step4Payment'
 import BookingConfirmation from '../components/request-to-book/BookingConfirmation'
+import { PageLoader } from '../components/ui/LoadingSpinner'
 import PageHead from '../components/seo/PageHead'
 import { useToast } from '../context/ToastContext'
 import usePageSeo from '../hooks/usePageSeo'
 
 export default function CheckoutPage() {
+  const [searchParams] = useSearchParams()
+  return <CheckoutPageBody key={searchParams.toString()} />
+}
+
+function CheckoutPageBody() {
   const { toast } = useToast()
   const seo = usePageSeo('checkout', { robots: 'noindex' })
   const rtb = useRequestToBook()
 
   if (rtb.loadState === 'loading') {
-    return <PageHead {...seo} />
+    return (
+      <>
+        <PageHead {...seo} />
+        <PageLoader message="Loading checkout…" fullPage />
+      </>
+    )
   }
 
   if (rtb.loadState === 'error' || !rtb.bookingType) {

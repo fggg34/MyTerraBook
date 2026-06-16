@@ -51,12 +51,18 @@ export default function HostGuestHousesPage() {
             </tr>
           </thead>
           <tbody>
-            {loading || items.length === 0 ? (
+            {loading ? (
               <tr>
-                <td colSpan={5}>No guesthouses yet.</td>
+                <td colSpan={5}>Loading…</td>
+              </tr>
+            ) : items.length === 0 ? (
+              <tr>
+                <td colSpan={5}>No guesthouses yet — add your first one with “New guesthouse” above.</td>
               </tr>
             ) : (
-              items.map((item) => (
+              items.map((item) => {
+                const needsSetup = ['draft', 'rejected'].includes(item.status)
+                return (
                 <tr key={item.id}>
                   <td>
                     <div>{item.name}</div>
@@ -67,12 +73,13 @@ export default function HostGuestHousesPage() {
                   <td>€{item.base_price_per_night_euros}</td>
                   <td className="host-actions">
                     <div className="host-table-actions">
-                      <Link to={`/host/guesthouses/${item.id}/edit`} className="host-btn secondary">Edit</Link>
+                      <Link to={`/host/guesthouses/${item.id}/edit`} className={`host-btn ${needsSetup ? 'primary' : 'secondary'}`}>{needsSetup ? 'Finish setup' : 'Edit'}</Link>
                       <button type="button" className="host-btn danger" onClick={() => handleDelete(item.id)}>Delete</button>
                     </div>
                   </td>
                 </tr>
-              ))
+                )
+              })
             )}
           </tbody>
         </table>

@@ -162,6 +162,7 @@ export default function FieldSelect({
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => selectOption(opt)}
             >
+              {opt.icon && <span className="field-select-opt-icon" aria-hidden>{opt.icon}</span>}
               <span className="field-select-label">{opt.label}</span>
               {opt.subtitle && <span className="field-select-sub">{opt.subtitle}</span>}
             </button>
@@ -187,6 +188,7 @@ export default function FieldSelect({
           aria-expanded={open}
           aria-controls={open ? listId : undefined}
         >
+          {selected?.icon && <span className="field-select-opt-icon" aria-hidden>{selected.icon}</span>}
           <span className="field-select-value">{selected?.label || placeholder}</span>
         </button>
         {CHEVRON_ICON}

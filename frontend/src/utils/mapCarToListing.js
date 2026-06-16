@@ -29,14 +29,14 @@ function buildDetailSpecs(car) {
   const specs = []
   const transmission = formatSpecLabel(car.transmission)
   const fuel = formatSpecLabel(car.fuel_type)
-  if (transmission) specs.push({ label: transmission })
-  if (fuel) specs.push({ label: fuel })
-  if (car.seats != null) specs.push({ label: `${car.seats} seats` })
-  if (car.sleeps != null) specs.push({ label: `Sleeps ${car.sleeps}` })
-  if (car.bags != null) specs.push({ label: `${car.bags} bags` })
+  if (transmission) specs.push({ label: transmission, icon: 'gearbox' })
+  if (fuel) specs.push({ label: fuel, icon: 'fuel' })
+  if (car.seats != null) specs.push({ label: `${car.seats} seats`, icon: 'seats' })
+  if (car.sleeps != null) specs.push({ label: `Sleeps ${car.sleeps}`, icon: 'sleeps' })
+  if (car.bags != null) specs.push({ label: `${car.bags} bags`, icon: 'bags' })
   if (car.units_available != null) {
     const n = Number(car.units_available)
-    specs.push({ label: `${n} unit${n === 1 ? '' : 's'} available` })
+    specs.push({ label: `${n} unit${n === 1 ? '' : 's'} available`, icon: 'units' })
   }
   return specs
 }
@@ -44,6 +44,8 @@ function buildDetailSpecs(car) {
 function buildAmenities(car) {
   return (car.characteristics || []).map((c, i) => ({
     name: c.display_text || c.name,
+    icon: c.icon,
+    iconUrl: c.icon_url || null,
     featured: i < 4,
   }))
 }
@@ -53,6 +55,8 @@ function buildAddons(car, priceFormatter) {
   return (car.rental_options || []).map((opt) => ({
     id: opt.id,
     name: opt.name,
+    icon: opt.icon,
+    iconUrl: opt.icon_url || null,
     description: opt.description || '',
     sub: opt.is_daily_cost ? 'Per day' : 'One-time',
     price: opt.cost ? format(Number.parseFloat(opt.cost)) : ',',

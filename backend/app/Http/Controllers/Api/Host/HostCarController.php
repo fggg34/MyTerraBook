@@ -50,13 +50,18 @@ class HostCarController extends Controller
         $this->authorize('create', Car::class);
 
         $data = $this->validatedData($request);
+        // units_available is always derived from actual CarUnit rows, never set
+        // directly from the form, so the counter and the fleet cannot disagree.
+        unset($data['units_available']);
         $car = Car::query()->create([
             ...$data,
             'user_id' => $request->user()->id,
             'is_active' => false,
             'listing_status' => ListingApprovalStatus::Draft,
+            'units_available' => 1,
         ]);
 
+        $this->ensureAtLeastOneUnit($car);
         $this->syncRelations($request, $car);
         $seo->syncCar($car);
         $car->load(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']);
@@ -77,7 +82,7 @@ class HostCarController extends Controller
         $this->authorize('update', $car);
 
         $data = $this->validatedData($request, $car);
-        unset($data['is_active'], $data['listing_status']);
+        unset($data['is_active'], $data['listing_status'], $data['units_available']);
         $car->update($data);
         $this->syncRelations($request, $car);
         $seo->syncCar($car);
@@ -101,6 +106,8 @@ class HostCarController extends Controller
         if (! in_array($car->listing_status, [ListingApprovalStatus::Draft, ListingApprovalStatus::Rejected], true)) {
             return response()->json(['message' => 'Only draft or rejected listings can be submitted.'], 422);
         }
+
+        $this->ensureAtLeastOneUnit($car);
 
         if ($submitError = $this->submitReadinessError($car)) {
             return response()->json(['message' => $submitError], 422);
@@ -656,6 +663,25 @@ class HostCarController extends Controller
             ->get();
     }
 
+    /**
+     * Guarantee a car has at least one real CarUnit and that units_available
+     * always reflects the active unit count. Auto-heals legacy cars that were
+     * created with a units_available counter but no unit rows.
+     */
+    private function ensureAtLeastOneUnit(Car $car): void
+    {
+        if ($car->carUnits()->count() === 0) {
+            $desired = max(1, (int) ($car->units_available ?? 1));
+            for ($i = 0; $i < $desired; $i++) {
+                $car->carUnits()->create(['is_active' => true, 'sort_order' => $i]);
+            }
+        }
+
+        $car->update([
+            'units_available' => max(1, $car->carUnits()->where('is_active', true)->count()),
+        ]);
+    }
+
     private function submitReadinessError(Car $car): ?string
     {
         $car->loadMissing(['subCategory.mainCategory', 'locations']);
@@ -678,7 +704,7 @@ class HostCarController extends Controller
             return 'At least one dropoff location is required before submitting for review.';
         }
 
-        if (($car->units_available ?? 0) < 1) {
+        if ($car->carUnits()->where('is_active', true)->count() < 1) {
             return 'At least one available unit is required before submitting for review.';
         }
 

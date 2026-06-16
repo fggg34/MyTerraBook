@@ -1,3 +1,4 @@
+import HostDisclosure from './HostDisclosure'
 import HostMultiSelect from './HostMultiSelect'
 import HostSelect from './HostSelect'
 
@@ -47,6 +48,7 @@ export default function HostCarLocationsStep({
 
   return (
     <>
+      <p className="host-step-note">Choose at least one pickup and one drop-off location, then set the time windows. Fees are optional.</p>
       <div className="host-locations-grid">
         <div className="host-field">
           <label>Pickup locations</label>
@@ -124,12 +126,13 @@ export default function HostCarLocationsStep({
 
       {recordId ? (
         <>
+          <HostDisclosure
+            title="Pickup / drop-off fees (optional)"
+            hint="Add a flat fee for specific pickup and drop-off combinations."
+            count={locationFees.length}
+            defaultOpen={locationFees.length > 0}
+          >
           <section className="host-fees-section">
-            <div className="host-subsection-head">
-              <h3>Pickup / drop-off fees</h3>
-              <p>Add a flat fee for specific pickup and drop-off combinations.</p>
-            </div>
-
             <div className="host-fees-form">
               <div className="host-field">
                 <label>Pickup location</label>
@@ -163,18 +166,17 @@ export default function HostCarLocationsStep({
                   onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, cost_euros: Number(e.target.value) })}
                 />
               </div>
-              <div className="host-field host-fees-toggle">
-                <label className="host-check-card">
-                  <input
-                    type="checkbox"
-                    checked={locationFeeDraft.is_one_way_fee}
-                    onChange={(e) => setLocationFeeDraft({ ...locationFeeDraft, is_one_way_fee: e.target.checked })}
-                  />
-                  <span>
-                    <strong>One-way fee</strong>
-                    <small>Charge when pickup and drop-off locations differ</small>
-                  </span>
-                </label>
+              <div className="host-field">
+                <label>One-way fee</label>
+                <HostSelect
+                  value={locationFeeDraft.is_one_way_fee ? 'yes' : 'no'}
+                  onChange={(v) => setLocationFeeDraft({ ...locationFeeDraft, is_one_way_fee: v === 'yes' })}
+                  options={[
+                    { value: 'no', label: 'No — applies to all bookings' },
+                    { value: 'yes', label: 'Yes — only when pickup and drop-off differ' },
+                  ]}
+                  ariaLabel="One-way fee"
+                />
               </div>
             </div>
 
@@ -208,13 +210,15 @@ export default function HostCarLocationsStep({
               </ul>
             )}
           </section>
+          </HostDisclosure>
 
+          <HostDisclosure
+            title="Out-of-hours fees (optional)"
+            hint="Charge extra for pickups or drop-offs outside standard hours."
+            count={outOfHoursFees.length}
+            defaultOpen={outOfHoursFees.length > 0}
+          >
           <section className="host-fees-section">
-            <div className="host-subsection-head">
-              <h3>Out-of-hours fees</h3>
-              <p>Charge extra for pickups or drop-offs outside standard hours.</p>
-            </div>
-
             <div className="host-fees-form">
               <div className="host-field">
                 <label>Name</label>
@@ -301,6 +305,7 @@ export default function HostCarLocationsStep({
               </ul>
             )}
           </section>
+          </HostDisclosure>
         </>
       ) : (
         <p className="host-field-hint">Save the vehicle first to configure fees.</p>

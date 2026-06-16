@@ -13,6 +13,7 @@ use App\Models\SubCategory;
 use App\Models\TaxRate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class HostCatalogController extends Controller
 {
@@ -89,6 +90,9 @@ class HostCatalogController extends Controller
     public function characteristics(): JsonResponse
     {
         $columns = ['id', 'name', 'slug', 'icon_path'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('characteristics', 'icon')) {
+            $columns[] = 'icon';
+        }
         if (\Illuminate\Support\Facades\Schema::hasColumn('characteristics', 'group')) {
             $columns[] = 'group';
         }
@@ -96,14 +100,38 @@ class HostCatalogController extends Controller
         $rows = Characteristic::query()
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get($columns);
+            ->get($columns)
+            ->map(function (Characteristic $characteristic): array {
+                return [
+                    'id' => $characteristic->id,
+                    'name' => $characteristic->name,
+                    'slug' => $characteristic->slug,
+                    'icon' => $characteristic->icon,
+                    'group' => $characteristic->group,
+                    'icon_url' => $characteristic->icon_path ? Storage::disk('public')->url($characteristic->icon_path) : null,
+                ];
+            });
 
         return response()->json(['data' => $rows]);
     }
 
     public function rentalOptions(): JsonResponse
     {
-        $rows = RentalOption::query()->where('is_active', true)->orderBy('sort_order')->get(['id', 'name', 'slug']);
+        $columns = ['id', 'name', 'slug', 'image_path'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('rental_options', 'icon')) {
+            $columns[] = 'icon';
+        }
+
+        $rows = RentalOption::query()->where('is_active', true)->orderBy('sort_order')->get($columns)
+            ->map(function (RentalOption $option): array {
+                return [
+                    'id' => $option->id,
+                    'name' => $option->name,
+                    'slug' => $option->slug,
+                    'icon' => $option->icon,
+                    'icon_url' => $option->image_path ? Storage::disk('public')->url($option->image_path) : null,
+                ];
+            });
 
         return response()->json(['data' => $rows]);
     }

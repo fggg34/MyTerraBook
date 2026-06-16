@@ -52,12 +52,18 @@ export default function HostCarsPage() {
             </tr>
           </thead>
           <tbody>
-            {loading || items.length === 0 ? (
+            {loading ? (
               <tr>
-                <td colSpan={6}>No vehicles yet.</td>
+                <td colSpan={6}>Loading…</td>
+              </tr>
+            ) : items.length === 0 ? (
+              <tr>
+                <td colSpan={6}>No vehicles yet — add your first one with “New vehicle” above.</td>
               </tr>
             ) : (
-              items.map((item) => (
+              items.map((item) => {
+                const needsSetup = ['draft', 'rejected'].includes(item.listing_status)
+                return (
                 <tr key={item.id}>
                   <td>{item.name}</td>
                   <td>{item.main_category?.name || '-'}</td>
@@ -66,12 +72,13 @@ export default function HostCarsPage() {
                   <td>{item.units_count ?? item.units_available}</td>
                   <td className="host-actions">
                     <div className="host-table-actions">
-                      <Link to={`/host/cars/${item.id}/edit`} className="host-btn secondary">Edit</Link>
+                      <Link to={`/host/cars/${item.id}/edit`} className={`host-btn ${needsSetup ? 'primary' : 'secondary'}`}>{needsSetup ? 'Finish setup' : 'Edit'}</Link>
                       <button type="button" className="host-btn danger" onClick={() => handleDelete(item.id)}>Delete</button>
                     </div>
                   </td>
                 </tr>
-              ))
+                )
+              })
             )}
           </tbody>
         </table>

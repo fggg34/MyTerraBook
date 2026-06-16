@@ -38,11 +38,29 @@ import {
   uploadHostCarImages,
 } from '../../api/host'
 import HostCarLocationsStep from '../../components/host/HostCarLocationsStep'
+import HostDisclosure from '../../components/host/HostDisclosure'
+import HostIconMultiSelect from '../../components/host/HostIconMultiSelect'
+import HostReadinessChecklist from '../../components/host/HostReadinessChecklist'
 import HostDatePicker from '../../components/host/HostDatePicker'
 import HostDateTimePicker from '../../components/host/HostDateTimePicker'
 import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
+import LucideIcon from '../../utils/iconCatalog'
 import { useToast } from '../../context/ToastContext'
+
+const specIcon = (name) => <LucideIcon name={name} size={18} strokeWidth={1.8} />
+
+const TRANSMISSION_OPTIONS = [
+  { value: 'manual', label: 'Manual', icon: specIcon('cog') },
+  { value: 'automatic', label: 'Automatic', icon: specIcon('settings') },
+]
+
+const FUEL_OPTIONS = [
+  { value: 'petrol', label: 'Petrol', icon: specIcon('fuel') },
+  { value: 'diesel', label: 'Diesel', icon: specIcon('fuel') },
+  { value: 'electric', label: 'Electric', icon: specIcon('zap') },
+  { value: 'hybrid', label: 'Hybrid', icon: specIcon('leaf') },
+]
 
 function timeToMinutes(time) {
   if (!time) return null
@@ -297,10 +315,9 @@ export default function HostCarEditorPage() {
       return
     }
 
-    let carId = recordId
-    if (!carId) {
-      carId = await save()
-    }
+    // Always persist the latest form state before submitting so no unsaved
+    // edits (pricing, specs, etc.) are silently dropped.
+    const carId = await save()
     if (!carId) return
     try {
       const res = await submitHostCar(carId)
@@ -377,6 +394,25 @@ export default function HostCarEditorPage() {
   )
 
   const isCampervan = selectedMainCategory?.slug === 'campervan'
+
+  const readinessItems = [
+    { label: 'Vehicle name', done: !!String(form.name || '').trim() },
+    { label: 'Category selected', done: !!form.sub_category_id },
+    {
+      label: 'Pickup & drop-off locations',
+      done: (form.pickup_location_ids || []).length > 0 && (form.dropoff_location_ids || []).length > 0,
+    },
+    {
+      label: 'Pickup & drop-off times',
+      done: !!(form.pickup_time_from && form.pickup_time_to && form.dropoff_time_from && form.dropoff_time_to),
+    },
+    { label: 'At least one daily fare', done: dailyFares.length > 0 },
+    {
+      label: isCampervan ? 'Sleeps (berths) set' : 'Seats set',
+      done: isCampervan ? Number(form.sleeps) > 0 : Number(form.seats) > 0,
+    },
+  ]
+  const isReady = readinessItems.every((i) => i.done)
 
   const yearOptions = useMemo(
     () => Array.from({ length: 2026 - 1990 + 1 }, (_, i) => {
@@ -478,11 +514,12 @@ export default function HostCarEditorPage() {
         )}
         {step === 1 && (
           <>
+            <p className="host-step-note">Transmission, fuel and seats are required. Characteristics and extras are optional but help your listing stand out.</p>
             <div className="host-field"><label>Transmission</label>
               <HostSelect
                 value={form.transmission}
                 onChange={(v) => setForm({ ...form, transmission: v })}
-                options={['manual', 'automatic'].map((v) => ({ value: v, label: v }))}
+                options={TRANSMISSION_OPTIONS}
                 ariaLabel="Transmission"
               />
             </div>
@@ -490,7 +527,7 @@ export default function HostCarEditorPage() {
               <HostSelect
                 value={form.fuel_type}
                 onChange={(v) => setForm({ ...form, fuel_type: v })}
-                options={['petrol', 'diesel', 'electric', 'hybrid'].map((v) => ({ value: v, label: v }))}
+                options={FUEL_OPTIONS}
                 ariaLabel="Fuel type"
               />
             </div>
@@ -498,7 +535,10 @@ export default function HostCarEditorPage() {
               <label>Capacity</label>
               <div className="host-capacity-grid">
                 <div>
-                  <label className="host-capacity-label" htmlFor="car-seats">Seats</label>
+                  <label className="host-capacity-label" htmlFor="car-seats">
+                    <span className="host-capacity-ic" aria-hidden>{specIcon('users')}</span>
+                    Seats
+                  </label>
                   <input
                     id="car-seats"
                     type="number"
@@ -510,6 +550,7 @@ export default function HostCarEditorPage() {
                 </div>
                 <div>
                   <label className="host-capacity-label" htmlFor="car-sleeps">
+                    <span className="host-capacity-ic" aria-hidden>{specIcon('bed')}</span>
                     {isCampervan ? 'Sleeps (berths)' : 'Sleeps'}
                   </label>
                   <input
@@ -522,7 +563,10 @@ export default function HostCarEditorPage() {
                   />
                 </div>
                 <div>
-                  <label className="host-capacity-label" htmlFor="car-bags">Bags</label>
+                  <label className="host-capacity-label" htmlFor="car-bags">
+                    <span className="host-capacity-ic" aria-hidden>{specIcon('luggage')}</span>
+                    Bags
+                  </label>
                   <input
                     id="car-bags"
                     type="number"
@@ -548,24 +592,22 @@ export default function HostCarEditorPage() {
               />
             </div>
             <div className="host-field"><label>Characteristics</label>
-              <div className="grid grid-cols-2 gap-2">
-                {catalog.characteristics.map((c) => (
-                  <label key={c.id} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.characteristic_ids.includes(c.id)} onChange={() => toggleId('characteristic_ids', c.id)} />
-                    {c.name}
-                  </label>
-                ))}
-              </div>
+              <HostIconMultiSelect
+                items={catalog.characteristics}
+                selectedIds={form.characteristic_ids}
+                onToggle={(id) => toggleId('characteristic_ids', id)}
+                placeholder="Search characteristics…"
+                emptyLabel="No characteristics match your search."
+              />
             </div>
             <div className="host-field"><label>Rental options</label>
-              <div className="grid grid-cols-2 gap-2">
-                {catalog.rentalOptions.map((c) => (
-                  <label key={c.id} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.rental_option_ids.includes(c.id)} onChange={() => toggleId('rental_option_ids', c.id)} />
-                    {c.name}
-                  </label>
-                ))}
-              </div>
+              <HostIconMultiSelect
+                items={catalog.rentalOptions}
+                selectedIds={form.rental_option_ids}
+                onToggle={(id) => toggleId('rental_option_ids', id)}
+                placeholder="Search extras…"
+                emptyLabel="No extras match your search."
+              />
             </div>
           </>
         )}
@@ -652,6 +694,7 @@ export default function HostCarEditorPage() {
         {step === 4 && (
           recordId ? (
             <div className="host-pricing">
+              <p className="host-step-note">Add at least one <strong>daily fare</strong> to publish. Hourly and overtime rates are optional.</p>
               {/* Daily fares */}
               <section className="host-fare-section">
                 <div className="host-fare-head">
@@ -707,6 +750,12 @@ export default function HostCarEditorPage() {
                 )}
               </section>
 
+              <HostDisclosure
+                title="Advanced rates (optional)"
+                hint="Short-trip hourly pricing and overtime charges. Skip these if you only rent by the day."
+                count={hourlyFares.length + extraHourFares.length}
+                defaultOpen={hourlyFares.length > 0 || extraHourFares.length > 0}
+              >
               {/* Hourly fares */}
               <section className="host-fare-section">
                 <div className="host-fare-head">
@@ -811,12 +860,14 @@ export default function HostCarEditorPage() {
                   </ul>
                 )}
               </section>
+              </HostDisclosure>
             </div>
           ) : <p className="text-sm text-slate-500">Save the vehicle first to manage pricing.</p>
         )}
         {step === 5 && (
           recordId ? (
             <>
+              <p className="host-step-note">Block out dates when the vehicle is unavailable. Special &amp; seasonal prices are optional.</p>
               <h3 className="mb-2 font-semibold text-brand-950">Availability blocks</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="host-field"><label>From</label><HostDateTimePicker value={blockDraft.starts_at} onChange={(v) => setBlockDraft({ ...blockDraft, starts_at: v })} placeholder="Select start date & time" /></div>
@@ -842,7 +893,12 @@ export default function HostCarEditorPage() {
                 ))}
               </ul>
 
-              <h3 className="mb-2 mt-6 font-semibold text-brand-950">Special prices</h3>
+              <HostDisclosure
+                title="Special & seasonal prices (optional)"
+                hint="Override the daily rate for specific date ranges — e.g. peak season or a holiday discount."
+                count={specialPrices.length}
+                defaultOpen={specialPrices.length > 0}
+              >
               <div className="grid grid-cols-2 gap-3">
                 <div className="host-field"><label>Name</label><input value={specialDraft.name} onChange={(e) => setSpecialDraft({ ...specialDraft, name: e.target.value })} /></div>
                 <div className="host-field"><label>Type</label>
@@ -901,11 +957,19 @@ export default function HostCarEditorPage() {
                   </li>
                 ))}
               </ul>
+              </HostDisclosure>
             </>
           ) : <p className="text-sm text-slate-500">Save the vehicle first to manage availability.</p>
         )}
         {step === 6 && (
-          <p className="text-sm text-slate-600">Save your vehicle and submit for admin approval when ready.</p>
+          <div>
+            <p className="host-step-note">
+              {isReady
+                ? 'Everything looks ready. Save your vehicle, then submit for admin approval.'
+                : 'Complete the items below, then save and submit for admin approval.'}
+            </p>
+            <HostReadinessChecklist items={readinessItems} />
+          </div>
         )}
         <div className="host-actions">
           {step > 0 && <button type="button" className="host-btn secondary" onClick={() => setStep(step - 1)}>Back</button>}

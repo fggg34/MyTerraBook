@@ -61,23 +61,21 @@ export default function ListingPageContent({
 
   return (
     <>
-      <div className="subbar">
-        <div className="wrap">
-          <Link className="crumb" to={typeConfig.archiveRoute}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <div className="listing-subbar">
+        <div className="wrap listing-subbar__row">
+          <Link className="listing-subbar__back" to={typeConfig.archiveRoute}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="m15 18-6-6 6-6" />
             </svg>
-            {typeConfig.archiveLabel}
+            <span>{typeConfig.archiveLabel}</span>
           </Link>
-          <div className="subactions">
-            <button className="sa-btn" type="button" onClick={handleShare}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
-                <path d="M12 3v13M8 7l4-4 4 4" />
-              </svg>
-              Share
-            </button>
-          </div>
+          <button className="listing-subbar__share" type="button" onClick={handleShare}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+              <path d="M12 3v13M8 7l4-4 4 4" />
+            </svg>
+            <span>Share</span>
+          </button>
         </div>
       </div>
 

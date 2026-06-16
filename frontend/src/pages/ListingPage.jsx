@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { buildCheckoutParams } from '../components/cars/BookingForm'
 import ListingPageContent from '../components/listing/ListingPageContent'
 import PageHead from '../components/seo/PageHead'
 import EmptyState from '../components/ui/EmptyState'
+import { PageLoader } from '../components/ui/LoadingSpinner'
 import { useToast } from '../context/ToastContext'
 import useListingEffects from '../hooks/useListingEffects'
 import useListingPage from '../hooks/useListingPage'
@@ -12,6 +13,11 @@ import { formatDateOnly, formatDateTimeAt, parseTimeParts } from '../utils/forma
 import '../styles/listing.css'
 
 export default function ListingPage({ listingType = 'campervan' }) {
+  const { id } = useParams()
+  return <ListingPageBody key={`${listingType}-${id}`} listingType={listingType} />
+}
+
+function ListingPageBody({ listingType = 'campervan' }) {
   const rootRef = useRef(null)
   const bookingDatesRef = useRef({ pickupDate: null, dropoffDate: null })
   const openCalendarRef = useRef(null)
@@ -113,7 +119,12 @@ export default function ListingPage({ listingType = 'campervan' }) {
   })
 
   if (loadState === 'loading') {
-    return <PageHead {...seo} />
+    return (
+      <>
+        <PageHead {...seo} />
+        <PageLoader message="Loading listing…" fullPage />
+      </>
+    )
   }
 
   if (loadState === 'error' || !listing) {

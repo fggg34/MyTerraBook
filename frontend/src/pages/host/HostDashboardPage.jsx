@@ -93,9 +93,32 @@ export default function HostDashboardPage() {
   const pendingBookings = stats
     ? stats.bookings.pending_car_orders + stats.bookings.pending_guesthouse_bookings
     : 0
+  const draftCount = stats ? stats.cars.draft + stats.guest_houses.draft : 0
+  const rejectedCount = stats ? stats.cars.rejected + stats.guest_houses.rejected : 0
+  const totalListings = stats
+    ? stats.cars.draft + stats.cars.pending_review + stats.cars.live + stats.cars.rejected
+      + stats.guest_houses.draft + stats.guest_houses.pending_review + stats.guest_houses.live + stats.guest_houses.rejected
+    : 0
+  const showOnboarding = !loading && !!stats && totalListings === 0
 
   return (
     <div className="host-dashboard">
+      {showOnboarding && (
+        <section className="host-onboarding">
+          <h2>Welcome — let&apos;s get your first listing live</h2>
+          <p>It takes three quick steps:</p>
+          <ol className="host-onboarding-steps">
+            <li><span className="host-onboarding-num">1</span> Add your vehicle or guesthouse details</li>
+            <li><span className="host-onboarding-num">2</span> Add photos and set a price</li>
+            <li><span className="host-onboarding-num">3</span> Submit for approval — we review and publish it for you</li>
+          </ol>
+          <div className="host-actions">
+            <Link to="/host/cars/new" className="host-btn vehicle"><Plus size={15} /> Add vehicle</Link>
+            <Link to="/host/guesthouses/new" className="host-btn stay"><Plus size={15} /> Add guesthouse</Link>
+          </div>
+        </section>
+      )}
+
       <HostReservationsCalendar
         carBookings={carBookings}
         stayBookings={stayBookings}
@@ -142,16 +165,26 @@ export default function HostDashboardPage() {
                 highlight: pendingReview > 0,
               },
               {
+                label: 'Drafts',
+                value: stats ? draftCount : '—',
+                highlight: draftCount > 0,
+              },
+              {
+                label: 'Needs changes',
+                value: stats ? rejectedCount : '—',
+                highlight: rejectedCount > 0,
+              },
+              {
                 label: 'Pending bookings',
                 value: stats ? pendingBookings : '—',
                 highlight: pendingBookings > 0,
               },
             ]}
             footer={
-              pendingReview > 0 ? (
+              (draftCount > 0 || rejectedCount > 0) ? (
                 <div className="host-overview-card-foot">
-                  <Link to="/host/cars" className="host-overview-foot-link">Review vehicles</Link>
-                  <Link to="/host/guesthouses" className="host-overview-foot-link">Review guesthouses</Link>
+                  <Link to="/host/cars" className="host-overview-foot-link">Finish vehicles</Link>
+                  <Link to="/host/guesthouses" className="host-overview-foot-link">Finish guesthouses</Link>
                 </div>
               ) : null
             }

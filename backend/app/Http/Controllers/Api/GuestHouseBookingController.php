@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\GuestHouseBookingStatus;
 use App\Enums\GuestHouseStatus;
+use App\Exceptions\BookingUnavailableException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\GuestHouseBookingRequest;
 use App\Http\Resources\Api\GuestHouseBookingResource;
@@ -51,34 +52,43 @@ class GuestHouseBookingController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        $booking = DB::transaction(function () use ($request, $house, $checkIn, $checkOut, $quote) {
-            if ($this->availabilityService->hasBookingConflict($house->id, $checkIn, $checkOut)) {
-                throw new InvalidArgumentException('These dates are no longer available.');
-            }
+        try {
+            $booking = DB::transaction(function () use ($request, $house, $checkIn, $checkOut, $quote) {
+                // Serialize concurrent bookings for this guest house, then
+                // re-check both existing bookings AND availability blocks
+                // atomically to prevent double-booking / booking over blocks.
+                GuestHouse::query()->whereKey($house->id)->lockForUpdate()->first();
 
-            return GuestHouseBooking::query()->create([
-                'guest_house_id' => $house->id,
-                'user_id' => $request->user()?->id,
-                'status' => GuestHouseBookingStatus::Confirmed,
-                'confirmed_at' => now(),
-                'guest_name' => $request->string('guest_name'),
-                'guest_email' => $request->string('guest_email'),
-                'guest_phone' => $request->string('guest_phone'),
-                'check_in' => $checkIn,
-                'check_out' => $checkOut,
-                'nights' => $quote['nights'],
-                'guests_count' => $request->integer('guests_count'),
-                'base_total' => $quote['base_total'],
-                'cleaning_fee' => $quote['cleaning_fee'],
-                'security_deposit' => $quote['security_deposit'],
-                'discount_amount' => $quote['discount_amount'],
-                'tax_amount' => $quote['tax_amount'],
-                'total_amount' => $quote['total_amount'],
-                'coupon_code' => $request->input('coupon_code'),
-                'coupon_id' => $quote['coupon_id'],
-                'special_requests' => $request->input('special_requests'),
-            ]);
-        });
+                if (! $this->availabilityService->isAvailable($house, $checkIn, $checkOut)) {
+                    throw new BookingUnavailableException();
+                }
+
+                return GuestHouseBooking::query()->create([
+                    'guest_house_id' => $house->id,
+                    'user_id' => $request->user()?->id,
+                    'status' => GuestHouseBookingStatus::Confirmed,
+                    'confirmed_at' => now(),
+                    'guest_name' => $request->string('guest_name'),
+                    'guest_email' => $request->string('guest_email'),
+                    'guest_phone' => $request->string('guest_phone'),
+                    'check_in' => $checkIn,
+                    'check_out' => $checkOut,
+                    'nights' => $quote['nights'],
+                    'guests_count' => $request->integer('guests_count'),
+                    'base_total' => $quote['base_total'],
+                    'cleaning_fee' => $quote['cleaning_fee'],
+                    'security_deposit' => $quote['security_deposit'],
+                    'discount_amount' => $quote['discount_amount'],
+                    'tax_amount' => $quote['tax_amount'],
+                    'total_amount' => $quote['total_amount'],
+                    'coupon_code' => $request->input('coupon_code'),
+                    'coupon_id' => $quote['coupon_id'],
+                    'special_requests' => $request->input('special_requests'),
+                ]);
+            });
+        } catch (BookingUnavailableException) {
+            return response()->json(['message' => 'These dates are no longer available.'], 409);
+        }
 
         $booking->load('guestHouse');
 

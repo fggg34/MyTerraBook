@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\OrderStatus;
 use App\Enums\RentalStatus;
+use App\Exceptions\BookingUnavailableException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\OrderQuoteRequest;
 use App\Http\Requests\Api\StoreOrderRequest;
@@ -121,7 +122,18 @@ class PublicOrderController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        $order = DB::transaction(function () use ($request, $car, $pickup, $dropoff, $quote) {
+        try {
+            $order = DB::transaction(function () use ($request, $car, $pickup, $dropoff, $quote) {
+            // Serialize concurrent bookings for this car so the capacity
+            // re-check below is atomic and cannot be raced (double-booking).
+            // Use the freshly locked row's fleet size, not the stale value read
+            // before the transaction, in case units changed in the meantime.
+            $lockedCar = Car::query()->whereKey($car->id)->lockForUpdate()->first();
+
+            if (! $this->availabilityService->hasCapacity($car->id, (int) ($lockedCar->units_available ?? 0), $pickup, $dropoff)) {
+                throw new BookingUnavailableException();
+            }
+
             $lockMinutes = max(1, (int) data_get(Setting::getValue('shop.payment_lock_minutes', ['minutes' => 20]), 'minutes', 20));
 
             $order = Order::query()->create([
@@ -219,7 +231,10 @@ class PublicOrderController extends Controller
             }
 
             return $order;
-        });
+            });
+        } catch (BookingUnavailableException) {
+            return response()->json(['message' => 'No availability for these dates.'], 422);
+        }
 
         $this->sendOrderEmails($order->load('car'));
 

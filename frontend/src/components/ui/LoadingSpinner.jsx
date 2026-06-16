@@ -10,9 +10,13 @@ export default function LoadingSpinner({ size = 'md', className = '' }) {
   )
 }
 
-export function PageLoader({ message = 'Loading…' }) {
+export function PageLoader({ message = 'Loading…', fullPage = false }) {
   return (
-    <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4">
+    <div
+      className={`flex flex-col items-center justify-center gap-4 ${
+        fullPage ? 'min-h-[calc(100dvh-8rem)]' : 'min-h-[40vh]'
+      }`}
+    >
       <LoadingSpinner size="lg" />
       <p className="text-sm text-slate-500">{message}</p>
     </div>

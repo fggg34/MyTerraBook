@@ -36,7 +36,7 @@ class ListingReviewController extends Controller
 
         return response()->json([
             'data' => new ListingReviewResource($review),
-            'message' => 'Thank you, your review has been posted.',
+            'message' => 'Thank you, your review has been submitted and will appear once approved.',
         ], 201);
     }
 
@@ -62,7 +62,7 @@ class ListingReviewController extends Controller
 
         return response()->json([
             'data' => new ListingReviewResource($review),
-            'message' => 'Thank you, your review has been posted.',
+            'message' => 'Thank you, your review has been submitted and will appear once approved.',
         ], 201);
     }
 
@@ -89,7 +89,9 @@ class ListingReviewController extends Controller
             'rating' => (int) $request->input('rating'),
             'body' => $request->string('body')->trim()->toString(),
             'photo_path' => $photoPath,
-            'is_approved' => true,
+            // Reviews are held for admin moderation; they only appear publicly
+            // after an admin approves them in the Listing Reviews panel.
+            'is_approved' => false,
         ]);
     }
 }

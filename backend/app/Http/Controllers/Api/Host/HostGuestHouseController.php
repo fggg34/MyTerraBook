@@ -137,6 +137,19 @@ class HostGuestHouseController extends Controller
             return response()->json(['message' => 'Country is required before submitting for review.'], 422);
         }
 
+        if ((int) $guestHouse->base_price_per_night <= 0) {
+            return response()->json(['message' => 'Set a nightly price greater than zero before submitting for review.'], 422);
+        }
+
+        $hasPhoto = trim((string) $guestHouse->thumbnail) !== '' || $guestHouse->images()->exists();
+        if (! $hasPhoto) {
+            return response()->json(['message' => 'Add at least one photo before submitting for review.'], 422);
+        }
+
+        if (! $guestHouse->amenities()->exists()) {
+            return response()->json(['message' => 'Select at least one amenity before submitting for review.'], 422);
+        }
+
         $guestHouse->update([
             'status' => GuestHouseStatus::PendingReview,
             'submitted_at' => now(),

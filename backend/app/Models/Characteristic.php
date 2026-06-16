@@ -14,6 +14,7 @@ class Characteristic extends Model
     protected $fillable = [
         'name',
         'slug',
+        'icon',
         'icon_path',
         'display_text',
         'group',

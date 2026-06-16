@@ -29,6 +29,15 @@ export default function useListingPage(listingType) {
   const [reviews, setReviews] = useState([])
   const [related, setRelated] = useState([])
   const [loadState, setLoadState] = useState('loading')
+  const [requestId, setRequestId] = useState(id)
+
+  if (requestId !== id) {
+    setRequestId(id)
+    setEntity(null)
+    setReviews([])
+    setRelated([])
+    setLoadState('loading')
+  }
 
   const refetchReviews = useCallback(async () => {
     if (!id) return []

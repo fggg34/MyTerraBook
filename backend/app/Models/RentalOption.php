@@ -15,6 +15,7 @@ class RentalOption extends Model
     protected $fillable = [
         'name',
         'slug',
+        'icon',
         'description',
         'cost_cents',
         'is_daily_cost',

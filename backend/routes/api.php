@@ -204,8 +204,9 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
 
     Route::get('bookings/cars', [HostBookingController::class, 'carOrders']);
     Route::get('bookings/guest-houses', [HostBookingController::class, 'guestHouseBookings']);
-    Route::patch('bookings/cars/{order}/status', [HostBookingController::class, 'updateCarOrderStatus']);
-    Route::patch('bookings/guest-houses/{booking}/status', [HostBookingController::class, 'updateGuestHouseBookingStatus']);
+    // Bookings are instant-confirmed on payment, so hosts do not accept/decline.
+    // Status changes are admin-only (Filament); the host status-update endpoints
+    // were intentionally removed.
     Route::get('bookings/cars/{order}/contract.pdf', [HostBookingController::class, 'carContractPdf']);
     Route::get('bookings/guest-houses/{booking}/contract.pdf', [HostBookingController::class, 'guestHouseContractPdf']);
 });

@@ -60,6 +60,7 @@ export default function AboutPageContent() {
   const priceFormatter = useFormatPrice()
   const [homepageData, setHomepageData] = useState(null)
   const storyRef = useRef(null)
+  const statsRef = useRef(null)
   const valuesRef = useRef(null)
   const offerRef = useRef(null)
 
@@ -89,10 +90,6 @@ export default function AboutPageContent() {
     }))
   }, [rentSection.cards, priceFormatter])
 
-  useSectionReveal(storyRef, { revealDoneMs: 1400, threshold: 0.1 })
-  useSectionReveal(valuesRef, { revealDoneMs: 1200, threshold: 0.12 })
-  useSectionReveal(offerRef, { revealDoneMs: 1200, threshold: 0.12 })
-
   const hero = page.hero ?? {}
   const storySection = page.storySection ?? {}
   const valuesSection = page.valuesSection ?? {}
@@ -103,6 +100,11 @@ export default function AboutPageContent() {
   const paragraphs = parseParagraphs(page.body)
   const chapterImages = [FALLBACK_IMAGES.camper, FALLBACK_IMAGES.car, FALLBACK_IMAGES.house]
   const heroImage = hero.image || FALLBACK_IMAGES.hero
+
+  useSectionReveal(storyRef, { revealDoneMs: 1400, threshold: 0.1, watch: paragraphs.length > 0 })
+  useSectionReveal(statsRef, { revealDoneMs: 1000, threshold: 0.15, watch: stats.length > 0 })
+  useSectionReveal(valuesRef, { revealDoneMs: 1200, threshold: 0.12, watch: pillars.length > 0 })
+  useSectionReveal(offerRef, { revealDoneMs: 1200, threshold: 0.12, watch: offerCards.length > 0 })
 
   useEffect(() => {
     const root = storyRef.current
@@ -192,11 +194,15 @@ export default function AboutPageContent() {
         </div>
       </section>
 
-      <section className="about-stats" aria-label="Key figures">
+      <section ref={statsRef} className="about-stats" aria-label="Key figures">
         <div className="wrap">
           <div className="about-stats-grid">
-            {stats.map((stat) => (
-              <div className="about-stat" key={stat.label}>
+            {stats.map((stat, index) => (
+              <div
+                className="about-stat about-rise"
+                key={stat.label}
+                style={{ '--d': `${0.04 + index * 0.07}s` }}
+              >
                 <div className="about-stat-value">{stat.value}</div>
                 <div className="about-stat-label">{stat.label}</div>
                 <div className="about-stat-sub">{stat.sub}</div>

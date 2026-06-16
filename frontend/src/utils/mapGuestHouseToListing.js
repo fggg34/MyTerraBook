@@ -36,20 +36,32 @@ function formatTime(value) {
 
 function buildDetailSpecs(house) {
   const specs = []
-  if (house.max_guests) specs.push({ label: `Sleeps ${house.max_guests}` })
-  if (house.bedrooms) specs.push({ label: `${house.bedrooms} bedroom${house.bedrooms === 1 ? '' : 's'}` })
-  if (house.bathrooms) specs.push({ label: `${house.bathrooms} bathroom${house.bathrooms === 1 ? '' : 's'}` })
-  if (house.type) specs.push({ label: typeLabel(house.type) })
-  if (house.city) specs.push({ label: house.city })
-  return specs.length ? specs : [{ label: 'Guesthouse stay' }]
+  if (house.max_guests) specs.push({ label: `Sleeps ${house.max_guests}`, icon: 'sleeps' })
+  if (house.bedrooms) {
+    specs.push({
+      label: `${house.bedrooms} bedroom${house.bedrooms === 1 ? '' : 's'}`,
+      icon: 'bedroom',
+    })
+  }
+  if (house.bathrooms) {
+    specs.push({
+      label: `${house.bathrooms} bathroom${house.bathrooms === 1 ? '' : 's'}`,
+      icon: 'bathroom',
+    })
+  }
+  if (house.type) specs.push({ label: typeLabel(house.type), icon: 'type' })
+  if (house.city) specs.push({ label: house.city, icon: 'city' })
+  return specs.length ? specs : [{ label: 'Guesthouse stay', icon: 'stay' }]
 }
 
 function buildAmenities(house) {
   const flat = (house.amenities || []).flatMap((group) =>
-    (group.items || []).map((item) => item.name).filter(Boolean),
+    (group.items || [])
+      .filter((item) => item.name)
+      .map((item) => ({ name: item.name, icon: item.icon })),
   )
   if (!flat.length) return []
-  return flat.map((name, index) => ({ name, featured: index < 4 }))
+  return flat.map((item, index) => ({ ...item, featured: index < 4 }))
 }
 
 function buildConditions(house) {

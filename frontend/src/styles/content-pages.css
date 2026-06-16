@@ -2069,6 +2069,7 @@
 }
 
 .about-story.revealed .about-rise,
+.about-stats.revealed .about-rise,
 .about-values.revealed .about-rise,
 .about-offerings.revealed .about-rise {
   opacity: 1;
@@ -2140,6 +2141,7 @@
   }
 
   .about-story.revealed .about-rise,
+  .about-stats.revealed .about-rise,
   .about-values.revealed .about-rise,
   .about-offerings.revealed .about-rise,
   .about-chapter.is-revealed .about-chapter-media,

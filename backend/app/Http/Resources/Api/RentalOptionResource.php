@@ -5,6 +5,7 @@ namespace App\Http\Resources\Api;
 use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class RentalOptionResource extends JsonResource
 {
@@ -14,6 +15,8 @@ class RentalOptionResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'icon' => $this->icon,
+            'icon_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
             'description' => $this->description,
             'cost' => Money::formatDecimalFromCents((int) $this->cost_cents),
             'cost_cents' => (int) $this->cost_cents,

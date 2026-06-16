@@ -8,9 +8,9 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class CharacteristicsTable
 {
@@ -33,8 +33,20 @@ class CharacteristicsTable
                     ->placeholder('—')
                     ->visible(fn (): bool => \Illuminate\Support\Facades\Schema::hasColumn('characteristics', 'group'))
                     ->sortable(),
-                ImageColumn::make('icon_path')
-                    ->label('Characteristic icon'),
+                TextColumn::make('icon')
+                    ->label('Icon')
+                    ->placeholder('—')
+                    ->formatStateUsing(function (?string $state): HtmlString|string {
+                        if (! $state || ! function_exists('svg')) {
+                            return '—';
+                        }
+
+                        try {
+                            return new HtmlString(svg('lucide-'.$state, 'w-5 h-5')->toHtml());
+                        } catch (\Throwable) {
+                            return $state;
+                        }
+                    }),
                 TextColumn::make('sort_order')
                     ->label('Ordering')
                     ->alignCenter()

@@ -98,82 +98,83 @@ class CatalogSeeder extends Seeder
         }
 
         // Comprehensive, grouped characteristic catalogue a car/campervan host needs.
-        // Format: group => [ [name, useAsSearchFilter], ... ]
+        // Format: group => [ [name, useAsSearchFilter, lucideIcon], ... ]
         $characteristicGroups = [
             'Drivetrain & Performance' => [
-                ['4WD / AWD', true],
-                ['Front-wheel Drive', false],
-                ['Manual Transmission', false],
-                ['Automatic Transmission', true],
-                ['Turbocharged Engine', false],
-                ['Start/Stop System', false],
-                ['Eco Driving Mode', false],
+                ['4WD / AWD', true, 'mountain'],
+                ['Front-wheel Drive', false, 'cog'],
+                ['Manual Transmission', false, 'cog'],
+                ['Automatic Transmission', true, 'settings'],
+                ['Turbocharged Engine', false, 'zap'],
+                ['Start/Stop System', false, 'power'],
+                ['Eco Driving Mode', false, 'leaf'],
             ],
             'Comfort & Convenience' => [
-                ['Air Conditioning', true],
-                ['Dual-zone Climate Control', false],
-                ['Heated Seats', true],
-                ['Heated Steering Wheel', false],
-                ['Leather Seats', false],
-                ['Keyless Entry & Start', false],
-                ['Cruise Control', false],
-                ['Adaptive Cruise Control', false],
-                ['Power Windows', false],
-                ['Panoramic / Sunroof', false],
+                ['Air Conditioning', true, 'snowflake'],
+                ['Dual-zone Climate Control', false, 'thermometer'],
+                ['Heated Seats', true, 'flame'],
+                ['Heated Steering Wheel', false, 'flame'],
+                ['Leather Seats', false, 'armchair'],
+                ['Keyless Entry & Start', false, 'key'],
+                ['Cruise Control', false, 'gauge'],
+                ['Adaptive Cruise Control', false, 'gauge'],
+                ['Power Windows', false, 'wind'],
+                ['Panoramic / Sunroof', false, 'sun'],
             ],
             'Safety & Driver Assistance' => [
-                ['ABS Brakes', false],
-                ['Multiple Airbags', false],
-                ['Backup Camera', true],
-                ['360° Camera', false],
-                ['Parking Sensors', false],
-                ['Lane Departure Warning', false],
-                ['Blind Spot Monitoring', false],
-                ['Emergency Braking Assist', false],
-                ['Tyre Pressure Monitoring', false],
-                ['ISOFIX Child-seat Anchors', false],
+                ['ABS Brakes', false, 'shield'],
+                ['Multiple Airbags', false, 'shield-check'],
+                ['Backup Camera', true, 'camera'],
+                ['360° Camera', false, 'camera'],
+                ['Parking Sensors', false, 'radar'],
+                ['Lane Departure Warning', false, 'eye'],
+                ['Blind Spot Monitoring', false, 'eye'],
+                ['Emergency Braking Assist', false, 'shield-check'],
+                ['Tyre Pressure Monitoring', false, 'gauge'],
+                ['ISOFIX Child-seat Anchors', false, 'baby'],
             ],
             'Technology & Connectivity' => [
-                ['Bluetooth', true],
-                ['Apple CarPlay', true],
-                ['Android Auto', true],
-                ['GPS Navigation', true],
-                ['Touchscreen Display', false],
-                ['USB Port', false],
-                ['USB-C Charging', false],
-                ['Wireless Phone Charging', false],
-                ['Premium Sound System', false],
-                ['12V Power Socket', false],
+                ['Bluetooth', true, 'bluetooth'],
+                ['Apple CarPlay', true, 'smartphone'],
+                ['Android Auto', true, 'smartphone'],
+                ['GPS Navigation', true, 'navigation'],
+                ['Touchscreen Display', false, 'monitor'],
+                ['USB Port', false, 'usb'],
+                ['USB-C Charging', false, 'usb'],
+                ['Wireless Phone Charging', false, 'battery-charging'],
+                ['Premium Sound System', false, 'music'],
+                ['12V Power Socket', false, 'plug'],
             ],
             'Winter & Iceland' => [
-                ['Studded Winter Tyres', true],
-                ['All-season Tyres', false],
-                ['Engine Block Heater', false],
-                ['Heated Windscreen', false],
-                ['Snow Chains', false],
-                ['Underbody / Skid Protection', false],
+                ['Studded Winter Tyres', true, 'cloud-snow'],
+                ['All-season Tyres', false, 'cloud-snow'],
+                ['Engine Block Heater', false, 'flame'],
+                ['Heated Windscreen', false, 'flame'],
+                ['Snow Chains', false, 'snowflake'],
+                ['Underbody / Skid Protection', false, 'shield'],
             ],
             'Capacity & Practicality' => [
-                ['Roof Rack', false],
-                ['Roof Box', false],
-                ['Tow Bar', false],
-                ['Bike Rack', false],
-                ['Large Cargo Space', false],
-                ['Folding Rear Seats', false],
-                ['Child Seat Available', true],
-                ['Pet Friendly', true],
-                ['Non-smoking Vehicle', false],
+                ['Roof Rack', false, 'package'],
+                ['Roof Box', false, 'package'],
+                ['Tow Bar', false, 'caravan'],
+                ['Bike Rack', false, 'bike'],
+                ['Large Cargo Space', false, 'luggage'],
+                ['Folding Rear Seats', false, 'armchair'],
+                ['Child Seat Available', true, 'baby'],
+                ['Pet Friendly', true, 'dog'],
+                ['Non-smoking Vehicle', false, 'wind'],
             ],
         ];
 
         $characteristicSort = 0;
         $characteristics = collect();
         foreach ($characteristicGroups as $group => $items) {
-            foreach ($items as [$name, $isSearchFilter]) {
+            foreach ($items as [$name, $isSearchFilter, $icon]) {
                 $characteristicSort += 10;
                 $characteristics->push(Characteristic::query()->updateOrCreate(
                     ['name' => $name],
                     [
+                        'icon' => $icon,
                         'display_text' => $name,
                         'group' => $group,
                         'sort_order' => $characteristicSort,
@@ -271,36 +272,46 @@ class CatalogSeeder extends Seeder
             ->update(['is_active' => false]);
 
         $rentalOptions = collect([
-            ['name' => 'Gravel Protection (GP)', 'description' => 'Covers windscreen, lights & bodywork damage from gravel roads', 'cost_cents' => 250000, 'is_daily_cost' => true],
-            ['name' => 'Sand & Ash Protection (SAAP)', 'description' => 'Covers paint/bodywork damage from sandstorms and volcanic ash', 'cost_cents' => 280000, 'is_daily_cost' => true],
-            ['name' => 'Super CDW / Premium Insurance', 'description' => 'Reduces the collision damage excess to a minimum', 'cost_cents' => 350000, 'is_daily_cost' => true],
-            ['name' => 'Theft Protection (TP)', 'description' => 'Reduces liability in case of theft', 'cost_cents' => 150000, 'is_daily_cost' => true],
-            ['name' => 'Additional Driver', 'description' => 'Register a second approved driver', 'cost_cents' => 120000, 'is_daily_cost' => false],
-            ['name' => '4G Wi-Fi Hotspot', 'description' => 'Unlimited mobile data across Iceland', 'cost_cents' => 150000, 'is_daily_cost' => true],
-            ['name' => 'GPS Device', 'description' => 'Pre-loaded Iceland navigation', 'cost_cents' => 130000, 'is_daily_cost' => true],
-            ['name' => 'Child / Booster Seat', 'description' => 'Approved seat for infants and children', 'cost_cents' => 90000, 'is_daily_cost' => true],
-            ['name' => 'Snow Chains', 'description' => 'Winter traction for mountain and F-roads', 'cost_cents' => 180000, 'is_daily_cost' => false],
-            ['name' => 'Camping Equipment Kit', 'description' => 'Sleeping bags, stove and cookware for two', 'cost_cents' => 450000, 'is_daily_cost' => false],
-            ['name' => 'Cooler Box', 'description' => '40L electric cooler for road trips', 'cost_cents' => 110000, 'is_daily_cost' => false],
-            ['name' => 'Tyre & Windscreen Protection (TWP)', 'description' => 'Covers tyres and windscreen damage with zero excess', 'cost_cents' => 200000, 'is_daily_cost' => true],
-            ['name' => 'Unlimited Mileage', 'description' => 'Remove the daily kilometre cap', 'cost_cents' => 150000, 'is_daily_cost' => true],
-            ['name' => 'Roadside Assistance Plus', 'description' => '24/7 priority breakdown and recovery service', 'cost_cents' => 90000, 'is_daily_cost' => true],
-            ['name' => 'Prepaid Full Tank of Fuel', 'description' => 'Return the vehicle empty — no refuelling stop needed', 'cost_cents' => 1200000, 'is_daily_cost' => false],
-            ['name' => 'Highland (F-road) Permit', 'description' => 'Authorisation to drive marked F-roads and highland routes', 'cost_cents' => 350000, 'is_daily_cost' => false],
-            ['name' => 'Ski / Snowboard Rack', 'description' => 'Roof-mounted carrier for winter gear', 'cost_cents' => 100000, 'is_daily_cost' => false],
-            ['name' => 'Phone Holder & Charger', 'description' => 'Dashboard mount with fast charging cable', 'cost_cents' => 50000, 'is_daily_cost' => false],
-            ['name' => 'Emergency Satellite Beacon', 'description' => 'GPS SOS device for remote highland travel', 'cost_cents' => 250000, 'is_daily_cost' => false],
-        ])->map(fn (array $data) => RentalOption::query()->firstOrCreate(
-            ['name' => $data['name']],
-            [
-                'description' => $data['description'] ?? "Optional add-on: {$data['name']}.",
-                'cost_cents' => $data['cost_cents'],
-                'is_daily_cost' => $data['is_daily_cost'],
-                'tax_rate_id' => $standardTax->id,
-                'sort_order' => 0,
-                'is_active' => true,
-            ]
-        ));
+            ['name' => 'Gravel Protection (GP)', 'icon' => 'shield-check', 'description' => 'Covers windscreen, lights & bodywork damage from gravel roads', 'cost_cents' => 250000, 'is_daily_cost' => true],
+            ['name' => 'Sand & Ash Protection (SAAP)', 'icon' => 'umbrella', 'description' => 'Covers paint/bodywork damage from sandstorms and volcanic ash', 'cost_cents' => 280000, 'is_daily_cost' => true],
+            ['name' => 'Super CDW / Premium Insurance', 'icon' => 'shield-check', 'description' => 'Reduces the collision damage excess to a minimum', 'cost_cents' => 350000, 'is_daily_cost' => true],
+            ['name' => 'Theft Protection (TP)', 'icon' => 'lock', 'description' => 'Reduces liability in case of theft', 'cost_cents' => 150000, 'is_daily_cost' => true],
+            ['name' => 'Additional Driver', 'icon' => 'user-plus', 'description' => 'Register a second approved driver', 'cost_cents' => 120000, 'is_daily_cost' => false],
+            ['name' => '4G Wi-Fi Hotspot', 'icon' => 'wifi', 'description' => 'Unlimited mobile data across Iceland', 'cost_cents' => 150000, 'is_daily_cost' => true],
+            ['name' => 'GPS Device', 'icon' => 'navigation', 'description' => 'Pre-loaded Iceland navigation', 'cost_cents' => 130000, 'is_daily_cost' => true],
+            ['name' => 'Child / Booster Seat', 'icon' => 'baby', 'description' => 'Approved seat for infants and children', 'cost_cents' => 90000, 'is_daily_cost' => true],
+            ['name' => 'Snow Chains', 'icon' => 'snowflake', 'description' => 'Winter traction for mountain and F-roads', 'cost_cents' => 180000, 'is_daily_cost' => false],
+            ['name' => 'Camping Equipment Kit', 'icon' => 'tent', 'description' => 'Sleeping bags, stove and cookware for two', 'cost_cents' => 450000, 'is_daily_cost' => false],
+            ['name' => 'Cooler Box', 'icon' => 'refrigerator', 'description' => '40L electric cooler for road trips', 'cost_cents' => 110000, 'is_daily_cost' => false],
+            ['name' => 'Tyre & Windscreen Protection (TWP)', 'icon' => 'shield', 'description' => 'Covers tyres and windscreen damage with zero excess', 'cost_cents' => 200000, 'is_daily_cost' => true],
+            ['name' => 'Unlimited Mileage', 'icon' => 'infinity', 'description' => 'Remove the daily kilometre cap', 'cost_cents' => 150000, 'is_daily_cost' => true],
+            ['name' => 'Roadside Assistance Plus', 'icon' => 'phone-call', 'description' => '24/7 priority breakdown and recovery service', 'cost_cents' => 90000, 'is_daily_cost' => true],
+            ['name' => 'Prepaid Full Tank of Fuel', 'icon' => 'fuel', 'description' => 'Return the vehicle empty — no refuelling stop needed', 'cost_cents' => 1200000, 'is_daily_cost' => false],
+            ['name' => 'Highland (F-road) Permit', 'icon' => 'map', 'description' => 'Authorisation to drive marked F-roads and highland routes', 'cost_cents' => 350000, 'is_daily_cost' => false],
+            ['name' => 'Ski / Snowboard Rack', 'icon' => 'mountain-snow', 'description' => 'Roof-mounted carrier for winter gear', 'cost_cents' => 100000, 'is_daily_cost' => false],
+            ['name' => 'Phone Holder & Charger', 'icon' => 'smartphone', 'description' => 'Dashboard mount with fast charging cable', 'cost_cents' => 50000, 'is_daily_cost' => false],
+            ['name' => 'Emergency Satellite Beacon', 'icon' => 'satellite', 'description' => 'GPS SOS device for remote highland travel', 'cost_cents' => 250000, 'is_daily_cost' => false],
+        ])->map(function (array $data) use ($standardTax) {
+            $option = RentalOption::query()->firstOrCreate(
+                ['name' => $data['name']],
+                [
+                    'icon' => $data['icon'] ?? null,
+                    'description' => $data['description'] ?? "Optional add-on: {$data['name']}.",
+                    'cost_cents' => $data['cost_cents'],
+                    'is_daily_cost' => $data['is_daily_cost'],
+                    'tax_rate_id' => $standardTax->id,
+                    'sort_order' => 0,
+                    'is_active' => true,
+                ]
+            );
+
+            // Backfill the icon on pre-existing rows without touching other fields.
+            if (empty($option->icon) && ! empty($data['icon'])) {
+                $option->update(['icon' => $data['icon']]);
+            }
+
+            return $option;
+        });
 
         collect([
             ['code' => 'card', 'name' => 'Credit / Debit Card', 'auto_confirm_order' => true],

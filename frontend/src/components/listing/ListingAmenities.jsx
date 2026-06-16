@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import LucideIcon from '../../utils/iconCatalog'
 
 const AMENITY_ROWS = 3
 const AMENITY_COLS = 3
@@ -23,9 +24,11 @@ export default function ListingAmenities({ amenities = [] }) {
         {visible.map((a) => (
           <div key={a.name} className={`amen ${a.featured ? 'feat' : ''}`}>
             <span className="a-ic" aria-hidden>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m5 12 4 4 10-10" />
-              </svg>
+              {a.iconUrl ? (
+                <img src={a.iconUrl} alt="" className="a-ic-img" />
+              ) : (
+                <LucideIcon name={a.icon} size={20} strokeWidth={1.8} />
+              )}
             </span>
             {a.name}
           </div>

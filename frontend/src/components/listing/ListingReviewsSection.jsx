@@ -178,7 +178,7 @@ function ListingReviewForm({ onSubmit, disabled }) {
         </div>
       </div>
       {error ? <p className="rev-write-error">{error}</p> : null}
-      {submitted ? <p className="rev-write-success">Thanks, your review has been posted.</p> : null}
+      {submitted ? <p className="rev-write-success">Thanks! Your review was submitted and will appear once it&apos;s approved by our team.</p> : null}
       <button className="rev-submit" type="submit" disabled={disabled || submitting}>
         {submitting ? 'Posting…' : 'Post review'}
       </button>

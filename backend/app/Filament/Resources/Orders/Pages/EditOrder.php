@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
+use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -12,6 +13,29 @@ use Filament\Resources\Pages\EditRecord;
 class EditOrder extends EditRecord
 {
     protected static string $resource = OrderResource::class;
+
+    protected function beforeSave(): void
+    {
+        $original = $this->record->getOriginal('order_status');
+        $from = $original instanceof OrderStatus ? $original : OrderStatus::tryFrom((string) $original);
+
+        $newValue = $this->data['order_status'] ?? null;
+        $to = $newValue instanceof OrderStatus ? $newValue : OrderStatus::tryFrom((string) $newValue);
+
+        if ($from === null || $to === null || $from === $to) {
+            return;
+        }
+
+        if (! Order::isAllowedOrderTransition($from, $to)) {
+            Notification::make()
+                ->title('Invalid status change')
+                ->body("An order cannot move from {$from->value} to {$to->value}.")
+                ->danger()
+                ->send();
+
+            $this->halt();
+        }
+    }
 
     protected function getHeaderActions(): array
     {

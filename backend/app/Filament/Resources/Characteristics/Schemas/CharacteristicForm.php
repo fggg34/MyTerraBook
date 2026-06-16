@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Characteristics\Schemas;
 
+use App\Support\IconCatalog;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -33,21 +34,29 @@ class CharacteristicForm
                                     ->label('Characteristic Name')
                                     ->required(),
 
+                                Select::make('icon')
+                                    ->label('Icon')
+                                    ->options(IconCatalog::filamentOptions())
+                                    ->searchable()
+                                    ->allowHtml()
+                                    ->native(false)
+                                    ->preload()
+                                    ->placeholder('Search and pick an icon')
+                                    ->helperText('Pick an icon from the shared library. Used on the public listing page.'),
+
                                 FileUpload::make('icon_path')
-                                    ->label('Characteristic icon')
+                                    ->label('Or upload a custom icon')
                                     ->disk('public')
-                                    ->directory('characteristics')
+                                    ->directory('characteristic-icons')
+                                    ->image()
                                     ->acceptedFileTypes([
-                                        'image/jpeg',
+                                        'image/svg+xml',
                                         'image/png',
                                         'image/webp',
-                                        'image/gif',
-                                        'image/svg+xml',
-                                    ]),
-
-                                Toggle::make('resize_image')
-                                    ->label('Resize Image')
-                                    ->dehydrated(false),
+                                        'image/jpeg',
+                                    ])
+                                    ->helperText('Optional. When set, this overrides the library icon above on the public listing and host editor.')
+                                    ->visible(fn (): bool => DatabaseSchema::hasColumn('characteristics', 'icon_path')),
 
                                 TextInput::make('display_text')
                                     ->label('Text Next to Icon'),
