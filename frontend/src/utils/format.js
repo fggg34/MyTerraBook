@@ -83,6 +83,40 @@ export function parseTimeParts(time) {
   return { hours: Number(match[1]), minutes: Number(match[2]) }
 }
 
+export const TIME_INTERVAL_MINUTES = 30
+
+export function normalizeTimeString(time) {
+  if (!time) return ''
+  const parts = parseTimeParts(time)
+  if (!parts) return ''
+
+  const totalMinutes = parts.hours * 60 + parts.minutes
+  const snapped = Math.round(totalMinutes / TIME_INTERVAL_MINUTES) * TIME_INTERVAL_MINUTES
+  const hours = Math.floor(snapped / 60) % 24
+  const minutes = snapped % 60
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+export function parseTimeValue(time) {
+  const normalized = normalizeTimeString(time)
+  if (!normalized) return null
+
+  const parts = parseTimeParts(normalized)
+  if (!parts) return null
+
+  const date = new Date()
+  date.setHours(parts.hours, parts.minutes, 0, 0)
+
+  return date
+}
+
+export function formatTimeValue(date) {
+  if (!date || Number.isNaN(date.getTime())) return ''
+
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
 export function formatDateTimeAt(value, hours = 10, minutes = 0) {
   if (!value) return ''
   const d = value instanceof Date ? new Date(value) : new Date(String(value).slice(0, 10))

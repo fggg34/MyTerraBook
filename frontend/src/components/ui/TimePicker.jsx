@@ -1,46 +1,51 @@
 import DatePicker from 'react-datepicker'
-import { Calendar } from 'lucide-react'
-import { formatDateTimeLocal, parseDateTimeLocal, TIME_INTERVAL_MINUTES } from '../../utils/format'
+import { Clock } from 'lucide-react'
+import {
+  TIME_INTERVAL_MINUTES,
+  formatTimeValue,
+  parseTimeValue,
+} from '../../utils/format'
 import 'react-datepicker/dist/react-datepicker.css'
 
-export default function DateTimePicker({
+export default function TimePicker({
   id,
   value,
   onChange,
-  minDate,
-  maxDate,
-  filterDate,
-  placeholder = 'Select date & time',
+  placeholder = 'Select time',
   hasError = false,
+  disabled = false,
   required = false,
   fixedPopper = false,
+  className = 'input-field tb-datepicker-input pr-10',
+  ariaLabel,
 }) {
-  const selected = parseDateTimeLocal(value)
+  const selected = parseTimeValue(value)
 
   return (
     <div className="relative">
       <DatePicker
         id={id}
         selected={selected}
-        onChange={(date) => onChange(date ? formatDateTimeLocal(date) : '')}
+        onChange={(date) => onChange(date ? formatTimeValue(date) : '')}
         showTimeSelect
-        timeFormat="HH:mm"
+        showTimeSelectOnly
         timeIntervals={TIME_INTERVAL_MINUTES}
-        dateFormat="EEE, MMM d, yyyy · HH:mm"
-        minDate={minDate}
-        maxDate={maxDate}
-        filterDate={filterDate}
+        timeCaption="Time"
+        timeFormat="HH:mm"
+        dateFormat="HH:mm"
         placeholderText={placeholder}
         required={required}
+        disabled={disabled}
+        aria-label={ariaLabel}
         popperPlacement="bottom-start"
-        calendarClassName="tb-datepicker-calendar"
+        calendarClassName="tb-timepicker-calendar"
         wrapperClassName="w-full"
-        className={`input-field tb-datepicker-input pr-10 ${hasError ? 'input-field-error' : ''}`}
+        className={`${className} ${hasError ? 'input-field-error' : ''}`.trim()}
         autoComplete="off"
         popperClassName="tb-datepicker-popper"
         popperProps={fixedPopper ? { strategy: 'fixed' } : undefined}
       />
-      <Calendar
+      <Clock
         className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
         aria-hidden
       />

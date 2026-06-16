@@ -15,6 +15,7 @@ import {
 } from '../../api/host'
 import AddressAutocomplete from '../../components/host/AddressAutocomplete'
 import HostDatePicker from '../../components/host/HostDatePicker'
+import HostTimePicker from '../../components/host/HostTimePicker'
 import HostDisclosure from '../../components/host/HostDisclosure'
 import HostIconMultiSelect from '../../components/host/HostIconMultiSelect'
 import HostReadinessChecklist from '../../components/host/HostReadinessChecklist'
@@ -22,6 +23,7 @@ import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { useToast } from '../../context/ToastContext'
 import { useHostCurrency } from '../../hooks/useHostCurrency'
+import { normalizeTimeString } from '../../utils/format'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
 import { formatLocationLine } from '../../utils/parseGooglePlace'
 
@@ -101,6 +103,8 @@ export default function HostGuestHouseEditorPage() {
       latitude: data.latitude ?? '',
       longitude: data.longitude ?? '',
       amenity_ids: data.amenity_ids || [],
+      check_in_time: normalizeTimeString(data.check_in_time || emptyForm.check_in_time),
+      check_out_time: normalizeTimeString(data.check_out_time || emptyForm.check_out_time),
     })
     setThumbnail(data.thumbnail || null)
     setGallery(data.images || [])
@@ -375,8 +379,8 @@ export default function HostGuestHouseEditorPage() {
         {step === 3 && (
           <>
             <div className="grid grid-cols-2 gap-3">
-              <div className="host-field"><label>Check-in</label><input type="time" value={form.check_in_time} onChange={(e) => setForm({ ...form, check_in_time: e.target.value })} /></div>
-              <div className="host-field"><label>Check-out</label><input type="time" value={form.check_out_time} onChange={(e) => setForm({ ...form, check_out_time: e.target.value })} /></div>
+              <div className="host-field"><label>Check-in</label><HostTimePicker value={form.check_in_time} onChange={(v) => setForm({ ...form, check_in_time: v })} placeholder="Select check-in time" ariaLabel="Check-in time" /></div>
+              <div className="host-field"><label>Check-out</label><HostTimePicker value={form.check_out_time} onChange={(v) => setForm({ ...form, check_out_time: v })} placeholder="Select check-out time" ariaLabel="Check-out time" /></div>
               <div className="host-field"><label>Min nights</label><input type="number" value={form.min_nights} onChange={(e) => setForm({ ...form, min_nights: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Max nights</label><input type="number" value={form.max_nights} onChange={(e) => setForm({ ...form, max_nights: e.target.value })} /></div>
             </div>

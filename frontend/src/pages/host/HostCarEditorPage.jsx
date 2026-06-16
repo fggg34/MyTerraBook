@@ -67,6 +67,7 @@ import HostDateTimePicker from '../../components/host/HostDateTimePicker'
 import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import LucideIcon from '../../utils/iconCatalog'
+import { normalizeTimeString } from '../../utils/format'
 import { useToast } from '../../context/ToastContext'
 import { useHostCurrency } from '../../hooks/useHostCurrency'
 
@@ -282,10 +283,10 @@ export default function HostCarEditorPage() {
           details_image_paths: data.details_image_paths || [],
           pickup_location_ids: data.pickup_location_ids || data.location_ids || [],
           dropoff_location_ids: data.dropoff_location_ids || data.location_ids || [],
-          pickup_time_from: data.pickup_time_from || '',
-          pickup_time_to: data.pickup_time_to || '',
-          dropoff_time_from: data.dropoff_time_from || '',
-          dropoff_time_to: data.dropoff_time_to || '',
+          pickup_time_from: normalizeTimeString(data.pickup_time_from || ''),
+          pickup_time_to: normalizeTimeString(data.pickup_time_to || ''),
+          dropoff_time_from: normalizeTimeString(data.dropoff_time_from || ''),
+          dropoff_time_to: normalizeTimeString(data.dropoff_time_to || ''),
           seats: data.seats ?? 5,
           sleeps: data.sleeps ?? 0,
           bags: data.bags ?? 2,
@@ -1095,8 +1096,8 @@ export default function HostCarEditorPage() {
               setEditingOohFeeId(fee.id)
               setOohFeeDraft({
                 name: fee.name || 'Out-of-hours',
-                time_from: fee.time_from?.slice(0, 5) || fee.time_from,
-                time_to: fee.time_to?.slice(0, 5) || fee.time_to,
+                time_from: normalizeTimeString(fee.time_from?.slice(0, 5) || fee.time_from || ''),
+                time_to: normalizeTimeString(fee.time_to?.slice(0, 5) || fee.time_to || ''),
                 applies_to: fee.applies_to,
                 pickup_cost_euros: fee.pickup_cost_euros ?? (fee.pickup_cost_cents || 0) / 100,
                 dropoff_cost_euros: fee.dropoff_cost_euros ?? (fee.dropoff_cost_cents || 0) / 100,

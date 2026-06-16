@@ -156,3 +156,47 @@
   background: #ffedd5 !important;
 }
 
+.tb-timepicker-calendar.react-datepicker--time-only {
+  font-family: Inter, system-ui, sans-serif;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgb(16 42 67 / 0.12), 0 8px 10px -6px rgb(16 42 67 / 0.08);
+  overflow: hidden;
+}
+
+.tb-timepicker-calendar.react-datepicker--time-only .react-datepicker__time-container {
+  width: 8.5rem;
+  border-left: none;
+}
+
+.tb-timepicker-calendar.react-datepicker--time-only .react-datepicker__header {
+  background: #0a1929;
+  border-bottom: none;
+  padding: 0.75rem 0.5rem;
+}
+
+.tb-timepicker-calendar.react-datepicker--time-only .react-datepicker-time__header {
+  color: #f8fafc;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.tb-timepicker-calendar.react-datepicker--time-only .react-datepicker__time-box {
+  width: 100%;
+}
+
+.tb-timepicker-calendar.react-datepicker--time-only .react-datepicker__time-list-item {
+  font-size: 0.875rem;
+  padding: 0.45rem 0.75rem !important;
+}
+
+.tb-timepicker-calendar.react-datepicker--time-only .react-datepicker__time-list-item--selected {
+  background: #ea580c !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.tb-timepicker-calendar.react-datepicker--time-only .react-datepicker__time-list-item:hover {
+  background: #ffedd5 !important;
+}
+

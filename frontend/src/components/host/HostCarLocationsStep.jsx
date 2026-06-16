@@ -1,6 +1,7 @@
 import HostDisclosure from './HostDisclosure'
 import HostMultiSelect from './HostMultiSelect'
 import HostSelect from './HostSelect'
+import HostTimePicker from './HostTimePicker'
 import { useHostCurrency } from '../../hooks/useHostCurrency'
 
 function toLocationOptions(locations = []) {
@@ -92,38 +93,38 @@ export default function HostCarLocationsStep({
           <div className="host-locations-grid">
             <div className="host-field">
               <label>Pickup from</label>
-              <input
-                type="time"
+              <HostTimePicker
                 value={form.pickup_time_from}
-                onChange={(e) => setForm({ ...form, pickup_time_from: e.target.value })}
-                aria-label="Pickup from"
+                onChange={(v) => setForm({ ...form, pickup_time_from: v })}
+                placeholder="Select start time"
+                ariaLabel="Pickup from"
               />
             </div>
             <div className="host-field">
               <label>Pickup to</label>
-              <input
-                type="time"
+              <HostTimePicker
                 value={form.pickup_time_to}
-                onChange={(e) => setForm({ ...form, pickup_time_to: e.target.value })}
-                aria-label="Pickup to"
+                onChange={(v) => setForm({ ...form, pickup_time_to: v })}
+                placeholder="Select end time"
+                ariaLabel="Pickup to"
               />
             </div>
             <div className="host-field">
               <label>Drop-off from</label>
-              <input
-                type="time"
+              <HostTimePicker
                 value={form.dropoff_time_from}
-                onChange={(e) => setForm({ ...form, dropoff_time_from: e.target.value })}
-                aria-label="Drop-off from"
+                onChange={(v) => setForm({ ...form, dropoff_time_from: v })}
+                placeholder="Select start time"
+                ariaLabel="Drop-off from"
               />
             </div>
             <div className="host-field">
               <label>Drop-off to</label>
-              <input
-                type="time"
+              <HostTimePicker
                 value={form.dropoff_time_to}
-                onChange={(e) => setForm({ ...form, dropoff_time_to: e.target.value })}
-                aria-label="Drop-off to"
+                onChange={(v) => setForm({ ...form, dropoff_time_to: v })}
+                placeholder="Select end time"
+                ariaLabel="Drop-off to"
               />
             </div>
           </div>
@@ -273,11 +274,21 @@ export default function HostCarLocationsStep({
               </div>
               <div className="host-field">
                 <label>From time</label>
-                <input type="time" value={oohFeeDraft.time_from} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, time_from: e.target.value })} />
+                <HostTimePicker
+                  value={oohFeeDraft.time_from}
+                  onChange={(v) => setOohFeeDraft({ ...oohFeeDraft, time_from: v })}
+                  placeholder="Select start time"
+                  ariaLabel="Out-of-hours from time"
+                />
               </div>
               <div className="host-field">
                 <label>To time</label>
-                <input type="time" value={oohFeeDraft.time_to} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, time_to: e.target.value })} />
+                <HostTimePicker
+                  value={oohFeeDraft.time_to}
+                  onChange={(v) => setOohFeeDraft({ ...oohFeeDraft, time_to: v })}
+                  placeholder="Select end time"
+                  ariaLabel="Out-of-hours to time"
+                />
               </div>
               <div className="host-field">
                 <label>Pick-up charge ({currency.code})</label>
