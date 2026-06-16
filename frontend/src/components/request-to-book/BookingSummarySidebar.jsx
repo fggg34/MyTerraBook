@@ -149,8 +149,31 @@ export default function BookingSummarySidebar({
                 <span className="ll">
                   {rateDisplay} × {quote.rental_days || nights} {config.step1.rateUnit}{quote.rental_days !== 1 ? 's' : ''}
                 </span>
-                <span className="lv">{price.format(quote.rental_subtotal)}</span>
+                <span className="lv">{price.format(quote.rental_before_specials ?? quote.rental_subtotal)}</span>
               </div>
+              {(quote.special_prices_applied || []).map((line) => (
+                <div
+                  key={`special-${line.name}-${line.amount}`}
+                  className={`lrow${line.direction === 'discount' ? ' discount' : ''}`}
+                >
+                  <span className="ll">{line.name}</span>
+                  <span className="lv">
+                    {line.direction === 'discount' ? '−' : '+'}{price.format(line.amount)}
+                  </span>
+                </div>
+              ))}
+              {!(quote.special_prices_applied || []).length && Number(quote.special_surcharge_amount) > 0 && (
+                <div className="lrow">
+                  <span className="ll">Seasonal surcharge</span>
+                  <span className="lv">+{price.format(quote.special_surcharge_amount)}</span>
+                </div>
+              )}
+              {!(quote.special_prices_applied || []).length && Number(quote.special_discount_amount) > 0 && (
+                <div className="lrow discount">
+                  <span className="ll">Seasonal discount</span>
+                  <span className="lv">−{price.format(quote.special_discount_amount)}</span>
+                </div>
+              )}
               {locationFees.map((line) => (
                 <div key={`loc-${line.label}`} className="lrow">
                   <span className="ll">Location service</span>
