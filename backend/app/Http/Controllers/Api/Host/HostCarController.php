@@ -477,11 +477,20 @@ class HostCarController extends Controller
         $this->authorize('view', $car);
 
         $prices = SpecialPrice::query()
-            ->whereJsonContains('vehicle_ids', $car->id)
+            ->forVehicle($car->id)
             ->orderByDesc('date_from')
             ->get();
 
-        return response()->json(['data' => $prices]);
+        return response()->json(['data' => $prices->map(fn (SpecialPrice $price) => [
+            'id' => $price->id,
+            'name' => $price->name,
+            'date_from' => $price->date_from?->toDateString(),
+            'date_to' => $price->date_to?->toDateString(),
+            'type' => $price->type,
+            'value_mode' => $price->value_mode,
+            'value_fixed_cents' => $price->value_fixed_cents,
+            'value_percent_bips' => $price->value_percent_bips,
+        ])]);
     }
 
     public function storeSpecialPrice(Request $request, Car $car): JsonResponse
@@ -501,7 +510,16 @@ class HostCarController extends Controller
         $data['vehicle_ids'] = [$car->id];
         $price = SpecialPrice::query()->create($data);
 
-        return response()->json(['data' => $price], 201);
+        return response()->json(['data' => [
+            'id' => $price->id,
+            'name' => $price->name,
+            'date_from' => $price->date_from?->toDateString(),
+            'date_to' => $price->date_to?->toDateString(),
+            'type' => $price->type,
+            'value_mode' => $price->value_mode,
+            'value_fixed_cents' => $price->value_fixed_cents,
+            'value_percent_bips' => $price->value_percent_bips,
+        ]], 201);
     }
 
     public function updateSpecialPrice(Request $request, Car $car, SpecialPrice $specialPrice): JsonResponse
@@ -524,8 +542,18 @@ class HostCarController extends Controller
         }
 
         $specialPrice->update($data);
+        $specialPrice->refresh();
 
-        return response()->json(['data' => $specialPrice->fresh()]);
+        return response()->json(['data' => [
+            'id' => $specialPrice->id,
+            'name' => $specialPrice->name,
+            'date_from' => $specialPrice->date_from?->toDateString(),
+            'date_to' => $specialPrice->date_to?->toDateString(),
+            'type' => $specialPrice->type,
+            'value_mode' => $specialPrice->value_mode,
+            'value_fixed_cents' => $specialPrice->value_fixed_cents,
+            'value_percent_bips' => $specialPrice->value_percent_bips,
+        ]]);
     }
 
     public function destroySpecialPrice(Car $car, SpecialPrice $specialPrice): JsonResponse

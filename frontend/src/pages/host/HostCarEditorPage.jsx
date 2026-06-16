@@ -1310,14 +1310,16 @@ export default function HostCarEditorPage() {
                         value_fixed_cents: specialDraft.value_mode === 'fixed' ? specialDraft.value_fixed_cents : null,
                       }
                       if (editingSpecialPriceId) {
-                        await updateHostCarSpecialPrice(recordId, editingSpecialPriceId, payload)
+                        const res = await updateHostCarSpecialPrice(recordId, editingSpecialPriceId, payload)
                         toast('Seasonal price updated', 'success')
+                        setSpecialPrices((prev) => prev.map((row) => (row.id === editingSpecialPriceId ? res.data.data : row)))
                       } else {
-                        await addHostCarSpecialPrice(recordId, payload)
+                        const res = await addHostCarSpecialPrice(recordId, payload)
                         toast('Seasonal price added', 'success')
+                        setSpecialPrices((prev) => [...prev, res.data.data])
                       }
                       resetSpecialDraft()
-                      loadPricing(recordId)
+                      await loadPricing(recordId)
                     } catch (err) {
                       toast(err.response?.data?.message || 'Could not save seasonal price', 'error')
                     }

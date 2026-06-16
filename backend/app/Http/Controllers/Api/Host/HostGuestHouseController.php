@@ -45,6 +45,7 @@ class HostGuestHouseController extends Controller
         $this->authorize('create', GuestHouse::class);
 
         $data = $this->validatedData($request);
+        $houseData = collect($data)->except(['amenity_ids', 'seasonal_prices'])->all();
         $house = GuestHouse::query()->create([
             'type' => GuestHouseType::Apartment,
             'city' => 'Reykjavík',
@@ -55,7 +56,7 @@ class HostGuestHouseController extends Controller
             'beds' => 1,
             'min_nights' => 1,
             'base_price_per_night' => 10000,
-            ...$data,
+            ...$houseData,
             'user_id' => $request->user()->id,
             'status' => GuestHouseStatus::Draft,
         ]);
@@ -88,7 +89,7 @@ class HostGuestHouseController extends Controller
         $this->authorize('update', $guestHouse);
 
         $data = $this->validatedData($request, $guestHouse);
-        unset($data['status']);
+        unset($data['status'], $data['amenity_ids'], $data['seasonal_prices']);
         $guestHouse->update($data);
 
         if ($request->has('amenity_ids')) {
@@ -312,6 +313,12 @@ class HostGuestHouseController extends Controller
             'amenity_ids' => ['nullable', 'array'],
             'amenity_ids.*' => ['integer', 'exists:guest_house_amenities,id'],
             'seasonal_prices' => ['nullable', 'array'],
+            'seasonal_prices.*.id' => ['nullable', 'integer'],
+            'seasonal_prices.*.name' => ['required', 'string', 'max:255'],
+            'seasonal_prices.*.date_from' => ['required', 'date'],
+            'seasonal_prices.*.date_to' => ['required', 'date'],
+            'seasonal_prices.*.price_per_night_euros' => ['nullable', 'numeric', 'min:0'],
+            'seasonal_prices.*.minimum_nights' => ['nullable', 'integer', 'min:1'],
         ]);
 
         if (isset($data['base_price_per_night_euros'])) {
@@ -343,7 +350,9 @@ class HostGuestHouseController extends Controller
                 'date_from' => $row['date_from'],
                 'date_to' => $row['date_to'],
                 'price_per_night' => $priceCents,
-                'minimum_nights' => $row['minimum_nights'] ?? null,
+                'minimum_nights' => isset($row['minimum_nights']) && $row['minimum_nights'] !== '' && $row['minimum_nights'] !== null
+                    ? (int) $row['minimum_nights']
+                    : null,
             ];
 
             if (! empty($row['id'])) {

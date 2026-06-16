@@ -27,6 +27,24 @@ import { normalizeTimeString } from '../../utils/format'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
 import { formatLocationLine } from '../../utils/parseGooglePlace'
 
+const emptySeasonalDraft = { name: '', date_from: '', date_to: '', price_per_night_euros: 120, minimum_nights: '' }
+
+function buildSeasonalPriceRows(seasonalPrices, seasonalDraft) {
+  const rows = [...seasonalPrices]
+  const hasPendingDraft = seasonalDraft.name && seasonalDraft.date_from && seasonalDraft.date_to
+  if (hasPendingDraft) {
+    rows.push({ ...seasonalDraft, id: null })
+  }
+  return rows.map((sp) => ({
+    id: sp.id || null,
+    name: sp.name,
+    date_from: sp.date_from,
+    date_to: sp.date_to,
+    price_per_night_euros: Number(sp.price_per_night_euros ?? (sp.price_per_night ? sp.price_per_night / 100 : 0)),
+    minimum_nights: sp.minimum_nights ? Number(sp.minimum_nights) : null,
+  }))
+}
+
 const STEPS = ['Basics', 'Details', 'Pricing', 'Rules', 'Availability', 'Review']
 
 const emptyForm = {
@@ -70,7 +88,7 @@ export default function HostGuestHouseEditorPage() {
   const [thumbnail, setThumbnail] = useState(null)
   const [gallery, setGallery] = useState([])
   const [seasonalPrices, setSeasonalPrices] = useState([])
-  const [seasonalDraft, setSeasonalDraft] = useState({ name: '', date_from: '', date_to: '', price_per_night_euros: 120, minimum_nights: '' })
+  const [seasonalDraft, setSeasonalDraft] = useState(emptySeasonalDraft)
   const [availability, setAvailability] = useState([])
   const [blockDraft, setBlockDraft] = useState({ blocked_from: '', blocked_to: '', note: '' })
   const [loading, setLoading] = useState(!isNew)
@@ -108,7 +126,7 @@ export default function HostGuestHouseEditorPage() {
     })
     setThumbnail(data.thumbnail || null)
     setGallery(data.images || [])
-    setSeasonalPrices(data.seasonal_prices || [])
+    setSeasonalPrices(Array.isArray(data.seasonal_prices) ? data.seasonal_prices : [])
   }
 
   useEffect(() => {
@@ -133,6 +151,7 @@ export default function HostGuestHouseEditorPage() {
   const save = async () => {
     setSaving(true)
     try {
+      const seasonalPriceRows = buildSeasonalPriceRows(seasonalPrices, seasonalDraft)
       const payload = {
         ...form,
         slug: form.slug || null,
@@ -140,19 +159,16 @@ export default function HostGuestHouseEditorPage() {
         latitude: form.latitude === '' ? null : Number(form.latitude),
         longitude: form.longitude === '' ? null : Number(form.longitude),
         amenity_ids: form.amenity_ids,
-        seasonal_prices: seasonalPrices.map((sp) => ({
-          id: sp.id,
-          name: sp.name,
-          date_from: sp.date_from,
-          date_to: sp.date_to,
-          price_per_night_euros: sp.price_per_night_euros,
-          minimum_nights: sp.minimum_nights || null,
-        })),
+        seasonal_prices: seasonalPriceRows,
       }
       if (recordId) {
-        await updateHostGuestHouse(recordId, payload)
+        const res = await updateHostGuestHouse(recordId, payload)
+        const saved = res.data.data
+        setSeasonalPrices(Array.isArray(saved?.seasonal_prices) ? saved.seasonal_prices : seasonalPriceRows)
+        if (seasonalDraft.name && seasonalDraft.date_from && seasonalDraft.date_to) {
+          setSeasonalDraft(emptySeasonalDraft)
+        }
         toast('Saved', 'success')
-        reload(recordId)
         return recordId
       }
 
@@ -160,6 +176,10 @@ export default function HostGuestHouseEditorPage() {
       const newId = res.data.data.id
       setRecordId(newId)
       setStatus(res.data.data.status)
+      setSeasonalPrices(Array.isArray(res.data.data?.seasonal_prices) ? res.data.data.seasonal_prices : seasonalPriceRows)
+      if (seasonalDraft.name && seasonalDraft.date_from && seasonalDraft.date_to) {
+        setSeasonalDraft(emptySeasonalDraft)
+      }
       toast('Guesthouse created', 'success')
       navigate(`/host/guesthouses/${newId}/edit`, { replace: true })
       return newId
@@ -350,7 +370,7 @@ export default function HostGuestHouseEditorPage() {
 
             <HostDisclosure
               title="Seasonal prices (optional)"
-              hint="Override the nightly rate for specific date ranges, e.g. peak season or a holiday discount. Saved when you click Save."
+              hint="Override the nightly rate for specific date ranges. Fill in the fields below, then click Add or Save."
               count={seasonalPrices.length}
               defaultOpen={seasonalPrices.length > 0}
             >
@@ -363,7 +383,7 @@ export default function HostGuestHouseEditorPage() {
             </div>
             <button type="button" className="host-btn secondary" disabled={!seasonalDraft.name || !seasonalDraft.date_from || !seasonalDraft.date_to} onClick={() => {
               setSeasonalPrices((prev) => [...prev, { ...seasonalDraft, id: null }])
-              setSeasonalDraft({ name: '', date_from: '', date_to: '', price_per_night_euros: 120, minimum_nights: '' })
+              setSeasonalDraft(emptySeasonalDraft)
             }}>Add seasonal price</button>
             <ul className="mt-3 space-y-2 text-sm">
               {seasonalPrices.map((sp, index) => (

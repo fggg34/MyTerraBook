@@ -308,6 +308,84 @@ class HostPanelTest extends TestCase
         ]);
     }
 
+    public function test_host_car_special_price_persists_and_lists(): void
+    {
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'SUV', 'is_active' => true, 'is_search_filter' => true]);
+        $host = User::factory()->host()->create();
+
+        Sanctum::actingAs($host);
+
+        $carId = Car::query()->create([
+            'user_id' => $host->id,
+            'name' => 'Seasonal SUV',
+            'sub_category_id' => $category->id,
+            'listing_status' => ListingApprovalStatus::Draft,
+            'units_available' => 1,
+            'seats' => 5,
+            'bags' => 2,
+            'transmission' => 'automatic',
+            'fuel_type' => 'petrol',
+            'drive_type' => 'fwd',
+        ])->id;
+
+        $this->postJson("/api/host/cars/{$carId}/special-prices", [
+            'name' => 'Summer peak',
+            'date_from' => '2026-06-01',
+            'date_to' => '2026-08-31',
+            'type' => 'charge',
+            'value_mode' => 'percentage',
+            'value_percent_bips' => 1000,
+        ])->assertCreated()
+            ->assertJsonPath('data.name', 'Summer peak')
+            ->assertJsonPath('data.date_from', '2026-06-01');
+
+        $this->getJson("/api/host/cars/{$carId}/special-prices")
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Summer peak')
+            ->assertJsonPath('data.0.date_from', '2026-06-01');
+    }
+
+    public function test_host_guesthouse_update_includes_pending_seasonal_draft_payload(): void
+    {
+        $host = User::factory()->host()->create();
+        $house = GuestHouse::query()->create([
+            'user_id' => $host->id,
+            'name' => 'Draft House',
+            'slug' => 'draft-house',
+            'type' => GuestHouseType::Apartment,
+            'status' => GuestHouseStatus::Draft,
+            'city' => 'Reykjavík',
+            'max_guests' => 2,
+            'bedrooms' => 1,
+            'bathrooms' => 1,
+            'beds' => 1,
+            'min_nights' => 1,
+            'base_price_per_night' => 10000,
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->patchJson("/api/host/guest-houses/{$house->id}", [
+            'seasonal_prices' => [
+                [
+                    'name' => 'Easter',
+                    'date_from' => '2026-04-01',
+                    'date_to' => '2026-04-10',
+                    'price_per_night_euros' => 180,
+                ],
+            ],
+        ])->assertOk()
+            ->assertJsonPath('data.seasonal_prices.0.name', 'Easter');
+
+        $this->assertDatabaseHas('guest_house_seasonal_prices', [
+            'guest_house_id' => $house->id,
+            'name' => 'Easter',
+            'price_per_night' => 18000,
+        ]);
+    }
+
     public function test_host_car_persists_capacity_fields(): void
     {
         $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);

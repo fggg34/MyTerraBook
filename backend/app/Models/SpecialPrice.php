@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -51,5 +52,13 @@ class SpecialPrice extends Model
             'value_percent_bips' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function scopeForVehicle(Builder $query, int $vehicleId): Builder
+    {
+        return $query->where(function (Builder $query) use ($vehicleId): void {
+            $query->whereJsonContains('vehicle_ids', $vehicleId)
+                ->orWhereJsonContains('vehicle_ids', (string) $vehicleId);
+        });
     }
 }
