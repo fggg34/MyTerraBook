@@ -5,10 +5,16 @@ import {
   Gauge,
   Tag,
 } from 'lucide-react'
-import { formatCurrency, formatCurrencyFromCents } from '../../utils/format'
+import { usePageContent } from '../../context/SiteContentContext'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { useShopConfig } from '../../context/ShopConfigContext'
-import { fmtDisplayDate } from '../../utils/requestToBookUtils'
+import { fmtDisplayDate, shortLocationName } from '../../utils/requestToBookUtils'
+
+const DEFAULT_DUE_ON_APPROVAL_LABEL = 'Due on approval ({percent}%)'
+
+function formatDueOnApprovalLabel(template, percent) {
+  return String(template || DEFAULT_DUE_ON_APPROVAL_LABEL).replace('{percent}', String(percent))
+}
 
 export default function BookingSummarySidebar({
   config,
@@ -25,12 +31,17 @@ export default function BookingSummarySidebar({
 }) {
   const price = useFormatPrice()
   const { prepayPercent } = useShopConfig()
+  const { page: checkoutPage } = usePageContent('checkout')
+  const dueOnApprovalLabel = formatDueOnApprovalLabel(
+    checkoutPage?.labels?.dueOnApprovalLabel,
+    prepayPercent,
+  )
   const kick = config.summaryKick(item)
   const isVehicle = bookingType !== 'guesthouse'
 
   const rateCents = isVehicle
     ? selectedPriceType?.from_price_per_day_cents || item?.price_types?.[0]?.from_price_per_day_cents
-    : item?.base_price_per_night
+    : item?.base_price_per_night_cents ?? item?.base_price_per_night
 
   const rateDisplay = isVehicle
     ? (selectedPriceType?.from_price_per_day_cents != null
@@ -38,14 +49,14 @@ export default function BookingSummarySidebar({
       : selectedPriceType?.from_price_per_day
         ? price.format(Number.parseFloat(selectedPriceType.from_price_per_day))
         : null)
-    : item?.base_price_per_night_formatted || (rateCents ? price.formatCents(rateCents) : null)
+    : (rateCents != null ? price.formatCents(rateCents) : null)
 
   const pickDetail = bookingType === 'guesthouse'
     ? item?.check_in_time || 'From 15:00'
-    : `${form.pickupTime} · ${locationName(form.pickup_location_id)}`
+    : `${form.pickupTime} · ${shortLocationName(locationName(form.pickup_location_id))}`
   const dropDetail = bookingType === 'guesthouse'
     ? item?.check_out_time || 'By 11:00'
-    : `${form.dropoffTime} · ${locationName(form.sameReturn ? form.pickup_location_id : form.dropoff_location_id)}`
+    : `${form.dropoffTime} · ${shortLocationName(locationName(form.sameReturn ? form.pickup_location_id : form.dropoff_location_id))}`
 
   const totalAmount = () => {
     if (!quote) return null
@@ -60,7 +71,6 @@ export default function BookingSummarySidebar({
     if (quoteLoading) return '…'
     const amount = totalAmount()
     if (amount == null) return '-'
-    if (bookingType === 'guesthouse') return quote.total_formatted || price.format(amount)
     return price.format(amount)
   }
 
@@ -122,13 +132,13 @@ export default function BookingSummarySidebar({
         <div className="strip">
           <div className="leg">
             <div className="lk">{config.step1.dateStartLabel}</div>
-            <div className="ld">{form.startDate ? fmtDisplayDate(form.startDate) : ','}</div>
+            <div className="ld">{form.startDate ? fmtDisplayDate(form.startDate) : '—'}</div>
             <div className="lt">{pickDetail}</div>
           </div>
           <span className="arrowic"><ArrowRight aria-hidden /></span>
           <div className="leg">
             <div className="lk">{config.step1.dateEndLabel}</div>
-            <div className="ld">{form.endDate ? fmtDisplayDate(form.endDate) : ','}</div>
+            <div className="ld">{form.endDate ? fmtDisplayDate(form.endDate) : '—'}</div>
             <div className="lt">{dropDetail}</div>
           </div>
         </div>
@@ -171,7 +181,7 @@ export default function BookingSummarySidebar({
                 return (
                   <div key={opt.id} className="lrow">
                     <span className="ll">{opt.name}</span>
-                    <span className="lv">{formatCurrencyFromCents(totalCents, quote.currency)}</span>
+                    <span className="lv">{price.formatCents(totalCents)}</span>
                   </div>
                 )
               })}
@@ -195,24 +205,24 @@ export default function BookingSummarySidebar({
                 <span className="ll">
                   {rateDisplay || '-'} × {nights} night{nights !== 1 ? 's' : ''}
                 </span>
-                <span className="lv">{formatCurrencyFromCents(quote.base_total, quote.currency)}</span>
+                <span className="lv">{price.formatCents(quote.base_total)}</span>
               </div>
               {quote.cleaning_fee > 0 && (
                 <div className="lrow">
                   <span className="ll">Cleaning fee</span>
-                  <span className="lv">{formatCurrencyFromCents(quote.cleaning_fee, quote.currency)}</span>
+                  <span className="lv">{price.formatCents(quote.cleaning_fee)}</span>
                 </div>
               )}
               {Number(quote.discount_amount) > 0 && (
                 <div className="lrow discount">
                   <span className="ll">Promo · {form.coupon_code.trim().toUpperCase() || 'DISCOUNT'}</span>
-                  <span className="lv">−{formatCurrencyFromCents(quote.discount_amount, quote.currency)}</span>
+                  <span className="lv">−{price.formatCents(quote.discount_amount)}</span>
                 </div>
               )}
               {quote.tax_amount > 0 && (
                 <div className="lrow">
                   <span className="ll">Tax</span>
-                  <span className="lv">{formatCurrencyFromCents(quote.tax_amount, quote.currency)}</span>
+                  <span className="lv">{price.formatCents(quote.tax_amount)}</span>
                 </div>
               )}
             </>
@@ -223,16 +233,13 @@ export default function BookingSummarySidebar({
         </div>
         <div className="total-row">
           <span className="tl">Total</span>
-          <span className="tv">
-            <small>{quote?.currency || 'EUR'}</small>
-            {totalDisplay()}
-          </span>
+          <span className="tv">{totalDisplay()}</span>
         </div>
         {quote && prepayAmount() != null && (
           <div className="prepay-block">
             <div className="prepay-title">Payment schedule</div>
             <div className="prepay-row">
-              <span>Due on approval ({prepayPercent}%)</span>
+              <span>{dueOnApprovalLabel}</span>
               <b>{price.format(prepayAmount())}</b>
             </div>
             <div className="prepay-row">
@@ -297,8 +304,8 @@ export default function BookingSummarySidebar({
             <Check aria-hidden />
             You&apos;re saving{' '}
             {bookingType === 'guesthouse'
-              ? formatCurrencyFromCents(quote.discount_amount, quote.currency)
-              : formatCurrency(quote.discount_amount, quote.currency)}
+              ? price.formatCents(quote.discount_amount)
+              : price.format(quote.discount_amount)}
           </p>
         )}
       </div>

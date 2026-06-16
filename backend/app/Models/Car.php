@@ -154,6 +154,7 @@ class Car extends Model
     public function rentalOptions(): BelongsToMany
     {
         return $this->belongsToMany(RentalOption::class, 'car_rental_option')
+            ->withPivot(['cost_cents', 'is_daily_cost'])
             ->withTimestamps();
     }
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { AlertCircle, ArrowRight, CalendarDays, Clock, Plus, Timer, Trash2 } from 'lucide-react'
+import { AlertCircle, ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock, Plus, Shield, Timer, Trash2 } from 'lucide-react'
 import {
   addHostCarAvailability,
   addHostCarSpecialPrice,
@@ -35,10 +35,31 @@ import {
   submitHostCar,
   syncHostCarRelations,
   updateHostCar,
+  updateHostCarDailyFare,
+  updateHostCarExtraHourFare,
+  updateHostCarHourlyFare,
+  updateHostCarLocationFee,
+  updateHostCarOutOfHoursFee,
+  updateHostCarSpecialPrice,
   uploadHostCarImages,
 } from '../../api/host'
+import {
+  BASE_FARE_FROM_DAYS,
+  BASE_FARE_TO_DAYS,
+  durationTierFares,
+  filterStandardPriceTypeRows,
+  findBaseDailyFare,
+  hasUnsavedProtectionPricing,
+  inferProtectionAddOnEuros,
+  isBaseDailyPriceDirty,
+  standardDailyFares,
+  standardPriceTypeId,
+  syncProtectionAddOn,
+} from '../../utils/hostCarPricingUtils'
+import HostCarExtrasPanel from '../../components/host/HostCarExtrasPanel'
 import HostCarLocationsStep from '../../components/host/HostCarLocationsStep'
 import HostDisclosure from '../../components/host/HostDisclosure'
+import { HostImageDropzone, HostImageGallery } from '../../components/host/HostImageUpload'
 import HostIconMultiSelect from '../../components/host/HostIconMultiSelect'
 import HostReadinessChecklist from '../../components/host/HostReadinessChecklist'
 import HostDatePicker from '../../components/host/HostDatePicker'
@@ -47,6 +68,7 @@ import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import LucideIcon from '../../utils/iconCatalog'
 import { useToast } from '../../context/ToastContext'
+import { useHostCurrency } from '../../hooks/useHostCurrency'
 
 const specIcon = (name) => <LucideIcon name={name} size={18} strokeWidth={1.8} />
 
@@ -97,7 +119,7 @@ function validateCarTimes(form) {
   return null
 }
 
-const STEPS = ['Vehicle', 'Specs', 'Locations', 'Units', 'Pricing', 'Availability', 'Review']
+const STEPS = ['Vehicle', 'Specs', 'Locations', 'Units', 'Pricing', 'Availability', 'Submit and Review']
 
 const emptyForm = {
   name: '',
@@ -120,7 +142,7 @@ const emptyForm = {
   dropoff_time_from: '',
   dropoff_time_to: '',
   characteristic_ids: [],
-  rental_option_ids: [],
+  rental_options: [],
   rental_condition_ids: [],
 }
 
@@ -129,11 +151,15 @@ export default function HostCarEditorPage() {
   const isNew = !id || id === 'new'
   const navigate = useNavigate()
   const { toast } = useToast()
+  const currency = useHostCurrency()
   const [step, setStep] = useState(0)
   const [form, setForm] = useState(emptyForm)
   const [status, setStatus] = useState('draft')
   const [rejectionReason, setRejectionReason] = useState('')
   const [mainImage, setMainImage] = useState(null)
+  const [pendingMainFile, setPendingMainFile] = useState(null)
+  const [pendingMainPreview, setPendingMainPreview] = useState(null)
+  const [pendingDetails, setPendingDetails] = useState([])
   const [catalog, setCatalog] = useState({
     mainCategories: [],
     subCategories: [],
@@ -156,7 +182,9 @@ export default function HostCarEditorPage() {
     dropoff_location_id: '',
     cost_euros: 0,
     is_one_way_fee: false,
+    multiply_by_days: false,
   })
+  const [editingLocationFeeId, setEditingLocationFeeId] = useState(null)
   const [oohFeeDraft, setOohFeeDraft] = useState({
     name: 'Out-of-hours',
     time_from: '20:00',
@@ -166,14 +194,25 @@ export default function HostCarEditorPage() {
     dropoff_cost_euros: 35,
     location_ids: [],
   })
-  const [fareDraft, setFareDraft] = useState({ price_type_id: '', from_days: 1, to_days: 7, price_per_day_euros: 100 })
-  const [hourlyDraft, setHourlyDraft] = useState({ price_type_id: '', min_minutes: 60, max_minutes: 240, total_price_euros: 50 })
-  const [extraDraft, setExtraDraft] = useState({ price_type_id: '', charge_per_extra_hour_euros: 10 })
+  const [baseDailyPrice, setBaseDailyPrice] = useState('')
+  const [baseDailySaving, setBaseDailySaving] = useState(false)
+  const [tierDraft, setTierDraft] = useState({ from_days: 7, to_days: 14, price_per_day_euros: 0 })
+  const [hourlyDraft, setHourlyDraft] = useState({ min_minutes: 60, max_minutes: 240, total_price_euros: 50 })
+  const [extraDraft, setExtraDraft] = useState({ charge_per_extra_hour_euros: 10 })
+  const [plusAddOn, setPlusAddOn] = useState('')
+  const [maxAddOn, setMaxAddOn] = useState('')
+  const [protectionSaving, setProtectionSaving] = useState(false)
   const [blockDraft, setBlockDraft] = useState({ starts_at: '', ends_at: '', units_blocked: 1, notes: '' })
+  const [unitsBusy, setUnitsBusy] = useState(false)
   const [specialDraft, setSpecialDraft] = useState({ name: '', date_from: '', date_to: '', type: 'charge', value_mode: 'percentage', value_percent_bips: 1000, value_fixed_cents: 0 })
+  const [editingSpecialPriceId, setEditingSpecialPriceId] = useState(null)
+  const [editingHourlyFareId, setEditingHourlyFareId] = useState(null)
+  const [editingExtraHourFareId, setEditingExtraHourFareId] = useState(null)
+  const [editingOohFeeId, setEditingOohFeeId] = useState(null)
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [recordId, setRecordId] = useState(isNew ? null : Number(id))
+  const [pendingFocusId, setPendingFocusId] = useState(null)
 
   useEffect(() => {
     const unwrap = (result, fallback = []) => (
@@ -211,16 +250,16 @@ export default function HostCarEditorPage() {
     })
   }, [toast])
 
-  const loadPricing = (carId) => {
-    getHostCarUnits(carId).then((res) => setUnits(res.data.data || []))
-    getHostCarDailyFares(carId).then((res) => setDailyFares(res.data.data || []))
-    getHostCarHourlyFares(carId).then((res) => setHourlyFares(res.data.data || []))
-    getHostCarExtraHourFares(carId).then((res) => setExtraHourFares(res.data.data || []))
-    getHostCarAvailability(carId).then((res) => setAvailability(res.data.data || []))
-    getHostCarSpecialPrices(carId).then((res) => setSpecialPrices(res.data.data || []))
-    getHostCarLocationFees(carId).then((res) => setLocationFees(res.data.data || []))
-    getHostCarOutOfHoursFees(carId).then((res) => setOutOfHoursFees(res.data.data || []))
-  }
+  const loadPricing = (carId) => Promise.all([
+    getHostCarUnits(carId).then((res) => setUnits(res.data.data || [])),
+    getHostCarDailyFares(carId).then((res) => setDailyFares(res.data.data || [])),
+    getHostCarHourlyFares(carId).then((res) => setHourlyFares(res.data.data || [])),
+    getHostCarExtraHourFares(carId).then((res) => setExtraHourFares(res.data.data || [])),
+    getHostCarAvailability(carId).then((res) => setAvailability(res.data.data || [])),
+    getHostCarSpecialPrices(carId).then((res) => setSpecialPrices(res.data.data || [])),
+    getHostCarLocationFees(carId).then((res) => setLocationFees(res.data.data || [])),
+    getHostCarOutOfHoursFees(carId).then((res) => setOutOfHoursFees(res.data.data || [])),
+  ])
 
   const reloadCar = (carId) => {
     getHostCar(carId).then((res) => {
@@ -253,7 +292,13 @@ export default function HostCarEditorPage() {
           drive_type: data.drive_type || 'fwd',
           year: data.year ?? '',
           characteristic_ids: data.characteristic_ids || [],
-          rental_option_ids: data.rental_option_ids || [],
+          rental_options: (data.rental_options?.length
+            ? data.rental_options
+            : (data.rental_option_ids || []).map((optionId) => ({ id: optionId, cost_euros: 0 }))
+          ).map((row) => ({
+            id: row.id,
+            cost_euros: row.cost_euros ?? (row.cost_cents ?? 0) / 100,
+          })),
           rental_condition_ids: data.rental_condition_ids || [],
         })
         setMainImage(data.main_image_path || null)
@@ -301,12 +346,21 @@ export default function HostCarEditorPage() {
         pickup_location_ids: form.pickup_location_ids,
         dropoff_location_ids: form.dropoff_location_ids,
         characteristic_ids: form.characteristic_ids,
-        rental_option_ids: form.rental_option_ids,
+        rental_options: form.rental_options.map((row) => ({
+          id: row.id,
+          cost_euros: Number(row.cost_euros) || 0,
+        })),
         rental_condition_ids: form.rental_condition_ids,
       }
       if (recordId) {
         await updateHostCar(recordId, payload)
         await syncHostCarRelations(recordId, relations)
+        try {
+          await flushPendingImages(recordId)
+        } catch {
+          toast('Saved, but some photos could not upload. Try saving again.', 'error')
+          return recordId
+        }
         toast('Saved', 'success')
         return recordId
       }
@@ -316,6 +370,13 @@ export default function HostCarEditorPage() {
       setRecordId(newId)
       setStatus(res.data.data.listing_status)
       await syncHostCarRelations(newId, relations)
+      try {
+        await flushPendingImages(newId)
+      } catch {
+        toast('Vehicle created, but some photos could not upload. Save again to retry.', 'error')
+        navigate(`/host/cars/${newId}/edit`, { replace: true })
+        return newId
+      }
       toast('Vehicle created', 'success')
       navigate(`/host/cars/${newId}/edit`, { replace: true })
       return newId
@@ -336,10 +397,17 @@ export default function HostCarEditorPage() {
       return
     }
 
-    // Always persist the latest form state before submitting so no unsaved
-    // edits (pricing, specs, etc.) are silently dropped.
     const carId = await save()
     if (!carId) return
+
+    try {
+      const pricingSaved = await flushPendingPricing(carId)
+      if (!pricingSaved) return
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not save pricing before submit', 'error')
+      return
+    }
+
     try {
       const res = await submitHostCar(carId)
       setStatus(res.data.data.listing_status)
@@ -361,12 +429,23 @@ export default function HostCarEditorPage() {
     })
   }
 
-  const handleMainImage = async (event) => {
-    if (!recordId || !event.target.files?.[0]) return
+  const handleMainImage = async (file) => {
+    if (!file) return
+
+    if (!recordId) {
+      if (pendingMainPreview) URL.revokeObjectURL(pendingMainPreview)
+      setPendingMainFile(file)
+      setPendingMainPreview(URL.createObjectURL(file))
+      return
+    }
+
     const fd = new FormData()
-    fd.append('main_image', event.target.files[0])
+    fd.append('main_image', file)
     try {
       await uploadHostCarImages(recordId, fd)
+      if (pendingMainPreview) URL.revokeObjectURL(pendingMainPreview)
+      setPendingMainFile(null)
+      setPendingMainPreview(null)
       reloadCar(recordId)
       toast('Image uploaded', 'success')
     } catch {
@@ -374,10 +453,30 @@ export default function HostCarEditorPage() {
     }
   }
 
-  const handleDetailsImages = async (event) => {
-    if (!recordId || !event.target.files?.length) return
+  const clearMainImage = () => {
+    if (!pendingMainPreview) return
+    URL.revokeObjectURL(pendingMainPreview)
+    setPendingMainFile(null)
+    setPendingMainPreview(null)
+  }
+
+  const handleDetailsImages = async (files) => {
+    if (!files.length) return
+
+    if (!recordId) {
+      setPendingDetails((prev) => [
+        ...prev,
+        ...files.map((file) => ({
+          id: `${Date.now()}-${file.name}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        })),
+      ])
+      return
+    }
+
     const fd = new FormData()
-    Array.from(event.target.files).forEach((file) => fd.append('details_images[]', file))
+    files.forEach((file) => fd.append('details_images[]', file))
     try {
       await uploadHostCarImages(recordId, fd)
       reloadCar(recordId)
@@ -387,23 +486,67 @@ export default function HostCarEditorPage() {
     }
   }
 
-  const removeDetailsImage = async (path) => {
-    if (!recordId) return
-    const remaining = form.details_image_paths.filter((p) => p !== path)
-    const fd = new FormData()
-    if (remaining.length === 0) {
-      fd.append('details_image_paths[]', '')
-    } else {
-      remaining.forEach((p) => fd.append('details_image_paths[]', p))
+  const removePendingDetail = (id) => {
+    setPendingDetails((prev) => {
+      const item = prev.find((p) => p.id === id)
+      if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl)
+      return prev.filter((p) => p.id !== id)
+    })
+  }
+
+  const flushPendingImages = async (carId) => {
+    let uploaded = false
+
+    if (pendingMainFile) {
+      const fd = new FormData()
+      fd.append('main_image', pendingMainFile)
+      await uploadHostCarImages(carId, fd)
+      if (pendingMainPreview) URL.revokeObjectURL(pendingMainPreview)
+      setPendingMainFile(null)
+      setPendingMainPreview(null)
+      uploaded = true
     }
+
+    if (pendingDetails.length > 0) {
+      const fd = new FormData()
+      pendingDetails.forEach((item) => fd.append('details_images[]', item.file))
+      await uploadHostCarImages(carId, fd)
+      pendingDetails.forEach((item) => URL.revokeObjectURL(item.previewUrl))
+      setPendingDetails([])
+      uploaded = true
+    }
+
+    if (uploaded) reloadCar(carId)
+  }
+
+  useEffect(() => () => {
+    if (pendingMainPreview) URL.revokeObjectURL(pendingMainPreview)
+    pendingDetails.forEach((item) => {
+      if (item.previewUrl) URL.revokeObjectURL(item.previewUrl)
+    })
+  }, [pendingMainPreview, pendingDetails])
+
+  const removeDetailsImage = async (path) => {
+    const remaining = form.details_image_paths.filter((p) => p !== path)
+
+    if (!recordId) {
+      setForm((prev) => ({ ...prev, details_image_paths: remaining }))
+      return
+    }
+
+    const fd = new FormData()
+    fd.append('replace_details_image_paths', '1')
+    remaining.forEach((p) => fd.append('details_image_paths[]', p))
     try {
       await uploadHostCarImages(recordId, fd)
       setForm((prev) => ({ ...prev, details_image_paths: remaining }))
       toast('Image removed', 'success')
-    } catch {
-      toast('Could not remove image', 'error')
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not remove image', 'error')
     }
   }
+
+  const mainImagePreview = mainImage ? resolveStorageUrl(mainImage) : pendingMainPreview
 
   const filteredSubCategories = catalog.subCategories.filter(
     (sub) => !form.main_category_id || String(sub.main_category_id) === String(form.main_category_id),
@@ -416,27 +559,44 @@ export default function HostCarEditorPage() {
 
   const isCampervan = selectedMainCategory?.slug === 'campervan'
 
-  const readinessItems = [
-    { label: 'Vehicle name', done: !!String(form.name || '').trim() },
-    { label: 'Category selected', done: !!form.sub_category_id },
+  const readinessItems = useMemo(() => [
+    { label: 'Vehicle name', done: !!String(form.name || '').trim(), step: 0, focusId: 'host-car-name' },
+    { label: 'Category selected', done: !!form.sub_category_id, step: 0, focusId: 'host-car-sub-category' },
     {
       label: 'Pickup & drop-off locations',
       done: (form.pickup_location_ids || []).length > 0 && (form.dropoff_location_ids || []).length > 0,
+      step: 2,
+      focusId: 'host-car-locations',
     },
     {
       label: 'Pickup & drop-off times',
       done: !!(form.pickup_time_from && form.pickup_time_to && form.dropoff_time_from && form.dropoff_time_to),
+      step: 2,
+      focusId: 'host-car-times',
     },
-    { label: 'At least one daily fare', done: dailyFares.length > 0 },
-    { label: 'Transmission selected', done: !!form.transmission },
-    { label: 'Fuel type selected', done: !!form.fuel_type },
-    { label: 'Drive system selected', done: !!form.drive_type },
-    { label: 'Bags capacity set', done: Number(form.bags) > 0 },
+    {
+      label: 'Daily rental rate set',
+      done: !!findBaseDailyFare(standardDailyFares(dailyFares, catalog.priceTypes)),
+      step: 4,
+      focusId: 'host-base-daily-price',
+    },
+    {
+      label: 'At least one unit available',
+      done: units.length > 0,
+      step: 3,
+      focusId: 'host-car-units',
+    },
+    { label: 'Transmission selected', done: !!form.transmission, step: 1, focusId: 'host-car-transmission' },
+    { label: 'Fuel type selected', done: !!form.fuel_type, step: 1, focusId: 'host-car-fuel-type' },
+    { label: 'Drive system selected', done: !!form.drive_type, step: 1, focusId: 'host-car-drive-type' },
+    { label: 'Bags capacity set', done: Number(form.bags) > 0, step: 1, focusId: 'car-bags' },
     {
       label: isCampervan ? 'Sleeps (berths) set' : 'Seats set',
       done: isCampervan ? Number(form.sleeps) > 0 : Number(form.seats) > 0,
+      step: 1,
+      focusId: isCampervan ? 'car-sleeps' : 'car-seats',
     },
-  ]
+  ], [form, dailyFares, catalog.priceTypes, isCampervan, units.length])
   const isReady = readinessItems.every((i) => i.done)
 
   const yearOptions = useMemo(
@@ -466,8 +626,195 @@ export default function HostCarEditorPage() {
   const canConfigureTimes = selectedPickupLocations.length > 0 && selectedDropoffLocations.length > 0
 
 
-  const dailyRangeInvalid = Number(fareDraft.to_days) <= Number(fareDraft.from_days)
+  const tierRangeInvalid = Number(tierDraft.to_days) <= Number(tierDraft.from_days)
   const hourlyRangeInvalid = Number(hourlyDraft.max_minutes) <= Number(hourlyDraft.min_minutes)
+  const standardPriceType = useMemo(() => standardPriceTypeId(catalog.priceTypes), [catalog.priceTypes])
+  const hostDailyFares = useMemo(
+    () => standardDailyFares(dailyFares, catalog.priceTypes),
+    [dailyFares, catalog.priceTypes],
+  )
+  const baseDailyFare = useMemo(() => findBaseDailyFare(hostDailyFares), [hostDailyFares])
+  const durationTiers = useMemo(() => durationTierFares(hostDailyFares), [hostDailyFares])
+  const hostHourlyFares = useMemo(
+    () => filterStandardPriceTypeRows(hourlyFares, catalog.priceTypes),
+    [hourlyFares, catalog.priceTypes],
+  )
+  const hostExtraHourFares = useMemo(
+    () => filterStandardPriceTypeRows(extraHourFares, catalog.priceTypes),
+    [extraHourFares, catalog.priceTypes],
+  )
+  const baseDailyPriceDirty = useMemo(
+    () => isBaseDailyPriceDirty(baseDailyPrice, baseDailyFare),
+    [baseDailyPrice, baseDailyFare],
+  )
+  const protectionPricingDirty = useMemo(
+    () => hasUnsavedProtectionPricing(plusAddOn, maxAddOn, dailyFares, catalog.priceTypes),
+    [plusAddOn, maxAddOn, dailyFares, catalog.priceTypes],
+  )
+  const seasonalFixedAmountLabel = specialDraft.type === 'discount'
+    ? currency.fixedDiscountLabel
+    : currency.fixedSurchargeLabel
+
+  useEffect(() => {
+    const base = findBaseDailyFare(standardDailyFares(dailyFares, catalog.priceTypes))
+    setBaseDailyPrice(base ? String(base.price_per_day_cents / 100) : '')
+  }, [dailyFares, catalog.priceTypes])
+
+  useEffect(() => {
+    const plus = inferProtectionAddOnEuros(dailyFares, catalog.priceTypes, 'plus')
+    const max = inferProtectionAddOnEuros(dailyFares, catalog.priceTypes, 'max')
+    setPlusAddOn(plus == null ? '' : String(plus))
+    setMaxAddOn(max == null ? '' : String(max))
+  }, [dailyFares, catalog.priceTypes])
+
+  const buildStandardFarePayload = (draft) => ({
+    ...draft,
+    price_type_id: standardPriceType,
+  })
+
+  const saveBaseDailyPrice = async (options = {}) => {
+    const { silent = false } = options
+    const price = Number(baseDailyPrice)
+    if (!price || price <= 0) {
+      if (!silent) toast('Enter a daily price greater than 0', 'error')
+      return false
+    }
+    if (!recordId || !standardPriceType) return false
+
+    setBaseDailySaving(true)
+    try {
+      const payload = buildStandardFarePayload({
+        from_days: BASE_FARE_FROM_DAYS,
+        to_days: BASE_FARE_TO_DAYS,
+        price_per_day_euros: price,
+      })
+      if (baseDailyFare) {
+        await updateHostCarDailyFare(recordId, baseDailyFare.id, payload)
+      } else {
+        await createHostCarDailyFare(recordId, payload)
+      }
+      await loadPricing(recordId)
+      if (!silent) toast('Daily rate saved', 'success')
+      return true
+    } catch (err) {
+      if (!silent) toast(err.response?.data?.message || 'Could not save daily rate', 'error')
+      throw err
+    } finally {
+      setBaseDailySaving(false)
+    }
+  }
+
+  const goToReadinessItem = (item) => {
+    if (item.step != null) setStep(item.step)
+    if (item.focusId) setPendingFocusId(item.focusId)
+  }
+
+  useEffect(() => {
+    if (!pendingFocusId) return undefined
+    const timer = window.setTimeout(() => {
+      const el = document.getElementById(pendingFocusId)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        if (typeof el.focus === 'function') {
+          el.focus({ preventScroll: true })
+        }
+      }
+      setPendingFocusId(null)
+    }, 80)
+    return () => window.clearTimeout(timer)
+  }, [step, pendingFocusId])
+
+  const saveProtectionPricing = async (options = {}) => {
+    const { silent = false, faresOverride = null } = options
+    if (!recordId || !standardPriceType) return false
+    const fares = faresOverride ?? dailyFares
+    const baseFare = findBaseDailyFare(standardDailyFares(fares, catalog.priceTypes))
+    if (!baseFare) {
+      if (!silent) toast('Save your daily rental rate first, then set protection add-ons.', 'error')
+      return false
+    }
+    setProtectionSaving(true)
+    try {
+      const api = { createHostCarDailyFare, updateHostCarDailyFare, deleteHostCarDailyFare }
+      await syncProtectionAddOn(recordId, 'plus', plusAddOn, fares, catalog.priceTypes, api)
+      await syncProtectionAddOn(recordId, 'max', maxAddOn, fares, catalog.priceTypes, api)
+      await loadPricing(recordId)
+      if (!silent) toast('Protection pricing saved', 'success')
+      return true
+    } catch (err) {
+      if (!silent) toast(err.response?.data?.message || 'Could not save protection pricing', 'error')
+      throw err
+    } finally {
+      setProtectionSaving(false)
+    }
+  }
+
+  const flushPendingPricing = async (carId) => {
+    if (!carId) return false
+
+    if (baseDailyPriceDirty) {
+      const ok = await saveBaseDailyPrice({ silent: true })
+      if (!ok) {
+        toast('Save a valid daily rental rate before submitting.', 'error')
+        return false
+      }
+    }
+
+    if (protectionPricingDirty) {
+      const freshFaresRes = await getHostCarDailyFares(carId)
+      const freshFares = freshFaresRes.data.data || []
+      await saveProtectionPricing({ silent: true, faresOverride: freshFares })
+    }
+
+    return true
+  }
+
+  const resetSpecialDraft = () => {
+    setSpecialDraft({
+      name: '',
+      date_from: '',
+      date_to: '',
+      type: 'charge',
+      value_mode: 'percentage',
+      value_percent_bips: 1000,
+      value_fixed_cents: 0,
+    })
+    setEditingSpecialPriceId(null)
+  }
+
+  const resetHourlyDraft = () => {
+    setHourlyDraft({ min_minutes: 60, max_minutes: 240, total_price_euros: 50 })
+    setEditingHourlyFareId(null)
+  }
+
+  const resetExtraDraft = () => {
+    setExtraDraft({ charge_per_extra_hour_euros: 10 })
+    setEditingExtraHourFareId(null)
+  }
+
+  const resetLocationFeeDraft = () => {
+    setLocationFeeDraft({
+      pickup_location_id: '',
+      dropoff_location_id: '',
+      cost_euros: 0,
+      is_one_way_fee: false,
+      multiply_by_days: false,
+    })
+    setEditingLocationFeeId(null)
+  }
+
+  const resetOohFeeDraft = () => {
+    setOohFeeDraft({
+      name: 'Out-of-hours',
+      time_from: '20:00',
+      time_to: '08:00',
+      applies_to: 'both',
+      pickup_cost_euros: 35,
+      dropoff_cost_euros: 35,
+      location_ids: [],
+    })
+    setEditingOohFeeId(null)
+  }
 
   return (
     <div className="host-wizard">
@@ -486,7 +833,7 @@ export default function HostCarEditorPage() {
       <div className="host-form-card">
         {step === 0 && (
           <>
-            <div className="host-field"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+            <div className="host-field"><label htmlFor="host-car-name">Name</label><input id="host-car-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="host-field"><label>Main category</label>
               <HostSelect
                 value={String(form.main_category_id || '')}
@@ -506,7 +853,7 @@ export default function HostCarEditorPage() {
                 ariaLabel="Main category"
               />
             </div>
-            <div className="host-field"><label>Sub category</label>
+            <div className="host-field" id="host-car-sub-category"><label>Sub category</label>
               <HostSelect
                 value={String(form.sub_category_id || '')}
                 disabled={!form.main_category_id}
@@ -517,33 +864,42 @@ export default function HostCarEditorPage() {
               />
             </div>
             <div className="host-field"><label>Description</label><textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-            {recordId ? (
-              <>
-                <div className="host-field"><label>Main image</label>
-                  {mainImage && <img src={resolveStorageUrl(mainImage)} alt="Main" className="mb-2 h-24 w-auto rounded-lg object-cover" />}
-                  <input type="file" accept="image/*" onChange={handleMainImage} />
-                </div>
-                <div className="host-field"><label>Detail images</label>
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    {form.details_image_paths.map((path) => (
-                      <div key={path} className="relative">
-                        <img src={resolveStorageUrl(path)} alt="Detail" className="h-20 w-28 rounded-lg object-cover" />
-                        <button type="button" className="host-btn danger mt-1 w-full" onClick={() => removeDetailsImage(path)}>Remove</button>
-                      </div>
-                    ))}
-                  </div>
-                  <input type="file" accept="image/*" multiple onChange={handleDetailsImages} />
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-slate-500">Save the vehicle first to upload images.</p>
-            )}
+            <div className="host-images-section">
+              {!recordId && (pendingMainPreview || pendingDetails.length > 0) && (
+                <p className="host-capacity-hint">Photos are previewed locally and upload when you save the vehicle.</p>
+              )}
+              <HostImageDropzone
+                label="Main image"
+                hint="Shown on search results and at the top of your listing."
+                previewSrc={mainImagePreview}
+                emptyLabel="Upload main photo"
+                onSelect={handleMainImage}
+                onClear={pendingMainPreview ? clearMainImage : undefined}
+              />
+              <HostImageGallery
+                label="Detail images"
+                hint="Extra photos of the interior, exterior, and features."
+                items={[
+                  ...form.details_image_paths.map((path) => ({
+                    key: path,
+                    src: resolveStorageUrl(path),
+                    onRemove: () => removeDetailsImage(path),
+                  })),
+                  ...pendingDetails.map((item) => ({
+                    key: item.id,
+                    src: item.previewUrl,
+                    onRemove: () => removePendingDetail(item.id),
+                  })),
+                ]}
+                onSelect={handleDetailsImages}
+              />
+            </div>
           </>
         )}
         {step === 1 && (
           <>
-            <p className="host-step-note">Transmission, fuel, drive system, seats and bags are required for all vehicles. Campervans also need sleeps (berths). Characteristics and extras are optional.</p>
-            <div className="host-field"><label>Transmission</label>
+            <p className="host-step-note">Transmission, fuel, drive system, seats and bags are required for all vehicles. Campervans also need sleeps (berths). Use characteristics for what is included, optional extras for paid add-ons, and rental conditions for booking rules.</p>
+            <div className="host-field" id="host-car-transmission"><label>Transmission</label>
               <HostSelect
                 value={form.transmission}
                 onChange={(v) => setForm({ ...form, transmission: v })}
@@ -551,7 +907,7 @@ export default function HostCarEditorPage() {
                 ariaLabel="Transmission"
               />
             </div>
-            <div className="host-field"><label>Fuel type</label>
+            <div className="host-field" id="host-car-fuel-type"><label>Fuel type</label>
               <HostSelect
                 value={form.fuel_type}
                 onChange={(v) => setForm({ ...form, fuel_type: v })}
@@ -559,7 +915,7 @@ export default function HostCarEditorPage() {
                 ariaLabel="Fuel type"
               />
             </div>
-            <div className="host-field"><label>Drive system</label>
+            <div className="host-field" id="host-car-drive-type"><label>Drive system</label>
               <HostSelect
                 value={form.drive_type}
                 onChange={(v) => setForm({ ...form, drive_type: v })}
@@ -572,7 +928,6 @@ export default function HostCarEditorPage() {
               <div className={`host-capacity-grid${isCampervan ? '' : ' host-capacity-grid--car'}`}>
                 <div>
                   <label className="host-capacity-label" htmlFor="car-seats">
-                    <span className="host-capacity-ic" aria-hidden>{specIcon('users')}</span>
                     Seats
                   </label>
                   <input
@@ -588,7 +943,6 @@ export default function HostCarEditorPage() {
                 {isCampervan && (
                   <div>
                     <label className="host-capacity-label" htmlFor="car-sleeps">
-                      <span className="host-capacity-ic" aria-hidden>{specIcon('bed')}</span>
                       Sleeps (berths)
                     </label>
                     <input
@@ -604,7 +958,6 @@ export default function HostCarEditorPage() {
                 )}
                 <div>
                   <label className="host-capacity-label" htmlFor="car-bags">
-                    <span className="host-capacity-ic" aria-hidden>{specIcon('luggage')}</span>
                     Bags
                   </label>
                   <input
@@ -633,6 +986,7 @@ export default function HostCarEditorPage() {
               />
             </div>
             <div className="host-field"><label>Characteristics</label>
+              <p className="host-field-inline-hint">Included with the vehicle at no extra charge.</p>
               <HostIconMultiSelect
                 items={catalog.characteristics}
                 selectedIds={form.characteristic_ids}
@@ -641,13 +995,14 @@ export default function HostCarEditorPage() {
                 emptyLabel="No characteristics match your search."
               />
             </div>
-            <div className="host-field"><label>Rental options</label>
-              <HostIconMultiSelect
-                items={catalog.rentalOptions}
-                selectedIds={form.rental_option_ids}
-                onToggle={(id) => toggleId('rental_option_ids', id)}
-                placeholder="Search extras…"
-                emptyLabel="No extras match your search."
+            <div className="host-field" id="host-car-extras">
+              <label>Optional extras</label>
+              <p className="host-field-inline-hint">Paid add-ons guests can select at checkout. Set your price for each one you offer.</p>
+              <HostCarExtrasPanel
+                options={catalog.rentalOptions}
+                enabledOptions={form.rental_options}
+                onChange={(rental_options) => setForm((prev) => ({ ...prev, rental_options }))}
+                currency={currency}
               />
             </div>
             <div className="host-field"><label>Rental conditions</label>
@@ -677,135 +1032,397 @@ export default function HostCarEditorPage() {
             setLocationFeeDraft={setLocationFeeDraft}
             oohFeeDraft={oohFeeDraft}
             setOohFeeDraft={setOohFeeDraft}
+            editingLocationFeeId={editingLocationFeeId}
+            editingOohFeeId={editingOohFeeId}
             onAddLocationFee={async () => {
               try {
-                await createHostCarLocationFee(recordId, {
-                  ...locationFeeDraft,
-                  multiply_by_days: false,
-                })
+                const payload = {
+                  pickup_location_id: Number(locationFeeDraft.pickup_location_id),
+                  dropoff_location_id: Number(locationFeeDraft.dropoff_location_id),
+                  cost_euros: locationFeeDraft.cost_euros,
+                  is_one_way_fee: locationFeeDraft.is_one_way_fee,
+                  multiply_by_days: locationFeeDraft.multiply_by_days,
+                }
+                if (editingLocationFeeId) {
+                  await updateHostCarLocationFee(recordId, editingLocationFeeId, payload)
+                  toast('Fee updated', 'success')
+                } else {
+                  await createHostCarLocationFee(recordId, payload)
+                  toast('Fee added', 'success')
+                }
                 getHostCarLocationFees(recordId).then((res) => setLocationFees(res.data.data || []))
-                setLocationFeeDraft({
-                  pickup_location_id: '',
-                  dropoff_location_id: '',
-                  cost_euros: 0,
-                  is_one_way_fee: false,
-                })
-                toast('Fee added', 'success')
+                resetLocationFeeDraft()
               } catch (err) {
-                toast(err.response?.data?.message || 'Could not add fee', 'error')
+                toast(err.response?.data?.message || 'Could not save fee', 'error')
               }
             }}
+            onEditLocationFee={(fee) => {
+              setEditingLocationFeeId(fee.id)
+              setLocationFeeDraft({
+                pickup_location_id: String(fee.pickup_location_id),
+                dropoff_location_id: String(fee.dropoff_location_id),
+                cost_euros: fee.cost_euros ?? fee.cost_cents / 100,
+                is_one_way_fee: !!fee.is_one_way_fee,
+                multiply_by_days: !!fee.multiply_by_days,
+              })
+            }}
+            onCancelLocationFeeEdit={resetLocationFeeDraft}
             onDeleteLocationFee={async (feeId) => {
               await deleteHostCarLocationFee(recordId, feeId)
               setLocationFees((prev) => prev.filter((f) => f.id !== feeId))
+              if (editingLocationFeeId === feeId) resetLocationFeeDraft()
             }}
             onAddOohFee={async () => {
               try {
-                await createHostCarOutOfHoursFee(recordId, oohFeeDraft)
+                const payload = {
+                  ...oohFeeDraft,
+                  location_ids: (oohFeeDraft.location_ids || []).map(Number),
+                }
+                if (editingOohFeeId) {
+                  await updateHostCarOutOfHoursFee(recordId, editingOohFeeId, payload)
+                  toast('Out-of-hours fee updated', 'success')
+                } else {
+                  await createHostCarOutOfHoursFee(recordId, payload)
+                  toast('Out-of-hours fee added', 'success')
+                }
                 getHostCarOutOfHoursFees(recordId).then((res) => setOutOfHoursFees(res.data.data || []))
-                setOohFeeDraft({
-                  name: 'Out-of-hours',
-                  time_from: '20:00',
-                  time_to: '08:00',
-                  applies_to: 'both',
-                  pickup_cost_euros: 35,
-                  dropoff_cost_euros: 35,
-                  location_ids: [],
-                })
-                toast('Out-of-hours fee added', 'success')
+                resetOohFeeDraft()
               } catch (err) {
-                toast(err.response?.data?.message || 'Could not add fee', 'error')
+                toast(err.response?.data?.message || 'Could not save fee', 'error')
               }
             }}
+            onEditOohFee={(fee) => {
+              setEditingOohFeeId(fee.id)
+              setOohFeeDraft({
+                name: fee.name || 'Out-of-hours',
+                time_from: fee.time_from?.slice(0, 5) || fee.time_from,
+                time_to: fee.time_to?.slice(0, 5) || fee.time_to,
+                applies_to: fee.applies_to,
+                pickup_cost_euros: fee.pickup_cost_euros ?? (fee.pickup_cost_cents || 0) / 100,
+                dropoff_cost_euros: fee.dropoff_cost_euros ?? (fee.dropoff_cost_cents || 0) / 100,
+                location_ids: (fee.location_ids || []).map(String),
+              })
+            }}
+            onCancelOohFeeEdit={resetOohFeeDraft}
             onDeleteOohFee={async (feeId) => {
               await deleteHostCarOutOfHoursFee(recordId, feeId)
               setOutOfHoursFees((prev) => prev.filter((f) => f.id !== feeId))
+              if (editingOohFeeId === feeId) resetOohFeeDraft()
             }}
           />
         )}
         {step === 3 && (
           recordId ? (
-            <>
-              <p className="mb-3 text-sm text-slate-600">{units.length} unit(s)</p>
-              <button type="button" className="host-btn secondary" onClick={async () => {
-                await createHostCarUnit(recordId, {})
-                loadPricing(recordId)
-              }}>Add unit</button>
-              <ul className="mt-3 space-y-2">
-                {units.map((u) => (
-                  <li key={u.id} className="flex items-center justify-between text-sm">
-                    <span>Unit #{u.id} {u.is_active ? '(active)' : '(inactive)'}</span>
-                    <button type="button" className="host-btn danger" onClick={async () => { await deleteHostCarUnit(recordId, u.id); loadPricing(recordId) }}>Remove</button>
-                  </li>
-                ))}
-              </ul>
-            </>
+            <div className="host-field">
+              <label>Units available</label>
+              <p className="host-capacity-hint">How many identical copies of this vehicle can be booked at the same time?</p>
+              <div className="host-unit-stepper" id="host-car-units">
+                <button
+                  type="button"
+                  className="host-btn secondary"
+                  disabled={unitsBusy || units.length <= 1}
+                  aria-label="Remove one unit"
+                  onClick={async () => {
+                    const lastUnit = units[units.length - 1]
+                    if (!lastUnit) return
+                    setUnitsBusy(true)
+                    try {
+                      await deleteHostCarUnit(recordId, lastUnit.id)
+                      loadPricing(recordId)
+                    } catch (err) {
+                      toast(err.response?.data?.message || 'Could not remove unit', 'error')
+                    } finally {
+                      setUnitsBusy(false)
+                    }
+                  }}
+                >
+                  −
+                </button>
+                <span className="host-unit-stepper__count" aria-live="polite">{units.length}</span>
+                <button
+                  type="button"
+                  className="host-btn secondary"
+                  disabled={unitsBusy}
+                  aria-label="Add one unit"
+                  onClick={async () => {
+                    setUnitsBusy(true)
+                    try {
+                      await createHostCarUnit(recordId, {})
+                      loadPricing(recordId)
+                    } catch (err) {
+                      toast(err.response?.data?.message || 'Could not add unit', 'error')
+                    } finally {
+                      setUnitsBusy(false)
+                    }
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            </div>
           ) : <p className="text-sm text-slate-500">Save the vehicle first to manage units.</p>
         )}
         {step === 4 && (
           recordId ? (
             <div className="host-pricing">
-              <p className="host-step-note">Add at least one <strong>daily fare</strong> to publish. Hourly and overtime rates are optional.</p>
-              {/* Daily fares */}
+              <p className="host-step-note">
+                Enter your standard <strong>daily price</strong> first, then optionally add duration tiers and seasonal rates below.
+                {' '}All amounts are in <strong>{currency.code}</strong>, change this in <Link to="/host/settings">Settings</Link> if needed.
+              </p>
+              {/* Daily rate */}
               <section className="host-fare-section">
                 <div className="host-fare-head">
                   <span className="host-fare-head-icon"><CalendarDays size={18} /></span>
                   <div className="host-fare-head-text">
-                    <h3>Daily fares</h3>
-                    <p>Set a price per day based on how long the guest rents. You can add multiple tiers — e.g. a lower rate for longer bookings.</p>
+                    <h3>Daily rental rate</h3>
+                    <p>What you charge per day for a standard booking.</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="host-field"><label>Price type</label>
-                    <HostSelect
-                      value={String(fareDraft.price_type_id || '')}
-                      onChange={(v) => setFareDraft({ ...fareDraft, price_type_id: v })}
-                      options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
-                      placeholder="Select"
-                      ariaLabel="Daily fare price type"
+                <div className="host-field host-field--inline-rate">
+                  <label htmlFor="base-daily-price">Daily price</label>
+                  <div className="host-addon-input">
+                    <span className="host-addon-input__prefix">{currency.inputPrefix}</span>
+                    <input
+                      id="base-daily-price"
+                      type="number"
+                      min={0}
+                      placeholder="e.g. 95"
+                      value={baseDailyPrice}
+                      onChange={(e) => setBaseDailyPrice(e.target.value)}
                     />
+                    <span className="host-addon-input__suffix">/ day</span>
                   </div>
-                  <div className="host-field"><label>€ / day</label><input type="number" min={0} value={fareDraft.price_per_day_euros} onChange={(e) => setFareDraft({ ...fareDraft, price_per_day_euros: Number(e.target.value) })} /></div>
-                  <div className="host-field"><label>From days</label><input type="number" min={1} className={dailyRangeInvalid ? 'has-error' : ''} value={fareDraft.from_days} onChange={(e) => setFareDraft({ ...fareDraft, from_days: Number(e.target.value) })} /></div>
-                  <div className="host-field"><label>To days</label><input type="number" min={1} className={dailyRangeInvalid ? 'has-error' : ''} value={fareDraft.to_days} onChange={(e) => setFareDraft({ ...fareDraft, to_days: Number(e.target.value) })} /></div>
                 </div>
-                {dailyRangeInvalid && (
-                  <p className="host-field-error"><AlertCircle size={14} /> “From days” must be lower than “To days”.</p>
+                <button
+                  type="button"
+                  className="host-btn primary"
+                  disabled={baseDailySaving || !standardPriceType}
+                  onClick={() => saveBaseDailyPrice()}
+                >
+                  {baseDailySaving ? 'Saving…' : baseDailyFare ? 'Update daily rate' : 'Save daily rate'}
+                </button>
+                {baseDailyFare && (
+                  <p className="host-capacity-hint">Current rate: {currency.formatCents(baseDailyFare.price_per_day_cents)}/day</p>
                 )}
-                <div className="host-fare-preview">
-                  <span className="host-fare-preview-label">Preview</span>
-                  <span className="host-fare-tag is-preview">
-                    <CalendarDays size={14} className="host-fare-tag-icon" />
-                    <span className="host-fare-tag-text">Days {fareDraft.from_days}–{fareDraft.to_days} <ArrowRight size={12} /> <strong>€{Number(fareDraft.price_per_day_euros || 0).toFixed(0)}/day</strong></span>
-                  </span>
+                {baseDailyPriceDirty && (
+                  <p className="host-field-hint">You have unsaved daily rate changes, save before leaving or submit to auto-save.</p>
+                )}
+              </section>
+
+              <HostDisclosure
+                title="Duration tiers (optional)"
+                hint="Offer a lower daily rate when guests book for longer, e.g. 7–14 days."
+                count={durationTiers.length}
+                defaultOpen={durationTiers.length > 0}
+              >
+                <p className="host-capacity-hint">These override your standard daily price for bookings within the day range.</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="host-field"><label>From day</label><input type="number" min={1} className={tierRangeInvalid ? 'has-error' : ''} value={tierDraft.from_days} onChange={(e) => setTierDraft({ ...tierDraft, from_days: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>To day</label><input type="number" min={1} className={tierRangeInvalid ? 'has-error' : ''} value={tierDraft.to_days} onChange={(e) => setTierDraft({ ...tierDraft, to_days: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>{currency.amountLabel('/ day')}</label><input type="number" min={0} value={tierDraft.price_per_day_euros} onChange={(e) => setTierDraft({ ...tierDraft, price_per_day_euros: Number(e.target.value) })} /></div>
                 </div>
-                <span className="host-tooltip-wrap" data-tooltip={!fareDraft.price_type_id ? 'Select a price type to add a fare' : undefined}>
-                  <button type="button" className="host-btn-add" disabled={!fareDraft.price_type_id || dailyRangeInvalid} onClick={async () => {
-                    await createHostCarDailyFare(recordId, fareDraft)
-                    loadPricing(recordId)
-                  }}><Plus size={16} /> Add daily fare</button>
-                </span>
-                {dailyFares.length > 0 && (
+                {tierRangeInvalid && (
+                  <p className="host-field-error"><AlertCircle size={14} /> “From day” must be lower than “To day”.</p>
+                )}
+                <button
+                  type="button"
+                  className="host-btn-add"
+                  disabled={!standardPriceType || !baseDailyFare || tierRangeInvalid || !tierDraft.price_per_day_euros}
+                  onClick={async () => {
+                    try {
+                      await createHostCarDailyFare(recordId, buildStandardFarePayload(tierDraft))
+                      setTierDraft({ from_days: 7, to_days: 14, price_per_day_euros: 0 })
+                      loadPricing(recordId)
+                    } catch (err) {
+                      toast(err.response?.data?.message || 'Could not add tier', 'error')
+                    }
+                  }}
+                >
+                  <Plus size={16} /> Add duration tier
+                </button>
+                {durationTiers.length > 0 && (
                   <ul className="host-fare-list">
-                    {dailyFares.map((f) => (
+                    {durationTiers.map((f) => (
                       <li key={f.id} className="host-fare-tag">
                         <CalendarDays size={14} className="host-fare-tag-icon" />
                         <span className="host-fare-tag-text">
-                          {f.price_type?.name && <em>{f.price_type.name}</em>}
-                          Days {f.from_days}–{f.to_days} <ArrowRight size={12} /> <strong>€{(f.price_per_day_cents / 100).toFixed(2)}/day</strong>
+                          Days {f.from_days}–{f.to_days} <ArrowRight size={12} /> <strong>{currency.formatCents(f.price_per_day_cents)}/day</strong>
                         </span>
-                        <button type="button" className="host-fare-tag-remove" aria-label="Remove fare" title="Remove fare" onClick={async () => { await deleteHostCarDailyFare(recordId, f.id); loadPricing(recordId) }}><Trash2 size={14} /></button>
+                        <button type="button" className="host-fare-tag-remove" aria-label="Remove tier" title="Remove tier" onClick={async () => { await deleteHostCarDailyFare(recordId, f.id); loadPricing(recordId) }}><Trash2 size={14} /></button>
                       </li>
                     ))}
                   </ul>
+                )}
+              </HostDisclosure>
+
+              <HostDisclosure
+                title="Seasonal prices (optional)"
+                hint="Raise or lower your daily rate for specific date ranges, e.g. summer peak or winter discount."
+                count={specialPrices.length}
+                defaultOpen={specialPrices.length > 0}
+              >
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="host-field"><label>Name</label><input value={specialDraft.name} onChange={(e) => setSpecialDraft({ ...specialDraft, name: e.target.value })} placeholder="e.g. Summer peak" /></div>
+                  <div className="host-field"><label>Type</label>
+                    <HostSelect
+                      value={specialDraft.type}
+                      onChange={(v) => setSpecialDraft({ ...specialDraft, type: v })}
+                      options={[
+                        { value: 'charge', label: 'Surcharge' },
+                        { value: 'discount', label: 'Discount' },
+                      ]}
+                      ariaLabel="Seasonal price type"
+                    />
+                  </div>
+                  <div className="host-field"><label>From date</label><HostDatePicker value={specialDraft.date_from} onChange={(v) => setSpecialDraft({ ...specialDraft, date_from: v })} /></div>
+                  <div className="host-field"><label>To date</label><HostDatePicker value={specialDraft.date_to} onChange={(v) => setSpecialDraft({ ...specialDraft, date_to: v })} minDate={specialDraft.date_from ? new Date(specialDraft.date_from) : undefined} /></div>
+                  <div className="host-field"><label>Adjustment</label>
+                    <HostSelect
+                      value={specialDraft.value_mode}
+                      onChange={(v) => setSpecialDraft({ ...specialDraft, value_mode: v })}
+                      options={[
+                        { value: 'percentage', label: 'Percentage' },
+                        { value: 'fixed', label: 'Fixed amount' },
+                      ]}
+                      ariaLabel="Seasonal adjustment type"
+                    />
+                  </div>
+                  {specialDraft.value_mode === 'percentage' ? (
+                    <div className="host-field"><label>Percentage</label><input type="number" min={0} max={100} step={0.1} value={specialDraft.value_percent_bips / 100} onChange={(e) => setSpecialDraft({ ...specialDraft, value_percent_bips: Math.round(Number(e.target.value) * 100) })} /></div>
+                  ) : (
+                    <div className="host-field">
+                      <label>{seasonalFixedAmountLabel}</label>
+                      <input type="number" min={0} value={specialDraft.value_fixed_cents / 100} onChange={(e) => setSpecialDraft({ ...specialDraft, value_fixed_cents: Math.round(Number(e.target.value) * 100) })} />
+                    </div>
+                  )}
+                </div>
+                <div className="host-fare-actions">
+                  <button type="button" className="host-btn-add" disabled={!specialDraft.name || !specialDraft.date_from || !specialDraft.date_to} onClick={async () => {
+                    try {
+                      const payload = {
+                        name: specialDraft.name,
+                        date_from: specialDraft.date_from,
+                        date_to: specialDraft.date_to,
+                        type: specialDraft.type,
+                        value_mode: specialDraft.value_mode,
+                        value_percent_bips: specialDraft.value_mode === 'percentage' ? specialDraft.value_percent_bips : null,
+                        value_fixed_cents: specialDraft.value_mode === 'fixed' ? specialDraft.value_fixed_cents : null,
+                      }
+                      if (editingSpecialPriceId) {
+                        await updateHostCarSpecialPrice(recordId, editingSpecialPriceId, payload)
+                        toast('Seasonal price updated', 'success')
+                      } else {
+                        await addHostCarSpecialPrice(recordId, payload)
+                        toast('Seasonal price added', 'success')
+                      }
+                      resetSpecialDraft()
+                      loadPricing(recordId)
+                    } catch (err) {
+                      toast(err.response?.data?.message || 'Could not save seasonal price', 'error')
+                    }
+                  }}>
+                    <Plus size={16} /> {editingSpecialPriceId ? 'Update seasonal price' : 'Add seasonal price'}
+                  </button>
+                  {editingSpecialPriceId && (
+                    <button type="button" className="host-btn secondary" onClick={resetSpecialDraft}>Cancel edit</button>
+                  )}
+                </div>
+                {specialPrices.length > 0 && (
+                  <ul className="host-fare-list">
+                    {specialPrices.map((sp) => (
+                      <li key={sp.id} className="host-fare-tag">
+                        <CalendarDays size={14} className="host-fare-tag-icon" />
+                        <span className="host-fare-tag-text">
+                          <em>{sp.name}</em>
+                          {' '}
+                          {sp.type === 'discount' ? 'Discount' : 'Surcharge'}{' '}
+                          {sp.value_mode === 'percentage'
+                            ? `${(sp.value_percent_bips / 100).toFixed(1)}%`
+                            : sp.type === 'discount'
+                              ? `${currency.formatCents(sp.value_fixed_cents || 0)} off total`
+                              : `${currency.formatCents(sp.value_fixed_cents || 0)}/day`}
+                          {' '}({sp.date_from} → {sp.date_to})
+                        </span>
+                        <button type="button" className="host-btn secondary host-btn-compact" onClick={() => {
+                          setEditingSpecialPriceId(sp.id)
+                          setSpecialDraft({
+                            name: sp.name,
+                            date_from: sp.date_from,
+                            date_to: sp.date_to,
+                            type: sp.type,
+                            value_mode: sp.value_mode,
+                            value_percent_bips: sp.value_percent_bips || 0,
+                            value_fixed_cents: sp.value_fixed_cents || 0,
+                          })
+                        }}>Edit</button>
+                        <button type="button" className="host-fare-tag-remove" aria-label="Remove seasonal price" title="Remove" onClick={async () => { await removeHostCarSpecialPrice(recordId, sp.id); if (editingSpecialPriceId === sp.id) resetSpecialDraft(); loadPricing(recordId) }}><Trash2 size={14} /></button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </HostDisclosure>
+
+              <section className="host-fare-section">
+                <div className="host-fare-head">
+                  <span className="host-fare-head-icon"><Shield size={18} /></span>
+                  <div className="host-fare-head-text">
+                    <h3>Protection upgrades (optional)</h3>
+                    <p>Guests can upgrade their coverage at checkout. Set how much extra to charge per day, leave blank to hide that option.</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="host-field">
+                    <label>Enhanced coverage</label>
+                    <span className="host-field-note">Lower guest deposit</span>
+                    <div className="host-addon-input">
+                      <span className="host-addon-input__prefix">+ {currency.inputPrefix}</span>
+                      <input type="number" min={0} placeholder="e.g. 15" value={plusAddOn} onChange={(e) => setPlusAddOn(e.target.value)} />
+                      <span className="host-addon-input__suffix">/ day</span>
+                    </div>
+                  </div>
+                  <div className="host-field">
+                    <label>Full coverage</label>
+                    <span className="host-field-note">Zero guest deposit</span>
+                    <div className="host-addon-input">
+                      <span className="host-addon-input__prefix">+ {currency.inputPrefix}</span>
+                      <input type="number" min={0} placeholder="e.g. 35" value={maxAddOn} onChange={(e) => setMaxAddOn(e.target.value)} />
+                      <span className="host-addon-input__suffix">/ day</span>
+                    </div>
+                  </div>
+                </div>
+                {(plusAddOn || maxAddOn) && baseDailyFare && (
+                  <div className="host-fare-preview">
+                    <span className="host-fare-preview-label">Guest will see</span>
+                    {plusAddOn && (
+                      <span className="host-fare-tag is-preview">
+                        <span className="host-fare-tag-text">Enhanced <ArrowRight size={12} /> <strong>+{currency.formatAmount(Number(plusAddOn))}/day</strong> on top of your rate</span>
+                      </span>
+                    )}
+                    {maxAddOn && (
+                      <span className="host-fare-tag is-preview">
+                        <span className="host-fare-tag-text">Full <ArrowRight size={12} /> <strong>+{currency.formatAmount(Number(maxAddOn))}/day</strong> on top of your rate</span>
+                      </span>
+                    )}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="host-btn secondary"
+                  disabled={protectionSaving || !baseDailyFare}
+                  onClick={() => saveProtectionPricing()}
+                >
+                  {protectionSaving ? 'Saving…' : 'Save protection pricing'}
+                </button>
+                {protectionPricingDirty && (
+                  <p className="host-field-hint">You have unsaved protection add-on changes, save or submit to auto-save.</p>
                 )}
               </section>
 
               <HostDisclosure
                 title="Advanced rates (optional)"
                 hint="Short-trip hourly pricing and overtime charges. Skip these if you only rent by the day."
-                count={hourlyFares.length + extraHourFares.length}
-                defaultOpen={hourlyFares.length > 0 || extraHourFares.length > 0}
+                count={hostHourlyFares.length + hostExtraHourFares.length}
+                defaultOpen={hostHourlyFares.length > 0 || hostExtraHourFares.length > 0}
               >
               {/* Hourly fares */}
               <section className="host-fare-section">
@@ -813,22 +1430,13 @@ export default function HostCarEditorPage() {
                   <span className="host-fare-head-icon"><Clock size={18} /></span>
                   <div className="host-fare-head-text">
                     <h3>Hourly fares</h3>
-                    <p>Set a flat price for short rentals within a duration window. Guests pay this when the trip lasts between the minimum and maximum.</p>
+                    <p>Flat price for short rentals within a duration window, e.g. 1–4 hours.</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="host-field"><label>Price type</label>
-                    <HostSelect
-                      value={String(hourlyDraft.price_type_id || '')}
-                      onChange={(v) => setHourlyDraft({ ...hourlyDraft, price_type_id: v })}
-                      options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
-                      placeholder="Select"
-                      ariaLabel="Hourly fare price type"
-                    />
-                  </div>
-                  <div className="host-field"><label>Total € price</label><input type="number" min={0} value={hourlyDraft.total_price_euros} onChange={(e) => setHourlyDraft({ ...hourlyDraft, total_price_euros: Number(e.target.value) })} /></div>
-                  <div className="host-field"><label>Minimum rental duration <span className="host-field-note">(e.g. 60 min = 1 hour)</span></label><input type="number" min={0} className={hourlyRangeInvalid ? 'has-error' : ''} value={hourlyDraft.min_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, min_minutes: Number(e.target.value) })} /></div>
-                  <div className="host-field"><label>Maximum rental duration <span className="host-field-note">(e.g. 240 min = 4 hours)</span></label><input type="number" min={0} className={hourlyRangeInvalid ? 'has-error' : ''} value={hourlyDraft.max_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, max_minutes: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>Total price ({currency.code})</label><input type="number" min={0} value={hourlyDraft.total_price_euros} onChange={(e) => setHourlyDraft({ ...hourlyDraft, total_price_euros: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>Minimum duration <span className="host-field-note">(minutes)</span></label><input type="number" min={0} className={hourlyRangeInvalid ? 'has-error' : ''} value={hourlyDraft.min_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, min_minutes: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>Maximum duration <span className="host-field-note">(minutes)</span></label><input type="number" min={0} className={hourlyRangeInvalid ? 'has-error' : ''} value={hourlyDraft.max_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, max_minutes: Number(e.target.value) })} /></div>
                 </div>
                 {hourlyRangeInvalid && (
                   <p className="host-field-error"><AlertCircle size={14} /> Minimum duration must be lower than the maximum.</p>
@@ -837,25 +1445,49 @@ export default function HostCarEditorPage() {
                   <span className="host-fare-preview-label">Preview</span>
                   <span className="host-fare-tag is-preview">
                     <Clock size={14} className="host-fare-tag-icon" />
-                    <span className="host-fare-tag-text">{hourlyDraft.min_minutes}–{hourlyDraft.max_minutes} min <ArrowRight size={12} /> <strong>€{Number(hourlyDraft.total_price_euros || 0).toFixed(0)}</strong></span>
+                    <span className="host-fare-tag-text">{hourlyDraft.min_minutes}–{hourlyDraft.max_minutes} min <ArrowRight size={12} /> <strong>{currency.formatAmount(Number(hourlyDraft.total_price_euros || 0))}</strong></span>
                   </span>
                 </div>
-                <span className="host-tooltip-wrap" data-tooltip={!hourlyDraft.price_type_id ? 'Select a price type to add a fare' : undefined}>
-                  <button type="button" className="host-btn-add" disabled={!hourlyDraft.price_type_id || hourlyRangeInvalid} onClick={async () => {
-                    await createHostCarHourlyFare(recordId, hourlyDraft)
-                    loadPricing(recordId)
-                  }}><Plus size={16} /> Add hourly fare</button>
-                </span>
-                {hourlyFares.length > 0 && (
+                <div className="host-fare-actions">
+                  <button type="button" className="host-btn-add" disabled={!standardPriceType || hourlyRangeInvalid} onClick={async () => {
+                    try {
+                      const payload = buildStandardFarePayload(hourlyDraft)
+                      if (editingHourlyFareId) {
+                        await updateHostCarHourlyFare(recordId, editingHourlyFareId, payload)
+                        toast('Hourly fare updated', 'success')
+                      } else {
+                        await createHostCarHourlyFare(recordId, payload)
+                        toast('Hourly fare added', 'success')
+                      }
+                      resetHourlyDraft()
+                      loadPricing(recordId)
+                    } catch (err) {
+                      toast(err.response?.data?.message || 'Could not save hourly fare', 'error')
+                    }
+                  }}>
+                    <Plus size={16} /> {editingHourlyFareId ? 'Update hourly fare' : 'Add hourly fare'}
+                  </button>
+                  {editingHourlyFareId && (
+                    <button type="button" className="host-btn secondary" onClick={resetHourlyDraft}>Cancel edit</button>
+                  )}
+                </div>
+                {hostHourlyFares.length > 0 && (
                   <ul className="host-fare-list">
-                    {hourlyFares.map((f) => (
+                    {hostHourlyFares.map((f) => (
                       <li key={f.id} className="host-fare-tag">
                         <Clock size={14} className="host-fare-tag-icon" />
                         <span className="host-fare-tag-text">
-                          {f.price_type?.name && <em>{f.price_type.name}</em>}
-                          {f.min_minutes}–{f.max_minutes} min <ArrowRight size={12} /> <strong>€{(f.total_price_cents / 100).toFixed(2)}</strong>
+                          {f.min_minutes}–{f.max_minutes} min <ArrowRight size={12} /> <strong>{currency.formatCents(f.total_price_cents)}</strong>
                         </span>
-                        <button type="button" className="host-fare-tag-remove" aria-label="Remove fare" title="Remove fare" onClick={async () => { await deleteHostCarHourlyFare(recordId, f.id); loadPricing(recordId) }}><Trash2 size={14} /></button>
+                        <button type="button" className="host-btn secondary host-btn-compact" onClick={() => {
+                          setEditingHourlyFareId(f.id)
+                          setHourlyDraft({
+                            min_minutes: f.min_minutes,
+                            max_minutes: f.max_minutes,
+                            total_price_euros: f.total_price_cents / 100,
+                          })
+                        }}>Edit</button>
+                        <button type="button" className="host-fare-tag-remove" aria-label="Remove fare" title="Remove fare" onClick={async () => { await deleteHostCarHourlyFare(recordId, f.id); if (editingHourlyFareId === f.id) resetHourlyDraft(); loadPricing(recordId) }}><Trash2 size={14} /></button>
                       </li>
                     ))}
                   </ul>
@@ -867,45 +1499,54 @@ export default function HostCarEditorPage() {
                 <div className="host-fare-head">
                   <span className="host-fare-head-icon"><Timer size={18} /></span>
                   <div className="host-fare-head-text">
-                    <h3>Extra-hour fares</h3>
-                    <p>Set the amount charged for each hour a guest keeps the vehicle beyond their booked window.</p>
+                    <h3>Extra-hour charge</h3>
+                    <p>Amount charged for each hour a guest keeps the vehicle beyond their booked window.</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="host-field"><label>Price type</label>
-                    <HostSelect
-                      value={String(extraDraft.price_type_id || '')}
-                      onChange={(v) => setExtraDraft({ ...extraDraft, price_type_id: v })}
-                      options={catalog.priceTypes.map((p) => ({ value: String(p.id), label: p.name }))}
-                      placeholder="Select"
-                      ariaLabel="Extra-hour fare price type"
-                    />
-                  </div>
-                  <div className="host-field"><label>€ / extra hour</label><input type="number" min={0} value={extraDraft.charge_per_extra_hour_euros} onChange={(e) => setExtraDraft({ ...extraDraft, charge_per_extra_hour_euros: Number(e.target.value) })} /></div>
-                </div>
+                <div className="host-field"><label>{currency.amountLabel('/ extra hour')}</label><input type="number" min={0} value={extraDraft.charge_per_extra_hour_euros} onChange={(e) => setExtraDraft({ ...extraDraft, charge_per_extra_hour_euros: Number(e.target.value) })} /></div>
                 <div className="host-fare-preview">
                   <span className="host-fare-preview-label">Preview</span>
                   <span className="host-fare-tag is-preview">
                     <Timer size={14} className="host-fare-tag-icon" />
-                    <span className="host-fare-tag-text"><strong>€{Number(extraDraft.charge_per_extra_hour_euros || 0).toFixed(0)}</strong> / extra hour</span>
+                    <span className="host-fare-tag-text"><strong>{currency.formatAmount(Number(extraDraft.charge_per_extra_hour_euros || 0))}</strong> / extra hour</span>
                   </span>
                 </div>
-                <span className="host-tooltip-wrap" data-tooltip={!extraDraft.price_type_id ? 'Select a price type to add a fare' : undefined}>
-                  <button type="button" className="host-btn-add" disabled={!extraDraft.price_type_id} onClick={async () => {
-                    await createHostCarExtraHourFare(recordId, extraDraft)
-                    loadPricing(recordId)
-                  }}><Plus size={16} /> Add extra-hour fare</button>
-                </span>
-                {extraHourFares.length > 0 && (
+                <div className="host-fare-actions">
+                  <button type="button" className="host-btn-add" disabled={!standardPriceType} onClick={async () => {
+                    try {
+                      const payload = buildStandardFarePayload(extraDraft)
+                      if (editingExtraHourFareId) {
+                        await updateHostCarExtraHourFare(recordId, editingExtraHourFareId, payload)
+                        toast('Extra-hour charge updated', 'success')
+                      } else {
+                        await createHostCarExtraHourFare(recordId, payload)
+                        toast('Extra-hour charge added', 'success')
+                      }
+                      resetExtraDraft()
+                      loadPricing(recordId)
+                    } catch (err) {
+                      toast(err.response?.data?.message || 'Could not save extra-hour charge', 'error')
+                    }
+                  }}>
+                    <Plus size={16} /> {editingExtraHourFareId ? 'Update extra-hour charge' : 'Add extra-hour charge'}
+                  </button>
+                  {editingExtraHourFareId && (
+                    <button type="button" className="host-btn secondary" onClick={resetExtraDraft}>Cancel edit</button>
+                  )}
+                </div>
+                {hostExtraHourFares.length > 0 && (
                   <ul className="host-fare-list">
-                    {extraHourFares.map((f) => (
+                    {hostExtraHourFares.map((f) => (
                       <li key={f.id} className="host-fare-tag">
                         <Timer size={14} className="host-fare-tag-icon" />
                         <span className="host-fare-tag-text">
-                          {f.price_type?.name && <em>{f.price_type.name}</em>}
-                          <strong>€{(f.charge_per_extra_hour_cents / 100).toFixed(2)}</strong> / extra hour
+                          <strong>{currency.formatCents(f.charge_per_extra_hour_cents)}</strong> / extra hour
                         </span>
-                        <button type="button" className="host-fare-tag-remove" aria-label="Remove fare" title="Remove fare" onClick={async () => { await deleteHostCarExtraHourFare(recordId, f.id); loadPricing(recordId) }}><Trash2 size={14} /></button>
+                        <button type="button" className="host-btn secondary host-btn-compact" onClick={() => {
+                          setEditingExtraHourFareId(f.id)
+                          setExtraDraft({ charge_per_extra_hour_euros: f.charge_per_extra_hour_cents / 100 })
+                        }}>Edit</button>
+                        <button type="button" className="host-fare-tag-remove" aria-label="Remove charge" title="Remove charge" onClick={async () => { await deleteHostCarExtraHourFare(recordId, f.id); if (editingExtraHourFareId === f.id) resetExtraDraft(); loadPricing(recordId) }}><Trash2 size={14} /></button>
                       </li>
                     ))}
                   </ul>
@@ -918,8 +1559,8 @@ export default function HostCarEditorPage() {
         {step === 5 && (
           recordId ? (
             <>
-              <p className="host-step-note">Block out dates when the vehicle is unavailable. Special &amp; seasonal prices are optional.</p>
-              <h3 className="mb-2 font-semibold text-brand-950">Availability blocks</h3>
+              <p className="host-step-note">Block dates when the vehicle is unavailable for booking, maintenance, personal use, etc.</p>
+              <h3 className="mb-2 font-semibold text-brand-950">Blocked dates</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="host-field"><label>From</label><HostDateTimePicker value={blockDraft.starts_at} onChange={(v) => setBlockDraft({ ...blockDraft, starts_at: v })} placeholder="Select start date & time" /></div>
                 <div className="host-field"><label>To</label><HostDateTimePicker value={blockDraft.ends_at} onChange={(v) => setBlockDraft({ ...blockDraft, ends_at: v })} placeholder="Select end date & time" /></div>
@@ -943,72 +1584,6 @@ export default function HostCarEditorPage() {
                   </li>
                 ))}
               </ul>
-
-              <HostDisclosure
-                title="Special & seasonal prices (optional)"
-                hint="Override the daily rate for specific date ranges — e.g. peak season or a holiday discount."
-                count={specialPrices.length}
-                defaultOpen={specialPrices.length > 0}
-              >
-              <div className="grid grid-cols-2 gap-3">
-                <div className="host-field"><label>Name</label><input value={specialDraft.name} onChange={(e) => setSpecialDraft({ ...specialDraft, name: e.target.value })} /></div>
-                <div className="host-field"><label>Type</label>
-                  <HostSelect
-                    value={specialDraft.type}
-                    onChange={(v) => setSpecialDraft({ ...specialDraft, type: v })}
-                    options={[
-                      { value: 'charge', label: 'Charge' },
-                      { value: 'discount', label: 'Discount' },
-                    ]}
-                    ariaLabel="Special price type"
-                  />
-                </div>
-                <div className="host-field"><label>From date</label><HostDatePicker value={specialDraft.date_from} onChange={(v) => setSpecialDraft({ ...specialDraft, date_from: v })} /></div>
-                <div className="host-field"><label>To date</label><HostDatePicker value={specialDraft.date_to} onChange={(v) => setSpecialDraft({ ...specialDraft, date_to: v })} minDate={specialDraft.date_from ? new Date(specialDraft.date_from) : undefined} /></div>
-                <div className="host-field"><label>Value type</label>
-                  <HostSelect
-                    value={specialDraft.value_mode}
-                    onChange={(v) => setSpecialDraft({ ...specialDraft, value_mode: v })}
-                    options={[
-                      { value: 'percentage', label: 'Percentage' },
-                      { value: 'fixed', label: 'Fixed' },
-                    ]}
-                    ariaLabel="Special price value type"
-                  />
-                </div>
-                {specialDraft.value_mode === 'percentage' ? (
-                  <div className="host-field"><label>Percentage (bips, 1000 = 10%)</label><input type="number" min={0} value={specialDraft.value_percent_bips} onChange={(e) => setSpecialDraft({ ...specialDraft, value_percent_bips: Number(e.target.value) })} /></div>
-                ) : (
-                  <div className="host-field"><label>Fixed (cents)</label><input type="number" min={0} value={specialDraft.value_fixed_cents} onChange={(e) => setSpecialDraft({ ...specialDraft, value_fixed_cents: Number(e.target.value) })} /></div>
-                )}
-              </div>
-              <button type="button" className="host-btn secondary" disabled={!specialDraft.name || !specialDraft.date_from || !specialDraft.date_to} onClick={async () => {
-                try {
-                  const payload = {
-                    name: specialDraft.name,
-                    date_from: specialDraft.date_from,
-                    date_to: specialDraft.date_to,
-                    type: specialDraft.type,
-                    value_mode: specialDraft.value_mode,
-                    value_percent_bips: specialDraft.value_mode === 'percentage' ? specialDraft.value_percent_bips : null,
-                    value_fixed_cents: specialDraft.value_mode === 'fixed' ? specialDraft.value_fixed_cents : null,
-                  }
-                  await addHostCarSpecialPrice(recordId, payload)
-                  setSpecialDraft({ name: '', date_from: '', date_to: '', type: 'charge', value_mode: 'percentage', value_percent_bips: 1000, value_fixed_cents: 0 })
-                  loadPricing(recordId)
-                } catch (err) {
-                  toast(err.response?.data?.message || 'Could not add special price', 'error')
-                }
-              }}>Add special price</button>
-              <ul className="mt-3 space-y-2 text-sm">
-                {specialPrices.map((sp) => (
-                  <li key={sp.id} className="flex justify-between">
-                    <span>{sp.name}: {sp.type} {sp.value_mode === 'percentage' ? `${(sp.value_percent_bips / 100).toFixed(2)}%` : `€${((sp.value_fixed_cents || 0) / 100).toFixed(2)}`} ({sp.date_from} → {sp.date_to})</span>
-                    <button type="button" className="host-btn danger" onClick={async () => { await removeHostCarSpecialPrice(recordId, sp.id); loadPricing(recordId) }}>Remove</button>
-                  </li>
-                ))}
-              </ul>
-              </HostDisclosure>
             </>
           ) : <p className="text-sm text-slate-500">Save the vehicle first to manage availability.</p>
         )}
@@ -1017,19 +1592,49 @@ export default function HostCarEditorPage() {
             <p className="host-step-note">
               {isReady
                 ? 'Everything looks ready. Save your vehicle, then submit for admin approval.'
-                : 'Complete the items below, then save and submit for admin approval.'}
+                : 'Finish the checklist below, then save and submit. Each row takes you straight to the right step.'}
             </p>
-            <HostReadinessChecklist items={readinessItems} />
+            <HostReadinessChecklist items={readinessItems} onGoTo={goToReadinessItem} />
           </div>
         )}
-        <div className="host-actions">
-          {step > 0 && <button type="button" className="host-btn secondary" onClick={() => setStep(step - 1)}>Back</button>}
-          {step < STEPS.length - 1 && <button type="button" className="host-btn secondary" onClick={() => setStep(step + 1)}>Next</button>}
-          <button type="button" className="host-btn primary" disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save'}</button>
-          {recordId && ['draft', 'rejected'].includes(status) && (
-            <button type="button" className="host-btn primary" onClick={handleSubmitReview}>Submit for review</button>
-          )}
-          <Link to="/host/cars" className="host-btn secondary">Back to list</Link>
+        <div className="host-wizard-actions">
+          <div className="host-wizard-actions__left">
+            <Link to="/host/cars" className="host-btn secondary">Back to list</Link>
+          </div>
+          <div className="host-wizard-actions__nav">
+            <button
+              type="button"
+              className="host-btn secondary host-btn-step"
+              disabled={step === 0}
+              aria-label="Previous step"
+              onClick={() => setStep(step - 1)}
+            >
+              <ChevronLeft size={18} strokeWidth={2} aria-hidden />
+            </button>
+            <button
+              type="button"
+              className="host-btn secondary host-btn-step"
+              disabled={step >= STEPS.length - 1}
+              aria-label="Next step"
+              onClick={() => setStep(step + 1)}
+            >
+              <ChevronRight size={18} strokeWidth={2} aria-hidden />
+            </button>
+          </div>
+          <div className="host-wizard-actions__right">
+            <button type="button" className="host-btn primary" disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save'}</button>
+            {step === STEPS.length - 1 && recordId && ['draft', 'rejected'].includes(status) && (
+              <button
+                type="button"
+                className="host-btn primary"
+                disabled={!isReady}
+                title={!isReady ? 'Complete all checklist items before submitting' : undefined}
+                onClick={handleSubmitReview}
+              >
+                Submit for review
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

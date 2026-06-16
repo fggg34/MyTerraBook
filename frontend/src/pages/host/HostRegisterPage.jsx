@@ -7,7 +7,9 @@ import RequiredMark from '../../components/forms/RequiredMark'
 import PageHead from '../../components/seo/PageHead'
 import { getPostLoginPath, useAuth, useRedirectIfAuthenticated } from '../../context/AuthContext'
 import { usePageContent } from '../../context/SiteContentContext'
+import { useShopConfig } from '../../context/ShopConfigContext'
 import { useToast } from '../../context/ToastContext'
+import HostCurrencySelect from '../../components/host/HostCurrencySelect'
 import usePageSeo from '../../hooks/usePageSeo'
 import { formatPhoneForApi, validatePhone } from '../../utils/phone'
 import '../../styles/auth-pages.css'
@@ -51,11 +53,13 @@ export default function HostRegisterPage() {
   const seo = usePageSeo('auth-host-register', { source: copy, robots: 'noindex' })
   const { registerAsHost } = useAuth()
   const { toast } = useToast()
+  const { baseCurrency } = useShopConfig()
   const navigate = useNavigate()
   const [form, setForm] = useState({
     name: '',
     email: '',
     phone: '',
+    currency: baseCurrency || 'EUR',
     password: '',
     password_confirmation: '',
   })
@@ -69,6 +73,7 @@ export default function HostRegisterPage() {
     if (!form.email.trim()) e2.email = 'Email is required'
     const phoneError = validatePhone(form.phone)
     if (phoneError) e2.phone = phoneError
+    if (!form.currency) e2.currency = 'Pricing currency is required'
     if (!form.password) e2.password = 'Password is required'
     else if (form.password.length < 8) e2.password = 'At least 8 characters'
     if (form.password !== form.password_confirmation) {
@@ -170,6 +175,17 @@ export default function HostRegisterPage() {
               placeholder="555 1234"
             />
             {errors.phone && <p className="auth-field-error">{errors.phone}</p>}
+          </div>
+
+          <div className="auth-field">
+            <label htmlFor="host-reg-currency">Pricing currency <RequiredMark /></label>
+            <p className="auth-field-hint">All listing prices you set will use this currency.</p>
+            <HostCurrencySelect
+              value={form.currency}
+              onChange={(v) => setForm({ ...form, currency: v })}
+              ariaLabel="Pricing currency"
+            />
+            {errors.currency && <p className="auth-field-error">{errors.currency}</p>}
           </div>
 
           <div className="auth-field">

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
-use App\Services\Email\EmailService;
+use App\Support\PricingCurrency;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -25,6 +25,7 @@ class User extends Authenticatable implements FilamentUser
         'role',
         'phone',
         'locale',
+        'currency',
     ];
 
     protected $hidden = [
@@ -94,6 +95,11 @@ class User extends Authenticatable implements FilamentUser
     public function isHost(): bool
     {
         return $this->role === UserRole::Host || $this->role === UserRole::Admin;
+    }
+
+    public function pricingCurrency(): string
+    {
+        return PricingCurrency::forUser($this);
     }
 
     /**

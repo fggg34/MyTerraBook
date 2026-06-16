@@ -1,4 +1,5 @@
-import { Link, useSearchParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useOutletContext, useSearchParams } from 'react-router-dom'
 import '../styles/request-to-book.css'
 import useRequestToBook from '../hooks/useRequestToBook'
 import RequestToBookSubbar from '../components/request-to-book/RequestToBookSubbar'
@@ -9,7 +10,6 @@ import Step2ExtrasCover from '../components/request-to-book/Step2ExtrasCover'
 import Step3YourDetails from '../components/request-to-book/Step3YourDetails'
 import Step4Payment from '../components/request-to-book/Step4Payment'
 import BookingConfirmation from '../components/request-to-book/BookingConfirmation'
-import { PageLoader } from '../components/ui/LoadingSpinner'
 import PageHead from '../components/seo/PageHead'
 import { useToast } from '../context/ToastContext'
 import usePageSeo from '../hooks/usePageSeo'
@@ -21,16 +21,17 @@ export default function CheckoutPage() {
 
 function CheckoutPageBody() {
   const { toast } = useToast()
+  const { setCheckoutFooterVisible } = useOutletContext() || {}
   const seo = usePageSeo('checkout', { robots: 'noindex' })
   const rtb = useRequestToBook()
 
+  useEffect(() => {
+    setCheckoutFooterVisible?.(rtb.loadState !== 'loading')
+    return () => setCheckoutFooterVisible?.(false)
+  }, [rtb.loadState, setCheckoutFooterVisible])
+
   if (rtb.loadState === 'loading') {
-    return (
-      <>
-        <PageHead {...seo} />
-        <PageLoader message="Loading checkout…" fullPage />
-      </>
-    )
+    return <PageHead {...seo} />
   }
 
   if (rtb.loadState === 'error' || !rtb.bookingType) {

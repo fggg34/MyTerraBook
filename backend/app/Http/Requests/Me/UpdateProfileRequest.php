@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Me;
 
+use App\Support\PricingCurrency;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,7 @@ class UpdateProfileRequest extends FormRequest
     {
         $user = $this->user();
 
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'phone' => ['required', 'string', 'max:32'],
@@ -25,5 +26,11 @@ class UpdateProfileRequest extends FormRequest
                 'current_password',
             ],
         ];
+
+        if ($user->isHost()) {
+            $rules['currency'] = ['required', 'string', 'size:3', PricingCurrency::validationRule()];
+        }
+
+        return $rules;
     }
 }

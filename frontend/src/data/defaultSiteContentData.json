@@ -1789,7 +1789,8 @@
       "tripTitle": "Your trip",
       "extrasTitle": "Extras & cover",
       "detailsTitle": "Your details",
-      "paymentTitle": "Payment"
+      "paymentTitle": "Payment",
+      "dueOnApprovalLabel": "Due on approval ({percent}%)"
     },
     "seo": {
       "title": "Checkout",

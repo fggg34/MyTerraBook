@@ -7,6 +7,7 @@ use App\Models\GuestHouse;
 use App\Models\GuestHouseSeasonalPrice;
 use App\Models\Setting;
 use App\Models\TaxRate;
+use App\Support\PricingCurrency;
 use App\Support\Money;
 use Carbon\Carbon;
 use InvalidArgumentException;
@@ -83,12 +84,16 @@ class GuestHouseQuoteService
             );
         }
 
+        $house->loadMissing('host');
+
         $taxable = max(0, $baseTotal + $cleaningFee - $discountCents);
         $taxBips = $this->resolveTaxBips($house);
         $taxAmount = (int) floor($taxable * $taxBips / 10000);
         $totalAmount = $taxable + $taxAmount;
 
-        $currency = $this->currencyCode();
+        $currency = $house->user_id
+            ? PricingCurrency::forUser($house->host)
+            : PricingCurrency::shopDefault();
 
         return [
             'nights' => $nights,
@@ -101,8 +106,8 @@ class GuestHouseQuoteService
             'total_amount' => $totalAmount,
             'currency' => $currency,
             'coupon_id' => $couponId,
-            'total_formatted' => '€ '.Money::formatDecimalFromCents($totalAmount),
-            'base_total_formatted' => '€ '.Money::formatDecimalFromCents($baseTotal),
+            'total_formatted' => Money::formatDecimalFromCents($totalAmount).' '.$currency,
+            'base_total_formatted' => Money::formatDecimalFromCents($baseTotal).' '.$currency,
         ];
     }
 
@@ -182,12 +187,5 @@ class GuestHouseQuoteService
         $tax = Setting::getValue('shop.default_tax', ['basis_points' => 0]);
 
         return (int) ($tax['basis_points'] ?? 0);
-    }
-
-    private function currencyCode(): string
-    {
-        $shop = Setting::getValue('shop.currency', ['code' => 'EUR']);
-
-        return (string) ($shop['code'] ?? 'EUR');
     }
 }

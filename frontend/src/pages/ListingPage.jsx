@@ -4,7 +4,6 @@ import { buildCheckoutParams } from '../components/cars/BookingForm'
 import ListingPageContent from '../components/listing/ListingPageContent'
 import PageHead from '../components/seo/PageHead'
 import EmptyState from '../components/ui/EmptyState'
-import { PageLoader } from '../components/ui/LoadingSpinner'
 import { useToast } from '../context/ToastContext'
 import useListingEffects from '../hooks/useListingEffects'
 import useListingPage from '../hooks/useListingPage'
@@ -119,12 +118,7 @@ function ListingPageBody({ listingType = 'campervan' }) {
   })
 
   if (loadState === 'loading') {
-    return (
-      <>
-        <PageHead {...seo} />
-        <PageLoader message="Loading listing…" fullPage />
-      </>
-    )
+    return <PageHead {...seo} />
   }
 
   if (loadState === 'error' || !listing) {

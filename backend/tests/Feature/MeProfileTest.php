@@ -25,6 +25,7 @@ class MeProfileTest extends TestCase
             'name' => $host->name,
             'email' => $host->email,
             'phone' => '',
+            'currency' => 'EUR',
         ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['phone']);
@@ -43,6 +44,7 @@ class MeProfileTest extends TestCase
             'name' => 'New Name',
             'email' => $host->email,
             'phone' => '+354 555 1234',
+            'currency' => 'EUR',
         ])
             ->assertOk()
             ->assertJsonPath('user.name', 'New Name')
@@ -69,6 +71,7 @@ class MeProfileTest extends TestCase
             'name' => $host->name,
             'email' => 'new-host@example.test',
             'phone' => $host->phone,
+            'currency' => 'EUR',
         ])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['current_password']);
@@ -77,6 +80,7 @@ class MeProfileTest extends TestCase
             'name' => $host->name,
             'email' => 'new-host@example.test',
             'phone' => $host->phone,
+            'currency' => 'EUR',
             'current_password' => 'password123',
         ])
             ->assertOk()
@@ -123,5 +127,28 @@ class MeProfileTest extends TestCase
             ->assertOk()
             ->assertJsonPath('user.role', UserRole::Customer->value)
             ->assertJsonPath('user.phone', '+354 555 7777');
+    }
+
+    public function test_host_can_update_profile_currency(): void
+    {
+        $host = User::factory()->host()->create([
+            'phone' => '+354 555 0100',
+            'currency' => 'EUR',
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->patchJson('/api/me/profile', [
+            'name' => $host->name,
+            'email' => $host->email,
+            'phone' => $host->phone,
+            'currency' => 'USD',
+        ])->assertOk()
+            ->assertJsonPath('user.currency', 'USD');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $host->id,
+            'currency' => 'USD',
+        ]);
     }
 }

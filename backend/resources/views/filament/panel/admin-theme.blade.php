@@ -146,7 +146,7 @@
         border-color: rgb(51 65 85);
     }
 
-    /* Table badge chips — neutral labels + soft semantic status tints */
+    /* Table badge chips, neutral labels + soft semantic status tints */
     .fi-ta-table .fi-badge {
         border-radius: 9999px;
         font-weight: 600;

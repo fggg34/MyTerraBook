@@ -186,21 +186,26 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
     Route::delete('cars/{car}/daily-fares/{dailyFare}', [HostCarController::class, 'destroyDailyFare']);
     Route::get('cars/{car}/hourly-fares', [HostCarController::class, 'hourlyFares']);
     Route::post('cars/{car}/hourly-fares', [HostCarController::class, 'storeHourlyFare']);
+    Route::patch('cars/{car}/hourly-fares/{hourlyFare}', [HostCarController::class, 'updateHourlyFare']);
     Route::delete('cars/{car}/hourly-fares/{hourlyFare}', [HostCarController::class, 'destroyHourlyFare']);
     Route::get('cars/{car}/extra-hour-fares', [HostCarController::class, 'extraHourFares']);
     Route::post('cars/{car}/extra-hour-fares', [HostCarController::class, 'storeExtraHourFare']);
+    Route::patch('cars/{car}/extra-hour-fares/{extraHourFare}', [HostCarController::class, 'updateExtraHourFare']);
     Route::delete('cars/{car}/extra-hour-fares/{extraHourFare}', [HostCarController::class, 'destroyExtraHourFare']);
     Route::get('cars/{car}/availability-blocks', [HostCarController::class, 'availabilityBlocks']);
     Route::post('cars/{car}/availability-blocks', [HostCarController::class, 'storeAvailabilityBlock']);
     Route::delete('cars/{car}/availability-blocks/{block}', [HostCarController::class, 'destroyAvailabilityBlock']);
     Route::get('cars/{car}/special-prices', [HostCarController::class, 'specialPrices']);
     Route::post('cars/{car}/special-prices', [HostCarController::class, 'storeSpecialPrice']);
+    Route::patch('cars/{car}/special-prices/{specialPrice}', [HostCarController::class, 'updateSpecialPrice']);
     Route::delete('cars/{car}/special-prices/{specialPrice}', [HostCarController::class, 'destroySpecialPrice']);
     Route::get('cars/{car}/location-fees', [HostCarController::class, 'locationFees']);
     Route::post('cars/{car}/location-fees', [HostCarController::class, 'storeLocationFee']);
+    Route::patch('cars/{car}/location-fees/{locationFee}', [HostCarController::class, 'updateLocationFee']);
     Route::delete('cars/{car}/location-fees/{locationFee}', [HostCarController::class, 'destroyLocationFee']);
     Route::get('cars/{car}/out-of-hours-fees', [HostCarController::class, 'outOfHoursFees']);
     Route::post('cars/{car}/out-of-hours-fees', [HostCarController::class, 'storeOutOfHoursFee']);
+    Route::patch('cars/{car}/out-of-hours-fees/{outOfHoursFee}', [HostCarController::class, 'updateOutOfHoursFee']);
     Route::delete('cars/{car}/out-of-hours-fees/{outOfHoursFee}', [HostCarController::class, 'destroyOutOfHoursFee']);
 
     Route::get('bookings/cars', [HostBookingController::class, 'carOrders']);

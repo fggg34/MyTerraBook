@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import { deleteHostGuestHouse, listHostGuestHouses } from '../../api/host'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { useToast } from '../../context/ToastContext'
+import { useHostCurrency } from '../../hooks/useHostCurrency'
 
 export default function HostGuestHousesPage() {
   const { toast } = useToast()
+  const currency = useHostCurrency()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -57,7 +59,7 @@ export default function HostGuestHousesPage() {
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={5}>No guesthouses yet — add your first one with “New guesthouse” above.</td>
+                <td colSpan={5}>No guesthouses yet, add your first one with “New guesthouse” above.</td>
               </tr>
             ) : (
               items.map((item) => {
@@ -70,7 +72,7 @@ export default function HostGuestHousesPage() {
                   </td>
                   <td>{item.city}</td>
                   <td><ListingStatusBadge status={item.status} /></td>
-                  <td>€{item.base_price_per_night_euros}</td>
+                  <td>{currency.formatAmount(item.base_price_per_night_euros)}</td>
                   <td className="host-actions">
                     <div className="host-table-actions">
                       <Link to={`/host/guesthouses/${item.id}/edit`} className={`host-btn ${needsSetup ? 'primary' : 'secondary'}`}>{needsSetup ? 'Finish setup' : 'Edit'}</Link>

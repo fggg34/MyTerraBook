@@ -58,7 +58,7 @@ export default function HostCarsPage() {
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={6}>No vehicles yet — add your first one with “New vehicle” above.</td>
+                <td colSpan={6}>No vehicles yet, add your first one with “New vehicle” above.</td>
               </tr>
             ) : (
               items.map((item) => {

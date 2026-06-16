@@ -7,6 +7,19 @@ export function fmtDisplayDate(d) {
   return `${WD[date.getDay()]}, ${MO[date.getMonth()]} ${date.getDate()}`
 }
 
+/** Compact label for checkout summary strip (e.g. "Airport Kef"). */
+export function shortLocationName(name) {
+  if (!name || name === '-') return name
+  const codeMatch = name.match(/\(([A-Za-z0-9]{2,6})\)\s*$/)
+  if (codeMatch && /airport/i.test(name)) {
+    const code = codeMatch[1]
+    return `Airport ${code.charAt(0).toUpperCase()}${code.slice(1).toLowerCase()}`
+  }
+  if (codeMatch) return codeMatch[1].toUpperCase()
+  const trimmed = name.replace(/\s*\([^)]*\)\s*$/, '').trim()
+  return trimmed.length > 22 ? `${trimmed.slice(0, 20)}…` : trimmed
+}
+
 export function nightsBetween(start, end) {
   if (!start || !end) return 0
   const a = start instanceof Date ? start : new Date(start)

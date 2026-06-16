@@ -21,6 +21,7 @@ import HostReadinessChecklist from '../../components/host/HostReadinessChecklist
 import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { useToast } from '../../context/ToastContext'
+import { useHostCurrency } from '../../hooks/useHostCurrency'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
 import { formatLocationLine } from '../../utils/parseGooglePlace'
 
@@ -57,6 +58,7 @@ export default function HostGuestHouseEditorPage() {
   const isNew = !id || id === 'new'
   const navigate = useNavigate()
   const { toast } = useToast()
+  const currency = useHostCurrency()
   const [step, setStep] = useState(0)
   const [form, setForm] = useState(emptyForm)
   const [status, setStatus] = useState('draft')
@@ -328,9 +330,9 @@ export default function HostGuestHouseEditorPage() {
           <>
             <p className="host-step-note">Set a <strong>nightly price above zero</strong> to publish. Cleaning fee, deposit and seasonal prices are optional.</p>
             <div className="grid grid-cols-2 gap-3">
-              <div className="host-field"><label>Nightly price (€)</label><input type="number" value={form.base_price_per_night_euros} onChange={(e) => setForm({ ...form, base_price_per_night_euros: Number(e.target.value) })} /></div>
-              <div className="host-field"><label>Cleaning fee (€)</label><input type="number" value={form.cleaning_fee_euros} onChange={(e) => setForm({ ...form, cleaning_fee_euros: Number(e.target.value) })} /></div>
-              <div className="host-field"><label>Security deposit (€)</label><input type="number" value={form.security_deposit_euros} onChange={(e) => setForm({ ...form, security_deposit_euros: Number(e.target.value) })} /></div>
+              <div className="host-field"><label>Nightly price ({currency.code})</label><input type="number" value={form.base_price_per_night_euros} onChange={(e) => setForm({ ...form, base_price_per_night_euros: Number(e.target.value) })} /></div>
+              <div className="host-field"><label>Cleaning fee ({currency.code})</label><input type="number" value={form.cleaning_fee_euros} onChange={(e) => setForm({ ...form, cleaning_fee_euros: Number(e.target.value) })} /></div>
+              <div className="host-field"><label>Security deposit ({currency.code})</label><input type="number" value={form.security_deposit_euros} onChange={(e) => setForm({ ...form, security_deposit_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Tax rate</label>
                 <HostSelect
                   value={form.tax_rate_id ? String(form.tax_rate_id) : ''}
@@ -344,13 +346,13 @@ export default function HostGuestHouseEditorPage() {
 
             <HostDisclosure
               title="Seasonal prices (optional)"
-              hint="Override the nightly rate for specific date ranges — e.g. peak season or a holiday discount. Saved when you click Save."
+              hint="Override the nightly rate for specific date ranges, e.g. peak season or a holiday discount. Saved when you click Save."
               count={seasonalPrices.length}
               defaultOpen={seasonalPrices.length > 0}
             >
             <div className="grid grid-cols-2 gap-3">
               <div className="host-field"><label>Name</label><input value={seasonalDraft.name} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, name: e.target.value })} /></div>
-              <div className="host-field"><label>Price / night (€)</label><input type="number" value={seasonalDraft.price_per_night_euros} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, price_per_night_euros: Number(e.target.value) })} /></div>
+              <div className="host-field"><label>Price / night ({currency.code})</label><input type="number" value={seasonalDraft.price_per_night_euros} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, price_per_night_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>From date</label><HostDatePicker value={seasonalDraft.date_from} onChange={(v) => setSeasonalDraft({ ...seasonalDraft, date_from: v })} /></div>
               <div className="host-field"><label>To date</label><HostDatePicker value={seasonalDraft.date_to} onChange={(v) => setSeasonalDraft({ ...seasonalDraft, date_to: v })} minDate={seasonalDraft.date_from ? new Date(seasonalDraft.date_from) : undefined} /></div>
               <div className="host-field"><label>Minimum nights</label><input type="number" value={seasonalDraft.minimum_nights} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, minimum_nights: e.target.value })} /></div>
@@ -362,7 +364,7 @@ export default function HostGuestHouseEditorPage() {
             <ul className="mt-3 space-y-2 text-sm">
               {seasonalPrices.map((sp, index) => (
                 <li key={sp.id ?? `new-${index}`} className="flex justify-between">
-                  <span>{sp.name}: €{sp.price_per_night_euros}/night ({sp.date_from} → {sp.date_to}){sp.minimum_nights ? `, min ${sp.minimum_nights} nights` : ''}</span>
+                  <span>{sp.name}: {currency.formatAmount(sp.price_per_night_euros)}/night ({sp.date_from} → {sp.date_to}){sp.minimum_nights ? `, min ${sp.minimum_nights} nights` : ''}</span>
                   <button type="button" className="host-btn danger" onClick={() => setSeasonalPrices((prev) => prev.filter((_, i) => i !== index))}>Remove</button>
                 </li>
               ))}
@@ -431,7 +433,7 @@ export default function HostGuestHouseEditorPage() {
             <ul className="mt-4 space-y-2 text-sm">
               <li><strong>Name:</strong> {form.name || '-'}</li>
               <li><strong>Location:</strong> {formatLocationLine(form) || '-'}</li>
-              <li><strong>Price:</strong> €{form.base_price_per_night_euros}/night</li>
+              <li><strong>Price:</strong> {currency.formatAmount(form.base_price_per_night_euros)}/night</li>
             </ul>
           </div>
         )}

@@ -64,7 +64,7 @@ export default function Step3YourDetails({
           )}
         </div>
         <div className="frow">
-          <div className="field">
+          <div className="field full">
             <label>Email <span className="req">*</span></label>
             <div className="control ic">
               <Mail className="lead" aria-hidden />
@@ -77,7 +77,7 @@ export default function Step3YourDetails({
               />
             </div>
           </div>
-          <div className="field">
+          <div className="field full">
             <PhoneField
               id="rtb-customer-phone"
               label="Phone number"

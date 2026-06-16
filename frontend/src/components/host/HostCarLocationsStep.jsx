@@ -1,6 +1,7 @@
 import HostDisclosure from './HostDisclosure'
 import HostMultiSelect from './HostMultiSelect'
 import HostSelect from './HostSelect'
+import { useHostCurrency } from '../../hooks/useHostCurrency'
 
 function toLocationOptions(locations = []) {
   return locations.map((loc) => ({
@@ -24,11 +25,18 @@ export default function HostCarLocationsStep({
   setLocationFeeDraft,
   oohFeeDraft,
   setOohFeeDraft,
+  editingLocationFeeId,
+  editingOohFeeId,
   onAddLocationFee,
+  onEditLocationFee,
+  onCancelLocationFeeEdit,
   onDeleteLocationFee,
   onAddOohFee,
+  onEditOohFee,
+  onCancelOohFeeEdit,
   onDeleteOohFee,
 }) {
+  const currency = useHostCurrency()
   const allLocationOptions = toLocationOptions(catalogLocations)
   const pickupOptions = toLocationOptions(selectedPickupLocations)
   const dropoffOptions = toLocationOptions(selectedDropoffLocations)
@@ -49,7 +57,7 @@ export default function HostCarLocationsStep({
   return (
     <>
       <p className="host-step-note">Choose at least one pickup and one drop-off location, then set the time windows. Fees are optional.</p>
-      <div className="host-locations-grid">
+      <div className="host-locations-grid" id="host-car-locations">
         <div className="host-field">
           <label>Pickup locations</label>
           <p className="host-field-hint">Where guests can collect this vehicle.</p>
@@ -76,7 +84,7 @@ export default function HostCarLocationsStep({
       </div>
 
       {canConfigureTimes ? (
-        <section className="host-subsection">
+        <section className="host-subsection" id="host-car-times">
           <div className="host-subsection-head">
             <h3>Pickup & drop-off times</h3>
             <p>Set the pickup and drop-off time windows guests can book for this vehicle.</p>
@@ -157,7 +165,7 @@ export default function HostCarLocationsStep({
                 />
               </div>
               <div className="host-field">
-                <label>Fee amount (€)</label>
+                <label>Fee amount ({currency.code})</label>
                 <input
                   type="number"
                   min={0}
@@ -172,22 +180,41 @@ export default function HostCarLocationsStep({
                   value={locationFeeDraft.is_one_way_fee ? 'yes' : 'no'}
                   onChange={(v) => setLocationFeeDraft({ ...locationFeeDraft, is_one_way_fee: v === 'yes' })}
                   options={[
-                    { value: 'no', label: 'No — applies to all bookings' },
-                    { value: 'yes', label: 'Yes — only when pickup and drop-off differ' },
+                    { value: 'no', label: 'No, applies to all bookings' },
+                    { value: 'yes', label: 'Yes, only when pickup and drop-off differ' },
                   ]}
                   ariaLabel="One-way fee"
                 />
               </div>
+              <div className="host-field">
+                <label>Multiply by rental days</label>
+                <HostSelect
+                  value={locationFeeDraft.multiply_by_days ? 'yes' : 'no'}
+                  onChange={(v) => setLocationFeeDraft({ ...locationFeeDraft, multiply_by_days: v === 'yes' })}
+                  options={[
+                    { value: 'no', label: 'No, flat fee per booking' },
+                    { value: 'yes', label: 'Yes, fee × number of days' },
+                  ]}
+                  ariaLabel="Multiply fee by days"
+                />
+              </div>
             </div>
 
-            <button
-              type="button"
-              className="host-btn secondary"
-              disabled={!locationFeeDraft.pickup_location_id || !locationFeeDraft.dropoff_location_id}
-              onClick={onAddLocationFee}
-            >
-              Add location fee
-            </button>
+            <div className="host-fare-actions">
+              <button
+                type="button"
+                className="host-btn secondary"
+                disabled={!locationFeeDraft.pickup_location_id || !locationFeeDraft.dropoff_location_id}
+                onClick={onAddLocationFee}
+              >
+                {editingLocationFeeId ? 'Update location fee' : 'Add location fee'}
+              </button>
+              {editingLocationFeeId && (
+                <button type="button" className="host-btn secondary" onClick={onCancelLocationFeeEdit}>
+                  Cancel edit
+                </button>
+              )}
+            </div>
 
             {locationFees.length > 0 && (
               <ul className="host-fee-list">
@@ -198,13 +225,19 @@ export default function HostCarLocationsStep({
                         {fee.pickup_location?.name || 'Pickup'} → {fee.dropoff_location?.name || 'Drop-off'}
                       </span>
                       <span className="host-fee-amount">
-                        €{fee.cost_euros ?? (fee.cost_cents / 100).toFixed(2)}
+                        {currency.formatAmount(fee.cost_euros ?? fee.cost_cents / 100)}
+                        {fee.multiply_by_days ? ' · per day' : ''}
                         {fee.is_one_way_fee ? ' · one-way' : ''}
                       </span>
                     </div>
-                    <button type="button" className="host-btn danger" onClick={() => onDeleteLocationFee(fee.id)}>
-                      Remove
-                    </button>
+                    <div className="host-fee-item-actions">
+                      <button type="button" className="host-btn secondary host-btn-compact" onClick={() => onEditLocationFee(fee)}>
+                        Edit
+                      </button>
+                      <button type="button" className="host-btn danger" onClick={() => onDeleteLocationFee(fee.id)}>
+                        Remove
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -247,7 +280,7 @@ export default function HostCarLocationsStep({
                 <input type="time" value={oohFeeDraft.time_to} onChange={(e) => setOohFeeDraft({ ...oohFeeDraft, time_to: e.target.value })} />
               </div>
               <div className="host-field">
-                <label>Pick-up charge (€)</label>
+                <label>Pick-up charge ({currency.code})</label>
                 <input
                   type="number"
                   min={0}
@@ -256,7 +289,7 @@ export default function HostCarLocationsStep({
                 />
               </div>
               <div className="host-field">
-                <label>Drop-off charge (€)</label>
+                <label>Drop-off charge ({currency.code})</label>
                 <input
                   type="number"
                   min={0}
@@ -278,14 +311,21 @@ export default function HostCarLocationsStep({
               </div>
             </div>
 
-            <button
-              type="button"
-              className="host-btn secondary"
-              disabled={!oohFeeDraft.time_from || !oohFeeDraft.time_to}
-              onClick={onAddOohFee}
-            >
-              Add out-of-hours fee
-            </button>
+            <div className="host-fare-actions">
+              <button
+                type="button"
+                className="host-btn secondary"
+                disabled={!oohFeeDraft.time_from || !oohFeeDraft.time_to}
+                onClick={onAddOohFee}
+              >
+                {editingOohFeeId ? 'Update out-of-hours fee' : 'Add out-of-hours fee'}
+              </button>
+              {editingOohFeeId && (
+                <button type="button" className="host-btn secondary" onClick={onCancelOohFeeEdit}>
+                  Cancel edit
+                </button>
+              )}
+            </div>
 
             {outOfHoursFees.length > 0 && (
               <ul className="host-fee-list">
@@ -294,12 +334,17 @@ export default function HostCarLocationsStep({
                     <div className="host-fee-item-main">
                       <span className="host-fee-route">{fee.name}</span>
                       <span className="host-fee-amount">
-                        {fee.time_from}–{fee.time_to} · pick-up €{fee.pickup_cost_euros}, drop-off €{fee.dropoff_cost_euros}
+                        {fee.time_from}–{fee.time_to} · pick-up {currency.formatAmount(fee.pickup_cost_euros ?? (fee.pickup_cost_cents || 0) / 100)}, drop-off {currency.formatAmount(fee.dropoff_cost_euros ?? (fee.dropoff_cost_cents || 0) / 100)}
                       </span>
                     </div>
-                    <button type="button" className="host-btn danger" onClick={() => onDeleteOohFee(fee.id)}>
-                      Remove
-                    </button>
+                    <div className="host-fee-item-actions">
+                      <button type="button" className="host-btn secondary host-btn-compact" onClick={() => onEditOohFee(fee)}>
+                        Edit
+                      </button>
+                      <button type="button" className="host-btn danger" onClick={() => onDeleteOohFee(fee.id)}>
+                        Remove
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

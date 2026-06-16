@@ -11,6 +11,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\User;
 use App\Services\Email\EmailService;
+use App\Support\PricingCurrency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -43,6 +44,7 @@ class AuthController extends Controller
         $user = User::query()->create([
             ...$request->validated(),
             'role' => UserRole::Host,
+            'currency' => PricingCurrency::normalize($request->input('currency')) ?? PricingCurrency::shopDefault(),
         ]);
 
         $this->email->send('host_welcome', $user->email, [
@@ -69,7 +71,10 @@ class AuthController extends Controller
             return response()->json(['message' => 'You are already a host.', 'user' => $user]);
         }
 
-        $user->update(['role' => UserRole::Host]);
+        $user->update([
+            'role' => UserRole::Host,
+            'currency' => $user->currency ?: PricingCurrency::shopDefault(),
+        ]);
 
         $this->email->send('host_welcome', $user->email, [
             'host_name' => $user->name,

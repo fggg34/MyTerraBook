@@ -118,7 +118,7 @@ class HostCatalogController extends Controller
 
     public function rentalOptions(): JsonResponse
     {
-        $columns = ['id', 'name', 'slug', 'image_path'];
+        $columns = ['id', 'name', 'slug', 'description', 'cost_cents', 'is_daily_cost', 'image_path'];
         if (\Illuminate\Support\Facades\Schema::hasColumn('rental_options', 'icon')) {
             $columns[] = 'icon';
         }
@@ -129,8 +129,13 @@ class HostCatalogController extends Controller
                     'id' => $option->id,
                     'name' => $option->name,
                     'slug' => $option->slug,
+                    'description' => $option->description,
                     'icon' => $option->icon,
                     'icon_url' => $option->image_path ? Storage::disk('public')->url($option->image_path) : null,
+                    'cost_cents' => (int) $option->cost_cents,
+                    'cost_euros' => ((int) $option->cost_cents) / 100,
+                    'is_daily_cost' => (bool) $option->is_daily_cost,
+                    'default_cost_cents' => (int) $option->cost_cents,
                 ];
             });
 

@@ -46,6 +46,17 @@ class HostCarResource extends JsonResource
             'dropoff_location_ids' => $this->whenLoaded('locations', fn () => $this->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_dropoff)->pluck('id')->values()->all()),
             'characteristic_ids' => $this->whenLoaded('characteristics', fn () => $this->characteristics->pluck('id')->all()),
             'rental_option_ids' => $this->whenLoaded('rentalOptions', fn () => $this->rentalOptions->pluck('id')->all()),
+            'rental_options' => $this->whenLoaded('rentalOptions', fn () => $this->rentalOptions->map(fn ($option) => [
+                'id' => $option->id,
+                'name' => $option->name,
+                'slug' => $option->slug,
+                'icon' => $option->icon,
+                'description' => $option->description,
+                'is_daily_cost' => (bool) ($option->pivot->is_daily_cost ?? $option->is_daily_cost),
+                'cost_cents' => (int) ($option->pivot->cost_cents ?? $option->cost_cents),
+                'default_cost_cents' => (int) $option->cost_cents,
+                'cost_euros' => ((int) ($option->pivot->cost_cents ?? $option->cost_cents)) / 100,
+            ])->values()->all()),
             'rental_condition_ids' => $this->whenLoaded('rentalConditions', fn () => $this->rentalConditions->pluck('id')->all()),
             'main_category_id' => $this->whenLoaded('subCategory', fn () => $this->subCategory?->main_category_id),
             'sub_category' => $this->whenLoaded('subCategory', fn () => [

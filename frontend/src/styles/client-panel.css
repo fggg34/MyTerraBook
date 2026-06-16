@@ -548,3 +548,115 @@
   font-size: 0.8125rem;
   color: #b42318;
 }
+
+.client-currency-field {
+  margin-top: 4px;
+}
+
+.client-currency-field__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #dbe3ee;
+  border-radius: 14px;
+}
+
+.client-currency-field__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.client-currency-field__text label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #0f2036;
+  margin-bottom: 4px;
+}
+
+.client-currency-field__desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #5a6b82;
+}
+
+.client-currency-field__control {
+  flex-shrink: 0;
+}
+
+.client-currency-field__control .host-select-wrap {
+  width: auto;
+}
+
+.client-currency-field__control .client-currency-select {
+  width: auto;
+  min-width: 156px;
+}
+
+.client-currency-field__control .field-control-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 2px solid #45a06a;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(69, 160, 106, 0.14);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.client-currency-field__control .field-select.is-open .field-control-wrap {
+  border-color: #3d8f5c;
+  box-shadow: 0 0 0 3px rgba(69, 160, 106, 0.18);
+}
+
+.client-currency-field__control .field-select-trigger {
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 0;
+  font-family: inherit;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: #64748b;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  min-width: 0;
+}
+
+.client-currency-field__control .field-select-trigger.filled {
+  color: #0f2036;
+}
+
+.client-currency-field__control .field-select-value {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.client-currency-field__control .field-select-chevron {
+  width: 16px;
+  height: 16px;
+  color: #45a06a;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 560px) {
+  .client-currency-field__main {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .client-currency-field__control .client-currency-select {
+    width: 100%;
+    min-width: 0;
+  }
+}

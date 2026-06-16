@@ -11,10 +11,10 @@ use App\Models\HourlyFare;
 use App\Models\LocationFee;
 use App\Models\OutOfHoursFee;
 use App\Models\PriceType;
-use App\Models\RentalOption;
 use App\Models\Setting;
 use App\Models\SpecialPrice;
 use App\Models\TaxRate;
+use App\Support\PricingCurrency;
 use Carbon\CarbonInterface;
 use InvalidArgumentException;
 
@@ -71,28 +71,27 @@ class RentalQuoteService
         $extrasLines = [];
 
         if ($rentalOptionSelections !== []) {
-            $optionIds = array_keys($rentalOptionSelections);
-            $options = RentalOption::query()
-                ->whereIn('id', $optionIds)
-                ->where('is_active', true)
+            $optionIds = array_map('intval', array_keys($rentalOptionSelections));
+            $carOptions = $car->rentalOptions()
+                ->whereIn('rental_options.id', $optionIds)
+                ->where('rental_options.is_active', true)
                 ->get()
                 ->keyBy('id');
 
             foreach ($rentalOptionSelections as $optionId => $quantity) {
                 $optionId = (int) $optionId;
                 $quantity = max(1, (int) $quantity);
-                $option = $options->get($optionId);
+                $option = $carOptions->get($optionId);
                 if ($option === null) {
-                    continue;
+                    throw new InvalidArgumentException("Add-on is not available for this vehicle.");
                 }
 
-                if (! $car->rentalOptions()->whereKey($optionId)->exists()) {
-                    throw new InvalidArgumentException("Add-on {$option->name} is not available for this vehicle.");
-                }
+                $unitCents = $option->pivot->cost_cents ?? $option->cost_cents;
+                $isDailyCost = $option->pivot->is_daily_cost ?? $option->is_daily_cost;
 
-                $line = $option->is_daily_cost
-                    ? $quantity * $option->cost_cents * $rentalDays
-                    : $quantity * $option->cost_cents;
+                $line = $isDailyCost
+                    ? $quantity * $unitCents * $rentalDays
+                    : $quantity * $unitCents;
 
                 if ($option->max_cost_cap_cents !== null) {
                     $line = min($line, $option->max_cost_cap_cents);
@@ -105,7 +104,7 @@ class RentalQuoteService
                     'rental_option_id' => $option->id,
                     'name' => $option->name,
                     'quantity' => $quantity,
-                    'unit_price_cents' => (int) $option->cost_cents,
+                    'unit_price_cents' => (int) $unitCents,
                     'total_cents' => $line,
                     'tax_bips' => $taxBips,
                 ];
@@ -169,7 +168,10 @@ class RentalQuoteService
         );
         $totalCents = $totalBeforeTax + $taxCents;
 
-        $currency = (string) (Setting::getValue('shop.currency', ['code' => 'EUR'])['code'] ?? 'EUR');
+        $car->loadMissing('host');
+        $currency = $car->isOwnedByHost()
+            ? PricingCurrency::forUser($car->host)
+            : $this->shopCurrencyCode();
 
         return [
             'rental_days' => $rentalDays,
@@ -719,6 +721,11 @@ class RentalQuoteService
     private function defaultTaxBips(): int
     {
         return (int) data_get(Setting::getValue('shop.default_tax', ['basis_points' => 0]), 'basis_points', 0);
+    }
+
+    private function shopCurrencyCode(): string
+    {
+        return PricingCurrency::shopDefault();
     }
 
     private function taxBipsForTaxRateId(?int $taxRateId, int $defaultTaxBips): int

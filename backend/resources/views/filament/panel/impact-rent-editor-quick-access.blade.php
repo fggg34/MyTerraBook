@@ -166,7 +166,7 @@
 
         .ir-tabs-outer::-webkit-scrollbar { display: none; }
 
-        /* ── Bar container — matches Filament fi-tabs (white pill) ── */
+        /* ── Bar container, matches Filament fi-tabs (white pill) ── */
         .ir-tabs {
             display: inline-flex;
             align-items: stretch;

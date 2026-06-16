@@ -362,6 +362,10 @@ class HostPanelTest extends TestCase
             'listing_status' => ListingApprovalStatus::Draft,
             'units_available' => 0,
             'seats' => 5,
+            'bags' => 2,
+            'transmission' => 'automatic',
+            'fuel_type' => 'petrol',
+            'drive_type' => 'fwd',
         ]);
         $carId = $car->id;
 
@@ -376,18 +380,15 @@ class HostPanelTest extends TestCase
 
         $this->postJson("/api/host/cars/{$carId}/submit")
             ->assertUnprocessable()
-            ->assertJsonPath('message', 'At least one available unit is required before submitting for review.');
-
-        $car->update(['units_available' => 2]);
-
-        $this->postJson("/api/host/cars/{$carId}/submit")
-            ->assertUnprocessable()
-            ->assertJsonPath('message', 'At least one daily fare is required before submitting for review.');
+            ->assertJsonPath(
+                'message',
+                'A base daily rental rate (1–365 days) is required before submitting for review.',
+            );
 
         $this->postJson("/api/host/cars/{$carId}/daily-fares", [
             'price_type_id' => $priceType->id,
             'from_days' => 1,
-            'to_days' => 7,
+            'to_days' => 365,
             'price_per_day_euros' => 120,
         ])->assertCreated();
 

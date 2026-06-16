@@ -788,6 +788,7 @@ return [
                     ['key' => 'extrasTitle', 'type' => 'text', 'label' => 'Extras step', 'path' => 'labels.extrasTitle'],
                     ['key' => 'detailsTitle', 'type' => 'text', 'label' => 'Details step', 'path' => 'labels.detailsTitle'],
                     ['key' => 'paymentTitle', 'type' => 'text', 'label' => 'Payment step', 'path' => 'labels.paymentTitle'],
+                    ['key' => 'dueOnApprovalLabel', 'type' => 'text', 'label' => 'Due on approval row', 'path' => 'labels.dueOnApprovalLabel', 'helperText' => 'Use {percent} for the shop deposit percentage.'],
                 ]],
                 'settings' => ['label' => 'Settings', 'isRootSection' => true, 'fields' => [
                     ['key' => 'prepayPercent', 'type' => 'number', 'label' => 'Prepay percent'],

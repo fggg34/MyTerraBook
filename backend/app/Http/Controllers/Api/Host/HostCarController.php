@@ -141,6 +141,7 @@ class HostCarController extends Controller
             'details_images.*' => ['image', 'max:8192'],
             'details_image_paths' => ['nullable', 'array'],
             'details_image_paths.*' => ['string'],
+            'replace_details_image_paths' => ['sometimes', 'boolean'],
         ]);
 
         if ($request->hasFile('main_image')) {
@@ -156,7 +157,13 @@ class HostCarController extends Controller
             $car->update(['details_image_paths' => $paths]);
         }
 
-        if ($request->has('details_image_paths')) {
+        if ($request->boolean('replace_details_image_paths')) {
+            $paths = array_values(array_filter(
+                (array) $request->input('details_image_paths', []),
+                fn ($path) => filled($path),
+            ));
+            $car->update(['details_image_paths' => $paths]);
+        } elseif ($request->has('details_image_paths')) {
             $paths = array_values(array_filter(
                 $request->input('details_image_paths', []),
                 fn ($path) => filled($path),
@@ -174,6 +181,25 @@ class HostCarController extends Controller
     public function syncRelationsEndpoint(Request $request, Car $car): JsonResponse
     {
         $this->authorize('update', $car);
+        $request->validate([
+            'pickup_location_ids' => ['nullable', 'array'],
+            'pickup_location_ids.*' => ['integer', 'exists:locations,id'],
+            'dropoff_location_ids' => ['nullable', 'array'],
+            'dropoff_location_ids.*' => ['integer', 'exists:locations,id'],
+            'location_ids' => ['nullable', 'array'],
+            'location_ids.*' => ['integer', 'exists:locations,id'],
+            'characteristic_ids' => ['nullable', 'array'],
+            'characteristic_ids.*' => ['integer', 'exists:characteristics,id'],
+            'rental_option_ids' => ['nullable', 'array'],
+            'rental_option_ids.*' => ['integer', 'exists:rental_options,id'],
+            'rental_options' => ['nullable', 'array'],
+            'rental_options.*.id' => ['required', 'integer', 'exists:rental_options,id'],
+            'rental_options.*.cost_cents' => ['required_without:rental_options.*.cost_euros', 'integer', 'min:0'],
+            'rental_options.*.cost_euros' => ['required_without:rental_options.*.cost_cents', 'numeric', 'min:0'],
+            'rental_options.*.is_daily_cost' => ['nullable', 'boolean'],
+            'rental_condition_ids' => ['nullable', 'array'],
+            'rental_condition_ids.*' => ['integer', 'exists:rental_conditions,id'],
+        ]);
         $this->syncRelations($request, $car);
         $car->load(['locations', 'characteristics', 'rentalOptions', 'rentalConditions']);
 
@@ -320,6 +346,29 @@ class HostCarController extends Controller
         return response()->json(['data' => $fare->load('priceType')], 201);
     }
 
+    public function updateHourlyFare(Request $request, Car $car, HourlyFare $hourlyFare): JsonResponse
+    {
+        $this->authorize('update', $car);
+        abort_unless($hourlyFare->car_id === $car->id, 404);
+
+        $data = $request->validate([
+            'price_type_id' => ['sometimes', 'exists:price_types,id'],
+            'min_minutes' => ['sometimes', 'integer', 'min:1'],
+            'max_minutes' => ['sometimes', 'integer'],
+            'total_price_cents' => ['sometimes', 'integer', 'min:0'],
+            'total_price_euros' => ['sometimes', 'numeric', 'min:0'],
+        ]);
+
+        if (isset($data['total_price_euros'])) {
+            $data['total_price_cents'] = (int) round($data['total_price_euros'] * 100);
+            unset($data['total_price_euros']);
+        }
+
+        $hourlyFare->update($data);
+
+        return response()->json(['data' => $hourlyFare->fresh('priceType')]);
+    }
+
     public function destroyHourlyFare(Car $car, HourlyFare $hourlyFare): JsonResponse
     {
         $this->authorize('update', $car);
@@ -354,6 +403,27 @@ class HostCarController extends Controller
         $fare = $car->extraHourFares()->create($data);
 
         return response()->json(['data' => $fare->load('priceType')], 201);
+    }
+
+    public function updateExtraHourFare(Request $request, Car $car, ExtraHourFare $extraHourFare): JsonResponse
+    {
+        $this->authorize('update', $car);
+        abort_unless($extraHourFare->car_id === $car->id, 404);
+
+        $data = $request->validate([
+            'price_type_id' => ['sometimes', 'exists:price_types,id'],
+            'charge_per_extra_hour_cents' => ['sometimes', 'integer', 'min:0'],
+            'charge_per_extra_hour_euros' => ['sometimes', 'numeric', 'min:0'],
+        ]);
+
+        if (isset($data['charge_per_extra_hour_euros'])) {
+            $data['charge_per_extra_hour_cents'] = (int) round($data['charge_per_extra_hour_euros'] * 100);
+            unset($data['charge_per_extra_hour_euros']);
+        }
+
+        $extraHourFare->update($data);
+
+        return response()->json(['data' => $extraHourFare->fresh('priceType')]);
     }
 
     public function destroyExtraHourFare(Car $car, ExtraHourFare $extraHourFare): JsonResponse
@@ -434,6 +504,30 @@ class HostCarController extends Controller
         return response()->json(['data' => $price], 201);
     }
 
+    public function updateSpecialPrice(Request $request, Car $car, SpecialPrice $specialPrice): JsonResponse
+    {
+        $this->authorize('update', $car);
+        abort_unless(in_array($car->id, $specialPrice->vehicle_ids ?? [], true), 404);
+
+        $data = $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'date_from' => ['sometimes', 'date'],
+            'date_to' => ['sometimes', 'date'],
+            'type' => ['sometimes', 'string'],
+            'value_mode' => ['sometimes', 'string'],
+            'value_fixed_cents' => ['nullable', 'integer', 'min:0'],
+            'value_percent_bips' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        if (isset($data['date_from'], $data['date_to']) && $data['date_to'] < $data['date_from']) {
+            abort(422, 'The date to field must be a date after or equal to date from.');
+        }
+
+        $specialPrice->update($data);
+
+        return response()->json(['data' => $specialPrice->fresh()]);
+    }
+
     public function destroySpecialPrice(Car $car, SpecialPrice $specialPrice): JsonResponse
     {
         $this->authorize('update', $car);
@@ -489,6 +583,40 @@ class HostCarController extends Controller
         $fee->load(['pickupLocation', 'dropoffLocation']);
 
         return response()->json(['data' => new HostLocationFeeResource($fee)], 201);
+    }
+
+    public function updateLocationFee(Request $request, Car $car, LocationFee $locationFee): JsonResponse
+    {
+        $this->authorize('update', $car);
+        abort_unless($locationFee->car_id === $car->id, 404);
+
+        $data = $request->validate([
+            'pickup_location_id' => ['sometimes', 'integer', 'exists:locations,id'],
+            'dropoff_location_id' => ['sometimes', 'integer', 'exists:locations,id'],
+            'cost_cents' => ['sometimes', 'integer', 'min:0'],
+            'cost_euros' => ['sometimes', 'numeric', 'min:0'],
+            'multiply_by_days' => ['sometimes', 'boolean'],
+            'is_one_way_fee' => ['sometimes', 'boolean'],
+        ]);
+
+        $locationIds = array_filter([
+            isset($data['pickup_location_id']) ? (int) $data['pickup_location_id'] : null,
+            isset($data['dropoff_location_id']) ? (int) $data['dropoff_location_id'] : null,
+        ]);
+
+        if ($locationIds !== []) {
+            $this->assertLocationsLinkedToCar($car, $locationIds);
+        }
+
+        if (isset($data['cost_euros'])) {
+            $data['cost_cents'] = (int) round($data['cost_euros'] * 100);
+            unset($data['cost_euros']);
+        }
+
+        $locationFee->update($data);
+        $locationFee->load(['pickupLocation', 'dropoffLocation']);
+
+        return response()->json(['data' => new HostLocationFeeResource($locationFee)]);
     }
 
     public function destroyLocationFee(Car $car, LocationFee $locationFee): JsonResponse
@@ -555,6 +683,52 @@ class HostCarController extends Controller
         ]);
 
         return response()->json(['data' => new HostOutOfHoursFeeResource($fee)], 201);
+    }
+
+    public function updateOutOfHoursFee(Request $request, Car $car, OutOfHoursFee $outOfHoursFee): JsonResponse
+    {
+        $this->authorize('update', $car);
+        abort_unless(in_array($car->id, $outOfHoursFee->vehicle_ids ?? [], true), 404);
+
+        $data = $request->validate([
+            'name' => ['nullable', 'string', 'max:120'],
+            'time_from' => ['sometimes', 'date_format:H:i'],
+            'time_to' => ['sometimes', 'date_format:H:i'],
+            'applies_to' => ['sometimes', Rule::in(['pickup', 'dropoff', 'both'])],
+            'pickup_cost_cents' => ['nullable', 'integer', 'min:0'],
+            'dropoff_cost_cents' => ['nullable', 'integer', 'min:0'],
+            'pickup_cost_euros' => ['nullable', 'numeric', 'min:0'],
+            'dropoff_cost_euros' => ['nullable', 'numeric', 'min:0'],
+            'location_ids' => ['nullable', 'array'],
+            'location_ids.*' => ['integer', 'exists:locations,id'],
+        ]);
+
+        if (isset($data['pickup_cost_euros'])) {
+            $data['pickup_cost_cents'] = (int) round($data['pickup_cost_euros'] * 100);
+            unset($data['pickup_cost_euros']);
+        }
+        if (isset($data['dropoff_cost_euros'])) {
+            $data['dropoff_cost_cents'] = (int) round($data['dropoff_cost_euros'] * 100);
+            unset($data['dropoff_cost_euros']);
+        }
+
+        if (isset($data['location_ids'])) {
+            $locationIds = array_map('intval', $data['location_ids']);
+            if ($locationIds !== []) {
+                $this->assertLocationsLinkedToCar($car, $locationIds);
+            }
+            $data['location_ids'] = $locationIds === [] ? null : $locationIds;
+        }
+
+        if (array_key_exists('pickup_cost_cents', $data) || array_key_exists('dropoff_cost_cents', $data)) {
+            $pickupCost = (int) ($data['pickup_cost_cents'] ?? $outOfHoursFee->pickup_cost_cents ?? 0);
+            $dropoffCost = (int) ($data['dropoff_cost_cents'] ?? $outOfHoursFee->dropoff_cost_cents ?? 0);
+            $data['cost_cents'] = max($pickupCost, $dropoffCost);
+        }
+
+        $outOfHoursFee->update($data);
+
+        return response()->json(['data' => new HostOutOfHoursFeeResource($outOfHoursFee->fresh())]);
     }
 
     public function destroyOutOfHoursFee(Car $car, OutOfHoursFee $outOfHoursFee): JsonResponse
@@ -657,7 +831,21 @@ class HostCarController extends Controller
             $car->characteristics()->sync($request->input('characteristic_ids', []));
         }
 
-        if ($request->has('rental_option_ids')) {
+        if ($request->has('rental_options')) {
+            $sync = [];
+            foreach ($request->input('rental_options', []) as $row) {
+                $optionId = (int) $row['id'];
+                $costCents = isset($row['cost_euros'])
+                    ? (int) round((float) $row['cost_euros'] * 100)
+                    : (int) $row['cost_cents'];
+                $pivot = ['cost_cents' => $costCents];
+                if (array_key_exists('is_daily_cost', $row)) {
+                    $pivot['is_daily_cost'] = (bool) $row['is_daily_cost'];
+                }
+                $sync[$optionId] = $pivot;
+            }
+            $car->rentalOptions()->sync($sync);
+        } elseif ($request->has('rental_option_ids')) {
             $car->rentalOptions()->sync($request->input('rental_option_ids', []));
         }
 
@@ -734,8 +922,13 @@ class HostCarController extends Controller
             return 'At least one available unit is required before submitting for review.';
         }
 
-        if (! $car->dailyFares()->exists()) {
-            return 'At least one daily fare is required before submitting for review.';
+        $hasBaseDailyFare = $car->dailyFares()
+            ->where('from_days', 1)
+            ->where('to_days', '>=', 365)
+            ->exists();
+
+        if (! $hasBaseDailyFare) {
+            return 'A base daily rental rate (1–365 days) is required before submitting for review.';
         }
 
         foreach (['pickup_time_from', 'pickup_time_to', 'dropoff_time_from', 'dropoff_time_to'] as $field) {

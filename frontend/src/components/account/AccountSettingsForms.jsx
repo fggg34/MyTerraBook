@@ -7,18 +7,23 @@ import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import { updatePassword, updateProfile } from '../../api/me'
 import { formatPhoneForApi, validatePhone } from '../../utils/phone'
+import { useShopConfig } from '../../context/ShopConfigContext'
+import HostCurrencySelect from '../host/HostCurrencySelect'
 
 export default function AccountSettingsForms({
   requirePhone = false,
+  showCurrency = false,
   profileDescription = 'Update your account details.',
 }) {
   const { user, setUser } = useAuth()
   const { toast } = useToast()
+  const { baseCurrency } = useShopConfig()
 
   const [profile, setProfile] = useState({
     name: '',
     email: '',
     phone: '',
+    currency: baseCurrency || 'EUR',
     current_password: '',
   })
   const [passwordForm, setPasswordForm] = useState({
@@ -37,9 +42,10 @@ export default function AccountSettingsForms({
       name: user.name || '',
       email: user.email || '',
       phone: user.phone || '',
+      currency: user.currency || baseCurrency || 'EUR',
       current_password: '',
     })
-  }, [user])
+  }, [user, baseCurrency])
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault()
@@ -49,6 +55,9 @@ export default function AccountSettingsForms({
     if (requirePhone) {
       const phoneError = validatePhone(profile.phone)
       if (phoneError) errors.phone = phoneError
+    }
+    if (showCurrency && !profile.currency) {
+      errors.currency = 'Pricing currency is required'
     }
     if (profile.email !== user?.email && !profile.current_password) {
       errors.current_password = 'Current password is required to change email'
@@ -62,6 +71,9 @@ export default function AccountSettingsForms({
         name: profile.name.trim(),
         email: profile.email.trim(),
         phone: formatPhoneForApi(profile.phone),
+      }
+      if (showCurrency) {
+        payload.currency = profile.currency
       }
       if (profile.current_password) {
         payload.current_password = profile.current_password
@@ -166,6 +178,27 @@ export default function AccountSettingsForms({
             />
             {profileErrors.phone && <p className="client-field-error">{profileErrors.phone}</p>}
           </div>
+          {showCurrency && (
+            <div className="client-field client-currency-field">
+              <div className="client-currency-field__main">
+                <div className="client-currency-field__text">
+                  <label htmlFor="settings-currency">Pricing currency</label>
+                  <p className="client-currency-field__desc">
+                    Vehicle and guesthouse prices you enter use this currency.
+                  </p>
+                </div>
+                <div className="client-currency-field__control">
+                  <HostCurrencySelect
+                    value={profile.currency}
+                    onChange={(v) => setProfile({ ...profile, currency: v })}
+                    ariaLabel="Pricing currency"
+                    className="client-currency-select"
+                  />
+                </div>
+              </div>
+              {profileErrors.currency && <p className="client-field-error">{profileErrors.currency}</p>}
+            </div>
+          )}
           {profile.email !== user?.email && (
             <div className="client-field">
               <label htmlFor="settings-current-for-email">Current password</label>

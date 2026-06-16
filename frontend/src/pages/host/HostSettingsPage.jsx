@@ -4,7 +4,8 @@ export default function HostSettingsPage() {
   return (
     <AccountSettingsForms
       requirePhone
-      profileDescription="Update the contact details shown on your host account."
+      showCurrency
+      profileDescription="Update your contact details and the currency used for your listing prices."
     />
   )
 }

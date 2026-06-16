@@ -105,12 +105,12 @@ export default function HostDashboardPage() {
     <div className="host-dashboard">
       {showOnboarding && (
         <section className="host-onboarding">
-          <h2>Welcome — let&apos;s get your first listing live</h2>
+          <h2>Welcome, let&apos;s get your first listing live</h2>
           <p>It takes three quick steps:</p>
           <ol className="host-onboarding-steps">
             <li><span className="host-onboarding-num">1</span> Add your vehicle or guesthouse details</li>
             <li><span className="host-onboarding-num">2</span> Add photos and set a price</li>
-            <li><span className="host-onboarding-num">3</span> Submit for approval — we review and publish it for you</li>
+            <li><span className="host-onboarding-num">3</span> Submit for approval, we review and publish it for you</li>
           </ol>
           <div className="host-actions">
             <Link to="/host/cars/new" className="host-btn vehicle"><Plus size={15} /> Add vehicle</Link>

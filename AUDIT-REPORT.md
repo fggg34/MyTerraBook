@@ -1,4 +1,4 @@
-# Backend Audit — MyTerraBook (Iceland car / campervan / guesthouse marketplace) (2026-06-16)
+# Backend Audit, MyTerraBook (Iceland car / campervan / guesthouse marketplace) (2026-06-16)
 
 > Produced by the `marketplace-backend-audit` skill in **AUDIT mode** (read-only). No files were
 > changed. Hand this report back to drive **FIX mode** ("do all FIX", or name specific IDs).
@@ -11,7 +11,7 @@
 - **Principals:** Guests (book/pay/review), Hosts (`UserRole::Host`, own listings), Operator/Admin (`UserRole::Admin`, manages everything via Filament). Distinction is a `role` column on `users` + a `host` middleware (role gate) + per-model policies for ownership.
 - **Entities that exist:** `Car` (campervan = car filtered by main-category slug), `GuestHouse`, `Order` (car booking) + `OrderItem`/`OrderPayment`, `GuestHouseBooking` + `GuestHouseBookingPayment`, `RentalOption`/`Characteristic`/`AvailabilityBlock`/`SpecialPrice`/`DailyFare`/etc., `ListingReview` (polymorphic), catalog taxonomy, CMS/site content, email templates, coupons, tax rates, locations.
 - **Entities the domain model expects but are missing/inert:** **Payment gateway integration**, **Payout/Commission ledger**, **guest↔host messaging**, **two-way / verified reviews**, **car cancellation/refund**, an explicit **managed-fleet vs P2P** flag, **disputes/claims**, document/KYC verification.
-- **Monetization:** Implicit — no commission is computed and no payout is routed; host dashboard shows **gross** booking totals. Pricing supports coupons, taxes, seasonal/special prices, fees.
+- **Monetization:** Implicit, no commission is computed and no payout is routed; host dashboard shows **gross** booking totals. Pricing supports coupons, taxes, seasonal/special prices, fees.
 - **Integrations:** External **iCal import** (scheduled daily), DomPDF (contracts), templated email (queued). **No payment processor**, no SMS, no maps/KYC.
 - **Stack:** Laravel 11 (bootstrap/app.php style, Sanctum auth, Filament admin) + React (Vite) SPA frontend. 131 routes, 40 controllers, 55 models, 117 migrations, 4 policies, **0 Job/Event classes**, 1 scheduled command.
 
@@ -63,7 +63,7 @@
 | Confirmation | `OrderObserver` :28 | emails guest + admin/host |
 | Cancel/refund | — | **no guest cancel, no refund** for cars (GAP-003/004) |
 | Review | `ListingReviewController::storeCar` | **unauthenticated, auto-approved, no booking link** (SEC-002) |
-| Payout | — | **none** — host dashboard sums gross `total_cents` (GAP-002) |
+| Payout | — | **none**, host dashboard sums gross `total_cents` (GAP-002) |
 
 ### Account triangle matrix (selected)
 
@@ -80,11 +80,11 @@
 
 ---
 
-## 3. What works (load-bearing — leave alone unless a finding says otherwise)
+## 3. What works (load-bearing, leave alone unless a finding says otherwise)
 
-- **Server-side quote recomputation** at checkout for both cars and guesthouses — client totals are never trusted (`PublicOrderController::store`, `GuestHouseBookingController` re-call the quote services).
+- **Server-side quote recomputation** at checkout for both cars and guesthouses, client totals are never trusted (`PublicOrderController::store`, `GuestHouseBookingController` re-call the quote services).
 - **Money is integer cents** end-to-end in schema, casts, and quote math (`Order`, `GuestHouseBooking`, migrations, `Support/Money`); floats appear only in display/admin input.
-- **Host listing CRUD authorization** is correct: every mutating `/host/*` car & guesthouse endpoint calls `$this->authorize(...)` with `CarPolicy`/`GuestHousePolicy` (owner-or-admin) **plus** nested ownership checks (`car_id` / `vehicle_ids` / scoped `findOrFail`) — no host-to-host IDOR found.
+- **Host listing CRUD authorization** is correct: every mutating `/host/*` car & guesthouse endpoint calls `$this->authorize(...)` with `CarPolicy`/`GuestHousePolicy` (owner-or-admin) **plus** nested ownership checks (`car_id` / `vehicle_ids` / scoped `findOrFail`), no host-to-host IDOR found.
 - **No mass-assignment** of `$request->all()`; host payloads are validated and privileged fields stripped.
 - **Public catalog hides drafts**: `/cars`, `/cars/{car}`, and all guesthouse public routes filter to publicly-visible/active listings (the bypass is only on the *order* and *calendar* endpoints).
 - **Car order price snapshot** (`pricing_snapshot` JSON + frozen cents + line items) protects historical orders from later fare edits.
@@ -102,8 +102,8 @@
 - **Where:** `app/Http/Controllers/Api/PublicOrderController.php:135-152` (cars); `app/Http/Controllers/Api/GuestHouseBookingController.php:59-63` (guesthouses); no `OrderPayment`/`GuestHouseBookingPayment` ever created in app code
 - **What's happening:** `POST /orders` and `POST /guest-houses/bookings` create `Confirmed` records with full totals but never charge anything. There is no gateway call, no `OrderPayment` row, no authorize/capture.
 - **Why it matters:** A "confirmed" booking holds inventory and emails the customer/host, but no money is collected. Direct revenue leakage and inventory loss.
-- **Recommendation (add):** Introduce a payment step (see GAP-001). Until then, do not mark orders `Confirmed` on creation — use `Pending`/`StandBy` with the existing `payment_lock_expires_at` and only confirm on payment success.
-- **Fix risk:** High — touches the core booking path and frontend checkout. Test quote→pay→confirm and lock expiry.
+- **Recommendation (add):** Introduce a payment step (see GAP-001). Until then, do not mark orders `Confirmed` on creation, use `Pending`/`StandBy` with the existing `payment_lock_expires_at` and only confirm on payment success.
+- **Fix risk:** High, touches the core booking path and frontend checkout. Test quote→pay→confirm and lock expiry.
 - **Depends on:** GAP-001
 - **Disposition (default):** DISCUSS
 
@@ -114,8 +114,8 @@
 - **Where:** `backend/composer.json:8-18` (no Stripe/Braintree/PayPal/Mollie); `app/Enums/PaymentMethod.php` enum unused; `frontend/src/hooks/useRequestToBook.js:500-514` (card UI not sent to API)
 - **What's happening:** Payment methods are catalog metadata + admin manual recording only. The checkout UI validates a card but never transmits payment; the backend records nothing.
 - **Why it matters:** A marketplace cannot collect funds, hold deposits, do SCA/3DS, or reconcile. This is the keystone gap.
-- **Recommendation (add):** Integrate a processor (Stripe recommended; Stripe Connect if hosts are to be paid out — see GAP-002). Add authorize/capture, deposit holds, webhooks (idempotent), and persist `OrderPayment`/`GuestHouseBookingPayment`.
-- **Fix risk:** High — new integration, secrets, webhooks; test sandbox flows + failure paths.
+- **Recommendation (add):** Integrate a processor (Stripe recommended; Stripe Connect if hosts are to be paid out, see GAP-002). Add authorize/capture, deposit holds, webhooks (idempotent), and persist `OrderPayment`/`GuestHouseBookingPayment`.
+- **Fix risk:** High, new integration, secrets, webhooks; test sandbox flows + failure paths.
 - **Depends on:** —
 - **Disposition (default):** DISCUSS
 
@@ -126,8 +126,8 @@
 - **Where:** `app/Http/Controllers/Api/Host/HostDashboardController.php:53-55` sums gross `total_cents`; no `Payout`/`commission` model anywhere (only marketing copy in `database/seeders/data/site_content_defaults.json`)
 - **What's happening:** Hosts own listings (`user_id`) and receive booking emails, but no platform commission is computed and no payout is routed. Host "revenue" = gross order total.
 - **Why it matters:** The P2P side of the hybrid model is non-functional financially; marketing promises payouts that the backend cannot deliver; operator revenue is unmeasurable.
-- **Recommendation (add):** Add a commission config (per managed-fleet vs P2P — see GAP-008), compute `host_payout_cents` on the booking snapshot, and a `Payout` ledger (Stripe Connect transfers or manual settlement records).
-- **Fix risk:** High — money correctness; reconcile against payments.
+- **Recommendation (add):** Add a commission config (per managed-fleet vs P2P, see GAP-008), compute `host_payout_cents` on the booking snapshot, and a `Payout` ledger (Stripe Connect transfers or manual settlement records).
+- **Fix risk:** High, money correctness; reconcile against payments.
 - **Depends on:** GAP-001, GAP-008
 - **Disposition (default):** DISCUSS
 
@@ -135,11 +135,11 @@
 - **Category:** Bug
 - **Severity:** High
 - **Confidence:** Confirmed
-- **Where:** `app/Http/Controllers/Api/PublicOrderController.php:98-100` (check) vs `:124-152` (create); `app/Services/OrderAvailabilityService.php:78-83` — no `lockForUpdate` anywhere in the backend; no DB exclusion constraint
+- **Where:** `app/Http/Controllers/Api/PublicOrderController.php:98-100` (check) vs `:124-152` (create); `app/Services/OrderAvailabilityService.php:78-83`, no `lockForUpdate` anywhere in the backend; no DB exclusion constraint
 - **What's happening:** `hasCapacity()` runs before the transaction and is not re-checked or row-locked inside it. Two concurrent requests can both pass when `units_available = 1`.
 - **Why it matters:** Overbooking; two guests confirmed for the same vehicle/window.
 - **Recommendation (refine):** Move the capacity check inside `DB::transaction` with `lockForUpdate` on the relevant rows (or add a DB-level overlap/exclusion guard). Also count `Pending`/`StandBy` orders toward capacity.
-- **Fix risk:** Medium — concurrency logic; add a concurrency test.
+- **Fix risk:** Medium, concurrency logic; add a concurrency test.
 - **Depends on:** —
 - **Disposition (default):** FIX
 
@@ -151,7 +151,7 @@
 - **What's happening:** The in-transaction guard only calls `hasBookingConflict()` (bookings), not `isAvailable()` (which also checks availability blocks), and uses a lock-free `exists()`. A block added between quote and commit is ignored, and concurrent bookings can both pass.
 - **Why it matters:** Double-booking and booking over host-blocked dates.
 - **Recommendation (refine):** Re-check full `isAvailable()` inside the transaction with `lockForUpdate`; add a DB exclusion/unique guard on overlapping ranges per `guest_house_id`.
-- **Fix risk:** Medium — concurrency; test block + overlap.
+- **Fix risk:** Medium, concurrency; test block + overlap.
 - **Depends on:** —
 - **Disposition (default):** FIX
 
@@ -163,7 +163,7 @@
 - **What's happening:** `/cars/{car}` correctly 404s drafts (`CatalogController::car` :188 `abort_unless($car->isPubliclyVisible())`), but the order endpoints don't. Knowing a `car_id` lets anyone quote and book a draft/pending/rejected/inactive P2P car.
 - **Why it matters:** Unapproved/disabled inventory is bookable; bypasses moderation; potential pricing on incomplete listings.
 - **Recommendation (add):** `abort_unless($car->isPubliclyVisible(), 404)` in both `quote()` and `store()`.
-- **Fix risk:** Low — one guard each; test a draft car returns 404.
+- **Fix risk:** Low, one guard each; test a draft car returns 404.
 - **Depends on:** —
 - **Disposition (default):** FIX
 
@@ -173,9 +173,9 @@
 - **Confidence:** Confirmed
 - **Where:** `app/Http/Requests/Api/StoreListingReviewRequest.php:9-11` (`authorize()` returns true); `app/Http/Controllers/Api/ListingReviewController.php:86-93` (`is_approved => true`); review POST routes have no `auth:sanctum` (`routes/api.php:108,119`); no unique constraint (`database/migrations/2026_06_05_120000_create_listing_reviews_table.php:26-28`)
 - **What's happening:** Anyone (no login) can POST a review with a self-reported `guest_name` for any active listing; it is auto-published; the same person can post unlimited reviews.
-- **Why it matters:** Trivial review spam / fake ratings / competitor sabotage — directly corrupts the trust signal the marketplace sells.
+- **Why it matters:** Trivial review spam / fake ratings / competitor sabotage, directly corrupts the trust signal the marketplace sells.
 - **Recommendation (refine):** Require `auth:sanctum`; tie a review to a completed booking by the reviewer; default `is_approved=false` (moderation) or auto-approve only verified stays; add a unique constraint (one review per booking per reviewer).
-- **Fix risk:** Medium — changes public behavior + frontend review form; coordinate with GAP-006.
+- **Fix risk:** Medium, changes public behavior + frontend review form; coordinate with GAP-006.
 - **Depends on:** —
 - **Disposition (default):** FIX
 
@@ -187,7 +187,7 @@
 - **What's happening:** The host booking-status endpoints exist but always 403 for actual hosts, and no host UI calls them. Host booking management is read-only in practice.
 - **Why it matters:** Core marketplace capability (host approves/declines) is non-functional; contradicts the "host-approved booking" product promise.
 - **Recommendation (refine):** Decide the model (host self-manages vs admin-mediated). If hosts should manage: allow owner in `updateStatus` policies and wire the host UI. If admin-only: remove the host routes + dead FE exports.
-- **Fix risk:** Medium — auth + product decision + UI.
+- **Fix risk:** Medium, auth + product decision + UI.
 - **Depends on:** —
 - **Disposition (default):** DISCUSS
 
@@ -199,7 +199,7 @@
 - **What's happening:** Guesthouse guests can self-cancel (with a cancellation window) but car renters cannot cancel at all via the API.
 - **Why it matters:** Inconsistent product; support burden; no policy-driven refunds for the larger (car) inventory.
 - **Recommendation (add):** Add `POST /me/orders/{order}/cancel` with a cancellation policy + (once GAP-001 lands) refund handling.
-- **Fix risk:** Medium — depends on refund/payment.
+- **Fix risk:** Medium, depends on refund/payment.
 - **Depends on:** GAP-004
 - **Disposition (default):** FIX
 
@@ -211,7 +211,7 @@
 - **What's happening:** Deleting a `GuestHouse` row deletes all its bookings (financial/legal records). Contrast cars: orders use `restrictOnDelete` (`orders` migration :15) which is safe.
 - **Why it matters:** Permanent loss of booking/financial history; accidental admin delete is catastrophic and likely non-compliant.
 - **Recommendation (refine):** Change booking FK to `restrictOnDelete` (or rely on the existing guesthouse soft-deletes and block hard delete when bookings exist).
-- **Fix risk:** Low/Medium — migration; verify admin delete UX.
+- **Fix risk:** Low/Medium, migration; verify admin delete UX.
 - **Depends on:** —
 - **Disposition (default):** FIX
 
@@ -235,7 +235,7 @@
 - **What's happening:** The UI ("request to book", prepay on approval) and the seeded `*_received` templates assume a request→approve flow, but the backend auto-confirms and sends the *confirmed* template.
 - **Why it matters:** Misleading guest experience; `gh_booking_received` template is dead; status semantics drift.
 - **Recommendation (refine):** Pick one model end-to-end (instant-book vs request-to-book) and align backend status, emails, and UI. Ties to BUG-001/BUG-004.
-- **Fix risk:** Medium — product decision.
+- **Fix risk:** Medium, product decision.
 - **Depends on:** BUG-004
 - **Disposition (default):** DISCUSS
 
@@ -243,7 +243,7 @@
 - **Category:** Security
 - **Severity:** Medium
 - **Confidence:** Confirmed
-- **Where:** `app/Http/Controllers/Api/CatalogController.php:228-268` — no `isPubliclyVisible()` gate; returns confirmed orders + blocks for any `car_id`
+- **Where:** `app/Http/Controllers/Api/CatalogController.php:228-268`, no `isPubliclyVisible()` gate; returns confirmed orders + blocks for any `car_id`
 - **What's happening:** `GET /cars/{car}/availability-calendar` returns booking/availability data for any car including drafts/inactive.
 - **Why it matters:** Leaks operational data (occupancy) about unpublished inventory.
 - **Recommendation (add):** `abort_unless($car->isPubliclyVisible(), 404)`.
@@ -271,7 +271,7 @@
 - **What's happening:** No in-app messaging exists.
 - **Why it matters:** Category-standard (Airbnb/Turo); needed for booking coordination and trust.
 - **Recommendation (add):** Add a booking-scoped messaging model + endpoints + UI.
-- **Fix risk:** Medium — new subsystem.
+- **Fix risk:** Medium, new subsystem.
 - **Depends on:** —
 - **Disposition (default):** HOLD
 
@@ -291,7 +291,7 @@
 - **Category:** Missing feature / Tech debt
 - **Severity:** Medium
 - **Confidence:** Confirmed
-- **Where:** `HostCarController::update:75-86`, `HostGuestHouseController::update:86-106` — no reset to `PendingReview` on material edits
+- **Where:** `HostCarController::update:75-86`, `HostGuestHouseController::update:86-106`, no reset to `PendingReview` on material edits
 - **What's happening:** A host can materially change an approved, live listing (price, specs, photos) with no re-review.
 - **Why it matters:** Moderation can be bypassed post-approval.
 - **Recommendation (refine):** On sensitive-field edits to an approved listing, reset to `PendingReview` (or queue a light re-check). Make the set of "sensitive fields" a product decision.
@@ -307,7 +307,7 @@
 - **What's happening:** Operator vs host inventory is inferred from `user_id` being null. Fleet cars skip the approval gate entirely; guesthouses don't have the same bypass (asymmetric).
 - **Why it matters:** Muddled commission/payout logic (GAP-002), inconsistent moderation, fragile assumptions.
 - **Recommendation (add):** Add an explicit `ownership_type`/`is_managed_fleet` column; make visibility + commission depend on it explicitly; align car/guesthouse behavior.
-- **Fix risk:** Medium — schema + query changes.
+- **Fix risk:** Medium, schema + query changes.
 - **Depends on:** —
 - **Disposition (default):** DISCUSS
 
@@ -316,7 +316,7 @@
 - **Severity:** Medium
 - **Confidence:** Confirmed
 - **Where:** `app/Services/PublicShopConfigService.php:53-55` exposes `rentals_enabled`, `enable_coupons`, `allow_deposit`; `RentalQuoteService` never reads `enable_coupons`/`rentals_enabled`; `frontend/src/context/ShopConfigContext.jsx` only uses `prepayPercent`
-- **What's happening:** Admin-configurable flags are inert — coupons apply even when "disabled"; rentals can't actually be turned off.
+- **What's happening:** Admin-configurable flags are inert, coupons apply even when "disabled"; rentals can't actually be turned off.
 - **Why it matters:** Admin controls give a false sense of control; coupon abuse possible.
 - **Recommendation (refine):** Enforce flags in the quote/booking controllers and gate UI.
 - **Fix risk:** Low.
@@ -351,7 +351,7 @@
 - **Category:** Data integrity
 - **Severity:** Medium
 - **Confidence:** Confirmed
-- **Where:** `app/Filament/Resources/Orders/Schemas/OrderForm.php:179-208` — admins type `base_rental_cents`/`total_cents` manually; no `RentalQuoteService` call
+- **Where:** `app/Filament/Resources/Orders/Schemas/OrderForm.php:179-208`, admins type `base_rental_cents`/`total_cents` manually; no `RentalQuoteService` call
 - **What's happening:** Admin-created/edited orders can have totals that don't match the pricing engine or the line items.
 - **Why it matters:** Host/guest/admin numbers can disagree (the highest-value class of money bug).
 - **Recommendation (refine):** Compute admin order totals via `RentalQuoteService`, or make these fields read-only/derived.
@@ -386,12 +386,12 @@
 ### [DEAD-001] `GuestHouseBookingPayment` model + table are never written or read
 - **Category:** Dead code
 - **Severity:** Low
-- **Confidence:** Confirmed (write/read path) — searched `GuestHouseBookingPayment` / `guest_house_booking_payments`: only model, `hasMany` relation (`GuestHouseBooking.php:102-105`), and migration
+- **Confidence:** Confirmed (write/read path), searched `GuestHouseBookingPayment` / `guest_house_booking_payments`: only model, `hasMany` relation (`GuestHouseBooking.php:102-105`), and migration
 - **Where:** `app/Models/GuestHouseBookingPayment.php`; `database/migrations/2026_06_04_100000_create_guest_house_tables.php:117-125`
 - **What's happening:** Schema + relation exist; nothing creates or queries payment rows.
 - **Why it matters:** Misleading scaffolding; likely intended for the unbuilt payment system.
 - **Recommendation (remove or build):** Either wire it as part of GAP-001 or drop it. Because it's a recent migration likely placed for upcoming payments, confirm intent before removal.
-- **Fix risk:** Low (removal) — re-confirm unreferenced before dropping.
+- **Fix risk:** Low (removal), re-confirm unreferenced before dropping.
 - **Depends on:** GAP-001
 - **Disposition (default):** DISCUSS
 
@@ -403,7 +403,7 @@
 - **What's happening:** A second, older review system exists but is unused (only admin count reads it).
 - **Why it matters:** Two review models invite confusion/drift.
 - **Recommendation (remove):** Migrate any data and drop the legacy table/model after confirmation.
-- **Fix risk:** Low/Medium — confirm no admin dependency.
+- **Fix risk:** Low/Medium, confirm no admin dependency.
 - **Depends on:** —
 - **Disposition (default):** DISCUSS
 
@@ -494,7 +494,7 @@ Competitive set: **Turo/Airbnb/Outdoorsy** (model references) + **Indie/Happy Ca
 | iCal/channel sync | ◐ (import only, scheduled) | ◐ |
 | KEF airport pickup / F-road / gravel-sand&ash | ◐ (locations/options generic; not first-class products) | ✓ (Iceland) |
 
-**Narrative.** MyTerraBook has a genuinely strong **listing + pricing + catalog + admin** foundation at category parity, and good engineering hygiene (cents money, server quotes, real ownership policies). The **top must-have gaps** are the money spine — **payments (GAP-001), payouts/commission (GAP-002), refunds (GAP-004)** — plus **trust** (verified two-way reviews, GAP-006/SEC-002) and **booking semantics** (host accept/decline BUG-004, instant-vs-request BUG-006). **Differentiation opportunities:** lean into Iceland-specific products as first-class (gravel/sand&ash/CDW insurance tiers, F-road permission per vehicle, KEF pickup) and bidirectional iCal channel sync — these would set it apart from generic rental sites once the money spine is in place.
+**Narrative.** MyTerraBook has a genuinely strong **listing + pricing + catalog + admin** foundation at category parity, and good engineering hygiene (cents money, server quotes, real ownership policies). The **top must-have gaps** are the money spine, **payments (GAP-001), payouts/commission (GAP-002), refunds (GAP-004)**, plus **trust** (verified two-way reviews, GAP-006/SEC-002) and **booking semantics** (host accept/decline BUG-004, instant-vs-request BUG-006). **Differentiation opportunities:** lean into Iceland-specific products as first-class (gravel/sand&ash/CDW insurance tiers, F-road permission per vehicle, KEF pickup) and bidirectional iCal channel sync, these would set it apart from generic rental sites once the money spine is in place.
 
 ---
 
@@ -574,15 +574,15 @@ Competitive set: **Turo/Airbnb/Outdoorsy** (model references) + **Indie/Happy Ca
 
 ## 8. Suggested execution order
 
-**Phase A — Safety & correctness (low-risk, do first):** SEC-001, SEC-003, BUG-002, BUG-003, BUG-005, BUG-007, DATA-001, DATA-003, GAP-009, GAP-010. These are mostly small, high-value, and don't need product decisions.
+**Phase A, Safety & correctness (low-risk, do first):** SEC-001, SEC-003, BUG-002, BUG-003, BUG-005, BUG-007, DATA-001, DATA-003, GAP-009, GAP-010. These are mostly small, high-value, and don't need product decisions.
 
-**Phase B — Trust:** SEC-002 (then GAP-006). Require auth + verified stays + uniqueness before opening reviews further.
+**Phase B, Trust:** SEC-002 (then GAP-006). Require auth + verified stays + uniqueness before opening reviews further.
 
-**Phase C — The money spine (product decisions, then build):** GAP-001 → BUG-001 → GAP-004 → GAP-003; in parallel decide GAP-008 → GAP-002. This is the largest body of work and unblocks the marketplace model.
+**Phase C, The money spine (product decisions, then build):** GAP-001 → BUG-001 → GAP-004 → GAP-003; in parallel decide GAP-008 → GAP-002. This is the largest body of work and unblocks the marketplace model.
 
-**Phase D — Booking semantics & host tooling:** BUG-004 + BUG-006 (decide instant vs request), then DEAD-005 falls out.
+**Phase D, Booking semantics & host tooling:** BUG-004 + BUG-006 (decide instant vs request), then DEAD-005 falls out.
 
-**Phase E — Cleanup once confirmed:** DEAD-004 (safe now), then DEAD-001/002/003 after the money decisions; DATA-002, DATA-004, DEBT-001, PERF-001 as polish.
+**Phase E, Cleanup once confirmed:** DEAD-004 (safe now), then DEAD-001/002/003 after the money decisions; DATA-002, DATA-004, DEBT-001, PERF-001 as polish.
 
 ## 9. Open questions for you
 

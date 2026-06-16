@@ -65,6 +65,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => UserRole::Host,
+            'currency' => $attributes['currency'] ?? 'EUR',
         ]);
     }
 

@@ -8,9 +8,11 @@ export default function HostSelect({
   disabled = false,
   ariaLabel,
   searchable = false,
+  className = '',
+  wrapClassName = '',
 }) {
   return (
-    <div className="host-select-wrap">
+    <div className={`host-select-wrap ${wrapClassName}`.trim()}>
       <FieldSelect
         value={value}
         onChange={onChange}
@@ -19,7 +21,7 @@ export default function HostSelect({
         disabled={disabled}
         ariaLabel={ariaLabel}
         searchable={searchable}
-        className="host-select"
+        className={`host-select ${className}`.trim()}
       />
     </div>
   )

@@ -135,6 +135,10 @@ export function createHostCarHourlyFare(id, payload) {
   return api.post(`/host/cars/${id}/hourly-fares`, payload)
 }
 
+export function updateHostCarHourlyFare(carId, fareId, payload) {
+  return api.patch(`/host/cars/${carId}/hourly-fares/${fareId}`, payload)
+}
+
 export function deleteHostCarHourlyFare(carId, fareId) {
   return api.delete(`/host/cars/${carId}/hourly-fares/${fareId}`)
 }
@@ -145,6 +149,10 @@ export function getHostCarExtraHourFares(id) {
 
 export function createHostCarExtraHourFare(id, payload) {
   return api.post(`/host/cars/${id}/extra-hour-fares`, payload)
+}
+
+export function updateHostCarExtraHourFare(carId, fareId, payload) {
+  return api.patch(`/host/cars/${carId}/extra-hour-fares/${fareId}`, payload)
 }
 
 export function deleteHostCarExtraHourFare(carId, fareId) {
@@ -171,6 +179,10 @@ export function addHostCarSpecialPrice(id, payload) {
   return api.post(`/host/cars/${id}/special-prices`, payload)
 }
 
+export function updateHostCarSpecialPrice(carId, priceId, payload) {
+  return api.patch(`/host/cars/${carId}/special-prices/${priceId}`, payload)
+}
+
 export function removeHostCarSpecialPrice(id, priceId) {
   return api.delete(`/host/cars/${id}/special-prices/${priceId}`)
 }
@@ -183,6 +195,10 @@ export function createHostCarLocationFee(id, payload) {
   return api.post(`/host/cars/${id}/location-fees`, payload)
 }
 
+export function updateHostCarLocationFee(carId, feeId, payload) {
+  return api.patch(`/host/cars/${carId}/location-fees/${feeId}`, payload)
+}
+
 export function deleteHostCarLocationFee(carId, feeId) {
   return api.delete(`/host/cars/${carId}/location-fees/${feeId}`)
 }
@@ -193,6 +209,10 @@ export function getHostCarOutOfHoursFees(id) {
 
 export function createHostCarOutOfHoursFee(id, payload) {
   return api.post(`/host/cars/${id}/out-of-hours-fees`, payload)
+}
+
+export function updateHostCarOutOfHoursFee(carId, feeId, payload) {
+  return api.patch(`/host/cars/${carId}/out-of-hours-fees/${feeId}`, payload)
 }
 
 export function deleteHostCarOutOfHoursFee(carId, feeId) {

@@ -12,7 +12,11 @@ class MeProfileController extends Controller
     public function update(UpdateProfileRequest $request): JsonResponse
     {
         $user = $request->user();
-        $user->update($request->safe()->only(['name', 'email', 'phone']));
+        $fields = ['name', 'email', 'phone'];
+        if ($user->isHost()) {
+            $fields[] = 'currency';
+        }
+        $user->update($request->safe()->only($fields));
 
         return response()->json([
             'message' => 'Profile updated.',

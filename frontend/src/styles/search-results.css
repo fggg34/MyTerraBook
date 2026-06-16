@@ -424,10 +424,10 @@ nav.main a.nav-collapsible{
 
 /* ---------- Results intro band ---------- */
 .results-intro{padding:42px 0 30px;}
-.crumb{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--slate-light);font-weight:600;margin-bottom:18px;}
-.crumb a{color:var(--slate);transition:color .15s;}
-.crumb a:hover{color:var(--green);}
-.crumb svg{width:13px;height:13px;color:#c2cddb;}
+.results-intro .crumb{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--slate-light);font-weight:600;margin-bottom:18px;}
+.results-intro .crumb a{color:var(--slate);transition:color .15s;}
+.results-intro .crumb a:hover{color:var(--green);}
+.results-intro .crumb svg{width:13px;height:13px;color:#c2cddb;}
 .results-intro-row{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;flex-wrap:wrap;}
 .results-intro h1{
   font-family:var(--serif);font-size:46px;line-height:1.02;letter-spacing:-0.02em;color:var(--navy);
