@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DriveType;
 use App\Enums\ListingApprovalStatus;
 use App\Models\Concerns\HasListingReviews;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,6 +29,7 @@ class Car extends Model
         'description',
         'transmission',
         'fuel_type',
+        'drive_type',
         'seats',
         'sleeps',
         'bags',
@@ -56,6 +58,7 @@ class Car extends Model
             'sleeps' => 'integer',
             'bags' => 'integer',
             'year' => 'integer',
+            'drive_type' => DriveType::class,
             'details_image_paths' => 'array',
             'is_active' => 'boolean',
             'listing_status' => ListingApprovalStatus::class,
@@ -152,6 +155,13 @@ class Car extends Model
     {
         return $this->belongsToMany(RentalOption::class, 'car_rental_option')
             ->withTimestamps();
+    }
+
+    public function rentalConditions(): BelongsToMany
+    {
+        return $this->belongsToMany(RentalCondition::class, 'car_rental_condition')
+            ->withTimestamps()
+            ->orderBy('rental_conditions.sort_order');
     }
 
     public function distinctiveFeatureDefinitions(): HasMany

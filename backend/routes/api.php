@@ -150,6 +150,7 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
         Route::get('locations', [HostCatalogController::class, 'locations']);
         Route::get('characteristics', [HostCatalogController::class, 'characteristics']);
         Route::get('rental-options', [HostCatalogController::class, 'rentalOptions']);
+        Route::get('rental-conditions', [HostCatalogController::class, 'rentalConditions']);
         Route::get('price-types', [HostCatalogController::class, 'priceTypes']);
         Route::get('amenities', [HostCatalogController::class, 'amenities']);
         Route::get('tax-rates', [HostCatalogController::class, 'taxRates']);

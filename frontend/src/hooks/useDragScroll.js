@@ -76,7 +76,7 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
 
     const onPointerDown = (e) => {
       if (e.pointerType !== 'mouse' || e.button !== 0) return
-      if (e.target.closest(INTERACTIVE)) return
+      if (e.target.closest(INTERACTIVE) && !e.target.closest('.pcard-stretch-link')) return
 
       prepareScroll()
       if (!canScroll()) return

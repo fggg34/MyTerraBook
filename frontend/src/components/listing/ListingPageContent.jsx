@@ -48,12 +48,8 @@ export default function ListingPageContent({
       { ...item, categoryName: item.category_name },
       {
         searchQuery,
-        config: {
-          defaultSeats: 5,
-          defaultSleeps: 2,
-          defaultBags: 2,
-        },
         categoryName: item.category_name,
+        vehicleType: listing.listingType,
       },
     )
     return { ...card, href: `${detailBase}/${item.id}${searchQuery ? `?${searchQuery}` : ''}` }
@@ -184,7 +180,9 @@ export default function ListingPageContent({
             >
               {typeConfig.bookCta}
             </button>
-            <span className="bp-note">20% prepayment on approval · balance due on pick-up.</span>
+            {typeConfig.bookingModalFootnote ? (
+              <span className="bp-note">{typeConfig.bookingModalFootnote}</span>
+            ) : null}
           </div>
         </div>
       </div>

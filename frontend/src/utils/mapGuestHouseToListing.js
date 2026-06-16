@@ -168,6 +168,13 @@ export function mapGuestHouseToListing(house, listingReviews, priceFormatter) {
     images.push({ url: resolveStorageUrl(house.thumbnail), alt: house.name })
   }
 
+  const priceFromAmount =
+    house.base_price_per_night_cents != null
+      ? Number(house.base_price_per_night_cents) / 100
+      : house.base_price_per_night != null
+        ? Number(house.base_price_per_night) / 100
+        : null
+
   const carShaped = {
     id: house.id,
     name: house.name,
@@ -182,7 +189,7 @@ export function mapGuestHouseToListing(house, listingReviews, priceFormatter) {
     price_types: [
       {
         id: 1,
-        from_price_per_day: formatPriceDisplay(house),
+        from_price_per_day_cents: house.base_price_per_night_cents ?? house.base_price_per_night,
       },
     ],
     characteristics: buildAmenities(house).map((a) => ({ name: a.name, display_text: a.name })),
@@ -226,6 +233,7 @@ export function mapGuestHouseToListing(house, listingReviews, priceFormatter) {
     sleeping,
     addons: [],
     priceFrom: formatPriceDisplay(house),
+    priceFromAmount: priceFromAmount != null && !Number.isNaN(priceFromAmount) ? priceFromAmount : null,
     description: { short: shortDesc || 'Description coming soon.', more: moreDesc },
     rating: buildRating(house, reviews),
     reviews,

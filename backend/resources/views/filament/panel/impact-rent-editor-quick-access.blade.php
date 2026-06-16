@@ -51,12 +51,14 @@
             'active' => request()->is('admin/impact-rent/main-categories*')
                 || request()->is('admin/impact-rent/sub-categories*')
                 || request()->is('admin/impact-rent/rental-options*')
+                || request()->is('admin/impact-rent/rental-conditions*')
                 || request()->is('admin/impact-rent/characteristics*')
                 || request()->is('admin/impact-rent/cars*'),
             'items'  => [
                 ['label' => 'Main Categories', 'url' => url('/admin/impact-rent/main-categories'), 'active' => request()->is('admin/impact-rent/main-categories*')],
                 ['label' => 'Sub Categories',  'url' => url('/admin/impact-rent/sub-categories'),  'active' => request()->is('admin/impact-rent/sub-categories*')],
                 ['label' => 'Car Options',     'url' => url('/admin/impact-rent/rental-options'),  'active' => request()->is('admin/impact-rent/rental-options*')],
+                ['label' => 'Rental Conditions', 'url' => url('/admin/impact-rent/rental-conditions'), 'active' => request()->is('admin/impact-rent/rental-conditions*')],
                 ['label' => 'Characteristics', 'url' => url('/admin/impact-rent/characteristics'), 'active' => request()->is('admin/impact-rent/characteristics*')],
                 ['label' => 'Cars List',       'url' => url('/admin/impact-rent/cars'),            'active' => request()->is('admin/impact-rent/cars*')],
             ],
@@ -127,6 +129,18 @@
             ],
         ],
     ];
+
+    // Hide Phase 2 / unimplemented items (null URL) from dropdowns.
+    $quickLinks = array_values(array_map(function (array $link): array {
+        if (! empty($link['items'])) {
+            $link['items'] = array_values(array_filter(
+                $link['items'],
+                fn (array $item): bool => ! empty($item['url']),
+            ));
+        }
+
+        return $link;
+    }, $quickLinks));
 @endphp
 
 @if ($inImpactRent)
@@ -152,16 +166,16 @@
 
         .ir-tabs-outer::-webkit-scrollbar { display: none; }
 
-        /* ── Bar container, Vik-style: more substantial, evenly distributed ── */
+        /* ── Bar container — matches Filament fi-tabs (white pill) ── */
         .ir-tabs {
             display: inline-flex;
             align-items: stretch;
-            gap: 0.15rem;
-            padding: 0.4rem;
-            background-color: rgb(30 30 35);
-            border: 1px solid rgb(255 255 255 / 0.08);
-            border-radius: 0.85rem;
-            box-shadow: 0 2px 12px rgb(0 0 0 / 0.35);
+            gap: 0.25rem;
+            padding: 0.5rem;
+            background-color: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            outline: 1px solid rgb(3 7 18 / 0.05);
             overflow: visible;
             flex-shrink: 0;
         }
@@ -172,63 +186,68 @@
             display: flex;
         }
 
-        /* Vertical separators between items (Vik-style) */
-        .ir-tabs__entry + .ir-tabs__entry::before {
-            content: '';
-            width: 1px;
-            background-color: rgb(255 255 255 / 0.08);
-            margin: 0.35rem 0.15rem;
-        }
-
         /* ── Shared style for both <a> links and <button> triggers ── */
         .ir-tabs__item {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
-            border-radius: 0.55rem;
-            padding: 0.55rem 1.1rem;
-            font-size: 0.9rem;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
             font-weight: 500;
             line-height: 1.25rem;
-            color: rgb(209 213 219);
+            color: rgb(107 114 128);
             white-space: nowrap;
             text-decoration: none;
             background: none;
             border: none;
             cursor: pointer;
-            transition: background-color 120ms ease, color 120ms ease;
+            transition: background-color 75ms ease, color 75ms ease;
         }
 
         .ir-tabs__item:hover {
-            background-color: rgb(255 255 255 / 0.06);
-            color: rgb(255 255 255);
+            background-color: rgb(249 250 251);
+            color: rgb(55 65 81);
         }
 
         .ir-tabs__item:focus-visible {
-            outline: 2px solid var(--mtb-green);
-            outline-offset: 2px;
+            background-color: rgb(249 250 251);
+            outline: none;
         }
 
         .ir-tabs__item--active {
-            background-color: rgb(69 160 106 / 0.12);
+            background-color: rgb(249 250 251);
             color: var(--mtb-green-dark);
-            font-weight: 600;
         }
 
         /* ── Leading icon ── */
         .ir-tabs__icon {
-            width: 1.05rem;
-            height: 1.05rem;
+            width: 1rem;
+            height: 1rem;
             flex-shrink: 0;
             stroke: currentColor;
             fill: none;
+            color: rgb(156 163 175);
+        }
+
+        .ir-tabs__item--active .ir-tabs__icon {
+            color: var(--mtb-green-dark);
+        }
+
+        .ir-tabs__item:hover .ir-tabs__icon {
+            color: rgb(55 65 81);
+        }
+
+        .ir-tabs__item--active:hover .ir-tabs__icon {
+            color: var(--mtb-green-dark);
         }
 
         /* ── Trailing chevron on dropdown triggers ── */
         .ir-tabs__chevron {
             width: 0.75rem;
             height: 0.75rem;
-            opacity: 0.7;
+            color: rgb(156 163 175);
             transition: transform 150ms ease;
             flex-shrink: 0;
         }
@@ -244,10 +263,10 @@
             z-index: 9999;
             min-width: 13rem;
             padding: 0.3rem;
-            background-color: rgb(28 28 33);
-            border: 1px solid rgb(255 255 255 / 0.1);
+            background-color: #fff;
+            border: 1px solid var(--mtb-line);
             border-radius: 0.75rem;
-            box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
 
         .ir-tabs__entry[data-open] .ir-tabs__dropdown {
@@ -261,32 +280,73 @@
             padding: 0.45rem 0.85rem;
             font-size: 0.875rem;
             font-weight: 400;
-            color: rgb(156 163 175);
+            color: rgb(107 114 128);
             text-decoration: none;
             transition: background-color 100ms ease, color 100ms ease;
             white-space: nowrap;
         }
 
         .ir-tabs__dropdown-item:hover {
-            background-color: rgb(255 255 255 / 0.07);
-            color: rgb(243 244 246);
+            background-color: rgb(249 250 251);
+            color: rgb(55 65 81);
         }
 
         .ir-tabs__dropdown-item--active {
-            background-color: rgb(69 160 106 / 0.2);
-            color: #9fd4b3;
+            background-color: rgb(249 250 251);
+            color: var(--mtb-green-dark);
             font-weight: 500;
         }
 
-        .ir-tabs__dropdown-item--pending {
-            color: rgb(107 114 128);
-            cursor: not-allowed;
-            opacity: 0.85;
+        /* ── Dark mode parity with fi-tabs ── */
+        .dark .ir-tabs {
+            background-color: rgb(17 24 39);
+            outline-color: rgb(255 255 255 / 0.1);
         }
 
-        .ir-tabs__dropdown-item--pending:hover {
-            background-color: transparent;
+        .dark .ir-tabs__item {
+            color: rgb(156 163 175);
+        }
+
+        .dark .ir-tabs__item:hover,
+        .dark .ir-tabs__item:focus-visible,
+        .dark .ir-tabs__item--active {
+            background-color: rgb(255 255 255 / 0.05);
+        }
+
+        .dark .ir-tabs__item:hover {
+            color: rgb(229 231 235);
+        }
+
+        .dark .ir-tabs__item--active {
+            color: rgb(74 222 128);
+        }
+
+        .dark .ir-tabs__icon,
+        .dark .ir-tabs__chevron {
             color: rgb(107 114 128);
+        }
+
+        .dark .ir-tabs__item--active .ir-tabs__icon {
+            color: rgb(74 222 128);
+        }
+
+        .dark .ir-tabs__dropdown {
+            background-color: rgb(17 24 39);
+            border-color: rgb(51 65 85);
+        }
+
+        .dark .ir-tabs__dropdown-item {
+            color: rgb(156 163 175);
+        }
+
+        .dark .ir-tabs__dropdown-item:hover {
+            background-color: rgb(255 255 255 / 0.05);
+            color: rgb(229 231 235);
+        }
+
+        .dark .ir-tabs__dropdown-item--active {
+            background-color: rgb(255 255 255 / 0.05);
+            color: rgb(74 222 128);
         }
 
     </style>
@@ -316,24 +376,14 @@
 
                         <div class="ir-tabs__dropdown" role="menu">
                             @foreach ($link['items'] as $sub)
-                                @if (!empty($sub['url']))
-                                    <a
-                                        href="{{ $sub['url'] }}"
-                                        role="menuitem"
-                                        class="ir-tabs__dropdown-item {{ ($sub['active'] ?? false) ? 'ir-tabs__dropdown-item--active' : '' }}"
-                                        @if (($sub['active'] ?? false)) aria-current="page" @endif
-                                    >
-                                        {{ $sub['label'] }}
-                                    </a>
-                                @else
-                                    <span
-                                        role="menuitem"
-                                        aria-disabled="true"
-                                        class="ir-tabs__dropdown-item ir-tabs__dropdown-item--pending"
-                                    >
-                                        {{ $sub['label'] }}
-                                    </span>
-                                @endif
+                                <a
+                                    href="{{ $sub['url'] }}"
+                                    role="menuitem"
+                                    class="ir-tabs__dropdown-item {{ ($sub['active'] ?? false) ? 'ir-tabs__dropdown-item--active' : '' }}"
+                                    @if (($sub['active'] ?? false)) aria-current="page" @endif
+                                >
+                                    {{ $sub['label'] }}
+                                </a>
                             @endforeach
                         </div>
 

@@ -231,6 +231,10 @@ export default function HostGuestHouseEditorPage() {
         && !!String(form.city || '').trim()
         && !!String(form.country || '').trim(),
     },
+    { label: 'Max guests set', done: Number(form.max_guests) > 0 },
+    { label: 'Bedrooms set', done: form.bedrooms != null && Number(form.bedrooms) >= 0 },
+    { label: 'Bathrooms set', done: Number(form.bathrooms) > 0 },
+    { label: 'City set', done: !!String(form.city || '').trim() },
     { label: 'Nightly price above zero', done: Number(form.base_price_per_night_euros) > 0 },
     { label: 'At least one photo (cover or gallery)', done: !!thumbnail || gallery.length > 0 },
     { label: 'At least one amenity', done: (form.amenity_ids || []).length > 0 },
@@ -301,12 +305,12 @@ export default function HostGuestHouseEditorPage() {
         )}
         {step === 1 && (
           <>
-            <p className="host-step-note">Add at least one amenity. The description and exact room counts are optional but recommended.</p>
+            <p className="host-step-note">Max guests, bedrooms, bathrooms and city appear on product cards and are required before submit.</p>
             <div className="host-field"><label>Full description</label><textarea rows={6} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="host-field"><label>Max guests</label><input type="number" value={form.max_guests} onChange={(e) => setForm({ ...form, max_guests: Number(e.target.value) })} /></div>
-              <div className="host-field"><label>Bedrooms</label><input type="number" value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: Number(e.target.value) })} /></div>
-              <div className="host-field"><label>Bathrooms</label><input type="number" value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: Number(e.target.value) })} /></div>
+              <div className="host-field"><label>Max guests</label><input type="number" min={1} required value={form.max_guests} onChange={(e) => setForm({ ...form, max_guests: Number(e.target.value) })} /></div>
+              <div className="host-field"><label>Bedrooms</label><input type="number" min={0} required value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: Number(e.target.value) })} /></div>
+              <div className="host-field"><label>Bathrooms</label><input type="number" min={1} required value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Total beds</label><input type="number" value={form.beds} onChange={(e) => setForm({ ...form, beds: Number(e.target.value) })} /></div>
             </div>
             <div className="host-field"><label>Amenities</label>

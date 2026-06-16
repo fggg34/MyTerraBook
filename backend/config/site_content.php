@@ -175,6 +175,15 @@ $searchCopyFields = [
     ['key' => 'loadMoreLabel', 'type' => 'text', 'label' => 'Load more label'],
 ];
 
+$listingSectionDescriptionFields = [
+    ['key' => 'amenities', 'type' => 'textarea', 'label' => 'Amenities / features section', 'rows' => 2, 'columnSpanFull' => true],
+    ['key' => 'optionalExtras', 'type' => 'textarea', 'label' => 'Optional extras section (vehicles only)', 'rows' => 2, 'columnSpanFull' => true],
+    ['key' => 'conditions', 'type' => 'textarea', 'label' => 'Rental conditions / house rules section', 'rows' => 2, 'columnSpanFull' => true],
+    ['key' => 'pickupDropoff', 'type' => 'textarea', 'label' => 'Pick-up & drop-off section (vehicles only)', 'rows' => 2, 'columnSpanFull' => true],
+    ['key' => 'roomDetails', 'type' => 'textarea', 'label' => 'Room details section (guesthouses only)', 'rows' => 2, 'columnSpanFull' => true],
+    ['key' => 'location', 'type' => 'textarea', 'label' => 'Location section', 'rows' => 2, 'columnSpanFull' => true],
+];
+
 $listingLabelFields = [
     ['key' => 'id', 'type' => 'text', 'label' => 'Type ID'],
     ['key' => 'categoryNames', 'type' => 'tags', 'label' => 'Category names', 'columnSpanFull' => true],
@@ -190,6 +199,7 @@ $listingLabelFields = [
     ['key' => 'reviewsTitle', 'type' => 'text', 'label' => 'Reviews title'],
     ['key' => 'bookingModalTitle', 'type' => 'text', 'label' => 'Booking modal title'],
     ['key' => 'bookingModalLead', 'type' => 'textarea', 'label' => 'Booking modal lead', 'columnSpanFull' => true],
+    ['key' => 'bookingModalFootnote', 'type' => 'text', 'label' => 'Booking modal footnote', 'columnSpanFull' => true, 'helperText' => 'Small text beside the modal CTA button.'],
     ['key' => 'faqLead', 'type' => 'textarea', 'label' => 'FAQ lead', 'columnSpanFull' => true],
 ];
 
@@ -719,6 +729,7 @@ return [
                 'bookingSteps' => ['label' => 'Booking steps', 'fields' => [
                     ['key' => 'bookingSteps', 'type' => 'repeater', 'label' => 'Steps', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $bookingStepFields],
                 ]],
+                'sectionDescriptions' => ['label' => 'Detail section descriptions', 'fields' => $listingSectionDescriptionFields],
             ],
         ],
         'listing-car' => [
@@ -737,6 +748,7 @@ return [
                 'bookingSteps' => ['label' => 'Booking steps', 'fields' => [
                     ['key' => 'bookingSteps', 'type' => 'repeater', 'label' => 'Steps', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $bookingStepFields],
                 ]],
+                'sectionDescriptions' => ['label' => 'Detail section descriptions', 'fields' => $listingSectionDescriptionFields],
             ],
         ],
         'listing-guesthouse' => [
@@ -755,6 +767,7 @@ return [
                 'bookingSteps' => ['label' => 'Booking steps', 'fields' => [
                     ['key' => 'bookingSteps', 'type' => 'repeater', 'label' => 'Steps', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $bookingStepFields],
                 ]],
+                'sectionDescriptions' => ['label' => 'Detail section descriptions', 'fields' => $listingSectionDescriptionFields],
             ],
         ],
         'checkout' => [

@@ -124,7 +124,7 @@ export default function useSearchResultsPage(vehicleType) {
         const categoryName = car.category_name || categoryMap[car.category_id]
         return mapCarToResultCard(
           { ...car, categoryName },
-          { searchQuery, config, categoryName, priceFormatter },
+          { searchQuery, config, categoryName, priceFormatter, vehicleType },
         )
       })
   }, [cars, categoryMap, config, searchQuery, priceFormatter, vehicleType])

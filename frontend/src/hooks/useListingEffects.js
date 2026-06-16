@@ -9,40 +9,6 @@ export default function useListingEffects(rootRef, { enabled = true }) {
 
     document.body.classList.add('listing-active')
 
-    const tabs = [...root.querySelectorAll('.tab')]
-    const panels = [...root.querySelectorAll('.tpanel')]
-    const card = root.querySelector('#tabcard')
-    let cur = 0
-
-    const measure = () => {
-      const p = panels[cur]
-      if (card && p) card.style.height = `${p.offsetHeight}px`
-    }
-
-    const go = (i) => {
-      cur = (i + panels.length) % panels.length
-      tabs.forEach((t, k) => t.classList.toggle('active', k === cur))
-      panels.forEach((p, k) => p.classList.toggle('active', k === cur))
-      requestAnimationFrame(measure)
-    }
-
-    const onTabClick = (e) => {
-      go(Number(e.currentTarget.dataset.i))
-    }
-    tabs.forEach((t) => t.addEventListener('click', onTabClick))
-
-    const desc = root.querySelector('#desc')
-    const showMore = root.querySelector('#showMore')
-    const onShowMore = () => {
-      desc?.classList.toggle('open')
-      if (showMore && desc) {
-        const label = showMore.querySelector('[data-label]') || showMore.firstChild
-        if (label) label.textContent = desc.classList.contains('open') ? 'Show less ' : 'Show more '
-      }
-      requestAnimationFrame(measure)
-    }
-    showMore?.addEventListener('click', onShowMore)
-
     const beds = [...root.querySelectorAll('.bedcard')]
     const shots = [...root.querySelectorAll('.sleep-shot')]
     const sleepCap = root.querySelector('#sleepCap')
@@ -53,17 +19,8 @@ export default function useListingEffects(rootRef, { enabled = true }) {
       shots.forEach((s, k) => s.classList.toggle('active', k === i))
       const cap = b.dataset.cap
       if (sleepCap && cap) sleepCap.textContent = cap
-      requestAnimationFrame(measure)
     }
     beds.forEach((b) => b.addEventListener('click', onBedClick))
-
-    const onResize = () => measure()
-    window.addEventListener('resize', onResize)
-    if (document.fonts?.ready) document.fonts.ready.then(measure)
-    window.addEventListener('load', measure)
-    setTimeout(measure, 300)
-
-    if (panels.length) go(0)
 
     const fills = [...root.querySelectorAll('.ro-fill')]
     fills.forEach((f) => {
@@ -130,11 +87,8 @@ export default function useListingEffects(rootRef, { enabled = true }) {
     return () => {
       document.body.classList.remove('listing-active')
       document.body.style.overflow = ''
-      window.removeEventListener('resize', onResize)
       window.removeEventListener('scroll', maybeFill)
       document.removeEventListener('keydown', onEsc)
-      tabs.forEach((t) => t.removeEventListener('click', onTabClick))
-      showMore?.removeEventListener('click', onShowMore)
       beds.forEach((b) => b.removeEventListener('click', onBedClick))
       ro?.disconnect()
     }

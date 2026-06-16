@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources\Cars\Schemas;
 
+use App\Enums\DriveType;
 use App\Models\Characteristic;
 use App\Models\Location;
+use App\Models\RentalCondition;
 use App\Models\RentalOption;
 use App\Models\MainCategory;
 use App\Models\SubCategory;
@@ -53,23 +55,60 @@ class CarForm
                                     ->minValue(1)
                                     ->default(1),
 
-                                TextInput::make('seats')
-                                    ->label('Seats')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->maxValue(20),
-
-                                TextInput::make('sleeps')
-                                    ->label('Sleeps')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(20),
-
-                                TextInput::make('bags')
-                                    ->label('Bags')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(20),
+                                Section::make('Product card specs')
+                                    ->description('These four specs appear on search and homepage product cards.')
+                                    ->schema([
+                                        Select::make('transmission')
+                                            ->label('Transmission')
+                                            ->options([
+                                                'manual' => 'Manual',
+                                                'automatic' => 'Automatic',
+                                            ])
+                                            ->required()
+                                            ->native(false),
+                                        Select::make('fuel_type')
+                                            ->label('Fuel type')
+                                            ->options([
+                                                'petrol' => 'Petrol',
+                                                'diesel' => 'Diesel',
+                                                'electric' => 'Electric',
+                                                'hybrid' => 'Hybrid',
+                                            ])
+                                            ->required()
+                                            ->native(false),
+                                        Select::make('drive_type')
+                                            ->label('Drive system')
+                                            ->options(collect(DriveType::cases())->mapWithKeys(
+                                                fn (DriveType $type) => [$type->value => match ($type) {
+                                                    DriveType::Fwd => 'Front-wheel drive (FWD)',
+                                                    DriveType::Rwd => 'Rear-wheel drive (RWD)',
+                                                    DriveType::Awd => 'All-wheel drive (AWD)',
+                                                    DriveType::FourByFour => '4×4',
+                                                }]
+                                            )->all())
+                                            ->required()
+                                            ->native(false),
+                                        TextInput::make('seats')
+                                            ->label('Seats')
+                                            ->numeric()
+                                            ->required()
+                                            ->minValue(1)
+                                            ->maxValue(50),
+                                        TextInput::make('bags')
+                                            ->label('Bags')
+                                            ->numeric()
+                                            ->required()
+                                            ->minValue(1)
+                                            ->maxValue(50),
+                                        TextInput::make('sleeps')
+                                            ->label('Sleeps (campervans only)')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->maxValue(20)
+                                            ->helperText('Required for campervans. Leave 0 for cars.'),
+                                    ])
+                                    ->columns(2)
+                                    ->columnSpanFull(),
 
                                 FileUpload::make('main_image_path')
                                     ->label('Image')
@@ -204,6 +243,21 @@ class CarForm
                                     )
                                     ->bulkToggleable()
                                     ->columns(3)
+                                    ->gridDirection(GridDirection::Row)
+                                    ->columnSpanFull(),
+
+                                CheckboxList::make('rentalConditions')
+                                    ->label('Rental conditions')
+                                    ->relationship(
+                                        'rentalConditions',
+                                        'title',
+                                        fn ($query) => $query->where('is_active', true)->orderBy('sort_order'),
+                                    )
+                                    ->getOptionLabelFromRecordUsing(
+                                        fn (RentalCondition $record): string => $record->title
+                                    )
+                                    ->bulkToggleable()
+                                    ->columns(2)
                                     ->gridDirection(GridDirection::Row)
                                     ->columnSpanFull(),
                             ]),

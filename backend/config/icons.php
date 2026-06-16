@@ -9,7 +9,7 @@
 |   - PHP / Filament: mallardduck/blade-lucide-icons  (rendered as `lucide-<key>`)
 |   - Frontend:        lucide-react                    (PascalCase component)
 |
-| Keep this list in sync with frontend/src/utils/iconCatalog.js.
+| Keep this list in sync with frontend/src/utils/iconCatalog.jsx.
 | Each entry: 'key' => ['label' => string, 'keywords' => string].
 |
 */

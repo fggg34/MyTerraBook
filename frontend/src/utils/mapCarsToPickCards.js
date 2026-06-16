@@ -1,17 +1,5 @@
 import { resolveStorageUrl } from '../api'
-
-function gearboxLabel(transmission) {
-  const value = String(transmission || '').toLowerCase()
-  if (value.includes('manual')) return 'MANUAL'
-  if (value.includes('auto')) return 'AUTO'
-  return String(transmission || 'AUTO').toUpperCase()
-}
-
-function fuelLabel(fuelType) {
-  const value = String(fuelType || '').toLowerCase()
-  if (!value || value === '-') return 'PETROL'
-  return value.toUpperCase()
-}
+import { buildVehicleCardSpecs } from './buildVehicleCardSpecs'
 
 export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceFormatter } = {}) {
   const formatPrice = priceFormatter?.format ?? ((amount) => {
@@ -20,11 +8,10 @@ export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceForma
     return `€${Math.round(n).toLocaleString('en-US')}`
   })
   const base = detailBase.replace(/\/$/, '')
+  const isCampervan = base.includes('campervan')
+
   return cars.map((car) => {
-    const specs = [{ type: 'gearbox', label: gearboxLabel(car.transmission) }, { type: 'fuel', label: fuelLabel(car.fuel_type) }]
-    if (car.seats != null) specs.push({ type: 'seat', label: `Seats ${car.seats}` })
-    else if (car.units_available > 1) specs.push({ type: 'seat', label: `${car.units_available} units` })
-    if (car.sleeps != null && car.sleeps > 0) specs.push({ type: 'bed', label: `Sleeps ${car.sleeps}` })
+    const specs = buildVehicleCardSpecs(car, { isCampervan })
 
     return {
       id: car.id,

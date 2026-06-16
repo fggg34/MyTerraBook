@@ -17,6 +17,7 @@ export const LISTING_TYPES = {
     bookingModalTitle: 'Booking this camper in 4 steps',
     bookingModalLead:
       "Your booking is confirmed instantly at checkout, here's exactly what happens after you book.",
+    bookingModalFootnote: '20% prepayment on approval · balance due on pick-up.',
     tabs: [
       { id: 'details', label: 'Details' },
       { id: 'amenities', label: 'Amenities' },
@@ -36,6 +37,14 @@ export const LISTING_TYPES = {
       { title: 'Pick up & hit the Ring Road', text: 'Meet your host for a full walkthrough of every system, then you\'re off. Support is a call away the whole trip.' },
     ],
     faqLead: 'Everything you need to know before you book this camper. Still unsure? Your host usually replies within the hour.',
+    sectionDescriptions: {
+      amenities: 'Equipment and comforts included with this camper.',
+      optionalExtras: 'Add protection, insurance, or gear to your rental when you book.',
+      conditions: 'Rules and requirements set by the host for this rental.',
+      pickupDropoff: 'Where and when you can collect and return the camper.',
+      roomDetails: 'Sleeping arrangements and layout inside the camper.',
+      location: 'Approximate location where you pick up the camper.',
+    },
   },
   car: {
     id: 'car',
@@ -53,6 +62,7 @@ export const LISTING_TYPES = {
     bookingModalTitle: 'Booking this car in 4 steps',
     bookingModalLead:
       "Your booking is confirmed instantly at checkout, here's what happens after you book.",
+    bookingModalFootnote: '20% prepayment on approval · balance due on pick-up.',
     tabs: [
       { id: 'details', label: 'Details' },
       { id: 'amenities', label: 'Features' },
@@ -72,6 +82,13 @@ export const LISTING_TYPES = {
       { title: 'Collect your car', text: 'Pick up at your chosen location with a full handover of the vehicle and paperwork.' },
     ],
     faqLead: 'Everything you need to know before you rent this car. Questions? Our Reykjavík team is here to help.',
+    sectionDescriptions: {
+      amenities: 'Equipment and comforts included with this vehicle.',
+      optionalExtras: 'Add protection, insurance, or extras to your rental when you book.',
+      conditions: 'Rules and requirements set by the host for this rental.',
+      pickupDropoff: 'Where and when you can collect and return the vehicle.',
+      location: 'Approximate location where you pick up the car.',
+    },
   },
   guesthouse: {
     id: 'guesthouse',
@@ -89,6 +106,7 @@ export const LISTING_TYPES = {
     bookingModalTitle: 'Booking this stay in 4 steps',
     bookingModalLead:
       "Your stay is confirmed instantly at checkout, here's how it works.",
+    bookingModalFootnote: '20% prepayment on approval · balance due on check-in.',
     tabs: [
       { id: 'details', label: 'Details' },
       { id: 'amenities', label: 'Amenities' },
@@ -108,5 +126,11 @@ export const LISTING_TYPES = {
       { title: 'Check in & enjoy', text: 'Arrive at the agreed time; your host will show you in and answer any questions.' },
     ],
     faqLead: 'Everything you need to know before you book this guesthouse. Message the host with any questions.',
+    sectionDescriptions: {
+      amenities: "What's included with your stay.",
+      conditions: 'Guidelines from the host during your visit.',
+      roomDetails: 'Sleeping arrangements and room layout.',
+      location: 'Approximate location of the guesthouse.',
+    },
   },
 }

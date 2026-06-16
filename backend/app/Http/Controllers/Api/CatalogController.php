@@ -164,6 +164,9 @@ class CatalogController extends Controller
                 'category_name' => $car->subCategory?->name,
                 'transmission' => $car->transmission,
                 'fuel_type' => $car->fuel_type,
+                'drive_type' => $car->drive_type instanceof \App\Enums\DriveType
+                    ? $car->drive_type->value
+                    : $car->drive_type,
                 'seats' => $car->seats,
                 'sleeps' => $car->sleeps,
                 'bags' => $car->bags,
@@ -193,6 +196,7 @@ class CatalogController extends Controller
             'subCategory.mainCategory',
             'characteristics',
             'rentalOptions',
+            'rentalConditions' => fn ($q) => $q->where('is_active', true),
             'locations',
             'host',
             'listingReviews' => fn ($q) => $q->approved()->latest()->limit(50),

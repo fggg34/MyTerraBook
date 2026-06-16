@@ -1542,6 +1542,7 @@
     "reviewsTitle": "Guest reviews",
     "bookingModalTitle": "Booking this camper in 4 steps",
     "bookingModalLead": "Every reservation on MyTerraBook is reviewed by the host before it's confirmed, here's exactly what happens after you hit request.",
+    "bookingModalFootnote": "20% prepayment on approval · balance due on pick-up.",
     "tabs": [
       {
         "id": "details",
@@ -1594,7 +1595,15 @@
         "text": "Meet your host for a full walkthrough of every system, then you're off. Support is a call away the whole trip."
       }
     ],
-    "faqLead": "Everything you need to know before you book this camper. Still unsure? Your host usually replies within the hour."
+    "faqLead": "Everything you need to know before you book this camper. Still unsure? Your host usually replies within the hour.",
+    "sectionDescriptions": {
+      "amenities": "Equipment and comforts included with this camper.",
+      "optionalExtras": "Add protection, insurance, or gear to your rental when you book.",
+      "conditions": "Rules and requirements set by the host for this rental.",
+      "pickupDropoff": "Where and when you can collect and return the camper.",
+      "roomDetails": "Sleeping arrangements and layout inside the camper.",
+      "location": "Approximate location where you pick up the camper."
+    }
   },
   "listing-car": {
     "id": "car",
@@ -1618,6 +1627,7 @@
     "reviewsTitle": "Guest reviews",
     "bookingModalTitle": "Booking this car in 4 steps",
     "bookingModalLead": "Every reservation on MyTerraBook is reviewed before it's confirmed, here's what happens after you request.",
+    "bookingModalFootnote": "20% prepayment on approval · balance due on pick-up.",
     "tabs": [
       {
         "id": "details",
@@ -1668,7 +1678,14 @@
         "text": "Pick up at your chosen location with a full handover of the vehicle and paperwork."
       }
     ],
-    "faqLead": "Everything you need to know before you rent this car. Questions? Our Reykjavík team is here to help."
+    "faqLead": "Everything you need to know before you rent this car. Questions? Our Reykjavík team is here to help.",
+    "sectionDescriptions": {
+      "amenities": "Equipment and comforts included with this vehicle.",
+      "optionalExtras": "Add protection, insurance, or extras to your rental when you book.",
+      "conditions": "Rules and requirements set by the host for this rental.",
+      "pickupDropoff": "Where and when you can collect and return the vehicle.",
+      "location": "Approximate location where you pick up the car."
+    }
   },
   "listing-guesthouse": {
     "id": "guesthouse",
@@ -1685,6 +1702,7 @@
     "reviewsTitle": "Guest reviews",
     "bookingModalTitle": "Booking this stay in 4 steps",
     "bookingModalLead": "Every stay on MyTerraBook is confirmed by the host before you're charged, here's how it works.",
+    "bookingModalFootnote": "20% prepayment on approval · balance due on check-in.",
     "tabs": [
       {
         "id": "details",
@@ -1735,7 +1753,13 @@
         "text": "Arrive at the agreed time; your host will show you in and answer any questions."
       }
     ],
-    "faqLead": "Everything you need to know before you book this guesthouse. Message the host with any questions."
+    "faqLead": "Everything you need to know before you book this guesthouse. Message the host with any questions.",
+    "sectionDescriptions": {
+      "amenities": "What's included with your stay.",
+      "conditions": "Guidelines from the host during your visit.",
+      "roomDetails": "Sleeping arrangements and room layout.",
+      "location": "Approximate location of the guesthouse."
+    }
   },
   "checkout": {
     "stepperSteps": [

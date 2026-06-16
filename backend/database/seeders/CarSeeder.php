@@ -13,6 +13,7 @@ use App\Models\DailyFare;
 use App\Models\ExtraHourFare;
 use App\Models\Location;
 use App\Models\PriceType;
+use App\Models\RentalCondition;
 use App\Models\RentalOption;
 use Illuminate\Database\Seeder;
 
@@ -20,26 +21,26 @@ class CarSeeder extends Seeder
 {
     private const COLORS = ['White', 'Black', 'Silver', 'Blue', 'Red', 'Grey'];
 
-    /** @var list<array{0: string, 1: string, 2: int, 3: string, 4: string, 5: string, 6: int}> */
+    /** @var list<array{0: string, 1: string, 2: int, 3: string, 4: string, 5: string, 6: int, 7: string}> */
     private array $catalog = [
-        ['Toyota', 'Corolla', 2022, 'Economy', 'automatic', 'hybrid', 3500],
-        ['Volkswagen', 'Golf', 2021, 'Compact', 'manual', 'petrol', 3200],
-        ['BMW', '3 Series', 2023, 'Luxury', 'automatic', 'diesel', 8500],
-        ['Mercedes-Benz', 'C-Class', 2022, 'Luxury', 'automatic', 'diesel', 9000],
-        ['Audi', 'A4', 2021, 'Mid-size', 'automatic', 'petrol', 7200],
-        ['Ford', 'Focus', 2020, 'Compact', 'manual', 'petrol', 2800],
-        ['Hyundai', 'Tucson', 2023, 'SUV', 'automatic', 'petrol', 5500],
-        ['Renault', 'Clio', 2022, 'Economy', 'manual', 'petrol', 2500],
-        ['Peugeot', '3008', 2022, 'SUV', 'automatic', 'diesel', 5800],
-        ['Fiat', '500', 2021, 'Compact', 'manual', 'petrol', 2200],
-        ['Tesla', 'Model 3', 2023, 'Electric', 'automatic', 'electric', 9500],
-        ['Nissan', 'Qashqai', 2022, 'SUV', 'automatic', 'petrol', 5200],
-        ['Honda', 'CR-V', 2021, 'SUV', 'automatic', 'hybrid', 6000],
-        ['Kia', 'Sportage', 2023, 'SUV', 'automatic', 'diesel', 5400],
-        ['Volvo', 'XC60', 2022, 'Luxury', 'automatic', 'hybrid', 8800],
-        ['Skoda', 'Octavia', 2021, 'Mid-size', 'manual', 'diesel', 3800],
-        ['Seat', 'Leon', 2022, 'Compact', 'automatic', 'petrol', 3400],
-        ['Dacia', 'Duster', 2020, 'SUV', 'manual', 'diesel', 3000],
+        ['Toyota', 'Corolla', 2022, 'Economy', 'automatic', 'hybrid', 'fwd', 3500],
+        ['Volkswagen', 'Golf', 2021, 'Compact', 'manual', 'petrol', 'fwd', 3200],
+        ['BMW', '3 Series', 2023, 'Luxury', 'automatic', 'diesel', 'rwd', 8500],
+        ['Mercedes-Benz', 'C-Class', 2022, 'Luxury', 'automatic', 'diesel', 'rwd', 9000],
+        ['Audi', 'A4', 2021, 'Mid-size', 'automatic', 'petrol', 'awd', 7200],
+        ['Ford', 'Focus', 2020, 'Compact', 'manual', 'petrol', 'fwd', 2800],
+        ['Hyundai', 'Tucson', 2023, 'SUV', 'automatic', 'petrol', 'awd', 5500],
+        ['Renault', 'Clio', 2022, 'Economy', 'manual', 'petrol', 'fwd', 2500],
+        ['Peugeot', '3008', 2022, 'SUV', 'automatic', 'diesel', 'awd', 5800],
+        ['Fiat', '500', 2021, 'Compact', 'manual', 'petrol', 'fwd', 2200],
+        ['Tesla', 'Model 3', 2023, 'Electric', 'automatic', 'electric', 'awd', 9500],
+        ['Nissan', 'Qashqai', 2022, 'SUV', 'automatic', 'petrol', 'awd', 5200],
+        ['Honda', 'CR-V', 2021, 'SUV', 'automatic', 'hybrid', 'awd', 6000],
+        ['Kia', 'Sportage', 2023, 'SUV', 'automatic', 'diesel', 'awd', 5400],
+        ['Volvo', 'XC60', 2022, 'Luxury', 'automatic', 'hybrid', 'awd', 8800],
+        ['Skoda', 'Octavia', 2021, 'Mid-size', 'manual', 'diesel', 'fwd', 3800],
+        ['Seat', 'Leon', 2022, 'Compact', 'automatic', 'petrol', 'fwd', 3400],
+        ['Dacia', 'Duster', 2020, 'SUV', 'manual', 'diesel', '4wd', 3000],
     ];
 
     public function run(): void
@@ -48,11 +49,12 @@ class CarSeeder extends Seeder
         $locations = Location::query()->where('is_active', true)->get();
         $characteristics = Characteristic::query()->get();
         $rentalOptions = RentalOption::query()->where('is_active', true)->get();
+        $rentalConditions = RentalCondition::query()->where('is_active', true)->get();
         $basicPriceType = PriceType::query()->where('slug', 'basic')->firstOrFail();
         $plusPriceType = PriceType::query()->where('slug', 'plus')->firstOrFail();
         $maxPriceType = PriceType::query()->where('slug', 'max')->firstOrFail();
 
-        foreach ($this->catalog as $index => [$make, $model, $year, $categoryName, $transmission, $fuel, $dailyRateCents]) {
+        foreach ($this->catalog as $index => [$make, $model, $year, $categoryName, $transmission, $fuel, $driveType, $dailyRateCents]) {
             $name = "{$make} {$model} {$year}";
             $category = $categories->get($categoryName) ?? $categories->first();
             $unitsAvailable = ($index % 3) + 1;
@@ -64,6 +66,9 @@ class CarSeeder extends Seeder
                     'description' => "Reliable {$make} {$model} ({$year}) for exploring Iceland. {$transmission} transmission, {$fuel} fuel.",
                     'transmission' => $transmission,
                     'fuel_type' => $fuel,
+                    'drive_type' => $driveType,
+                    'seats' => 5,
+                    'bags' => 2,
                     'units_available' => $unitsAvailable,
                     'is_active' => true,
                 ]
@@ -79,6 +84,9 @@ class CarSeeder extends Seeder
 
             $carOptions = $rentalOptions->random(min(3, $rentalOptions->count()))->pluck('id');
             $car->rentalOptions()->syncWithoutDetaching($carOptions);
+
+            $carConditions = $rentalConditions->random(min(5, $rentalConditions->count()))->pluck('id');
+            $car->rentalConditions()->syncWithoutDetaching($carConditions);
 
             DailyFare::query()->firstOrCreate(
                 [

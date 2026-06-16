@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Characteristics\Tables;
 
 use App\Models\Characteristic;
 use App\Support\AdminTableBadgeColors;
+use App\Support\IconCatalog;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -37,15 +38,13 @@ class CharacteristicsTable
                     ->label('Icon')
                     ->placeholder('—')
                     ->formatStateUsing(function (?string $state): HtmlString|string {
-                        if (! $state || ! function_exists('svg')) {
+                        if (! $state) {
                             return '—';
                         }
 
-                        try {
-                            return new HtmlString(svg('lucide-'.$state, 'w-5 h-5')->toHtml());
-                        } catch (\Throwable) {
-                            return $state;
-                        }
+                        $html = IconCatalog::tableIconHtml($state);
+
+                        return $html !== '' ? new HtmlString($html) : $state;
                     }),
                 TextColumn::make('sort_order')
                     ->label('Ordering')

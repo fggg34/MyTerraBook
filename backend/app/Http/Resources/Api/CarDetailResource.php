@@ -41,6 +41,9 @@ class CarDetailResource extends JsonResource
             'category' => SubCategoryResource::make($car->subCategory),
             'transmission' => filled($car->transmission) ? $car->transmission : ',',
             'fuel_type' => filled($car->fuel_type) ? $car->fuel_type : ',',
+            'drive_type' => $car->drive_type instanceof \App\Enums\DriveType
+                ? $car->drive_type->value
+                : ($car->drive_type ?: null),
             'seats' => $car->seats,
             'sleeps' => $car->sleeps,
             'bags' => $car->bags,
@@ -59,6 +62,7 @@ class CarDetailResource extends JsonResource
             ]),
             'characteristics' => CharacteristicResource::collection($car->characteristics),
             'rental_options' => RentalOptionResource::collection($car->rentalOptions),
+            'rental_conditions' => RentalConditionResource::collection($car->rentalConditions),
             'pickup_locations' => LocationResource::collection($pickupLocations),
             'dropoff_locations' => LocationResource::collection($dropoffLocations),
             'pickup_time_from' => $this->formatTime($car->pickup_time_from),

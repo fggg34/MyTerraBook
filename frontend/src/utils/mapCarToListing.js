@@ -1,6 +1,7 @@
 import { resolveStorageUrl } from '../api'
 import { LISTING_TYPES } from '../data/listingConfig'
 import { mapApiListingReviews } from './mapListingReviews'
+import { driveLabel } from './buildVehicleCardSpecs'
 
 const FALLBACK_IMAGES = {
   campervan: ['/images/homepage/cardcamper.jpg', '/images/homepage/hero-van.jpg'],
@@ -29,10 +30,12 @@ function buildDetailSpecs(car) {
   const specs = []
   const transmission = formatSpecLabel(car.transmission)
   const fuel = formatSpecLabel(car.fuel_type)
+  const drive = car.drive_type ? driveLabel(car.drive_type) : null
   if (transmission) specs.push({ label: transmission, icon: 'gearbox' })
   if (fuel) specs.push({ label: fuel, icon: 'fuel' })
+  if (drive) specs.push({ label: drive, icon: car.drive_type || 'drive' })
   if (car.seats != null) specs.push({ label: `${car.seats} seats`, icon: 'seats' })
-  if (car.sleeps != null) specs.push({ label: `Sleeps ${car.sleeps}`, icon: 'sleeps' })
+  if (car.sleeps != null && car.sleeps > 0) specs.push({ label: `Sleeps ${car.sleeps}`, icon: 'sleeps' })
   if (car.bags != null) specs.push({ label: `${car.bags} bags`, icon: 'bags' })
   if (car.units_available != null) {
     const n = Number(car.units_available)
@@ -47,6 +50,14 @@ function buildAmenities(car) {
     icon: c.icon,
     iconUrl: c.icon_url || null,
     featured: i < 4,
+  }))
+}
+
+function buildConditions(car) {
+  return (car.rental_conditions || []).map((item) => ({
+    title: item.title,
+    desc: item.description || '',
+    icon: item.icon || null,
   }))
 }
 
@@ -98,11 +109,14 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
   const format = priceFormatter?.format ?? ((v) => String(Math.round(Number(v))))
   const priceFromCents = priceType?.from_price_per_day_cents
   const priceFromDecimal = priceType?.from_price_per_day
-  const priceFrom = priceFromCents != null
-    ? format(Number(priceFromCents) / 100)
-    : priceFromDecimal != null
-      ? format(Number.parseFloat(priceFromDecimal))
-      : null
+  const priceFromAmount =
+    priceFromCents != null
+      ? Number(priceFromCents) / 100
+      : priceFromDecimal != null
+        ? Number.parseFloat(priceFromDecimal)
+        : null
+  const priceFrom =
+    priceFromAmount != null && !Number.isNaN(priceFromAmount) ? format(priceFromAmount) : null
 
   const desc = car.description || ''
   const shortDesc = desc.length > 280 ? desc.slice(0, 280).trim() : desc
@@ -124,7 +138,7 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
     detailSpecs: buildDetailSpecs(car),
     description: { short: shortDesc || 'Description coming soon.', more: moreDesc },
     amenities: buildAmenities(car),
-    conditions: [],
+    conditions: buildConditions(car),
     sleeping: null,
     addons: buildAddons(car, priceFormatter),
     pickupLocations: car.pickup_locations || [],
@@ -136,6 +150,7 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
       ? { from: car.dropoff_time_from, to: car.dropoff_time_to }
       : null,
     priceFrom,
+    priceFromAmount: priceFromAmount != null && !Number.isNaN(priceFromAmount) ? priceFromAmount : null,
     priceTypes: car.price_types || [],
     reviews,
     reviewCategories: [],

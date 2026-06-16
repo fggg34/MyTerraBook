@@ -62,6 +62,13 @@ const FUEL_OPTIONS = [
   { value: 'hybrid', label: 'Hybrid', icon: specIcon('leaf') },
 ]
 
+const DRIVE_OPTIONS = [
+  { value: 'fwd', label: 'Front-wheel drive (FWD)', icon: specIcon('car') },
+  { value: 'rwd', label: 'Rear-wheel drive (RWD)', icon: specIcon('car') },
+  { value: 'awd', label: 'All-wheel drive (AWD)', icon: specIcon('mountain') },
+  { value: '4wd', label: '4×4', icon: specIcon('mountain') },
+]
+
 function timeToMinutes(time) {
   if (!time) return null
   const [h, m] = String(time).split(':').map(Number)
@@ -99,6 +106,7 @@ const emptyForm = {
   description: '',
   transmission: 'manual',
   fuel_type: 'diesel',
+  drive_type: 'fwd',
   seats: 5,
   sleeps: 0,
   bags: 2,
@@ -113,6 +121,7 @@ const emptyForm = {
   dropoff_time_to: '',
   characteristic_ids: [],
   rental_option_ids: [],
+  rental_condition_ids: [],
 }
 
 export default function HostCarEditorPage() {
@@ -131,6 +140,7 @@ export default function HostCarEditorPage() {
     locations: [],
     characteristics: [],
     rentalOptions: [],
+    rentalConditions: [],
     priceTypes: [],
   })
   const [units, setUnits] = useState([])
@@ -179,8 +189,9 @@ export default function HostCarEditorPage() {
       getHostCatalog('locations'),
       getHostCatalog('characteristics'),
       getHostCatalog('rental-options'),
+      getHostCatalog('rental-conditions'),
       getHostCatalog('price-types'),
-    ]).then(([mc, sc, l, ch, ro, pt]) => {
+    ]).then(([mc, sc, l, ch, ro, rc, pt]) => {
       const mainCategories = unwrap(mc)
       const subCategories = unwrap(sc)
 
@@ -190,6 +201,7 @@ export default function HostCarEditorPage() {
         locations: unwrap(l),
         characteristics: unwrap(ch),
         rentalOptions: unwrap(ro),
+        rentalConditions: unwrap(rc),
         priceTypes: unwrap(pt),
       })
 
@@ -238,9 +250,11 @@ export default function HostCarEditorPage() {
           seats: data.seats ?? 5,
           sleeps: data.sleeps ?? 0,
           bags: data.bags ?? 2,
+          drive_type: data.drive_type || 'fwd',
           year: data.year ?? '',
           characteristic_ids: data.characteristic_ids || [],
           rental_option_ids: data.rental_option_ids || [],
+          rental_condition_ids: data.rental_condition_ids || [],
         })
         setMainImage(data.main_image_path || null)
         setStatus(data.listing_status)
@@ -261,14 +275,20 @@ export default function HostCarEditorPage() {
 
     setSaving(true)
     try {
+      const mainSlug = catalog.mainCategories.find(
+        (c) => String(c.id) === String(form.main_category_id),
+      )?.slug
+      const campervanSave = mainSlug === 'campervan'
+
       const payload = {
         name: form.name,
         sub_category_id: Number(form.sub_category_id),
         description: form.description,
         transmission: form.transmission,
         fuel_type: form.fuel_type,
+        drive_type: form.drive_type,
         seats: form.seats,
-        sleeps: form.sleeps,
+        sleeps: campervanSave ? form.sleeps : 0,
         bags: form.bags,
         year: form.year ? Number(form.year) : null,
         units_available: form.units_available,
@@ -282,6 +302,7 @@ export default function HostCarEditorPage() {
         dropoff_location_ids: form.dropoff_location_ids,
         characteristic_ids: form.characteristic_ids,
         rental_option_ids: form.rental_option_ids,
+        rental_condition_ids: form.rental_condition_ids,
       }
       if (recordId) {
         await updateHostCar(recordId, payload)
@@ -407,6 +428,10 @@ export default function HostCarEditorPage() {
       done: !!(form.pickup_time_from && form.pickup_time_to && form.dropoff_time_from && form.dropoff_time_to),
     },
     { label: 'At least one daily fare', done: dailyFares.length > 0 },
+    { label: 'Transmission selected', done: !!form.transmission },
+    { label: 'Fuel type selected', done: !!form.fuel_type },
+    { label: 'Drive system selected', done: !!form.drive_type },
+    { label: 'Bags capacity set', done: Number(form.bags) > 0 },
     {
       label: isCampervan ? 'Sleeps (berths) set' : 'Seats set',
       done: isCampervan ? Number(form.sleeps) > 0 : Number(form.seats) > 0,
@@ -471,6 +496,9 @@ export default function HostCarEditorPage() {
                   if (main?.slug === 'campervan' && (!form.sleeps || form.sleeps === 0)) {
                     next.sleeps = form.seats || 2
                   }
+                  if (main?.slug === 'car') {
+                    next.sleeps = 0
+                  }
                   setForm(next)
                 }}
                 options={catalog.mainCategories.map((c) => ({ value: String(c.id), label: c.name }))}
@@ -514,7 +542,7 @@ export default function HostCarEditorPage() {
         )}
         {step === 1 && (
           <>
-            <p className="host-step-note">Transmission, fuel and seats are required. Characteristics and extras are optional but help your listing stand out.</p>
+            <p className="host-step-note">Transmission, fuel, drive system, seats and bags are required for all vehicles. Campervans also need sleeps (berths). Characteristics and extras are optional.</p>
             <div className="host-field"><label>Transmission</label>
               <HostSelect
                 value={form.transmission}
@@ -531,9 +559,17 @@ export default function HostCarEditorPage() {
                 ariaLabel="Fuel type"
               />
             </div>
+            <div className="host-field"><label>Drive system</label>
+              <HostSelect
+                value={form.drive_type}
+                onChange={(v) => setForm({ ...form, drive_type: v })}
+                options={DRIVE_OPTIONS}
+                ariaLabel="Drive system"
+              />
+            </div>
             <div className="host-field">
               <label>Capacity</label>
-              <div className="host-capacity-grid">
+              <div className={`host-capacity-grid${isCampervan ? '' : ' host-capacity-grid--car'}`}>
                 <div>
                   <label className="host-capacity-label" htmlFor="car-seats">
                     <span className="host-capacity-ic" aria-hidden>{specIcon('users')}</span>
@@ -542,26 +578,30 @@ export default function HostCarEditorPage() {
                   <input
                     id="car-seats"
                     type="number"
-                    min={0}
+                    min={1}
                     max={50}
+                    required
                     value={form.seats}
                     onChange={(e) => setCapacity('seats', e.target.value, 50)}
                   />
                 </div>
-                <div>
-                  <label className="host-capacity-label" htmlFor="car-sleeps">
-                    <span className="host-capacity-ic" aria-hidden>{specIcon('bed')}</span>
-                    {isCampervan ? 'Sleeps (berths)' : 'Sleeps'}
-                  </label>
-                  <input
-                    id="car-sleeps"
-                    type="number"
-                    min={0}
-                    max={20}
-                    value={form.sleeps}
-                    onChange={(e) => setCapacity('sleeps', e.target.value, 20)}
-                  />
-                </div>
+                {isCampervan && (
+                  <div>
+                    <label className="host-capacity-label" htmlFor="car-sleeps">
+                      <span className="host-capacity-ic" aria-hidden>{specIcon('bed')}</span>
+                      Sleeps (berths)
+                    </label>
+                    <input
+                      id="car-sleeps"
+                      type="number"
+                      min={1}
+                      max={20}
+                      required
+                      value={form.sleeps}
+                      onChange={(e) => setCapacity('sleeps', e.target.value, 20)}
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="host-capacity-label" htmlFor="car-bags">
                     <span className="host-capacity-ic" aria-hidden>{specIcon('luggage')}</span>
@@ -570,8 +610,9 @@ export default function HostCarEditorPage() {
                   <input
                     id="car-bags"
                     type="number"
-                    min={0}
+                    min={1}
                     max={50}
+                    required
                     value={form.bags}
                     onChange={(e) => setCapacity('bags', e.target.value, 50)}
                   />
@@ -607,6 +648,16 @@ export default function HostCarEditorPage() {
                 onToggle={(id) => toggleId('rental_option_ids', id)}
                 placeholder="Search extras…"
                 emptyLabel="No extras match your search."
+              />
+            </div>
+            <div className="host-field"><label>Rental conditions</label>
+              <HostIconMultiSelect
+                items={catalog.rentalConditions}
+                selectedIds={form.rental_condition_ids}
+                onToggle={(id) => toggleId('rental_condition_ids', id)}
+                placeholder="Search rental conditions…"
+                emptyLabel="No rental conditions match your search."
+                showDescription
               />
             </div>
           </>

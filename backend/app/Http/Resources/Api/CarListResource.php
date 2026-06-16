@@ -24,6 +24,7 @@ class CarListResource extends JsonResource
             'category_name' => $this->resource['category_name'] ?? $this->resource['sub_category_name'] ?? null,
             'transmission' => $this->resource['transmission'] ?? '-',
             'fuel_type' => $this->resource['fuel_type'] ?? '-',
+            'drive_type' => $this->resource['drive_type'] ?? null,
             'seats' => $this->resource['seats'] ?? null,
             'sleeps' => $this->resource['sleeps'] ?? null,
             'bags' => $this->resource['bags'] ?? null,

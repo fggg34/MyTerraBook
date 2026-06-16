@@ -14,6 +14,7 @@ use App\Models\MainCategory;
 use App\Models\OutOfHoursFee;
 use App\Models\PaymentMethod;
 use App\Models\PriceType;
+use App\Models\RentalCondition;
 use App\Models\RentalOption;
 use App\Models\SpecialPrice;
 use App\Models\SubCategory;
@@ -311,6 +312,34 @@ class CatalogSeeder extends Seeder
             }
 
             return $option;
+        });
+
+        $rentalConditionSort = 0;
+        collect([
+            ['name' => 'Driver age 25+', 'title' => 'Driver age 25+', 'icon' => 'users', 'description' => 'All drivers must be at least 25 years old.'],
+            ['name' => 'Licence held 2+ years', 'title' => 'Licence held 2+ years', 'icon' => 'key', 'description' => 'Full driving licence valid for the trip.'],
+            ['name' => 'Security deposit', 'title' => '€1,500 deposit', 'icon' => 'lock', 'description' => 'Refundable hold, reducible with Excess Insurance.'],
+            ['name' => 'Unlimited mileage', 'title' => 'Unlimited mileage', 'icon' => 'infinity', 'description' => 'Drive the whole Ring Road, no extra per-km fees.'],
+            ['name' => 'Return with full tank', 'title' => 'Return with full tank', 'icon' => 'fuel', 'description' => 'Same fuel level as pick-up, or pre-pay fuel.'],
+            ['name' => 'CDW included', 'title' => 'CDW insurance included', 'icon' => 'shield-check', 'description' => 'Collision damage waiver comes with every booking.'],
+            ['name' => 'Free cancellation', 'title' => 'Free cancellation', 'icon' => 'check', 'description' => 'Full refund up to 48 hours before pick-up.'],
+            ['name' => 'Pets welcome', 'title' => 'Pets welcome', 'icon' => 'dog', 'description' => 'Bring the dog — no extra cleaning charge.'],
+            ['name' => 'Minimum rental 3 days', 'title' => 'Minimum 3-day rental', 'icon' => 'clock', 'description' => 'Applies during peak season unless otherwise stated.'],
+            ['name' => 'Cross-border travel', 'title' => 'Cross-border travel not allowed', 'icon' => 'route', 'description' => 'Vehicle must remain in Iceland for the full rental period.'],
+            ['name' => 'F-road permit required', 'title' => 'Highland (F-road) permit required', 'icon' => 'map', 'description' => 'Book the Highland permit add-on before driving marked F-roads.'],
+            ['name' => 'Credit card required', 'title' => 'Credit card required at pick-up', 'icon' => 'tag', 'description' => 'A valid credit card in the main driver\'s name is required for the deposit.'],
+        ])->each(function (array $data) use (&$rentalConditionSort): void {
+            $rentalConditionSort += 10;
+            RentalCondition::query()->updateOrCreate(
+                ['name' => $data['name']],
+                [
+                    'title' => $data['title'],
+                    'description' => $data['description'],
+                    'icon' => $data['icon'],
+                    'sort_order' => $rentalConditionSort,
+                    'is_active' => true,
+                ]
+            );
         });
 
         collect([

@@ -79,6 +79,20 @@
         border-bottom: 1px solid rgb(229 231 235 / 1);
     }
 
+    .ir-rental-conditions-page .fi-main,
+    .ir-rental-conditions-page .fi-page,
+    .ir-rental-conditions-page .fi-main-ctn,
+    .ir-rental-conditions-page .fi-page-content,
+    .ir-rental-conditions-page .fi-page-content > .fi-sc-form {
+        max-width: none;
+        width: 100%;
+    }
+
+    .ir-rental-conditions-page .fi-ta-table thead tr,
+    .ir-rental-conditions-page .fi-ta-table tbody tr {
+        border-bottom: 1px solid rgb(229 231 235 / 1);
+    }
+
     .ir-cars-page .fi-main,
     .ir-cars-page .fi-page,
     .ir-cars-page .fi-main-ctn,
@@ -424,6 +438,33 @@
     .ir-daily-fares-page .ir-fares-pagination-actions button[disabled] {
         opacity: 0.4;
         cursor: not-allowed;
+    }
+
+    /* Lucide icon previews in catalog selects (characteristics, extras, amenities) */
+    .tb-icon-catalog-svg {
+        flex-shrink: 0;
+        display: block;
+        color: #374151;
+        stroke: currentColor;
+    }
+
+    .dark .tb-icon-catalog-svg {
+        color: #d1d5db;
+    }
+
+    .fi-select-input-option .tb-icon-catalog-svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .fi-select-input-value-ctn .tb-icon-catalog-svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .fi-ta-text-item .tb-icon-catalog-svg {
+        width: 20px;
+        height: 20px;
     }
 </style>
 

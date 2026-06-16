@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-export default function ListingSleepingPanel({ sleeping }) {
+export default function ListingSleepingPanel({ sleeping, hideKicker = false }) {
   const beds = sleeping?.beds ?? []
 
   useEffect(() => {
@@ -15,10 +15,12 @@ export default function ListingSleepingPanel({ sleeping }) {
 
   return (
     <>
-      <div className="panel-kicker">
-        {sleeping.kicker}
-        <span className="pk-line" />
-      </div>
+      {!hideKicker ? (
+        <div className="panel-kicker">
+          {sleeping.kicker}
+          <span className="pk-line" />
+        </div>
+      ) : null}
       <div className="sleep-grid">
         {beds.map((bed, i) => (
           <div

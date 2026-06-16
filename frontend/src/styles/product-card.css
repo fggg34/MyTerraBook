@@ -16,6 +16,7 @@
 }
 
 .pcard {
+  position: relative;
   flex: 0 0 var(--pcard-col-width);
   width: var(--pcard-col-width);
   max-width: 100%;
@@ -32,6 +33,17 @@
   transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
   height: 100%;
   box-sizing: border-box;
+}
+
+.pcard-stretch-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.pcard:has(.pcard-stretch-link) {
+  cursor: pointer;
 }
 
 .pcard:hover {
@@ -76,7 +88,14 @@
   padding: 14px 16px 12px;
   display: flex;
   flex-direction: column;
-  flex: 0 0 auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.pcard-details {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
 }
 
 .pcard-foot h3 {
@@ -126,35 +145,26 @@
   white-space: nowrap;
 }
 
-.spec svg {
+.spec .spec-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 20px;
   height: 20px;
   color: #34425c;
   flex: 0 0 auto;
 }
 
+.spec .spec-ic svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .spec.spec-gearbox,
-.spec.spec-fuel {
-  justify-content: center;
-}
-
-.spec .gbox,
-.spec .fbox {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #fff;
-  border-radius: 5px;
-  padding: 4px 7px;
-  line-height: 1;
-}
-
-.spec .gbox {
-  background: var(--navy);
-}
-
-.spec .fbox {
-  background: var(--green);
+.spec.spec-fuel,
+.spec.spec-drive {
+  justify-content: flex-start;
 }
 
 .pcard-cta {
@@ -184,7 +194,7 @@
   background: none;
   color: var(--navy);
   font-weight: 800;
-  font-size: 24px;
+  font-size: 20px;
   letter-spacing: -0.01em;
   padding: 0;
   line-height: 1;
@@ -197,11 +207,13 @@
 }
 
 .pcard-book {
+  position: relative;
+  z-index: 2;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  cursor: pointer;
+  pointer-events: none;
   background: var(--red);
   border: none;
   color: #fff;
@@ -214,6 +226,7 @@
   text-decoration: none;
 }
 
+.pcard:hover .pcard-book,
 .pcard-book:hover {
   background: #c52b37;
   gap: 10px;
@@ -312,6 +325,7 @@ body.search-results-active .pcard-book {
 /* Drag-to-scroll (mouse) for horizontal carousels */
 .track,
 .sim-track,
+.rev-track,
 .drag-scroll,
 .gp-marquee.is-manual-scroll,
 .rv-track-wrap--marquee.is-manual-scroll,
@@ -330,6 +344,7 @@ body.search-results-active .pcard-book {
 
 .track.is-dragging,
 .sim-track.is-dragging,
+.rev-track.is-dragging,
 .drag-scroll.is-dragging,
 .gp-marquee.is-manual-scroll.is-dragging,
 .rv-track-wrap--marquee.is-manual-scroll.is-dragging,
@@ -347,6 +362,7 @@ body.search-results-active .pcard-book {
 
 .track.is-dragging *,
 .sim-track.is-dragging *,
+.rev-track.is-dragging *,
 .drag-scroll.is-dragging * {
   pointer-events: none;
   user-select: none;

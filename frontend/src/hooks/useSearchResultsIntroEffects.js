@@ -24,12 +24,18 @@ function revealStatic(root) {
   })
 }
 
-export default function useSearchResultsIntroEffects(rootRef) {
+export default function useSearchResultsIntroEffects(rootRef, { ready = true } = {}) {
   useEffect(() => {
     const root = rootRef.current
     if (!root) return undefined
 
+    if (!ready) {
+      revealStatic(root)
+      return undefined
+    }
+
     let cancelled = false
+    const splits = []
 
     const init = async () => {
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -61,6 +67,7 @@ export default function useSearchResultsIntroEffects(rootRef) {
       const animateDesc = (el) => {
         gsap.set(el, { opacity: 1 })
         const split = SplitText.create(el, { type: 'chars,words', charsClass: 'rd-char' })
+        splits.push(split)
         gsap.from(split.chars, {
           duration: 0.9,
           opacity: 0,
@@ -81,11 +88,12 @@ export default function useSearchResultsIntroEffects(rootRef) {
       titles.forEach((el) => {
         gsap.set(el, { opacity: 1 })
         const fireNow = el.dataset.revealNow === '1'
-        SplitText.create(el, {
+        const split = SplitText.create(el, {
           type: 'lines',
           linesClass: 'rl-line',
           mask: 'lines',
-          autoSplit: true,
+          ignore: '.ri-count',
+          autoSplit: false,
           onSplit(self) {
             return gsap.from(self.lines, {
               yPercent: 115,
@@ -103,6 +111,7 @@ export default function useSearchResultsIntroEffects(rootRef) {
             })
           },
         })
+        splits.push(split)
       })
 
       descs.forEach((el) => {
@@ -116,6 +125,9 @@ export default function useSearchResultsIntroEffects(rootRef) {
 
     return () => {
       cancelled = true
+      splits.forEach((split) => {
+        split.revert?.()
+      })
     }
-  }, [rootRef])
+  }, [rootRef, ready])
 }

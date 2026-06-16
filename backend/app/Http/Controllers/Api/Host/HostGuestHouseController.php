@@ -150,6 +150,22 @@ class HostGuestHouseController extends Controller
             return response()->json(['message' => 'Select at least one amenity before submitting for review.'], 422);
         }
 
+        if ((int) $guestHouse->max_guests < 1) {
+            return response()->json(['message' => 'Max guests (sleeps) is required before submitting for review.'], 422);
+        }
+
+        if ($guestHouse->bedrooms === null || (int) $guestHouse->bedrooms < 0) {
+            return response()->json(['message' => 'Bedrooms is required before submitting for review.'], 422);
+        }
+
+        if ((int) $guestHouse->bathrooms < 1) {
+            return response()->json(['message' => 'Bathrooms must be at least 1 before submitting for review.'], 422);
+        }
+
+        if (trim((string) $guestHouse->city) === '') {
+            return response()->json(['message' => 'City is required before submitting for review.'], 422);
+        }
+
         $guestHouse->update([
             'status' => GuestHouseStatus::PendingReview,
             'submitted_at' => now(),

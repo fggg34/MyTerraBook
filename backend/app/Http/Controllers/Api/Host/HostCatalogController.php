@@ -8,6 +8,7 @@ use App\Models\GuestHouseAmenity;
 use App\Models\Location;
 use App\Models\MainCategory;
 use App\Models\PriceType;
+use App\Models\RentalCondition;
 use App\Models\RentalOption;
 use App\Models\SubCategory;
 use App\Models\TaxRate;
@@ -132,6 +133,25 @@ class HostCatalogController extends Controller
                     'icon_url' => $option->image_path ? Storage::disk('public')->url($option->image_path) : null,
                 ];
             });
+
+        return response()->json(['data' => $rows]);
+    }
+
+    public function rentalConditions(): JsonResponse
+    {
+        $rows = RentalCondition::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('title')
+            ->get(['id', 'name', 'slug', 'title', 'description', 'icon'])
+            ->map(fn (RentalCondition $condition): array => [
+                'id' => $condition->id,
+                'name' => $condition->title,
+                'title' => $condition->title,
+                'description' => $condition->description,
+                'slug' => $condition->slug,
+                'icon' => $condition->icon,
+            ]);
 
         return response()->json(['data' => $rows]);
     }

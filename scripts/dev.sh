@@ -12,6 +12,7 @@ echo ""
 
 cd "$ROOT/backend"
 php artisan config:clear --quiet 2>/dev/null || true
+php artisan optimize:clear --quiet 2>/dev/null || true
 
 if ! php artisan migrate --force --quiet 2>/dev/null; then
   echo "Running fresh migrations + seed..."

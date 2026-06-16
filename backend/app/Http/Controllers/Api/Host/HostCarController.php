@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Host;
 
 use App\Enums\ListingApprovalStatus;
+use App\Enums\DriveType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Host\HostCarResource;
 use App\Http\Resources\Host\HostLocationFeeResource;
@@ -64,7 +65,7 @@ class HostCarController extends Controller
         $this->ensureAtLeastOneUnit($car);
         $this->syncRelations($request, $car);
         $seo->syncCar($car);
-        $car->load(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']);
+        $car->load(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions', 'rentalConditions']);
 
         return response()->json(['data' => new HostCarResource($car)], 201);
     }
@@ -127,7 +128,7 @@ class HostCarController extends Controller
             ]);
         }
 
-        return response()->json(['data' => new HostCarResource($car->fresh(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions']))]);
+        return response()->json(['data' => new HostCarResource($car->fresh(['subCategory.mainCategory', 'locations', 'characteristics', 'rentalOptions', 'rentalConditions']))]);
     }
 
     public function uploadImages(Request $request, Car $car, ListingSeoService $seo): JsonResponse
@@ -174,7 +175,7 @@ class HostCarController extends Controller
     {
         $this->authorize('update', $car);
         $this->syncRelations($request, $car);
-        $car->load(['locations', 'characteristics', 'rentalOptions']);
+        $car->load(['locations', 'characteristics', 'rentalOptions', 'rentalConditions']);
 
         return response()->json(['data' => new HostCarResource($car)]);
     }
@@ -573,8 +574,9 @@ class HostCarController extends Controller
             'name' => [$car ? 'sometimes' : 'required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('cars', 'slug')->ignore($car?->id)],
             'description' => ['nullable', 'string'],
-            'transmission' => ['nullable', 'string', 'max:50'],
+            'transmission' => ['nullable', 'string', Rule::in(['manual', 'automatic'])],
             'fuel_type' => ['nullable', 'string', 'max:50'],
+            'drive_type' => ['nullable', 'string', Rule::in(DriveType::values())],
             'seats' => ['nullable', 'integer', 'min:0', 'max:50'],
             'sleeps' => ['nullable', 'integer', 'min:0', 'max:20'],
             'bags' => ['nullable', 'integer', 'min:0', 'max:50'],
@@ -595,6 +597,8 @@ class HostCarController extends Controller
             'characteristic_ids.*' => ['integer', 'exists:characteristics,id'],
             'rental_option_ids' => ['nullable', 'array'],
             'rental_option_ids.*' => ['integer', 'exists:rental_options,id'],
+            'rental_condition_ids' => ['nullable', 'array'],
+            'rental_condition_ids.*' => ['integer', 'exists:rental_conditions,id'],
         ]);
 
         if (! isset($data['sub_category_id']) && isset($data['category_id'])) {
@@ -605,6 +609,23 @@ class HostCarController extends Controller
 
         if (! $car && ! isset($data['sub_category_id'])) {
             abort(422, 'The sub category id field is required.');
+        }
+
+        if (isset($data['sub_category_id'])) {
+            $mainSlug = \App\Models\SubCategory::query()
+                ->with('mainCategory')
+                ->find($data['sub_category_id'])
+                ?->mainCategory
+                ?->slug;
+        } elseif ($car) {
+            $car->loadMissing('subCategory.mainCategory');
+            $mainSlug = $car->subCategory?->mainCategory?->slug;
+        } else {
+            $mainSlug = null;
+        }
+
+        if ($mainSlug && $mainSlug !== 'campervan') {
+            $data['sleeps'] = 0;
         }
 
         return $data;
@@ -639,6 +660,10 @@ class HostCarController extends Controller
         if ($request->has('rental_option_ids')) {
             $car->rentalOptions()->sync($request->input('rental_option_ids', []));
         }
+
+        if ($request->has('rental_condition_ids')) {
+            $car->rentalConditions()->sync($request->input('rental_condition_ids', []));
+        }
     }
 
     private function loadCarRelations(Car $car): void
@@ -648,6 +673,7 @@ class HostCarController extends Controller
             'locations',
             'characteristics',
             'rentalOptions',
+            'rentalConditions',
             'locationFees.pickupLocation',
             'locationFees.dropoffLocation',
         ]);
@@ -719,6 +745,23 @@ class HostCarController extends Controller
         }
 
         $isCampervan = $car->subCategory?->mainCategory?->slug === 'campervan';
+
+        if (blank($car->transmission)) {
+            return 'Transmission is required before submitting for review.';
+        }
+
+        if (blank($car->fuel_type)) {
+            return 'Fuel type is required before submitting for review.';
+        }
+
+        if (blank($car->drive_type)) {
+            return 'Drive system is required before submitting for review.';
+        }
+
+        if (($car->bags ?? 0) < 1) {
+            return 'Bags capacity must be at least 1 before submitting for review.';
+        }
+
         if ($isCampervan) {
             if (($car->sleeps ?? 0) < 1) {
                 return 'Sleeps (berths) must be at least 1 before submitting a campervan for review.';

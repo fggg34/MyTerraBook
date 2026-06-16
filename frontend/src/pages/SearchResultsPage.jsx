@@ -76,7 +76,7 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     onLoadMore,
   })
 
-  useSearchResultsIntroEffects(rootRef)
+  useSearchResultsIntroEffects(rootRef, { ready: !loading })
 
   const locationShort = isGuesthouse
     ? config.introLocationDefault || pickupLabel || 'Iceland'

@@ -18,6 +18,9 @@ class HostCarResource extends JsonResource
             'description' => $this->description,
             'transmission' => $this->transmission,
             'fuel_type' => $this->fuel_type,
+            'drive_type' => $this->drive_type instanceof \App\Enums\DriveType
+                ? $this->drive_type->value
+                : $this->drive_type,
             'seats' => $this->seats,
             'sleeps' => $this->sleeps,
             'bags' => $this->bags,
@@ -43,6 +46,7 @@ class HostCarResource extends JsonResource
             'dropoff_location_ids' => $this->whenLoaded('locations', fn () => $this->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_dropoff)->pluck('id')->values()->all()),
             'characteristic_ids' => $this->whenLoaded('characteristics', fn () => $this->characteristics->pluck('id')->all()),
             'rental_option_ids' => $this->whenLoaded('rentalOptions', fn () => $this->rentalOptions->pluck('id')->all()),
+            'rental_condition_ids' => $this->whenLoaded('rentalConditions', fn () => $this->rentalConditions->pluck('id')->all()),
             'main_category_id' => $this->whenLoaded('subCategory', fn () => $this->subCategory?->main_category_id),
             'sub_category' => $this->whenLoaded('subCategory', fn () => [
                 'id' => $this->subCategory->id,

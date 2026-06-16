@@ -45,6 +45,11 @@ class DemoShowcaseSeeder extends Seeder
         foreach ($guesthouses as $house) {
             $this->command?->info("  /guesthouses/{$house->slug}, {$house->name}");
         }
+        $this->command?->info('');
+        $this->command?->info('Card layout test listings (short vs long titles):');
+        $this->command?->info('  Campervans: /campervans — search or browse for "Vik Van" and "Winnebago Revel"');
+        $this->command?->info('  Cars:       /cars — search or browse for "City Car" and "BMW X5"');
+        $this->command?->info('  Guesthouses:/guesthouses — look for "Vik Stay" and "Northern Lights View Villa"');
     }
 
     /** @return list<Car> */
@@ -87,6 +92,36 @@ class DemoShowcaseSeeder extends Seeder
                 'rate' => 8900,
                 'image' => 'https://placehold.co/1200x800/1f2937/fff?text=BMW+3+Series',
                 'chars' => ['GPS Navigation', 'Bluetooth', 'Parking Sensors', 'Backup Camera'],
+            ],
+            // Card layout test — short title
+            [
+                'slug' => 'card-test-car-short',
+                'name' => 'City Car',
+                'sub_category_id' => $economy->id,
+                'description' => 'Small automatic runabout for Reykjavík and day trips. Short title card layout test listing.',
+                'transmission' => 'automatic',
+                'fuel_type' => 'petrol',
+                'rate' => 4500,
+                'seats' => 5,
+                'sleeps' => 0,
+                'bags' => 2,
+                'image' => 'https://placehold.co/1200x800/0891b2/fff?text=City+Car',
+                'chars' => ['GPS Navigation', 'Bluetooth', 'Air Conditioning'],
+            ],
+            // Card layout test — long title
+            [
+                'slug' => 'card-test-car-long',
+                'name' => '2024 BMW X5 xDrive40i M Sport Package AWD Luxury SUV Iceland Edition',
+                'sub_category_id' => $luxury->id,
+                'description' => 'Premium AWD SUV with full winter kit and unlimited mileage. Long title card layout test listing.',
+                'transmission' => 'automatic',
+                'fuel_type' => 'diesel',
+                'rate' => 15200,
+                'seats' => 5,
+                'sleeps' => 0,
+                'bags' => 4,
+                'image' => 'https://placehold.co/1200x800/334155/fff?text=BMW+X5',
+                'chars' => ['GPS Navigation', '4WD / AWD', 'Parking Sensors', 'Backup Camera', 'Cruise Control'],
             ],
         ];
 
@@ -145,8 +180,43 @@ class DemoShowcaseSeeder extends Seeder
                 'fuel_type' => 'diesel',
                 'rate' => 11800,
                 'units' => 1,
+                'seats' => 5,
+                'sleeps' => 4,
+                'bags' => 6,
                 'image' => 'https://placehold.co/1200x800/92400e/fff?text=Transit+Custom',
                 'chars' => ['GPS Navigation', '4WD', 'Backup Camera', 'Cruise Control'],
+            ],
+            // Card layout test — short title
+            [
+                'slug' => 'card-test-camper-short',
+                'name' => 'Vik Van',
+                'sub_category_id' => $van->id,
+                'description' => 'Compact campervan for quick getaways. Short title card layout test listing.',
+                'transmission' => 'manual',
+                'fuel_type' => 'diesel',
+                'rate' => 8900,
+                'units' => 1,
+                'seats' => 4,
+                'sleeps' => 2,
+                'bags' => 3,
+                'image' => 'https://placehold.co/1200x800/0d9488/fff?text=Vik+Van',
+                'chars' => ['GPS Navigation', 'Air Conditioning', 'Bluetooth'],
+            ],
+            // Card layout test — long title (wraps to 2 lines on product cards)
+            [
+                'slug' => 'card-test-camper-long',
+                'name' => '2023 Winnebago Revel 4X4 Diesel OFF ROAD Campervan with Winter Package',
+                'sub_category_id' => $van->id,
+                'description' => 'Fully equipped 4×4 campervan with diesel heater, winter tyres, and off-road kit. Long title card layout test listing.',
+                'transmission' => 'automatic',
+                'fuel_type' => 'diesel',
+                'rate' => 2070,
+                'units' => 1,
+                'seats' => 4,
+                'sleeps' => 4,
+                'bags' => 6,
+                'image' => 'https://placehold.co/1200x800/1e3a5f/fff?text=Winnebago+Revel',
+                'chars' => ['GPS Navigation', '4WD / AWD', 'Air Conditioning', 'Cruise Control', 'Backup Camera'],
             ],
         ];
 
@@ -203,6 +273,30 @@ class DemoShowcaseSeeder extends Seeder
                 'short' => 'Spacious villa with hot tub, perfect for aurora watching.',
                 'thumb' => 'https://placehold.co/800x600/312e81/fff?text=Northern+Lights+Villa',
             ],
+            // Card layout test — short title
+            [
+                'slug' => 'card-test-gh-short',
+                'name' => 'Vik Stay',
+                'type' => GuestHouseType::Room,
+                'city' => 'Vik',
+                'base' => 7200,
+                'bedrooms' => 1,
+                'max_guests' => 2,
+                'short' => 'Simple guestroom near the black sand beach. Short title card layout test listing.',
+                'thumb' => 'https://placehold.co/800x600/15803d/fff?text=Vik+Stay',
+            ],
+            // Card layout test — long title
+            [
+                'slug' => 'card-test-gh-long',
+                'name' => 'Northern Lights View Villa with Private Hot Tub and Glacier Access',
+                'type' => GuestHouseType::Villa,
+                'city' => 'Akureyri',
+                'base' => 16800,
+                'bedrooms' => 3,
+                'max_guests' => 6,
+                'short' => 'Panoramic fjord views, private hot tub, and easy glacier day trips. Long title card layout test listing.',
+                'thumb' => 'https://placehold.co/800x600/4c1d95/fff?text=Northern+Lights+Villa',
+            ],
         ];
 
         $houses = [];
@@ -223,6 +317,10 @@ class DemoShowcaseSeeder extends Seeder
                 'description' => $data['description'],
                 'transmission' => $data['transmission'],
                 'fuel_type' => $data['fuel_type'],
+                'drive_type' => $data['drive_type'] ?? 'awd',
+                'seats' => $data['seats'] ?? null,
+                'sleeps' => $data['sleeps'] ?? null,
+                'bags' => $data['bags'] ?? null,
                 'units_available' => $data['units'] ?? 2,
                 'is_active' => true,
                 'main_image_path' => $data['image'],
@@ -318,6 +416,7 @@ class DemoShowcaseSeeder extends Seeder
             ->whereIn('name', $characteristicNames)
             ->pluck('id');
         $rentalOptions = RentalOption::query()->where('is_active', true)->take(5)->pluck('id');
+        $rentalConditions = \App\Models\RentalCondition::query()->where('is_active', true)->take(6)->pluck('id');
         $basic = PriceType::query()->where('slug', 'basic')->firstOrFail();
         $plus = PriceType::query()->where('slug', 'plus')->firstOrFail();
         $max = PriceType::query()->where('slug', 'max')->firstOrFail();
@@ -328,6 +427,7 @@ class DemoShowcaseSeeder extends Seeder
         $car->locations()->sync($locationPivot);
         $car->characteristics()->sync($characteristics);
         $car->rentalOptions()->sync($rentalOptions);
+        $car->rentalConditions()->sync($rentalConditions);
 
         foreach ([
             [$basic->id, 1, 6, $dailyRateCents],

@@ -1895,13 +1895,26 @@ a.host-overview-card:hover .host-overview-card-link {
 .host-icon-option__img {
   width: 20px;
   height: 20px;
-  object-fit: contain;
 }
 
 .host-icon-option__name {
   flex: 1 1 auto;
   min-width: 0;
   line-height: 1.25;
+}
+
+.host-icon-option__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.host-icon-option__desc {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: #64748b;
 }
 
 .host-icon-option__check {

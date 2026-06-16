@@ -131,7 +131,7 @@ class CarsTable
                     ->modalHeading('Duplicate this vehicle?')
                     ->modalDescription('Creates a copy with the same category, specs, characteristics, add-ons, and locations. Daily prices are not copied.')
                     ->action(function (Car $record): void {
-                        $record->loadMissing(['characteristics', 'rentalOptions', 'locations']);
+                        $record->loadMissing(['characteristics', 'rentalOptions', 'rentalConditions', 'locations']);
 
                         $replica = $record->replicate([
                             'id',
@@ -145,6 +145,7 @@ class CarsTable
 
                         $replica->characteristics()->sync($record->characteristics->pluck('id')->all());
                         $replica->rentalOptions()->sync($record->rentalOptions->pluck('id')->all());
+                        $replica->rentalConditions()->sync($record->rentalConditions->pluck('id')->all());
 
                         $pivotRows = [];
                         foreach ($record->locations as $location) {
