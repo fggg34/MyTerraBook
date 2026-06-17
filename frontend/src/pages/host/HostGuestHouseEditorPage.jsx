@@ -309,10 +309,12 @@ export default function HostGuestHouseEditorPage() {
             {recordId ? (
               <>
                 <div className="host-field"><label>Cover photo</label>
+                  <p className="host-capacity-hint">Used on search cards and browse results only — not shown in the listing photo gallery.</p>
                   {thumbnail && <img src={resolveStorageUrl(thumbnail)} alt="Cover" className="mb-2 h-24 w-auto rounded-lg object-cover" />}
                   <input type="file" accept="image/*" onChange={handleThumbnail} />
                 </div>
                 <div className="host-field"><label>Gallery photos</label>
+                  <p className="host-capacity-hint">Shown in the listing page gallery. Add photos of rooms, amenities, and the property exterior.</p>
                   <div className="mb-2 flex flex-wrap gap-2">
                     {gallery.map((img) => (
                       <div key={img.id} className="relative">

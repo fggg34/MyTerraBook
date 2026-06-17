@@ -853,7 +853,7 @@ export default function HostCarEditorPage() {
               )}
               <HostImageDropzone
                 label="Main image"
-                hint="Shown on search results and at the top of your listing."
+                hint="Used on search cards and browse results only — not shown in the listing photo gallery."
                 previewSrc={mainImagePreview}
                 emptyLabel="Upload main photo"
                 onSelect={handleMainImage}
@@ -861,7 +861,7 @@ export default function HostCarEditorPage() {
               />
               <HostImageGallery
                 label="Detail images"
-                hint="Extra photos of the interior, exterior, and features."
+                hint="Shown in the listing page gallery. Add photos of the interior, exterior, and key features — guests browse these on your listing."
                 items={[
                   ...form.details_image_paths.map((path) => ({
                     key: path,

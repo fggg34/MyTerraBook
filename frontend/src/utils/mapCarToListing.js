@@ -10,13 +10,14 @@ const FALLBACK_IMAGES = {
 }
 
 function buildImages(car, listingType) {
-  const paths = [car.main_image_path, ...(car.details_image_paths || [])].filter(Boolean)
-  const urls = paths.map((p) => resolveStorageUrl(p)).filter(Boolean)
+  const detailPaths = (car.details_image_paths || []).filter(Boolean)
+  const urls = detailPaths.map((p) => resolveStorageUrl(p)).filter(Boolean)
   const fallbacks = FALLBACK_IMAGES[listingType] || FALLBACK_IMAGES.car
-  const merged = [...urls, ...fallbacks].slice(0, 5)
+  const merged = urls.length > 0 ? urls.slice(0, 5) : [...fallbacks].slice(0, 5)
+
   return merged.map((url, i) => ({
     url,
-    alt: i === 0 ? `${car.name}, main photo` : `${car.name}, photo ${i + 1}`,
+    alt: `${car.name}, photo ${i + 1}`,
   }))
 }
 
@@ -123,6 +124,8 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
   const moreDesc = desc.length > 280 ? desc.slice(280).trim() : ''
   const reviews = listingReviewsOverride ?? mapApiListingReviews(car.listing_reviews)
 
+  const images = buildImages(car, listingType)
+
   return {
     listingType,
     typeConfig,
@@ -131,8 +134,8 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
     name: car.name,
     title: car.name,
     categoryName: car.category?.name || typeConfig.id,
-    images: buildImages(car, listingType),
-    photoCount: Math.max(buildImages(car, listingType).length, 1),
+    images,
+    photoCount: Math.max(images.length, 1),
     owner: buildOwner(car, reviews),
     rating: buildRating(reviews),
     detailSpecs: buildDetailSpecs(car),
