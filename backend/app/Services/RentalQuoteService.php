@@ -67,6 +67,8 @@ class RentalQuoteService
         $baseRentalCents = $specialPricing['amount_cents'];
         $baseTaxBips = $this->taxBipsForTaxRateId($priceType->tax_rate_id, $defaultTaxBips);
 
+        $rentalOptionSelections = $this->normalizeRentalOptionSelections($rentalOptionSelections);
+
         $extrasCents = 0;
         $extrasLines = [];
 
@@ -716,6 +718,40 @@ class RentalQuoteService
         }
 
         return $taxTotal;
+    }
+
+    /**
+     * Accepts either a list of option IDs ([1, 2]) or a map of id => quantity ([1 => 2]).
+     *
+     * @return array<int, int>
+     */
+    private function normalizeRentalOptionSelections(array $selections): array
+    {
+        if ($selections === []) {
+            return [];
+        }
+
+        $normalized = [];
+
+        if (array_is_list($selections)) {
+            foreach ($selections as $id) {
+                $optionId = (int) $id;
+                if ($optionId > 0) {
+                    $normalized[$optionId] = ($normalized[$optionId] ?? 0) + 1;
+                }
+            }
+
+            return $normalized;
+        }
+
+        foreach ($selections as $optionId => $quantity) {
+            $optionId = (int) $optionId;
+            if ($optionId > 0) {
+                $normalized[$optionId] = max(1, (int) $quantity);
+            }
+        }
+
+        return $normalized;
     }
 
     private function defaultTaxBips(): int

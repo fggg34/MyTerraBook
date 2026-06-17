@@ -1,5 +1,6 @@
 import { resolveStorageUrl } from '../api'
 import { LISTING_TYPES } from '../data/listingConfig'
+import { splitListingDescription } from './formatListingDescription'
 import { mapApiListingReviews } from './mapListingReviews'
 import { mapCarToListing } from './mapCarToListing'
 import { buildGoogleMapsUrl, formatLocationLine } from './parseGooglePlace'
@@ -202,9 +203,9 @@ export function mapGuestHouseToListing(house, listingReviews, priceFormatter) {
   const conditions = buildConditions(house)
   const sleeping = buildSleeping(house)
 
-  const desc = house.description || house.short_description || ''
-  const shortDesc = desc.length > 280 ? desc.slice(0, 280).trim() : desc
-  const moreDesc = desc.length > 280 ? desc.slice(280).trim() : ''
+  const { short: shortDesc, more: moreDesc } = splitListingDescription(
+    house.description || house.short_description || '',
+  )
 
   const location = {
     address: house.address || '',

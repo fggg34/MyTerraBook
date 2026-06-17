@@ -84,6 +84,39 @@ class OrderFlowApiTest extends TestCase
         $this->assertDatabaseCount('orders', 1);
     }
 
+    public function test_quote_with_rental_options_list_format(): void
+    {
+        [$car, $pickup, $dropoff, $priceType] = $this->seedCatalogForOrder();
+
+        $option = \App\Models\RentalOption::query()->create([
+            'name' => 'Wi-Fi hotspot',
+            'cost_cents' => 2000,
+            'is_daily_cost' => true,
+            'has_quantity' => false,
+            'is_mandatory' => false,
+            'is_active' => true,
+        ]);
+        $car->rentalOptions()->attach($option->id);
+
+        $pickupAt = now()->addDay()->toDateTimeString();
+        $dropoffAt = now()->addDays(4)->toDateTimeString();
+
+        $this->postJson('/api/orders/quote', [
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => $pickupAt,
+            'dropoff_at' => $dropoffAt,
+            'rental_options' => [$option->id],
+        ])
+            ->assertOk()
+            ->assertJsonPath('extras_cents', 6000)
+            ->assertJsonPath('total_cents', 21000)
+            ->assertJsonPath('extras_lines.0.name', 'Wi-Fi hotspot')
+            ->assertJsonPath('extras_lines.0.amount', '60.00');
+    }
+
     public function test_capacity_blocks_overbooked_car(): void
     {
         [$car, $pickup, $dropoff, $priceType] = $this->seedCatalogForOrder();

@@ -342,7 +342,7 @@
   .listing-rating--tabbar .rmeta a{font-size:13px;white-space:nowrap;}
   .descwrap{margin-top:24px;padding-top:24px;border-top:1px solid var(--line);}
   .descwrap--solo{margin-top:0;padding-top:0;border-top:none;}
-  .desc{font-size:15.5px;color:var(--ink);line-height:1.68;margin:0;}
+  .desc{font-size:15.5px;color:var(--ink);line-height:1.68;margin:0;white-space:pre-line;}
   .desc .more-text{display:none;}
   .desc.open .more-text{display:inline;}
   .showmore{

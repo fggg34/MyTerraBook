@@ -345,7 +345,11 @@ export default function useRequestToBook() {
       api
         .post('/orders/quote', payload)
         .then((res) => setQuote(res.data))
-        .catch(() => setQuote(null))
+        .catch((err) => {
+          setQuote(null)
+          const message = err.response?.data?.message
+          if (message) toast(message, 'error')
+        })
         .finally(() => setQuoteLoading(false))
     }, 350)
     return () => clearTimeout(t)
@@ -364,6 +368,7 @@ export default function useRequestToBook() {
     form.startDate,
     form.endDate,
     form.guests_count,
+    toast,
   ])
 
   const goStep = useCallback((n) => {

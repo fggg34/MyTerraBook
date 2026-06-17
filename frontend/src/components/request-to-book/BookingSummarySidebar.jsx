@@ -104,9 +104,21 @@ export default function BookingSummarySidebar({
       })()
     : null
 
-  const selectedAddons = isVehicle && item?.rental_options
-    ? item.rental_options.filter((o) => form.rental_option_ids.includes(Number(o.id)))
-    : []
+  const addonLines = isVehicle && quote?.extras_lines?.length
+    ? quote.extras_lines.map((line) => ({
+        id: line.rental_option_id,
+        name: line.name,
+        amount: Number(line.amount),
+      }))
+    : isVehicle && item?.rental_options
+      ? item.rental_options
+          .filter((o) => form.rental_option_ids.includes(Number(o.id)))
+          .map((opt) => {
+            const unitCents = opt.cost_cents || 0
+            const totalCents = opt.is_daily_cost ? unitCents * (quote?.rental_days || nights) : unitCents
+            return { id: opt.id, name: opt.name, amount: totalCents / 100 }
+          })
+      : []
 
   const promoApplied = quote && Number(quote.discount_amount) > 0
   const promoCodeLabel = form.coupon_code.trim().toUpperCase() || 'PROMO'
@@ -175,16 +187,12 @@ export default function BookingSummarySidebar({
                   <span className="lv">{price.format(protectionCost.amount)}</span>
                 </div>
               )}
-              {selectedAddons.map((opt) => {
-                const unitCents = opt.cost_cents || 0
-                const totalCents = opt.is_daily_cost ? unitCents * (quote.rental_days || nights) : unitCents
-                return (
-                  <div key={opt.id} className="lrow">
-                    <span className="ll">{opt.name}</span>
-                    <span className="lv">{price.formatCents(totalCents)}</span>
-                  </div>
-                )
-              })}
+              {addonLines.map((line) => (
+                <div key={line.id} className="lrow">
+                  <span className="ll">{line.name}</span>
+                  <span className="lv">{price.format(line.amount)}</span>
+                </div>
+              ))}
               {Number(quote.discount_amount) > 0 && (
                 <div className="lrow discount">
                   <span className="ll">Promo · {form.coupon_code.trim().toUpperCase() || 'DISCOUNT'}</span>

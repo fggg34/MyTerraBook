@@ -19,4 +19,21 @@ class QuotePresentation
             $feesLines,
         );
     }
+
+    /**
+     * @param  list<array{rental_option_id: int, name: string, quantity: int, total_cents: int}>  $extrasLines
+     * @return list<array{rental_option_id: int, name: string, quantity: int, amount: string}>
+     */
+    public static function extrasLines(array $extrasLines): array
+    {
+        return array_map(
+            fn (array $line) => [
+                'rental_option_id' => $line['rental_option_id'],
+                'name' => $line['name'],
+                'quantity' => $line['quantity'],
+                'amount' => Money::formatDecimalFromCents($line['total_cents']),
+            ],
+            $extrasLines,
+        );
+    }
 }

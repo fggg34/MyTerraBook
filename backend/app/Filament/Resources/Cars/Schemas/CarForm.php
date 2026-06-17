@@ -273,10 +273,6 @@ class CarForm
                             ->schema([
                                 Section::make('Descriptions')
                                     ->schema([
-                                        Textarea::make('short_description')
-                                            ->label('Short Description')
-                                            ->rows(3)
-                                            ->dehydrated(false),
                                         RichEditor::make('description')
                                             ->label('Description')
                                             ->columnSpanFull(),

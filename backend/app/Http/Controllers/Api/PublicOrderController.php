@@ -73,6 +73,7 @@ class PublicOrderController extends Controller
             'fees_subtotal' => Money::formatDecimalFromCents($quote['fees_cents']),
             'fees_lines' => QuotePresentation::feesLines($quote['fees_lines']),
             'extras_subtotal' => Money::formatDecimalFromCents($quote['extras_cents']),
+            'extras_lines' => QuotePresentation::extrasLines($quote['extras_lines']),
             'discount_amount' => Money::formatDecimalFromCents($quote['discount_cents']),
             'tax_amount' => Money::formatDecimalFromCents($quote['tax_cents']),
             'total' => Money::formatDecimalFromCents($quote['total_cents']),

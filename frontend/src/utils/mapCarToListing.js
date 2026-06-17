@@ -1,5 +1,6 @@
 import { resolveStorageUrl } from '../api'
 import { LISTING_TYPES } from '../data/listingConfig'
+import { splitListingDescription } from './formatListingDescription'
 import { mapApiListingReviews } from './mapListingReviews'
 import { driveLabel } from './buildVehicleCardSpecs'
 
@@ -119,9 +120,7 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
   const priceFrom =
     priceFromAmount != null && !Number.isNaN(priceFromAmount) ? format(priceFromAmount) : null
 
-  const desc = car.description || ''
-  const shortDesc = desc.length > 280 ? desc.slice(0, 280).trim() : desc
-  const moreDesc = desc.length > 280 ? desc.slice(280).trim() : ''
+  const { short: shortDesc, more: moreDesc } = splitListingDescription(car.description || '')
   const reviews = listingReviewsOverride ?? mapApiListingReviews(car.listing_reviews)
 
   const images = buildImages(car, listingType)

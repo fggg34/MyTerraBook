@@ -284,6 +284,36 @@ class RentalPricingQuoteTest extends TestCase
         $this->assertSame(14300, $quote['total_cents']);
     }
 
+    public function test_rental_options_list_format_is_accepted(): void
+    {
+        [$car, $pickup, $dropoff, $priceType] = $this->makeCatalog();
+
+        $option = RentalOption::query()->create([
+            'name' => 'Camping chairs',
+            'cost_cents' => 1500,
+            'is_daily_cost' => false,
+            'has_quantity' => false,
+            'is_mandatory' => false,
+            'is_active' => true,
+        ]);
+        $car->rentalOptions()->attach($option->id);
+
+        $svc = app(RentalQuoteService::class);
+        $quote = $svc->quote(
+            $car,
+            $priceType->id,
+            Carbon::parse('2026-05-10 10:00:00'),
+            Carbon::parse('2026-05-11 10:00:00'),
+            $pickup->id,
+            $dropoff->id,
+            [$option->id],
+            null,
+        );
+
+        $this->assertSame(1500, $quote['extras_cents']);
+        $this->assertSame(11500, $quote['total_cents']);
+    }
+
     public function test_host_owned_car_uses_only_host_scoped_fees(): void
     {
         [$platformCar, $pickup, $dropoff, $priceType] = $this->makeCatalog();
