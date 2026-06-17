@@ -87,6 +87,51 @@ export function guideToElement(el, focusEl) {
   }
 }
 
+/**
+ * Estimate location / one-way fees for a pick-up → drop-off pair (matches checkout quote rules).
+ */
+export function resolveLocationRouteFeeCents(fees, pickupId, dropoffId, rentalDays = 1) {
+  if (!fees?.length || !pickupId || !dropoffId) return 0
+
+  const pickup = String(pickupId)
+  const dropoff = String(dropoffId)
+  if (pickup === dropoff) return 0
+
+  const days = Math.max(1, Number(rentalDays) || 1)
+  let total = 0
+  let matchedOneWay = false
+
+  for (const fee of fees) {
+    const direct =
+      String(fee.pickup_location_id) === pickup && String(fee.dropoff_location_id) === dropoff
+    const inverted =
+      fee.apply_inverted
+      && String(fee.pickup_location_id) === dropoff
+      && String(fee.dropoff_location_id) === pickup
+
+    if (!direct && !inverted) continue
+    if (fee.is_one_way_fee && pickup === dropoff) continue
+
+    const base = Number(fee.cost_cents) || 0
+    if (base <= 0) continue
+
+    total += fee.multiply_by_days ? base * days : base
+    if (fee.is_one_way_fee) matchedOneWay = true
+  }
+
+  if (!matchedOneWay) {
+    const globalOneWay = fees.find((fee) => fee.is_one_way_fee)
+    if (globalOneWay) {
+      const base = Number(globalOneWay.cost_cents) || 0
+      if (base > 0) {
+        total += globalOneWay.multiply_by_days ? base * days : base
+      }
+    }
+  }
+
+  return total
+}
+
 export function parseRentalOptionIds(searchParams) {
   const raw = searchParams.getAll('rental_option_ids')
   const ids = raw.flatMap((value) =>

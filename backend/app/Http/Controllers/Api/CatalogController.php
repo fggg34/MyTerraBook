@@ -13,6 +13,7 @@ use App\Models\BookingRestriction;
 use App\Models\Car;
 use App\Models\DailyFare;
 use App\Models\Location;
+use App\Models\LocationFee;
 use App\Models\MainCategory;
 use App\Models\Order;
 use App\Models\PriceType;
@@ -224,8 +225,27 @@ class CatalogController extends Controller
             ->values()
             ->all();
 
+        $locationFees = LocationFee::query()
+            ->where('is_active', true)
+            ->when(
+                $car->isOwnedByHost(),
+                fn ($query) => $query->where('car_id', $car->id),
+                fn ($query) => $query->whereNull('car_id'),
+            )
+            ->get(['pickup_location_id', 'dropoff_location_id', 'cost_cents', 'multiply_by_days', 'is_one_way_fee', 'apply_inverted'])
+            ->map(fn (LocationFee $fee) => [
+                'pickup_location_id' => $fee->pickup_location_id,
+                'dropoff_location_id' => $fee->dropoff_location_id,
+                'cost_cents' => (int) $fee->cost_cents,
+                'multiply_by_days' => (bool) $fee->multiply_by_days,
+                'is_one_way_fee' => (bool) $fee->is_one_way_fee,
+                'apply_inverted' => (bool) $fee->apply_inverted,
+            ])
+            ->values()
+            ->all();
+
         return response()->json([
-            'data' => new CarDetailResource($car, $priceTypes),
+            'data' => new CarDetailResource($car, $priceTypes, $locationFees),
         ]);
     }
 

@@ -6,9 +6,9 @@ import { useShopConfig } from '../context/ShopConfigContext'
 import { useToast } from '../context/ToastContext'
 import { usePageContent } from '../context/SiteContentContext'
 import { getRequestToBookConfig, resolveBookingType, resolveTimeOptions } from '../data/requestToBookConfig'
-import { formatCurrency, formatCurrencyFromCents } from '../utils/format'
 import { formatPhoneForApi, validatePhone } from '../utils/phone'
-import { combineDateAndTime, nightsBetween, parseRentalOptionIds, toDateOnlyString } from '../utils/requestToBookUtils'
+import { combineDateAndTime, nightsBetween, parseRentalOptionIds, resolveLocationRouteFeeCents, toDateOnlyString } from '../utils/requestToBookUtils'
+import { useFormatPrice } from './useFormatPrice'
 import { toApiDateTime, parseDateTimeLocal } from '../utils/format'
 import { useBookingRules } from './useBookingRules'
 import { expandBlockedWindows } from '../utils/bookingRestrictions'
@@ -72,6 +72,7 @@ export default function useRequestToBook() {
   const bookingType = resolveBookingType(searchParams)
   const { page: checkoutPage } = usePageContent('checkout')
   const { prepayPercent } = useShopConfig()
+  const priceFormatter = useFormatPrice()
   const config = useMemo(() => {
     const base = getRequestToBookConfig(bookingType || 'car', prepayPercent)
     if (checkoutPage?.stepperSteps?.length) {
@@ -553,32 +554,52 @@ export default function useRequestToBook() {
 
   const locationFeeLabel = useCallback(
     (locId, role) => {
-      const id = String(locId)
-      const baseId = pickupLocations[0] ? String(pickupLocations[0].id) : ''
-      if (role === 'pickup' && id === baseId) return 'Free'
-      if (role === 'dropoff' && (form.sameReturn || id === String(form.pickup_location_id))) return 'Free'
+      let pickupId
+      let dropoffId
+      if (role === 'pickup') {
+        pickupId = locId
+        dropoffId = form.sameReturn ? locId : dropoffLocationId
+      } else {
+        pickupId = form.pickup_location_id
+        dropoffId = locId
+      }
 
-      const isRelevant =
-        (role === 'pickup' && id === String(form.pickup_location_id))
-        || (role === 'dropoff' && id === String(form.dropoff_location_id))
+      if (!pickupId || !dropoffId) return 'Free'
+      if (String(pickupId) === String(dropoffId)) return 'Free'
 
-      if (quote?.fees_lines?.length && isRelevant) {
-        const locFee = quote.fees_lines.find(
-          (l) => l.kind === 'location_fee' || l.kind === 'one_way_fee',
+      const isSelectedOption =
+        (role === 'pickup' && String(locId) === String(form.pickup_location_id))
+        || (role === 'dropoff' && String(locId) === String(form.dropoff_location_id))
+
+      if (quote?.fees_lines?.length && isSelectedOption) {
+        const routeFees = quote.fees_lines.filter(
+          (line) => line.kind === 'location_fee' || line.kind === 'one_way_fee',
         )
-        if (locFee && Number(locFee.amount) > 0) {
-          return `+${formatCurrency(locFee.amount, quote.currency)}`
-        }
+        const routeTotal = routeFees.reduce((sum, line) => sum + Number(line.amount), 0)
+        if (routeTotal > 0) return `+${priceFormatter.format(routeTotal)}`
       }
 
-      const loc = allLocations.find((l) => String(l.id) === id)
-      if (loc?.pickup_fee_cents > 0) {
-        return `+${formatCurrencyFromCents(loc.pickup_fee_cents, quote?.currency || 'EUR')}`
-      }
+      const rentalDays = quote?.rental_days || nights
+      const feeCents = resolveLocationRouteFeeCents(
+        item?.location_fees,
+        pickupId,
+        dropoffId,
+        rentalDays,
+      )
+      if (feeCents > 0) return `+${priceFormatter.formatCents(feeCents)}`
 
-      return id === baseId ? 'Free' : ','
+      return 'Free'
     },
-    [pickupLocations, allLocations, form.pickup_location_id, form.dropoff_location_id, form.sameReturn, quote],
+    [
+      form.pickup_location_id,
+      form.dropoff_location_id,
+      form.sameReturn,
+      dropoffLocationId,
+      quote,
+      nights,
+      item?.location_fees,
+      priceFormatter,
+    ],
   )
 
   return {

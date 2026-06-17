@@ -13,7 +13,7 @@ class CarDetailResource extends JsonResource
      * @param  Car  $resource
      * @param  array<int, array{id:int,name:string,slug:string,attribute_label:?string,attribute_value_per_day:?string,from_price_per_day_cents:int}>  $priceTypes
      */
-    public function __construct($resource, protected array $priceTypes = [])
+    public function __construct($resource, protected array $priceTypes = [], protected array $locationFees = [])
     {
         parent::__construct($resource);
     }
@@ -65,6 +65,7 @@ class CarDetailResource extends JsonResource
             'rental_conditions' => RentalConditionResource::collection($car->rentalConditions),
             'pickup_locations' => LocationResource::collection($pickupLocations),
             'dropoff_locations' => LocationResource::collection($dropoffLocations),
+            'location_fees' => $this->locationFees,
             'pickup_time_from' => $this->formatTime($car->pickup_time_from),
             'pickup_time_to' => $this->formatTime($car->pickup_time_to),
             'dropoff_time_from' => $this->formatTime($car->dropoff_time_from),

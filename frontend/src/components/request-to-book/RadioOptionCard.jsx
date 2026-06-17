@@ -15,7 +15,8 @@ function pickIcon(name = '') {
 
 export default function RadioOptionCard({ location, selected, onSelect, priceLabel = 'Free' }) {
   const Icon = pickIcon(location.name)
-  const isFree = priceLabel === 'Free' || priceLabel === '€0' || priceLabel === '€0.00'
+  const label = priceLabel === ',' ? 'Free' : priceLabel
+  const isFree = label === 'Free' || label === '€0' || label === '€0.00'
   return (
     <label className={`opt${selected ? ' sel' : ''}`} onClick={() => onSelect(location.id)}>
       <span className="radio" />
@@ -24,7 +25,9 @@ export default function RadioOptionCard({ location, selected, onSelect, priceLab
         <span className="on">{location.name}</span>
         {location.address && <span className="od">{location.address}</span>}
       </span>
-      <span className={`op${isFree ? ' free' : ''}`}>{priceLabel}</span>
+      {label ? (
+        <span className={`op${isFree ? ' free' : ''}`}>{label}</span>
+      ) : null}
     </label>
   )
 }

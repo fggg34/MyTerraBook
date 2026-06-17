@@ -16,6 +16,14 @@ function formatDueOnApprovalLabel(template, percent) {
   return String(template || DEFAULT_DUE_ON_APPROVAL_LABEL).replace('{percent}', String(percent))
 }
 
+function quoteFeeLineLabel(line) {
+  const label = String(line?.label || '').trim()
+  if (label) return label
+  if (line?.kind === 'one_way_fee') return 'One-way fee'
+  if (line?.kind === 'location_fee') return 'Location fee'
+  return 'Fee'
+}
+
 export default function BookingSummarySidebar({
   config,
   item,
@@ -164,14 +172,14 @@ export default function BookingSummarySidebar({
                 <span className="lv">{price.format(quote.rental_subtotal)}</span>
               </div>
               {locationFees.map((line) => (
-                <div key={`loc-${line.label}`} className="lrow">
-                  <span className="ll">Location service</span>
+                <div key={`${line.kind}-${line.label}-${line.amount}`} className="lrow">
+                  <span className="ll">{quoteFeeLineLabel(line)}</span>
                   <span className="lv">{price.format(line.amount)}</span>
                 </div>
               ))}
               {oohFees.map((line) => (
-                <div key={`ooh-${line.label}`} className="lrow">
-                  <span className="ll">Out-of-hours pick-up</span>
+                <div key={`ooh-${line.label}-${line.amount}`} className="lrow">
+                  <span className="ll">{quoteFeeLineLabel(line)}</span>
                   <span className="lv">{price.format(line.amount)}</span>
                 </div>
               ))}
