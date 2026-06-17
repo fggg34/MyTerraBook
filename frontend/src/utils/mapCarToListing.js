@@ -3,6 +3,7 @@ import { LISTING_TYPES } from '../data/listingConfig'
 import { splitListingDescription } from './formatListingDescription'
 import { mapApiListingReviews } from './mapListingReviews'
 import { driveLabel } from './buildVehicleCardSpecs'
+import { guestRentalOptionSubLabel } from './rentalOptionPricing'
 
 const FALLBACK_IMAGES = {
   campervan: ['/images/homepage/cardcamper.jpg', '/images/homepage/hero-van.jpg'],
@@ -71,7 +72,7 @@ function buildAddons(car, priceFormatter) {
     icon: opt.icon,
     iconUrl: opt.icon_url || null,
     description: opt.description || '',
-    sub: opt.is_daily_cost ? 'Per day' : 'One-time',
+    sub: guestRentalOptionSubLabel(!!opt.is_daily_cost),
     price: opt.cost ? format(Number.parseFloat(opt.cost)) : ',',
     cost_cents: opt.cost_cents ?? 0,
     is_daily_cost: !!opt.is_daily_cost,

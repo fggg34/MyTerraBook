@@ -20,12 +20,12 @@ use App\Models\PriceType;
 use App\Models\SubCategory;
 use App\Services\OrderAvailabilityService;
 use App\Services\RentalQuoteService;
+use App\Support\DailyFarePricing;
 use App\Support\Money;
 use App\Support\QuotePresentation;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class CatalogController extends Controller
@@ -141,9 +141,7 @@ class CatalogController extends Controller
             $query->where('sub_category_id', $request->query('sub_category_id'));
         }
 
-        $minPrices = DailyFare::query()
-            ->select('car_id', DB::raw('MIN(price_per_day_cents) as min_daily_price_cents'))
-            ->groupBy('car_id');
+        $minPrices = DailyFarePricing::baseFareListSubquery();
 
         $cars = $query
             ->leftJoinSub($minPrices, 'min_fares', 'min_fares.car_id', '=', 'cars.id')
@@ -203,14 +201,10 @@ class CatalogController extends Controller
             'listingReviews' => fn ($q) => $q->approved()->latest()->limit(50),
         ]);
 
-        $fareMins = DailyFare::query()
-            ->where('car_id', $car->id)
-            ->selectRaw('price_type_id, MIN(price_per_day_cents) as min_cents')
-            ->groupBy('price_type_id')
-            ->pluck('min_cents', 'price_type_id');
+        $fromPriceByType = DailyFarePricing::fromPriceCentsByPriceTypeForCar($car->id);
 
         $priceTypes = PriceType::query()
-            ->whereIn('id', $fareMins->keys())
+            ->whereIn('id', array_keys($fromPriceByType))
             ->where('is_active', true)
             ->orderBy('name')
             ->get()
@@ -220,7 +214,7 @@ class CatalogController extends Controller
                 'slug' => $pt->slug,
                 'attribute_label' => $pt->attribute_label,
                 'attribute_value_per_day' => $pt->attribute_value_per_day,
-                'from_price_per_day_cents' => (int) $fareMins->get($pt->id, 0),
+                'from_price_per_day_cents' => (int) ($fromPriceByType[$pt->id] ?? 0),
             ])
             ->values()
             ->all();

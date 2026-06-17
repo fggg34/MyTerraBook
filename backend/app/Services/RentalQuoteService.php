@@ -13,6 +13,7 @@ use App\Models\OutOfHoursFee;
 use App\Models\PriceType;
 use App\Models\Setting;
 use App\Models\SpecialPrice;
+use App\Support\RentalOptionPricing;
 use App\Models\TaxRate;
 use App\Support\PricingCurrency;
 use Carbon\CarbonInterface;
@@ -88,16 +89,22 @@ class RentalQuoteService
                     throw new InvalidArgumentException("Add-on is not available for this vehicle.");
                 }
 
-                $unitCents = $option->pivot->cost_cents ?? $option->cost_cents;
-                $isDailyCost = $option->pivot->is_daily_cost ?? $option->is_daily_cost;
+                $unitCents = RentalOptionPricing::resolveCostCents(
+                    $option->pivot->cost_cents,
+                    (int) $option->cost_cents,
+                );
+                $isDailyCost = RentalOptionPricing::resolveIsDailyCost(
+                    $option->pivot->is_daily_cost,
+                    (bool) $option->is_daily_cost,
+                );
 
-                $line = $isDailyCost
-                    ? $quantity * $unitCents * $rentalDays
-                    : $quantity * $unitCents;
-
-                if ($option->max_cost_cap_cents !== null) {
-                    $line = min($line, $option->max_cost_cap_cents);
-                }
+                $line = RentalOptionPricing::lineTotalCents(
+                    $unitCents,
+                    $isDailyCost,
+                    $quantity,
+                    $rentalDays,
+                    $option->max_cost_cap_cents,
+                );
 
                 $extrasCents += $line;
                 $taxBips = $this->taxBipsForTaxRateId($option->tax_rate_id, $defaultTaxBips);

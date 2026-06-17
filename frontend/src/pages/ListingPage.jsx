@@ -63,6 +63,12 @@ function ListingPageBody({ listingType = 'campervan' }) {
       const selectedPickup = pickupDate ?? bookingDatesRef.current.pickupDate
       const selectedDropoff = dropoffDate ?? bookingDatesRef.current.dropoffDate
 
+      if (listingType !== 'guesthouse' && bookingDatesRef.current?.datesUnavailable) {
+        toast('Selected dates are not available for booking', 'error')
+        openDatePicker()
+        return
+      }
+
       if (listingType === 'guesthouse') {
         const slug = car.slug || car.id
         const checkIn = formatDateOnly(selectedPickup) || queryDefaults.check_in || ''

@@ -47,12 +47,18 @@ import {
   findBaseDailyFare,
   hasUnsavedProtectionPricing,
   inferProtectionAddOnEuros,
+  readProtectionOffers,
   isBaseDailyPriceDirty,
   standardDailyFares,
   standardPriceTypeId,
   syncProtectionAddOn,
 } from '../../utils/hostCarPricingUtils'
+import {
+  buildHostRentalOptionSyncPayload,
+  normalizeHostRentalOptionFromApi,
+} from '../../utils/rentalOptionPricing'
 import HostCarExtrasPanel from '../../components/host/HostCarExtrasPanel'
+import HostCarProtectionPlansPanel from '../../components/host/HostCarProtectionPlansPanel'
 import HostCarLocationsStep from '../../components/host/HostCarLocationsStep'
 import HostDisclosure from '../../components/host/HostDisclosure'
 import { HostImageDropzone, HostImageGallery } from '../../components/host/HostImageUpload'
@@ -196,6 +202,7 @@ export default function HostCarEditorPage() {
   const [extraDraft, setExtraDraft] = useState({ charge_per_extra_hour_euros: 10 })
   const [plusAddOn, setPlusAddOn] = useState('')
   const [maxAddOn, setMaxAddOn] = useState('')
+  const [protectionOffers, setProtectionOffers] = useState({ plus: false, max: false })
   const [protectionSaving, setProtectionSaving] = useState(false)
   const [blockDraft, setBlockDraft] = useState({ starts_at: '', ends_at: '', units_blocked: 1, notes: '' })
   const [unitsBusy, setUnitsBusy] = useState(false)
@@ -288,10 +295,7 @@ export default function HostCarEditorPage() {
           rental_options: (data.rental_options?.length
             ? data.rental_options
             : (data.rental_option_ids || []).map((optionId) => ({ id: optionId, cost_euros: 0 }))
-          ).map((row) => ({
-            id: row.id,
-            cost_euros: row.cost_euros ?? (row.cost_cents ?? 0) / 100,
-          })),
+          ).map((row) => normalizeHostRentalOptionFromApi(row)),
           rental_condition_ids: data.rental_condition_ids || [],
         })
         setMainImage(data.main_image_path || null)
@@ -303,6 +307,32 @@ export default function HostCarEditorPage() {
       .catch(() => toast('Could not load vehicle', 'error'))
       .finally(() => setLoading(false))
   }, [id, isNew, toast])
+
+  useEffect(() => {
+    if (isNew || !recordId || status !== 'pending_review') return undefined
+
+    const refreshStatus = () => {
+      getHostCar(recordId)
+        .then((res) => {
+          const data = res.data.data
+          setStatus(data.listing_status)
+          setRejectionReason(data.rejection_reason || '')
+        })
+        .catch(() => {})
+    }
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshStatus()
+    }
+
+    window.addEventListener('focus', refreshStatus)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      window.removeEventListener('focus', refreshStatus)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [isNew, recordId, status])
 
   const save = async () => {
     const timeError = validateCarTimes(form)
@@ -339,10 +369,9 @@ export default function HostCarEditorPage() {
         pickup_location_ids: form.pickup_location_ids,
         dropoff_location_ids: form.dropoff_location_ids,
         characteristic_ids: form.characteristic_ids,
-        rental_options: form.rental_options.map((row) => ({
-          id: row.id,
-          cost_euros: Number(row.cost_euros) || 0,
-        })),
+        rental_options: form.rental_options.map((row) => (
+          buildHostRentalOptionSyncPayload(row, catalog.rentalOptions)
+        )),
         rental_condition_ids: form.rental_condition_ids,
       }
       if (recordId) {
@@ -636,8 +665,14 @@ export default function HostCarEditorPage() {
     [baseDailyPrice, baseDailyFare],
   )
   const protectionPricingDirty = useMemo(
-    () => hasUnsavedProtectionPricing(plusAddOn, maxAddOn, dailyFares, catalog.priceTypes),
-    [plusAddOn, maxAddOn, dailyFares, catalog.priceTypes],
+    () => hasUnsavedProtectionPricing(
+      protectionOffers,
+      plusAddOn,
+      maxAddOn,
+      dailyFares,
+      catalog.priceTypes,
+    ),
+    [protectionOffers, plusAddOn, maxAddOn, dailyFares, catalog.priceTypes],
   )
   const seasonalFixedAmountLabel = specialDraft.type === 'discount'
     ? currency.fixedDiscountLabel
@@ -646,6 +681,11 @@ export default function HostCarEditorPage() {
   useEffect(() => {
     const base = findBaseDailyFare(standardDailyFares(dailyFares, catalog.priceTypes))
     setBaseDailyPrice(base ? String(base.price_per_day_cents / 100) : '')
+  }, [dailyFares, catalog.priceTypes])
+
+  useEffect(() => {
+    if (!catalog.priceTypes.length) return
+    setProtectionOffers(readProtectionOffers(dailyFares, catalog.priceTypes))
   }, [dailyFares, catalog.priceTypes])
 
   useEffect(() => {
@@ -718,23 +758,51 @@ export default function HostCarEditorPage() {
     const fares = faresOverride ?? dailyFares
     const baseFare = findBaseDailyFare(standardDailyFares(fares, catalog.priceTypes))
     if (!baseFare) {
-      if (!silent) toast('Save your daily rental rate first, then set protection add-ons.', 'error')
+      if (!silent) toast('Save your daily rental rate first, then set protection plans.', 'error')
+      return false
+    }
+    if (protectionOffers.plus && (!plusAddOn || Number(plusAddOn) <= 0)) {
+      if (!silent) toast('Enter a daily price for Enhanced coverage or turn it off.', 'error')
+      return false
+    }
+    if (protectionOffers.max && (!maxAddOn || Number(maxAddOn) <= 0)) {
+      if (!silent) toast('Enter a daily price for Full coverage or turn it off.', 'error')
       return false
     }
     setProtectionSaving(true)
     try {
       const api = { createHostCarDailyFare, updateHostCarDailyFare, deleteHostCarDailyFare }
-      await syncProtectionAddOn(recordId, 'plus', plusAddOn, fares, catalog.priceTypes, api)
-      await syncProtectionAddOn(recordId, 'max', maxAddOn, fares, catalog.priceTypes, api)
+      await syncProtectionAddOn(
+        recordId,
+        'plus',
+        protectionOffers.plus ? plusAddOn : '',
+        fares,
+        catalog.priceTypes,
+        api,
+      )
+      await syncProtectionAddOn(
+        recordId,
+        'max',
+        protectionOffers.max ? maxAddOn : '',
+        fares,
+        catalog.priceTypes,
+        api,
+      )
       await loadPricing(recordId)
-      if (!silent) toast('Protection pricing saved', 'success')
+      if (!silent) toast('Protection settings saved', 'success')
       return true
     } catch (err) {
-      if (!silent) toast(err.response?.data?.message || 'Could not save protection pricing', 'error')
+      if (!silent) toast(err.response?.data?.message || 'Could not save protection settings', 'error')
       throw err
     } finally {
       setProtectionSaving(false)
     }
+  }
+
+  const handleProtectionOffersChange = (nextOffers) => {
+    setProtectionOffers(nextOffers)
+    if (!nextOffers.plus) setPlusAddOn('')
+    if (!nextOffers.max) setMaxAddOn('')
   }
 
   const flushPendingPricing = async (carId) => {
@@ -1347,43 +1415,57 @@ export default function HostCarEditorPage() {
                 )}
               </HostDisclosure>
 
+              <HostCarProtectionPlansPanel
+                priceTypes={catalog.priceTypes}
+                offers={protectionOffers}
+                onChangeOffers={handleProtectionOffersChange}
+                baseDailyFare={baseDailyFare}
+              />
+
               <section className="host-fare-section">
                 <div className="host-fare-head">
                   <span className="host-fare-head-icon"><Shield size={18} /></span>
                   <div className="host-fare-head-text">
-                    <h3>Protection upgrades (optional)</h3>
-                    <p>Guests can upgrade their coverage at checkout. Set how much extra to charge per day, leave blank to hide that option.</p>
+                    <h3>Protection upgrade pricing</h3>
+                    <p>Set the daily add-on price for each upgrade tier you offer above.</p>
                   </div>
                 </div>
+                {!protectionOffers.plus && !protectionOffers.max && (
+                  <p className="host-field-hint">Select Enhanced or Full coverage above to set upgrade prices.</p>
+                )}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="host-field">
-                    <label>Enhanced coverage</label>
-                    <span className="host-field-note">Lower guest deposit</span>
-                    <div className="host-addon-input">
-                      <span className="host-addon-input__prefix">+ {currency.inputPrefix}</span>
-                      <input type="number" min={0} placeholder="e.g. 15" value={plusAddOn} onChange={(e) => setPlusAddOn(e.target.value)} />
-                      <span className="host-addon-input__suffix">/ day</span>
+                  {protectionOffers.plus && (
+                    <div className="host-field">
+                      <label>Enhanced coverage</label>
+                      <span className="host-field-note">Lower guest deposit</span>
+                      <div className="host-addon-input">
+                        <span className="host-addon-input__prefix">+ {currency.inputPrefix}</span>
+                        <input type="number" min={0} placeholder="e.g. 15" value={plusAddOn} onChange={(e) => setPlusAddOn(e.target.value)} />
+                        <span className="host-addon-input__suffix">/ day</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="host-field">
-                    <label>Full coverage</label>
-                    <span className="host-field-note">Zero guest deposit</span>
-                    <div className="host-addon-input">
-                      <span className="host-addon-input__prefix">+ {currency.inputPrefix}</span>
-                      <input type="number" min={0} placeholder="e.g. 35" value={maxAddOn} onChange={(e) => setMaxAddOn(e.target.value)} />
-                      <span className="host-addon-input__suffix">/ day</span>
+                  )}
+                  {protectionOffers.max && (
+                    <div className="host-field">
+                      <label>Full coverage</label>
+                      <span className="host-field-note">Zero guest deposit</span>
+                      <div className="host-addon-input">
+                        <span className="host-addon-input__prefix">+ {currency.inputPrefix}</span>
+                        <input type="number" min={0} placeholder="e.g. 35" value={maxAddOn} onChange={(e) => setMaxAddOn(e.target.value)} />
+                        <span className="host-addon-input__suffix">/ day</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
-                {(plusAddOn || maxAddOn) && baseDailyFare && (
+                {(protectionOffers.plus || protectionOffers.max) && (plusAddOn || maxAddOn) && baseDailyFare && (
                   <div className="host-fare-preview">
                     <span className="host-fare-preview-label">Guest will see</span>
-                    {plusAddOn && (
+                    {protectionOffers.plus && plusAddOn && (
                       <span className="host-fare-tag is-preview">
                         <span className="host-fare-tag-text">Enhanced <ArrowRight size={12} /> <strong>+{currency.formatAmount(Number(plusAddOn))}/day</strong> on top of your rate</span>
                       </span>
                     )}
-                    {maxAddOn && (
+                    {protectionOffers.max && maxAddOn && (
                       <span className="host-fare-tag is-preview">
                         <span className="host-fare-tag-text">Full <ArrowRight size={12} /> <strong>+{currency.formatAmount(Number(maxAddOn))}/day</strong> on top of your rate</span>
                       </span>
@@ -1393,13 +1475,13 @@ export default function HostCarEditorPage() {
                 <button
                   type="button"
                   className="host-btn secondary"
-                  disabled={protectionSaving || !baseDailyFare}
+                  disabled={protectionSaving || !baseDailyFare || !protectionPricingDirty}
                   onClick={() => saveProtectionPricing()}
                 >
-                  {protectionSaving ? 'Saving…' : 'Save protection pricing'}
+                  {protectionSaving ? 'Saving…' : 'Save protection settings'}
                 </button>
                 {protectionPricingDirty && (
-                  <p className="host-field-hint">You have unsaved protection add-on changes, save or submit to auto-save.</p>
+                  <p className="host-field-hint">You have unsaved protection changes, save or submit to auto-save.</p>
                 )}
               </section>
 
@@ -1479,7 +1561,21 @@ export default function HostCarEditorPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="host-field"><label>From</label><HostDateTimePicker value={blockDraft.starts_at} onChange={(v) => setBlockDraft({ ...blockDraft, starts_at: v })} placeholder="Select start date & time" /></div>
                 <div className="host-field"><label>To</label><HostDateTimePicker value={blockDraft.ends_at} onChange={(v) => setBlockDraft({ ...blockDraft, ends_at: v })} placeholder="Select end date & time" /></div>
-                <div className="host-field"><label>Units blocked</label><input type="number" min={1} value={blockDraft.units_blocked} onChange={(e) => setBlockDraft({ ...blockDraft, units_blocked: Number(e.target.value) })} /></div>
+                <div className="host-field">
+                  <label>Units blocked</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={Math.max(1, units.length || form.units_available || 1)}
+                    value={blockDraft.units_blocked}
+                    onChange={(e) => {
+                      const maxUnits = Math.max(1, units.length || form.units_available || 1)
+                      const next = Math.min(maxUnits, Math.max(1, Number(e.target.value) || 1))
+                      setBlockDraft({ ...blockDraft, units_blocked: next })
+                    }}
+                  />
+                  <p className="host-field-hint">You have {Math.max(1, units.length || form.units_available || 1)} unit(s) in your fleet.</p>
+                </div>
                 <div className="host-field"><label>Notes</label><input value={blockDraft.notes} onChange={(e) => setBlockDraft({ ...blockDraft, notes: e.target.value })} /></div>
               </div>
               <button type="button" className="host-btn secondary" disabled={!blockDraft.starts_at || !blockDraft.ends_at} onClick={async () => {

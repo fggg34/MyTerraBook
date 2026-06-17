@@ -5,6 +5,27 @@ export const PROTECTION_TIER_SLUGS = {
   full: 'max',
 }
 
+export const PROTECTION_TIER_ORDER = [
+  PROTECTION_TIER_SLUGS.standard,
+  PROTECTION_TIER_SLUGS.enhanced,
+  PROTECTION_TIER_SLUGS.full,
+]
+
+export const PROTECTION_TIER_HOST_LABELS = {
+  basic: {
+    title: 'Standard coverage',
+    note: 'Included with your daily rental rate',
+  },
+  plus: {
+    title: 'Enhanced coverage',
+    note: 'Lower guest deposit',
+  },
+  max: {
+    title: 'Full coverage',
+    note: 'Zero guest deposit',
+  },
+}
+
 export function findPriceType(priceTypes, slug) {
   const target = slug?.toLowerCase()
   return priceTypes.find((pt) => pt.slug?.toLowerCase() === target)
@@ -49,6 +70,44 @@ export function filterStandardPriceTypeRows(rows, priceTypes) {
   return rows.filter((row) => Number(row.price_type_id) === standardId)
 }
 
+export function catalogProtectionTiers(priceTypes) {
+  return PROTECTION_TIER_ORDER
+    .map((slug) => {
+      const priceType = findPriceType(priceTypes, slug)
+      if (!priceType) return null
+
+      return {
+        slug,
+        priceType,
+        isStandard: slug === PROTECTION_TIER_SLUGS.standard,
+      }
+    })
+    .filter(Boolean)
+}
+
+export function isProtectionTierOffered(dailyFares, priceTypes, tierSlug) {
+  if (tierSlug === PROTECTION_TIER_SLUGS.standard) {
+    return findBaseDailyFare(standardDailyFares(dailyFares, priceTypes)) != null
+  }
+
+  const tier = findPriceType(priceTypes, tierSlug)
+  if (!tier) return false
+
+  return dailyFares.some((fare) => Number(fare.price_type_id) === Number(tier.id))
+}
+
+export function readProtectionOffers(dailyFares, priceTypes) {
+  return {
+    plus: isProtectionTierOffered(dailyFares, priceTypes, PROTECTION_TIER_SLUGS.enhanced),
+    max: isProtectionTierOffered(dailyFares, priceTypes, PROTECTION_TIER_SLUGS.full),
+  }
+}
+
+export function hasUnsavedProtectionOffers(offers, dailyFares, priceTypes) {
+  const saved = readProtectionOffers(dailyFares, priceTypes)
+  return offers.plus !== saved.plus || offers.max !== saved.max
+}
+
 export function isBaseDailyPriceDirty(baseDailyPrice, baseDailyFare) {
   const input = String(baseDailyPrice ?? '').trim()
   if (!input) return !!baseDailyFare
@@ -75,9 +134,16 @@ export function isProtectionAddOnDirty(addOnValue, dailyFares, priceTypes, tierS
   return Math.abs(parsed - saved) > 0.001
 }
 
-export function hasUnsavedProtectionPricing(plusAddOn, maxAddOn, dailyFares, priceTypes) {
-  return isProtectionAddOnDirty(plusAddOn, dailyFares, priceTypes, 'plus')
-    || isProtectionAddOnDirty(maxAddOn, dailyFares, priceTypes, 'max')
+export function hasUnsavedProtectionPricing(offers, plusAddOn, maxAddOn, dailyFares, priceTypes) {
+  if (hasUnsavedProtectionOffers(offers, dailyFares, priceTypes)) return true
+
+  if (offers.plus && isProtectionAddOnDirty(plusAddOn, dailyFares, priceTypes, 'plus')) return true
+  if (offers.max && isProtectionAddOnDirty(maxAddOn, dailyFares, priceTypes, 'max')) return true
+
+  if (!offers.plus && isProtectionTierOffered(dailyFares, priceTypes, PROTECTION_TIER_SLUGS.enhanced)) return true
+  if (!offers.max && isProtectionTierOffered(dailyFares, priceTypes, PROTECTION_TIER_SLUGS.full)) return true
+
+  return false
 }
 
 export function inferProtectionAddOnEuros(dailyFares, priceTypes, tierSlug) {

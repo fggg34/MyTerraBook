@@ -453,6 +453,14 @@ class HostCarController extends Controller
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $unitsAvailable = max(1, (int) $car->units_available);
+        $unitsBlocked = (int) ($data['units_blocked'] ?? 1);
+        if ($unitsBlocked > $unitsAvailable) {
+            return response()->json([
+                'message' => "Cannot block more than {$unitsAvailable} unit(s) for this vehicle.",
+            ], 422);
+        }
+
         $block = $car->availabilityBlocks()->create([
             ...$data,
             'source' => 'manual',

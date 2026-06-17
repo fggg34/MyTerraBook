@@ -1,9 +1,12 @@
 import { ChevronRight, MapPin } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { api } from '../../api'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { buildStaticMapUrl } from '../../utils/parseGooglePlace'
+import { expandBlockedWindows, rangeIncludesBlockedDate } from '../../utils/bookingRestrictions'
+import { buildListingQuotePayload } from '../../utils/listingQuote'
 import ListingSpecGrid from './ListingSpecGrid'
 import ListingPickupDropoff from './ListingPickupDropoff'
 import ListingAmenities from './ListingAmenities'
@@ -21,6 +24,7 @@ export default function ListingTabPanels({
   openCalendarRef,
   selectedAddonIds = [],
   onToggleAddon,
+  onAvailabilityChange,
 }) {
   const {
     typeConfig,
@@ -49,13 +53,66 @@ export default function ListingTabPanels({
   const [startDate, setStartDate] = useState(() => parseDateOnly(initialPickup))
   const [endDate, setEndDate] = useState(() => parseDateOnly(initialDropoff))
   const [descExpanded, setDescExpanded] = useState(false)
+  const [blockedDates, setBlockedDates] = useState([])
+  const [blockedDatesLoaded, setBlockedDatesLoaded] = useState(!isVehicle)
+  const [quoteTotal, setQuoteTotal] = useState(null)
+  const [quoteLoading, setQuoteLoading] = useState(false)
   const priceFromAmount = Number(listing.priceFromAmount) || 0
+
+  useEffect(() => {
+    if (!isVehicle || !listing.id) {
+      setBlockedDates([])
+      setBlockedDatesLoaded(true)
+      return undefined
+    }
+
+    setBlockedDatesLoaded(false)
+    let cancelled = false
+    api
+      .get(`/cars/${listing.id}/availability-calendar`)
+      .then((res) => {
+        if (cancelled) return
+        const windows = [...(res.data?.booked ?? []), ...(res.data?.blocked ?? [])]
+        setBlockedDates(expandBlockedWindows(windows))
+      })
+      .catch(() => {
+        if (!cancelled) setBlockedDates([])
+      })
+      .finally(() => {
+        if (!cancelled) setBlockedDatesLoaded(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isVehicle, listing.id])
 
   const syncBookingDates = (start, end) => {
     if (bookingDatesRef) {
       bookingDatesRef.current = { pickupDate: start, dropoffDate: end }
     }
   }
+
+  const datesUnavailable = useMemo(
+    () => rangeIncludesBlockedDate(startDate, endDate, blockedDates),
+    [startDate, endDate, blockedDates],
+  )
+  const bookingBlocked = isVehicle && (!blockedDatesLoaded || datesUnavailable)
+
+  useEffect(() => {
+    onAvailabilityChange?.({
+      datesUnavailable: bookingBlocked,
+      blockedDatesLoaded,
+    })
+    if (bookingDatesRef) {
+      bookingDatesRef.current = {
+        pickupDate: startDate,
+        dropoffDate: endDate,
+        datesUnavailable: bookingBlocked,
+        blockedDatesLoaded,
+      }
+    }
+  }, [startDate, endDate, bookingBlocked, blockedDatesLoaded, onAvailabilityChange, bookingDatesRef])
 
   useEffect(() => {
     const start = parseDateOnly(initialPickup)
@@ -64,6 +121,43 @@ export default function ListingTabPanels({
     setEndDate(end)
     syncBookingDates(start, end)
   }, [initialPickup, initialDropoff])
+
+  useEffect(() => {
+    if (!isVehicle || !startDate || !endDate || bookingBlocked) {
+      setQuoteTotal(null)
+      setQuoteLoading(false)
+      return undefined
+    }
+
+    const payload = buildListingQuotePayload(listing, startDate, endDate, selectedAddonIds)
+    if (!payload) {
+      setQuoteTotal(null)
+      return undefined
+    }
+
+    let cancelled = false
+    setQuoteLoading(true)
+    const timer = window.setTimeout(() => {
+      api
+        .post('/orders/quote', payload)
+        .then((res) => {
+          if (cancelled) return
+          const amount = Number(res.data?.total)
+          setQuoteTotal(Number.isFinite(amount) ? amount : null)
+        })
+        .catch(() => {
+          if (!cancelled) setQuoteTotal(null)
+        })
+        .finally(() => {
+          if (!cancelled) setQuoteLoading(false)
+        })
+    }, 300)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [isVehicle, listing, startDate, endDate, selectedAddonIds, bookingBlocked])
 
   const handleDateChange = ({ start, end }) => {
     setStartDate(start)
@@ -75,7 +169,8 @@ export default function ListingTabPanels({
     startDate && endDate
       ? Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86400000))
       : 0
-  const total = nights * priceFromAmount
+  const fallbackTotal = nights * priceFromAmount
+  const displayTotal = quoteTotal ?? (quoteLoading ? null : fallbackTotal)
   const staticMapUrl = location
     ? buildStaticMapUrl({
         latitude: location.latitude,
@@ -252,6 +347,7 @@ export default function ListingTabPanels({
               startDate={startDate}
               endDate={endDate}
               pricePerDay={priceFromAmount}
+              blockedDates={blockedDates}
               onChange={handleDateChange}
             />
           </div>
@@ -263,8 +359,10 @@ export default function ListingTabPanels({
             </span>
             <span className="rr" id="rateR">
               {startDate && endDate ? (
-                priceFromAmount > 0 ? (
-                  <b>{price.format(total)}</b>
+                quoteLoading ? (
+                  <b>…</b>
+                ) : displayTotal != null && displayTotal > 0 ? (
+                  <b>{price.format(displayTotal)}</b>
                 ) : (
                   <b>-</b>
                 )
@@ -282,10 +380,17 @@ export default function ListingTabPanels({
               {selectedAddonIds.length} extra{selectedAddonIds.length !== 1 ? 's' : ''} selected
             </p>
           )}
+          {bookingBlocked && blockedDatesLoaded && (
+            <p className="listing-unavailable-note">Selected dates are not available for booking.</p>
+          )}
+          {!blockedDatesLoaded && isVehicle && (
+            <p className="listing-availability-loading">Checking availability…</p>
+          )}
           <button
             className="book-btn"
             id="listingBookBtn"
             type="button"
+            disabled={bookingBlocked}
             onClick={(e) => {
               e.stopPropagation()
               onRequestBook?.({ pickupDate: startDate, dropoffDate: endDate })

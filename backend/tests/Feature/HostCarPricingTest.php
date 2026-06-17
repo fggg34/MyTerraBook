@@ -321,6 +321,32 @@ class HostCarPricingTest extends TestCase
         ]);
     }
 
+    public function test_host_can_sync_rental_option_with_flat_pricing_override(): void
+    {
+        [$car] = $this->hostWithCar();
+        $option = RentalOption::factory()->create([
+            'name' => 'Camping chairs',
+            'cost_cents' => 350000,
+            'is_daily_cost' => true,
+        ]);
+
+        $this->patchJson("/api/host/cars/{$car->id}/relations", [
+            'rental_options' => [
+                ['id' => $option->id, 'cost_euros' => 35, 'is_daily_cost' => false],
+            ],
+        ])->assertOk()
+            ->assertJsonPath('data.rental_options.0.id', $option->id)
+            ->assertJsonPath('data.rental_options.0.cost_cents', 3500)
+            ->assertJsonPath('data.rental_options.0.is_daily_cost', false);
+
+        $this->assertDatabaseHas('car_rental_option', [
+            'car_id' => $car->id,
+            'rental_option_id' => $option->id,
+            'cost_cents' => 3500,
+            'is_daily_cost' => false,
+        ]);
+    }
+
     public function test_quote_uses_host_rental_option_pivot_price(): void
     {
         [$car, $basic] = $this->hostWithCar();

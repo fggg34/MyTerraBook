@@ -40,6 +40,10 @@ class PublicOrderController extends Controller
         $pickup = Carbon::parse($request->string('pickup_at'));
         $dropoff = Carbon::parse($request->string('dropoff_at'));
 
+        if (! $this->availabilityService->hasCapacity($car->id, $car->units_available, $pickup, $dropoff)) {
+            return response()->json(['message' => 'No availability for these dates.'], 422);
+        }
+
         try {
             $quote = $this->quoteService->quote(
                 $car,

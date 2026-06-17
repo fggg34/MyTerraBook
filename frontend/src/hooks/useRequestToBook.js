@@ -11,7 +11,7 @@ import { combineDateAndTime, nightsBetween, parseRentalOptionIds, resolveLocatio
 import { useFormatPrice } from './useFormatPrice'
 import { toApiDateTime, parseDateTimeLocal } from '../utils/format'
 import { useBookingRules } from './useBookingRules'
-import { expandBlockedWindows } from '../utils/bookingRestrictions'
+import { expandBlockedWindows, rangeIncludesBlockedDate } from '../utils/bookingRestrictions'
 import useLocationOptions, { mergeLocationLists, suggestionToLocation, useAutoSelectLocation } from './useLocationOptions'
 
 const DEFAULT_FORM = {
@@ -386,6 +386,9 @@ export default function useRequestToBook() {
         if (bookingType !== 'guesthouse') {
           if (!form.pickup_location_id) e.pickup_location_id = 'Required'
           if (!dropoffLocationId) e.dropoff_location_id = 'Required'
+          if (rangeIncludesBlockedDate(form.startDate, form.endDate, blockedDates)) {
+            e.startDate = 'Unavailable'
+          }
         }
       }
       if (s === 2 && bookingType !== 'guesthouse') {
@@ -419,12 +422,15 @@ export default function useRequestToBook() {
       setErrors(e)
       return e
     },
-    [form, bookingType, dropoffLocationId, customFields],
+    [form, bookingType, dropoffLocationId, customFields, blockedDates],
   )
 
   const stepValidationMessage = useCallback(
     (s, e) => {
       if (s === 1) {
+        if (e.startDate === 'Unavailable' || e.endDate === 'Unavailable') {
+          return 'Selected dates are not available for booking'
+        }
         if (e.startDate || e.endDate) {
           return bookingType === 'guesthouse'
             ? 'Select your check-in and check-out dates to continue'

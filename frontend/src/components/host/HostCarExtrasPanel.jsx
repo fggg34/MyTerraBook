@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search, Settings, X } from 'lucide-react'
 import CatalogIcon from '../../utils/CatalogIcon'
-
-function defaultAmountFor(option) {
-  return option.cost_euros ?? (option.cost_cents ?? option.default_cost_cents ?? 0) / 100
-}
+import {
+  defaultRentalOptionAmountEuros,
+  hostRentalOptionPriceSuffix,
+  resolveRentalOptionIsDailyCost,
+} from '../../utils/rentalOptionPricing'
 
 export default function HostCarExtrasPanel({
   options = [],
@@ -17,6 +18,7 @@ export default function HostCarExtrasPanel({
   const [editingId, setEditingId] = useState(null)
   const [pendingNewId, setPendingNewId] = useState(null)
   const [draftPrice, setDraftPrice] = useState('')
+  const [draftIsDailyCost, setDraftIsDailyCost] = useState(false)
   const priceInputRef = useRef(null)
 
   const enabledById = useMemo(
@@ -39,9 +41,10 @@ export default function HostCarExtrasPanel({
     return () => window.cancelAnimationFrame(id)
   }, [editingId])
 
-  const startEditing = (option, amount) => {
+  const startEditing = (option, amount, isDailyCost) => {
     setEditingId(option.id)
     setDraftPrice(amount === '' || amount == null ? '' : String(amount))
+    setDraftIsDailyCost(!!isDailyCost)
   }
 
   const cancelEditing = (optionId) => {
@@ -50,12 +53,13 @@ export default function HostCarExtrasPanel({
     }
     setEditingId(null)
     setDraftPrice('')
+    setDraftIsDailyCost(false)
   }
 
   const enableOption = (option) => {
-    const amount = defaultAmountFor(option)
+    const amount = defaultRentalOptionAmountEuros(option)
     setPendingNewId(option.id)
-    startEditing(option, amount)
+    startEditing(option, amount, resolveRentalOptionIsDailyCost(null, option))
   }
 
   const removeOption = (optionId) => {
@@ -71,16 +75,23 @@ export default function HostCarExtrasPanel({
     if (exists) {
       onChange(
         enabledOptions.map((row) => (
-          String(row.id) === String(optionId) ? { ...row, cost_euros: parsed } : row
+          String(row.id) === String(optionId)
+            ? { ...row, cost_euros: parsed, is_daily_cost: draftIsDailyCost }
+            : row
         )),
       )
     } else {
-      onChange([...enabledOptions, { id: optionId, cost_euros: parsed }])
+      onChange([...enabledOptions, {
+        id: optionId,
+        cost_euros: parsed,
+        is_daily_cost: draftIsDailyCost,
+      }])
     }
 
     setPendingNewId(null)
     setEditingId(null)
     setDraftPrice('')
+    setDraftIsDailyCost(false)
   }
 
   const enabledCount = enabledOptions.length
@@ -111,8 +122,9 @@ export default function HostCarExtrasPanel({
             const isPendingNew = String(pendingNewId) === String(option.id)
             const isActive = Boolean(saved) || isPendingNew
             const isEditing = isActive && String(editingId) === String(option.id)
-            const suggested = defaultAmountFor(option)
-            const suffix = option.is_daily_cost ? '/ day' : 'flat'
+            const suggested = defaultRentalOptionAmountEuros(option)
+            const isDailyCost = resolveRentalOptionIsDailyCost(saved, option)
+            const suffix = hostRentalOptionPriceSuffix(isDailyCost)
             const savedAmount = Number(saved?.cost_euros ?? 0)
 
             if (!isActive) {
@@ -172,7 +184,28 @@ export default function HostCarExtrasPanel({
                           }
                         }}
                       />
-                      <span className="host-extras-card__price-suffix">{suffix}</span>
+                      <div
+                        className="host-extras-card__pricing-type"
+                        role="group"
+                        aria-label={`Pricing type for ${option.name}`}
+                      >
+                        <button
+                          type="button"
+                          className={!draftIsDailyCost ? 'is-active' : ''}
+                          aria-pressed={!draftIsDailyCost}
+                          onClick={() => setDraftIsDailyCost(false)}
+                        >
+                          Flat
+                        </button>
+                        <button
+                          type="button"
+                          className={draftIsDailyCost ? 'is-active' : ''}
+                          aria-pressed={draftIsDailyCost}
+                          onClick={() => setDraftIsDailyCost(true)}
+                        >
+                          / day
+                        </button>
+                      </div>
                     </div>
                     <button
                       type="button"
@@ -207,7 +240,11 @@ export default function HostCarExtrasPanel({
                     type="button"
                     className="host-extras-card__action"
                     aria-label={`Edit price for ${option.name}`}
-                    onClick={() => startEditing(option, saved?.cost_euros ?? suggested)}
+                    onClick={() => startEditing(
+                      option,
+                      saved?.cost_euros ?? suggested,
+                      resolveRentalOptionIsDailyCost(saved, option),
+                    )}
                   >
                     <Settings size={15} strokeWidth={2} />
                   </button>

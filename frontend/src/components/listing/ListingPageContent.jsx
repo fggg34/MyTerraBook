@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import { useToast } from '../../context/ToastContext'
 import { sharePage } from '../../utils/sharePage'
@@ -25,6 +26,7 @@ export default function ListingPageContent({
   onToggleAddon,
 }) {
   const { toast } = useToast()
+  const [bookingBlocked, setBookingBlocked] = useState(false)
   const { trackRef: simTrackRef, scroll: scrollSimilar, atStart: simAtStart, atEnd: simAtEnd } = useHorizontalCarousel({
     itemCount: related.length,
   })
@@ -88,6 +90,7 @@ export default function ListingPageContent({
             openCalendarRef={openCalendarRef}
             selectedAddonIds={selectedAddonIds}
             onToggleAddon={onToggleAddon}
+            onAvailabilityChange={({ datesUnavailable }) => setBookingBlocked(datesUnavailable)}
           />
         </div>
       </div>
@@ -166,8 +169,13 @@ export default function ListingPageContent({
               className="bp-cta"
               id="bpCta"
               type="button"
+              disabled={bookingBlocked}
               onClick={(e) => {
                 e.stopPropagation()
+                if (bookingBlocked) {
+                  toast('Selected dates are not available for booking', 'error')
+                  return
+                }
                 const overlay = document.getElementById('bpOverlay')
                 overlay?.classList.remove('open')
                 overlay?.setAttribute('aria-hidden', 'true')

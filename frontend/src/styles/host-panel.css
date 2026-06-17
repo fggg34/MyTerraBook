@@ -2349,6 +2349,115 @@ a.host-overview-card:hover .host-overview-card-link {
   overflow: hidden;
 }
 
+.host-protection-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.host-protection-head .host-fare-head {
+  margin-bottom: 0;
+  flex: 1 1 auto;
+}
+
+.host-protection-plans {
+  display: grid;
+  gap: 8px;
+}
+
+.host-protection-plan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e2e7ef;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.host-protection-plan.is-offered {
+  border-color: #b8dcc6;
+  background: #f8fbf9;
+}
+
+.host-protection-plan.is-standard.is-offered {
+  border-color: #c7d2e0;
+  background: #f8fafc;
+}
+
+.host-protection-plan__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.host-protection-plan__icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #eef2f8;
+  color: #475569;
+}
+
+.host-protection-plan.is-offered .host-protection-plan__icon {
+  background: #e7f3ec;
+  color: #2f6b3f;
+}
+
+.host-protection-plan__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.host-protection-plan__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f2036;
+}
+
+.host-protection-plan__meta,
+.host-protection-plan__note {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.host-protection-plan__status {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2f6b3f;
+  white-space: nowrap;
+}
+
+.host-protection-plan__toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.host-protection-plan__toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: #45a06a;
+}
+
 .host-extras-panel__grid {
   display: grid;
   gap: 8px;
@@ -2528,6 +2637,32 @@ a.host-overview-card:hover .host-overview-card-link {
   outline: none;
   border-color: #45a06a;
   box-shadow: 0 0 0 2px rgba(69, 160, 106, 0.12);
+}
+
+.host-extras-card__pricing-type {
+  flex: 0 0 auto;
+  display: inline-flex;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.host-extras-card__pricing-type button {
+  border: none;
+  padding: 5px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #64748b;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.host-extras-card__pricing-type button.is-active {
+  color: #fff;
+  background: #45a06a;
 }
 
 @media (max-width: 640px) {

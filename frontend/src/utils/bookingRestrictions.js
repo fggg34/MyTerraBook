@@ -6,6 +6,15 @@ export function weekdayShort(date) {
   return date.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase()
 }
 
+/** YYYY-MM-DD in the user's local timezone (avoids UTC shift from toISOString). */
+export function localDateKey(date) {
+  if (!date) return ''
+  const d = date instanceof Date ? date : new Date(date)
+  if (Number.isNaN(d.getTime())) return ''
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
 function matchesWeekdayRule(date, rules = []) {
   if (!rules.length) return false
   const long = weekdayName(date)
@@ -18,7 +27,7 @@ function matchesWeekdayRule(date, rules = []) {
 }
 
 function activeRestrictions(date, restrictions = []) {
-  const dateStr = date.toISOString().slice(0, 10)
+  const dateStr = localDateKey(date)
   return restrictions.filter((r) => {
     const from = r.date_from
     const to = r.date_to
@@ -62,17 +71,31 @@ export function expandBlockedWindows(windows = []) {
     const last = new Date(end)
     last.setHours(0, 0, 0, 0)
     while (cur <= last) {
-      dates.add(cur.toISOString().slice(0, 10))
+      dates.add(localDateKey(cur))
       cur.setDate(cur.getDate() + 1)
     }
   }
   return [...dates]
 }
 
+export function rangeIncludesBlockedDate(startDate, endDate, blockedDates = []) {
+  if (!startDate || !endDate || !blockedDates.length) return false
+  const blockedSet = new Set(blockedDates)
+  const cur = new Date(startDate)
+  cur.setHours(0, 0, 0, 0)
+  const last = new Date(endDate)
+  last.setHours(0, 0, 0, 0)
+  while (cur <= last) {
+    if (blockedSet.has(localDateKey(cur))) return true
+    cur.setDate(cur.getDate() + 1)
+  }
+  return false
+}
+
 export function buildDateDisabledChecker({ blockedDates = [], restrictions = [], role = 'pickup' } = {}) {
   const blockedSet = new Set(blockedDates)
   return (date) => {
-    const dateStr = date.toISOString().slice(0, 10)
+    const dateStr = localDateKey(date)
     if (blockedSet.has(dateStr)) return true
     if (role === 'pickup' && isClosedToArrival(date, restrictions)) return true
     if (role === 'dropoff' && isClosedToDeparture(date, restrictions)) return true

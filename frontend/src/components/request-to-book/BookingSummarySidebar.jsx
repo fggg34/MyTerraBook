@@ -9,6 +9,7 @@ import { usePageContent } from '../../context/SiteContentContext'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { useShopConfig } from '../../context/ShopConfigContext'
 import { fmtDisplayDate, shortLocationName } from '../../utils/requestToBookUtils'
+import { calculateRentalOptionTotalCents } from '../../utils/rentalOptionPricing'
 
 const DEFAULT_DUE_ON_APPROVAL_LABEL = 'Due on approval ({percent}%)'
 
@@ -123,7 +124,11 @@ export default function BookingSummarySidebar({
           .filter((o) => form.rental_option_ids.includes(Number(o.id)))
           .map((opt) => {
             const unitCents = opt.cost_cents || 0
-            const totalCents = opt.is_daily_cost ? unitCents * (quote?.rental_days || nights) : unitCents
+            const totalCents = calculateRentalOptionTotalCents(
+              unitCents,
+              opt.is_daily_cost,
+              quote?.rental_days || nights,
+            )
             return { id: opt.id, name: opt.name, amount: totalCents / 100 }
           })
       : []

@@ -6,6 +6,7 @@ import {
   Wifi,
 } from 'lucide-react'
 import { formatCurrencyFromCents } from '../../utils/format'
+import { calculateRentalOptionTotalCents } from '../../utils/rentalOptionPricing'
 
 function addonIcon(name = '') {
   const n = name.toLowerCase()
@@ -19,7 +20,7 @@ function addonIcon(name = '') {
 
 export default function AddonRow({ option, selected, nights, onToggle }) {
   const unitCents = option.cost_cents || 0
-  const totalCents = option.is_daily_cost ? unitCents * nights : unitCents
+  const totalCents = calculateRentalOptionTotalCents(unitCents, option.is_daily_cost, nights)
   const price = formatCurrencyFromCents(totalCents)
   const unitLabel = option.is_daily_cost ? `for trip` : 'per trip'
   const Icon = addonIcon(option.name)

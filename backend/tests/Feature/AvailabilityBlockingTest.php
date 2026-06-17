@@ -5,13 +5,18 @@ namespace Tests\Feature;
 use App\Enums\OrderStatus;
 use App\Models\AvailabilityBlock;
 use App\Models\Car;
+use App\Models\DailyFare;
 use App\Models\MainCategory;
 use App\Models\SubCategory;
 use App\Models\Location;
 use App\Models\Order;
+use App\Models\PriceType;
+use App\Models\Setting;
+use App\Models\User;
 use App\Services\OrderAvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class AvailabilityBlockingTest extends TestCase
@@ -137,5 +142,75 @@ class AvailabilityBlockingTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('blocked.0.source', 'ical_import')
             ->assertJsonPath('blocked.1.source', 'standby_lock');
+    }
+
+    public function test_one_unit_month_block_rejects_mid_month_booking(): void
+    {
+        Setting::putValue('shop.currency', ['code' => 'EUR']);
+        Setting::putValue('shop.default_tax', ['basis_points' => 0]);
+
+        [$car, $pickup, $dropoff] = $this->makeCarWithLocations(1);
+        $priceType = PriceType::query()->create(['name' => 'Basic', 'is_active' => true]);
+        DailyFare::query()->create([
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 5000,
+        ]);
+
+        AvailabilityBlock::query()->create([
+            'car_id' => $car->id,
+            'source' => 'manual',
+            'starts_at' => Carbon::parse('2026-06-17 00:00:00'),
+            'ends_at' => Carbon::parse('2026-07-17 00:00:00'),
+            'units_blocked' => 1,
+            'is_active' => true,
+        ]);
+
+        $payload = [
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => '2026-06-17 09:00:00',
+            'dropoff_at' => '2026-06-26 10:00:00',
+        ];
+
+        $this->postJson('/api/orders/quote', $payload)
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'No availability for these dates.');
+
+        $this->postJson('/api/orders', [
+            ...$payload,
+            'customer_name' => 'Guest',
+            'customer_email' => 'guest@example.com',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'No availability for these dates.');
+    }
+
+    public function test_host_cannot_block_more_units_than_fleet_size(): void
+    {
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Camper', 'is_active' => true, 'is_search_filter' => true]);
+        $host = User::factory()->host()->create();
+        Sanctum::actingAs($host);
+
+        $car = Car::query()->create([
+            'user_id' => $host->id,
+            'sub_category_id' => $category->id,
+            'name' => 'Single camper',
+            'units_available' => 1,
+            'is_active' => true,
+        ]);
+
+        $this->postJson("/api/host/cars/{$car->id}/availability-blocks", [
+            'starts_at' => '2026-06-17 00:00:00',
+            'ends_at' => '2026-07-17 00:00:00',
+            'units_blocked' => 2,
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Cannot block more than 1 unit(s) for this vehicle.');
     }
 }

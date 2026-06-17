@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
 use App\Enums\UserRole;
+use App\Models\AvailabilityBlock;
 use App\Models\Car;
 use App\Models\MainCategory;
 use App\Models\SubCategory;
@@ -152,6 +153,58 @@ class OrderFlowApiTest extends TestCase
         ]);
 
         $create->assertStatus(422);
+    }
+
+    public function test_quote_rejects_blocked_dates(): void
+    {
+        [$car, $pickup, $dropoff, $priceType] = $this->seedCatalogForOrder();
+
+        AvailabilityBlock::query()->create([
+            'car_id' => $car->id,
+            'source' => 'manual',
+            'starts_at' => now()->addDay()->startOfDay(),
+            'ends_at' => now()->addMonth()->startOfDay(),
+            'units_blocked' => 1,
+            'is_active' => true,
+        ]);
+
+        $this->postJson('/api/orders/quote', [
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => now()->addDay()->toDateTimeString(),
+            'dropoff_at' => now()->addDays(4)->toDateTimeString(),
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'No availability for these dates.');
+    }
+
+    public function test_create_order_rejects_blocked_dates(): void
+    {
+        [$car, $pickup, $dropoff, $priceType] = $this->seedCatalogForOrder();
+
+        AvailabilityBlock::query()->create([
+            'car_id' => $car->id,
+            'source' => 'manual',
+            'starts_at' => now()->addDay()->startOfDay(),
+            'ends_at' => now()->addMonth()->startOfDay(),
+            'units_blocked' => 1,
+            'is_active' => true,
+        ]);
+
+        $this->postJson('/api/orders', [
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => now()->addDay()->toDateTimeString(),
+            'dropoff_at' => now()->addDays(4)->toDateTimeString(),
+            'customer_name' => 'Alex',
+            'customer_email' => 'alex@example.com',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'No availability for these dates.');
     }
 
     public function test_admin_categories_api_requires_admin(): void

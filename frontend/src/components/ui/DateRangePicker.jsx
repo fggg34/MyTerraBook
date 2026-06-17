@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import '../../styles/date-range-picker.css'
+import { localDateKey } from '../../utils/bookingRestrictions'
 
 const MON = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -61,6 +62,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
     minNights = 1,
     maxNights = null,
     pricePerDay = null,
+    blockedDates = [],
     variant = 'default',
     fixedPopper = false,
     className = '',
@@ -76,6 +78,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
   const today = useMemo(() => startOfDay(new Date()), [])
   const dStart = parseDate(startDate)
   const dEnd = parseDate(endDate)
+  const blockedSet = useMemo(() => new Set(blockedDates), [blockedDates])
 
   const [view, setView] = useState(() => {
     const base = dStart || today
@@ -175,6 +178,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
 
   const isDisabled = (date) => {
     if (date < today) return true
+    if (blockedSet.has(localDateKey(date))) return true
     if (dStart && !dEnd) {
       if (date < dStart) return true
       if (minEndDate && date < minEndDate) return true

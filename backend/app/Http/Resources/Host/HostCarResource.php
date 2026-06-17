@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Host;
 
+use App\Support\RentalOptionPricing;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -52,10 +53,19 @@ class HostCarResource extends JsonResource
                 'slug' => $option->slug,
                 'icon' => $option->icon,
                 'description' => $option->description,
-                'is_daily_cost' => (bool) ($option->pivot->is_daily_cost ?? $option->is_daily_cost),
-                'cost_cents' => (int) ($option->pivot->cost_cents ?? $option->cost_cents),
+                'is_daily_cost' => RentalOptionPricing::resolveIsDailyCost(
+                    $option->pivot->is_daily_cost,
+                    (bool) $option->is_daily_cost,
+                ),
+                'cost_cents' => RentalOptionPricing::resolveCostCents(
+                    $option->pivot->cost_cents,
+                    (int) $option->cost_cents,
+                ),
                 'default_cost_cents' => (int) $option->cost_cents,
-                'cost_euros' => ((int) ($option->pivot->cost_cents ?? $option->cost_cents)) / 100,
+                'cost_euros' => RentalOptionPricing::resolveCostCents(
+                    $option->pivot->cost_cents,
+                    (int) $option->cost_cents,
+                ) / 100,
             ])->values()->all()),
             'rental_condition_ids' => $this->whenLoaded('rentalConditions', fn () => $this->rentalConditions->pluck('id')->all()),
             'main_category_id' => $this->whenLoaded('subCategory', fn () => $this->subCategory?->main_category_id),

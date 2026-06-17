@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api;
 
 use App\Support\Money;
+use App\Support\RentalOptionPricing;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -12,8 +13,14 @@ class RentalOptionResource extends JsonResource
     public function toArray(Request $request): array
     {
         $pivotCost = $this->resource->pivot?->cost_cents;
-        $costCents = $pivotCost !== null ? (int) $pivotCost : (int) $this->cost_cents;
-        $isDailyCost = $this->resource->pivot?->is_daily_cost ?? $this->is_daily_cost;
+        $costCents = RentalOptionPricing::resolveCostCents(
+            $pivotCost !== null ? (int) $pivotCost : null,
+            (int) $this->cost_cents,
+        );
+        $isDailyCost = RentalOptionPricing::resolveIsDailyCost(
+            $this->resource->pivot?->is_daily_cost,
+            (bool) $this->is_daily_cost,
+        );
 
         return [
             'id' => $this->id,
