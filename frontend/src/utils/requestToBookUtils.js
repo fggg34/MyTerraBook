@@ -95,7 +95,6 @@ export function resolveLocationRouteFeeCents(fees, pickupId, dropoffId, rentalDa
 
   const pickup = String(pickupId)
   const dropoff = String(dropoffId)
-  if (pickup === dropoff) return 0
 
   const days = Math.max(1, Number(rentalDays) || 1)
   let total = 0

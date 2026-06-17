@@ -571,7 +571,6 @@ export default function useRequestToBook() {
       }
 
       if (!pickupId || !dropoffId) return 'Free'
-      if (String(pickupId) === String(dropoffId)) return 'Free'
 
       const isSelectedOption =
         (role === 'pickup' && String(locId) === String(form.pickup_location_id))

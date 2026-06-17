@@ -52,13 +52,28 @@ export default function BookingSummarySidebar({
     ? selectedPriceType?.from_price_per_day_cents || item?.price_types?.[0]?.from_price_per_day_cents
     : item?.base_price_per_night_cents ?? item?.base_price_per_night
 
-  const rateDisplay = isVehicle
+  const listingRateDisplay = isVehicle
     ? (selectedPriceType?.from_price_per_day_cents != null
       ? price.formatCents(selectedPriceType.from_price_per_day_cents)
       : selectedPriceType?.from_price_per_day
         ? price.format(Number.parseFloat(selectedPriceType.from_price_per_day))
         : null)
     : (rateCents != null ? price.formatCents(rateCents) : null)
+
+  const rentalDays = quote?.rental_days || nights
+
+  const quotedRateDisplay = (() => {
+    if (!quote || rentalDays <= 0) return null
+    if (isVehicle && quote.rental_subtotal != null) {
+      return price.format(Number(quote.rental_subtotal) / rentalDays)
+    }
+    if (!isVehicle && quote.base_total != null) {
+      return price.formatCents(Math.round(Number(quote.base_total) / rentalDays))
+    }
+    return null
+  })()
+
+  const rateDisplay = quotedRateDisplay || listingRateDisplay
 
   const pickDetail = bookingType === 'guesthouse'
     ? item?.check_in_time || 'From 15:00'
@@ -172,7 +187,7 @@ export default function BookingSummarySidebar({
             <>
               <div className="lrow">
                 <span className="ll">
-                  {rateDisplay} × {quote.rental_days || nights} {config.step1.rateUnit}{quote.rental_days !== 1 ? 's' : ''}
+                  {quotedRateDisplay || listingRateDisplay} × {rentalDays} {config.step1.rateUnit}{rentalDays !== 1 ? 's' : ''}
                 </span>
                 <span className="lv">{price.format(quote.rental_subtotal)}</span>
               </div>

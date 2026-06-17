@@ -1,14 +1,24 @@
 export function formatCurrency(amount, currency = 'EUR') {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount
-  if (Number.isNaN(num)) return `${currency} 0.00`
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency }).format(num)
+  if (Number.isNaN(num)) return `${currency} 0`
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(num)
 }
 
 /** Format integer cents from API (e.g. base_price_per_night_cents). */
 export function formatCurrencyFromCents(cents, currency = 'EUR') {
   const num = typeof cents === 'number' ? cents / 100 : parseFloat(cents) / 100
-  if (Number.isNaN(num)) return `${currency} 0.00`
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency }).format(num)
+  if (Number.isNaN(num)) return `${currency} 0`
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(num)
 }
 
 export function convertFromBase(amount, targetCurrency, exchangeRates = {}, baseCurrency = 'EUR') {
@@ -27,15 +37,19 @@ export function createPriceFormatter({
 } = {}) {
   const formatConverted = (amountInBase) => {
     const converted = convertFromBase(amountInBase, displayCurrency, exchangeRates, baseCurrency)
+    const maxDecimals = currencyMeta.decimals ?? 2
     try {
       return new Intl.NumberFormat('en-GB', {
         style: 'currency',
         currency: displayCurrency,
-        minimumFractionDigits: currencyMeta.decimals ?? 0,
-        maximumFractionDigits: currencyMeta.decimals ?? 2,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: maxDecimals,
       }).format(converted)
     } catch {
-      return `${displayCurrency} ${converted.toFixed(currencyMeta.decimals ?? 2)}`
+      const rounded = maxDecimals === 0
+        ? Math.round(converted)
+        : Number(converted.toFixed(maxDecimals))
+      return `${displayCurrency} ${rounded.toLocaleString('en-GB')}`
     }
   }
 

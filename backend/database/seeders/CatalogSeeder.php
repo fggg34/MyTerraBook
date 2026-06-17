@@ -31,7 +31,11 @@ class CatalogSeeder extends Seeder
             ['basis_points' => 2400],
         );
 
-        \App\Models\Setting::putValue('shop.currency', ['code' => 'ISK', 'symbol' => 'kr']);
+        \App\Models\Setting::putValue('shop.currency', [
+            'code' => 'ISK',
+            'symbol' => 'kr',
+            'decimals' => 0,
+        ]);
         \App\Models\Setting::putValue('shop.default_tax', ['basis_points' => 2400]);
 
         $carMain = MainCategory::ensureBySlug('car', [
