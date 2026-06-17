@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Pages;
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
+use App\Services\Email\OrderEmailNotifier;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -53,22 +54,39 @@ class EditOrder extends EditRecord
             Action::make('resendEmail')
                 ->label('Re-send eMail')
                 ->color('success')
-                ->action(function (): void {
-                    Notification::make()
-                        ->title('Re-send email queued')
-                        ->body('Email delivery integration is the next step; action placeholder is now available.')
-                        ->success()
-                        ->send();
+                ->action(function (OrderEmailNotifier $orderEmails): void {
+                    $sent = $orderEmails->resendCustomerEmail($this->record->fresh(), false);
+
+                    $notification = Notification::make()
+                        ->title($sent ? 'Re-send email queued' : 'Could not queue email')
+                        ->body($sent
+                            ? 'The customer notification has been queued for delivery.'
+                            : 'No customer email address is available for this order.');
+
+                    if ($sent) {
+                        $notification->success()->send();
+                    } else {
+                        $notification->warning()->send();
+                    }
                 }),
             Action::make('resendEmailPdf')
                 ->label('Re-send Order eMail + PDF')
                 ->color('success')
-                ->action(function (): void {
-                    Notification::make()
-                        ->title('Email + PDF queued')
-                        ->body('PDF mail integration endpoint is pending; action placeholder is now available.')
-                        ->success()
-                        ->send();
+                ->visible(fn () => $this->record->order_status === OrderStatus::Confirmed)
+                ->action(function (OrderEmailNotifier $orderEmails): void {
+                    $sent = $orderEmails->resendCustomerEmail($this->record->fresh(), true);
+
+                    $notification = Notification::make()
+                        ->title($sent ? 'Email + PDF queued' : 'Could not queue email')
+                        ->body($sent
+                            ? 'The customer notification with contract PDF has been queued.'
+                            : 'Confirmed orders with a customer email are required for PDF delivery.');
+
+                    if ($sent) {
+                        $notification->success()->send();
+                    } else {
+                        $notification->warning()->send();
+                    }
                 }),
             Action::make('downloadContractPdf')
                 ->label('Download PDF')

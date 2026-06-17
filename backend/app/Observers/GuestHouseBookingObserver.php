@@ -4,13 +4,12 @@ namespace App\Observers;
 
 use App\Enums\GuestHouseBookingStatus;
 use App\Models\GuestHouseBooking;
-use App\Services\Email\EmailService;
-use App\Services\Email\GuestHouseBookingEmailPayload;
+use App\Services\Email\GuestHouseBookingEmailNotifier;
 
 class GuestHouseBookingObserver
 {
     public function __construct(
-        private readonly EmailService $email,
+        private readonly GuestHouseBookingEmailNotifier $bookingEmails,
     ) {}
 
     public function updated(GuestHouseBooking $booking): void
@@ -19,16 +18,14 @@ class GuestHouseBookingObserver
             return;
         }
 
-        if (! $booking->guest_email) {
+        $original = $booking->getOriginal('status');
+        $from = $original instanceof GuestHouseBookingStatus ? $original : GuestHouseBookingStatus::tryFrom((string) $original);
+        $to = $booking->status;
+
+        if ($from === null || $to === null) {
             return;
         }
 
-        $payload = GuestHouseBookingEmailPayload::for($booking);
-
-        match ($booking->status) {
-            GuestHouseBookingStatus::Confirmed => $this->email->send('gh_booking_confirmed', $booking->guest_email, $payload),
-            GuestHouseBookingStatus::Cancelled => $this->email->send('gh_booking_declined', $booking->guest_email, $payload),
-            default => null,
-        };
+        $this->bookingEmails->notifyStatusChanged($booking, $from, $to);
     }
 }

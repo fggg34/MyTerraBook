@@ -4,13 +4,12 @@ namespace App\Observers;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
-use App\Services\Email\EmailService;
-use App\Services\Email\OrderEmailPayload;
+use App\Services\Email\OrderEmailNotifier;
 
 class OrderObserver
 {
     public function __construct(
-        private readonly EmailService $email,
+        private readonly OrderEmailNotifier $orderEmails,
     ) {}
 
     public function updated(Order $order): void
@@ -19,16 +18,14 @@ class OrderObserver
             return;
         }
 
-        if (! $order->customer_email) {
+        $original = $order->getOriginal('order_status');
+        $from = $original instanceof OrderStatus ? $original : OrderStatus::tryFrom((string) $original);
+        $to = $order->order_status;
+
+        if ($from === null || $to === null) {
             return;
         }
 
-        $payload = OrderEmailPayload::for($order);
-
-        match ($order->order_status) {
-            OrderStatus::Confirmed => $this->email->send('order_confirmed', $order->customer_email, $payload),
-            OrderStatus::Cancelled => $this->email->send('order_cancelled', $order->customer_email, $payload),
-            default => null,
-        };
+        $this->orderEmails->notifyStatusChanged($order, $from, $to);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Services\Email;
 
 use App\Models\EmailTemplate;
+use App\Services\Order\OrderSettingsService;
 
 class EmailTemplateRenderer
 {
@@ -21,6 +22,14 @@ class EmailTemplateRenderer
         $brand = $this->settings->load();
         $context = array_merge($this->globals($brand), $this->stringify($data));
 
+        $footerNote = $this->substitute((string) $template->footer_note, $context);
+        if ($template->category === 'orders') {
+            $orderFooter = app(OrderSettingsService::class)->getFooterTextOrderEmail();
+            if ($orderFooter !== '') {
+                $footerNote = trim($footerNote."\n\n".$orderFooter);
+            }
+        }
+
         return [
             'subject' => $this->substitute($template->subject, $context),
             'preheader' => $this->substitute((string) $template->preheader, $context),
@@ -29,7 +38,7 @@ class EmailTemplateRenderer
             'bodyHtml' => $this->substitute((string) $template->body_html, $context, true),
             'ctaLabel' => $this->substitute((string) $template->cta_label, $context),
             'ctaUrl' => $this->substitute((string) $template->cta_url_template, $context),
-            'footerNote' => $this->substitute((string) $template->footer_note, $context),
+            'footerNote' => $footerNote,
             // Brand / layout settings
             'brandName' => $brand['brand_name'],
             'accentColor' => $brand['accent_color'],

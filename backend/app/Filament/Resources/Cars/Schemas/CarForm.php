@@ -287,16 +287,8 @@ class CarForm
                                         Toggle::make('show_cost_per_day_in_search_results')
                                             ->label('Show Cost Per Day in Search Results')
                                             ->dehydrated(false),
-                                        Toggle::make('show_hourly_calendar')
-                                            ->label('Show Hourly Calendar')
-                                            ->dehydrated(false),
                                         Toggle::make('enable_request_information')
                                             ->label('Enable Request Information')
-                                            ->dehydrated(false),
-                                        TextInput::make('custom_hourly_cost')
-                                            ->label('Custom Setting / from Price')
-                                            ->numeric()
-                                            ->suffix('ISK')
                                             ->dehydrated(false),
                                         TextInput::make('custom_label')
                                             ->label('Additional detail features')

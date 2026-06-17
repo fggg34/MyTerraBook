@@ -67,14 +67,13 @@
             'label'  => 'Pricing',
             'icon'   => $icons['pricing'],
             'active' => request()->is('admin/impact-rent/daily-fares*')
-                || request()->is('admin/impact-rent/hourly-fares*')
                 || request()->is('admin/impact-rent/extra-hour-fares*')
                 || request()->is('admin/impact-rent/special-prices*')
                 || request()->is('admin/impact-rent/location-fees*')
                 || request()->is('admin/impact-rent/out-of-hours-fees*')
                 || request()->is('admin/impact-rent/fares-overview*'),
             'items'  => [
-                ['label' => 'Fares Table',          'url' => url('/admin/impact-rent/daily-fares'),       'active' => request()->is('admin/impact-rent/daily-fares*') || request()->is('admin/impact-rent/hourly-fares*') || request()->is('admin/impact-rent/extra-hour-fares*')],
+                ['label' => 'Fares Table',          'url' => url('/admin/impact-rent/daily-fares'),       'active' => request()->is('admin/impact-rent/daily-fares*') || request()->is('admin/impact-rent/extra-hour-fares*')],
                 ['label' => 'Special Prices',       'url' => url('/admin/impact-rent/special-prices'),    'active' => request()->is('admin/impact-rent/special-prices*')],
                 ['label' => 'Pickup/Drop Off Fees', 'url' => url('/admin/impact-rent/location-fees'),     'active' => request()->is('admin/impact-rent/location-fees*')],
                 ['label' => 'Out of Hours Fees',    'url' => url('/admin/impact-rent/out-of-hours-fees'), 'active' => request()->is('admin/impact-rent/out-of-hours-fees*')],

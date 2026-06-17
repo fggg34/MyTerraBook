@@ -16,9 +16,7 @@ use App\Models\Order;
 use App\Models\OrderLineItem;
 use App\Models\OrderRentalOption;
 use App\Models\Setting;
-use App\Services\Email\EmailService;
-use App\Services\Email\EmailSettingsService;
-use App\Services\Email\OrderEmailPayload;
+use App\Services\Email\OrderEmailNotifier;
 use App\Services\OrderAvailabilityService;
 use App\Services\RentalQuoteService;
 use App\Support\Money;
@@ -33,8 +31,7 @@ class PublicOrderController extends Controller
     public function __construct(
         private readonly RentalQuoteService $quoteService,
         private readonly OrderAvailabilityService $availabilityService,
-        private readonly EmailService $email,
-        private readonly EmailSettingsService $emailSettings,
+        private readonly OrderEmailNotifier $orderEmails,
     ) {}
 
     public function quote(OrderQuoteRequest $request): JsonResponse
@@ -236,38 +233,11 @@ class PublicOrderController extends Controller
             return response()->json(['message' => 'No availability for these dates.'], 422);
         }
 
-        $this->sendOrderEmails($order->load('car'));
+        $this->orderEmails->notifyCreated($order->load('car.host'));
 
         return response()->json([
             'data' => OrderResource::make($order),
         ], 201);
-    }
-
-    private function sendOrderEmails(Order $order): void
-    {
-        $payload = OrderEmailPayload::for($order);
-
-        if ($order->customer_email) {
-            $customerTemplate = $order->order_status === OrderStatus::Confirmed
-                ? 'order_confirmed'
-                : 'order_received';
-            $this->email->send($customerTemplate, $order->customer_email, $payload);
-        }
-
-        $recipients = [];
-        $adminEmail = $this->emailSettings->getAdminEmail();
-        if ($adminEmail !== '') {
-            $recipients[] = $adminEmail;
-        }
-        if ($hostEmail = $order->car?->host?->email) {
-            $recipients[] = $hostEmail;
-        }
-
-        if ($recipients !== []) {
-            $this->email->send('order_new_admin', $recipients, $payload + [
-                'admin_url' => rtrim((string) config('app.url'), '/').'/admin',
-            ]);
-        }
     }
 
     /**

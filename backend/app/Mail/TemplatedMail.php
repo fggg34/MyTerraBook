@@ -9,6 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -23,11 +24,21 @@ class TemplatedMail extends Mailable implements ShouldQueue
 
     /**
      * @param  array<string, mixed>  $data
+     * @param  array<int, Attachment>  $mailAttachments
      */
     public function __construct(
         public string $templateKey,
         public array $data = [],
+        public array $mailAttachments = [],
     ) {}
+
+    /**
+     * @return array<int, Attachment>
+     */
+    public function attachments(): array
+    {
+        return $this->mailAttachments;
+    }
 
     public function envelope(): Envelope
     {

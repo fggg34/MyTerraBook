@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 const INTERACTIVE = 'a, button, input, select, textarea, label, [role="button"]'
+const DRAG_THRESHOLD = 5
 
 function resolveAnimationSource(root, convertAnimationFrom) {
   if (!convertAnimationFrom) return null
@@ -44,6 +45,7 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
     if (!el) return undefined
 
     let isDragging = false
+    let pendingDrag = false
     let startX = 0
     let scrollLeftStart = 0
     let moved = false
@@ -55,23 +57,51 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
 
     const canScroll = () => el.scrollWidth > el.clientWidth + 1
 
-    const onPointerMove = (e) => {
-      if (!isDragging) return
-      e.preventDefault()
-      const dx = e.pageX - startX
-      if (Math.abs(dx) > 2) moved = true
-      el.scrollLeft = scrollLeftStart - dx
-    }
-
-    const endDrag = (e) => {
-      if (!isDragging) return
-      isDragging = false
-      el.classList.remove('is-dragging')
-      unlockScrollPhysics(el)
+    const removeDragListeners = () => {
       document.removeEventListener('pointermove', onPointerMove)
       document.removeEventListener('pointerup', endDrag)
       document.removeEventListener('pointercancel', endDrag)
-      if (e?.pointerId != null) el.releasePointerCapture?.(e.pointerId)
+    }
+
+    const beginDrag = (e) => {
+      isDragging = true
+      lockScrollPhysics(el)
+      el.classList.add('is-dragging')
+      el.setPointerCapture?.(e.pointerId)
+    }
+
+    const onPointerMove = (e) => {
+      if (!isDragging && !pendingDrag) return
+
+      const dx = e.pageX - startX
+
+      if (!isDragging && pendingDrag) {
+        if (Math.abs(dx) <= DRAG_THRESHOLD) return
+        pendingDrag = false
+        startX = e.pageX
+        scrollLeftStart = el.scrollLeft
+        beginDrag(e)
+      }
+
+      if (!isDragging) return
+
+      e.preventDefault()
+      const dragDx = e.pageX - startX
+      if (Math.abs(dragDx) > 2) moved = true
+      el.scrollLeft = scrollLeftStart - dragDx
+    }
+
+    const endDrag = (e) => {
+      removeDragListeners()
+
+      if (isDragging) {
+        el.classList.remove('is-dragging')
+        unlockScrollPhysics(el)
+        if (e?.pointerId != null) el.releasePointerCapture?.(e.pointerId)
+      }
+
+      isDragging = false
+      pendingDrag = false
     }
 
     const onPointerDown = (e) => {
@@ -81,15 +111,22 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
       prepareScroll()
       if (!canScroll()) return
 
-      e.preventDefault()
-
-      isDragging = true
       moved = false
       startX = e.pageX
       scrollLeftStart = el.scrollLeft
-      lockScrollPhysics(el)
-      el.classList.add('is-dragging')
-      el.setPointerCapture?.(e.pointerId)
+
+      const isStretchLink = e.target.closest('.pcard-stretch-link')
+
+      if (isStretchLink) {
+        pendingDrag = true
+        document.addEventListener('pointermove', onPointerMove, { passive: false })
+        document.addEventListener('pointerup', endDrag)
+        document.addEventListener('pointercancel', endDrag)
+        return
+      }
+
+      e.preventDefault()
+      beginDrag(e)
 
       document.addEventListener('pointermove', onPointerMove, { passive: false })
       document.addEventListener('pointerup', endDrag)
@@ -113,9 +150,7 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('click', onClick, true)
       el.removeEventListener('dragstart', onDragStart)
-      document.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerup', endDrag)
-      document.removeEventListener('pointercancel', endDrag)
+      removeDragListeners()
       el.classList.remove('is-dragging')
       unlockScrollPhysics(el)
     }

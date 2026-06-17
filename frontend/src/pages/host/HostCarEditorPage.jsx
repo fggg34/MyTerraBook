@@ -1,19 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { AlertCircle, ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock, Plus, Shield, Timer, Trash2 } from 'lucide-react'
+import { AlertCircle, ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Plus, Shield, Timer, Trash2 } from 'lucide-react'
 import {
   addHostCarAvailability,
   addHostCarSpecialPrice,
   createHostCar,
   createHostCarDailyFare,
   createHostCarExtraHourFare,
-  createHostCarHourlyFare,
   createHostCarLocationFee,
   createHostCarOutOfHoursFee,
   createHostCarUnit,
   deleteHostCarDailyFare,
   deleteHostCarExtraHourFare,
-  deleteHostCarHourlyFare,
   deleteHostCarLocationFee,
   deleteHostCarOutOfHoursFee,
   deleteHostCarUnit,
@@ -21,7 +19,6 @@ import {
   getHostCarAvailability,
   getHostCarDailyFares,
   getHostCarExtraHourFares,
-  getHostCarHourlyFares,
   getHostCarLocationFees,
   getHostCarOutOfHoursFees,
   getHostCarSpecialPrices,
@@ -37,7 +34,6 @@ import {
   updateHostCar,
   updateHostCarDailyFare,
   updateHostCarExtraHourFare,
-  updateHostCarHourlyFare,
   updateHostCarLocationFee,
   updateHostCarOutOfHoursFee,
   updateHostCarSpecialPrice,
@@ -172,7 +168,6 @@ export default function HostCarEditorPage() {
   })
   const [units, setUnits] = useState([])
   const [dailyFares, setDailyFares] = useState([])
-  const [hourlyFares, setHourlyFares] = useState([])
   const [extraHourFares, setExtraHourFares] = useState([])
   const [availability, setAvailability] = useState([])
   const [specialPrices, setSpecialPrices] = useState([])
@@ -198,7 +193,6 @@ export default function HostCarEditorPage() {
   const [baseDailyPrice, setBaseDailyPrice] = useState('')
   const [baseDailySaving, setBaseDailySaving] = useState(false)
   const [tierDraft, setTierDraft] = useState({ from_days: 7, to_days: 14, price_per_day_euros: 0 })
-  const [hourlyDraft, setHourlyDraft] = useState({ min_minutes: 60, max_minutes: 240, total_price_euros: 50 })
   const [extraDraft, setExtraDraft] = useState({ charge_per_extra_hour_euros: 10 })
   const [plusAddOn, setPlusAddOn] = useState('')
   const [maxAddOn, setMaxAddOn] = useState('')
@@ -207,7 +201,6 @@ export default function HostCarEditorPage() {
   const [unitsBusy, setUnitsBusy] = useState(false)
   const [specialDraft, setSpecialDraft] = useState({ name: '', date_from: '', date_to: '', type: 'charge', value_mode: 'percentage', value_percent_bips: 1000, value_fixed_cents: 0 })
   const [editingSpecialPriceId, setEditingSpecialPriceId] = useState(null)
-  const [editingHourlyFareId, setEditingHourlyFareId] = useState(null)
   const [editingExtraHourFareId, setEditingExtraHourFareId] = useState(null)
   const [editingOohFeeId, setEditingOohFeeId] = useState(null)
   const [loading, setLoading] = useState(!isNew)
@@ -254,7 +247,6 @@ export default function HostCarEditorPage() {
   const loadPricing = (carId) => Promise.all([
     getHostCarUnits(carId).then((res) => setUnits(res.data.data || [])),
     getHostCarDailyFares(carId).then((res) => setDailyFares(res.data.data || [])),
-    getHostCarHourlyFares(carId).then((res) => setHourlyFares(res.data.data || [])),
     getHostCarExtraHourFares(carId).then((res) => setExtraHourFares(res.data.data || [])),
     getHostCarAvailability(carId).then((res) => setAvailability(res.data.data || [])),
     getHostCarSpecialPrices(carId).then((res) => setSpecialPrices(res.data.data || [])),
@@ -628,7 +620,6 @@ export default function HostCarEditorPage() {
 
 
   const tierRangeInvalid = Number(tierDraft.to_days) <= Number(tierDraft.from_days)
-  const hourlyRangeInvalid = Number(hourlyDraft.max_minutes) <= Number(hourlyDraft.min_minutes)
   const standardPriceType = useMemo(() => standardPriceTypeId(catalog.priceTypes), [catalog.priceTypes])
   const hostDailyFares = useMemo(
     () => standardDailyFares(dailyFares, catalog.priceTypes),
@@ -636,10 +627,6 @@ export default function HostCarEditorPage() {
   )
   const baseDailyFare = useMemo(() => findBaseDailyFare(hostDailyFares), [hostDailyFares])
   const durationTiers = useMemo(() => durationTierFares(hostDailyFares), [hostDailyFares])
-  const hostHourlyFares = useMemo(
-    () => filterStandardPriceTypeRows(hourlyFares, catalog.priceTypes),
-    [hourlyFares, catalog.priceTypes],
-  )
   const hostExtraHourFares = useMemo(
     () => filterStandardPriceTypeRows(extraHourFares, catalog.priceTypes),
     [extraHourFares, catalog.priceTypes],
@@ -781,11 +768,6 @@ export default function HostCarEditorPage() {
       value_fixed_cents: 0,
     })
     setEditingSpecialPriceId(null)
-  }
-
-  const resetHourlyDraft = () => {
-    setHourlyDraft({ min_minutes: 60, max_minutes: 240, total_price_euros: 50 })
-    setEditingHourlyFareId(null)
   }
 
   const resetExtraDraft = () => {
@@ -1423,80 +1405,10 @@ export default function HostCarEditorPage() {
 
               <HostDisclosure
                 title="Advanced rates (optional)"
-                hint="Short-trip hourly pricing and overtime charges. Skip these if you only rent by the day."
-                count={hostHourlyFares.length + hostExtraHourFares.length}
-                defaultOpen={hostHourlyFares.length > 0 || hostExtraHourFares.length > 0}
+                hint="Overtime charge when a guest keeps the vehicle past their booked window."
+                count={hostExtraHourFares.length}
+                defaultOpen={hostExtraHourFares.length > 0}
               >
-              {/* Hourly fares */}
-              <section className="host-fare-section">
-                <div className="host-fare-head">
-                  <span className="host-fare-head-icon"><Clock size={18} /></span>
-                  <div className="host-fare-head-text">
-                    <h3>Hourly fares</h3>
-                    <p>Flat price for short rentals within a duration window, e.g. 1–4 hours.</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="host-field"><label>Total price ({currency.code})</label><input type="number" min={0} value={hourlyDraft.total_price_euros} onChange={(e) => setHourlyDraft({ ...hourlyDraft, total_price_euros: Number(e.target.value) })} /></div>
-                  <div className="host-field"><label>Minimum duration <span className="host-field-note">(minutes)</span></label><input type="number" min={0} className={hourlyRangeInvalid ? 'has-error' : ''} value={hourlyDraft.min_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, min_minutes: Number(e.target.value) })} /></div>
-                  <div className="host-field"><label>Maximum duration <span className="host-field-note">(minutes)</span></label><input type="number" min={0} className={hourlyRangeInvalid ? 'has-error' : ''} value={hourlyDraft.max_minutes} onChange={(e) => setHourlyDraft({ ...hourlyDraft, max_minutes: Number(e.target.value) })} /></div>
-                </div>
-                {hourlyRangeInvalid && (
-                  <p className="host-field-error"><AlertCircle size={14} /> Minimum duration must be lower than the maximum.</p>
-                )}
-                <div className="host-fare-preview">
-                  <span className="host-fare-preview-label">Preview</span>
-                  <span className="host-fare-tag is-preview">
-                    <Clock size={14} className="host-fare-tag-icon" />
-                    <span className="host-fare-tag-text">{hourlyDraft.min_minutes}–{hourlyDraft.max_minutes} min <ArrowRight size={12} /> <strong>{currency.formatAmount(Number(hourlyDraft.total_price_euros || 0))}</strong></span>
-                  </span>
-                </div>
-                <div className="host-fare-actions">
-                  <button type="button" className="host-btn-add" disabled={!standardPriceType || hourlyRangeInvalid} onClick={async () => {
-                    try {
-                      const payload = buildStandardFarePayload(hourlyDraft)
-                      if (editingHourlyFareId) {
-                        await updateHostCarHourlyFare(recordId, editingHourlyFareId, payload)
-                        toast('Hourly fare updated', 'success')
-                      } else {
-                        await createHostCarHourlyFare(recordId, payload)
-                        toast('Hourly fare added', 'success')
-                      }
-                      resetHourlyDraft()
-                      loadPricing(recordId)
-                    } catch (err) {
-                      toast(err.response?.data?.message || 'Could not save hourly fare', 'error')
-                    }
-                  }}>
-                    <Plus size={16} /> {editingHourlyFareId ? 'Update hourly fare' : 'Add hourly fare'}
-                  </button>
-                  {editingHourlyFareId && (
-                    <button type="button" className="host-btn secondary" onClick={resetHourlyDraft}>Cancel edit</button>
-                  )}
-                </div>
-                {hostHourlyFares.length > 0 && (
-                  <ul className="host-fare-list">
-                    {hostHourlyFares.map((f) => (
-                      <li key={f.id} className="host-fare-tag">
-                        <Clock size={14} className="host-fare-tag-icon" />
-                        <span className="host-fare-tag-text">
-                          {f.min_minutes}–{f.max_minutes} min <ArrowRight size={12} /> <strong>{currency.formatCents(f.total_price_cents)}</strong>
-                        </span>
-                        <button type="button" className="host-btn secondary host-btn-compact" onClick={() => {
-                          setEditingHourlyFareId(f.id)
-                          setHourlyDraft({
-                            min_minutes: f.min_minutes,
-                            max_minutes: f.max_minutes,
-                            total_price_euros: f.total_price_cents / 100,
-                          })
-                        }}>Edit</button>
-                        <button type="button" className="host-fare-tag-remove" aria-label="Remove fare" title="Remove fare" onClick={async () => { await deleteHostCarHourlyFare(recordId, f.id); if (editingHourlyFareId === f.id) resetHourlyDraft(); loadPricing(recordId) }}><Trash2 size={14} /></button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-
               {/* Extra-hour fares */}
               <section className="host-fare-section">
                 <div className="host-fare-head">

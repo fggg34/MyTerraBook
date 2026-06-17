@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\GuestHouseBookingStatus;
 use App\Enums\GuestHouseStatus;
 use App\Enums\GuestHouseType;
+use App\Enums\OrderStatus;
 use App\Filament\Pages\EmailSettings;
 use App\Filament\Pages\EmailTesting;
 use App\Filament\Resources\EmailLogs\Pages\ListEmailLogs;
@@ -22,6 +23,7 @@ use App\Models\MainCategory;
 use App\Models\PriceType;
 use App\Models\SubCategory;
 use App\Models\GuestHouseBooking;
+use App\Models\Order;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Email\EmailService;
@@ -304,6 +306,108 @@ class EmailSystemTest extends TestCase
 
         Mail::assertQueued(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->templateKey === 'order_new_admin'
             && $mail->hasTo('admin@myterrabook.com'));
+    }
+
+    public function test_new_order_queues_customer_confirmed_email(): void
+    {
+        Mail::fake();
+        [$car, $pickup, $dropoff, $priceType] = $this->seedCatalogForOrder();
+
+        $this->postJson('/api/orders', [
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => now()->addDay()->toDateTimeString(),
+            'dropoff_at' => now()->addDays(4)->toDateTimeString(),
+            'customer_name' => 'Alex',
+            'customer_email' => 'alex@example.com',
+        ])->assertCreated();
+
+        Mail::assertQueued(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->templateKey === 'order_confirmed'
+            && $mail->hasTo('alex@example.com'));
+    }
+
+    public function test_confirmed_only_setting_skips_pending_customer_email(): void
+    {
+        Mail::fake();
+        Setting::putValue('orders.send_emails_when', ['mode' => 'confirmed_only']);
+        [$car, $pickup, $dropoff] = $this->seedCatalogForOrder();
+
+        $order = Order::query()->create([
+            'reference' => 'ORD-PENDING-00001',
+            'car_id' => $car->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => now()->addDay(),
+            'dropoff_at' => now()->addDays(4),
+            'order_status' => OrderStatus::Pending,
+            'customer_name' => 'Alex',
+            'customer_email' => 'alex@example.com',
+            'base_rental_cents' => 15000,
+            'extras_cents' => 0,
+            'fees_cents' => 0,
+            'discount_cents' => 0,
+            'tax_cents' => 0,
+            'total_cents' => 15000,
+            'currency' => 'EUR',
+        ]);
+
+        app(\App\Services\Email\OrderEmailNotifier::class)->notifyCreated($order->load('car.host'));
+
+        Mail::assertNotQueued(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->hasTo('alex@example.com'));
+    }
+
+    public function test_guest_house_booking_queues_admin_notification_email(): void
+    {
+        Mail::fake();
+        Setting::putValue('email.admin_email', ['value' => 'admin@myterrabook.com']);
+        $house = $this->seedHouse();
+
+        $this->postJson('/api/guest-houses/bookings', [
+            'guest_house_slug' => $house->slug,
+            'check_in' => now()->addDays(3)->toDateString(),
+            'check_out' => now()->addDays(5)->toDateString(),
+            'guests_count' => 2,
+            'guest_name' => 'Jane Doe',
+            'guest_email' => 'jane@example.com',
+            'guest_phone' => '+123456789',
+        ])->assertCreated();
+
+        Mail::assertQueued(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->templateKey === 'gh_booking_new_admin'
+            && $mail->hasTo('admin@myterrabook.com'));
+    }
+
+    public function test_order_status_change_notifies_host(): void
+    {
+        Mail::fake();
+        [$car, $pickup, $dropoff, $priceType] = $this->seedCatalogForOrder();
+        $host = User::factory()->host()->create(['email' => 'host@example.com']);
+        $car->update(['user_id' => $host->id]);
+
+        $order = Order::query()->create([
+            'reference' => 'ORD-HOST-00001',
+            'car_id' => $car->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => now()->addDay(),
+            'dropoff_at' => now()->addDays(3),
+            'order_status' => OrderStatus::Pending,
+            'customer_name' => 'Alex',
+            'customer_email' => 'alex@example.com',
+            'base_rental_cents' => 15000,
+            'extras_cents' => 0,
+            'fees_cents' => 0,
+            'discount_cents' => 0,
+            'tax_cents' => 0,
+            'total_cents' => 15000,
+            'currency' => 'EUR',
+        ]);
+
+        $order->update(['order_status' => OrderStatus::Confirmed]);
+
+        Mail::assertQueued(TemplatedMail::class, fn (TemplatedMail $mail): bool => $mail->templateKey === 'order_confirmed_host'
+            && $mail->hasTo('host@example.com'));
     }
 
     public function test_admin_can_send_test_email_from_testing_page(): void

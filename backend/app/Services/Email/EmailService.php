@@ -5,6 +5,7 @@ namespace App\Services\Email;
 use App\Mail\TemplatedMail;
 use App\Models\EmailLog;
 use App\Models\EmailTemplate;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -19,8 +20,9 @@ class EmailService
      *
      * @param  string|array<int, string>  $recipients
      * @param  array<string, mixed>  $data
+     * @param  array<int, Attachment>  $attachments
      */
-    public function send(string $templateKey, string|array $recipients, array $data = []): bool
+    public function send(string $templateKey, string|array $recipients, array $data = [], array $attachments = []): bool
     {
         $template = EmailTemplate::findByKey($templateKey);
 
@@ -40,7 +42,7 @@ class EmailService
 
         foreach ($this->normalizeRecipients($recipients) as $recipient) {
             try {
-                Mail::to($recipient)->send(new TemplatedMail($templateKey, $data));
+                Mail::to($recipient)->send(new TemplatedMail($templateKey, $data, $attachments));
 
                 EmailLog::query()->create([
                     'template_key' => $templateKey,

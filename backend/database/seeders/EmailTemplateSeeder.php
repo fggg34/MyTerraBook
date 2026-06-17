@@ -201,6 +201,47 @@ class EmailTemplateSeeder extends Seeder
                 'available_variables' => ['order_reference', 'car_name', 'customer_name', 'customer_email', 'pickup_at', 'dropoff_at', 'total', 'admin_url'],
                 'sort_order' => 80,
             ],
+            [
+                'key' => 'order_confirmed_host',
+                'name' => 'Order confirmed (host)',
+                'category' => 'orders',
+                'audience' => 'host',
+                'is_enabled' => true,
+                'subject' => 'Booking {{order_reference}} is confirmed',
+                'preheader' => 'A vehicle booking on your listing has been confirmed.',
+                'heading' => 'Booking confirmed',
+                'greeting' => 'Hello,',
+                'body_html' => '<p>The booking <strong>{{order_reference}}</strong> for {{car_name}} has been confirmed.</p>'
+                    .'<p><strong>Customer:</strong> {{customer_name}} ({{customer_email}})<br>'
+                    .'<strong>Pick-up:</strong> {{pickup_at}}<br>'
+                    .'<strong>Drop-off:</strong> {{dropoff_at}}<br>'
+                    .'<strong>Total:</strong> {{total}}</p>',
+                'cta_label' => 'Open host bookings',
+                'cta_url_template' => '{{frontend_url}}/host/bookings',
+                'footer_note' => null,
+                'available_variables' => ['order_reference', 'car_name', 'customer_name', 'customer_email', 'pickup_at', 'dropoff_at', 'total', 'frontend_url'],
+                'sort_order' => 81,
+            ],
+            [
+                'key' => 'order_cancelled_host',
+                'name' => 'Order cancelled (host)',
+                'category' => 'orders',
+                'audience' => 'host',
+                'is_enabled' => true,
+                'subject' => 'Booking {{order_reference}} was cancelled',
+                'preheader' => 'A vehicle booking on your listing has been cancelled.',
+                'heading' => 'Booking cancelled',
+                'greeting' => 'Hello,',
+                'body_html' => '<p>The booking <strong>{{order_reference}}</strong> for {{car_name}} has been cancelled.</p>'
+                    .'<p><strong>Customer:</strong> {{customer_name}} ({{customer_email}})<br>'
+                    .'<strong>Pick-up:</strong> {{pickup_at}}<br>'
+                    .'<strong>Drop-off:</strong> {{dropoff_at}}</p>',
+                'cta_label' => 'Open host bookings',
+                'cta_url_template' => '{{frontend_url}}/host/bookings',
+                'footer_note' => null,
+                'available_variables' => ['order_reference', 'car_name', 'customer_name', 'customer_email', 'pickup_at', 'dropoff_at', 'frontend_url'],
+                'sort_order' => 82,
+            ],
 
             // ---- Guest house bookings ----
             [
@@ -291,6 +332,72 @@ class EmailTemplateSeeder extends Seeder
                 'footer_note' => 'Please review and confirm the booking from your dashboard.',
                 'available_variables' => ['booking_reference', 'listing_name', 'guest_name', 'guest_email', 'check_in', 'check_out', 'guests_count', 'total', 'frontend_url'],
                 'sort_order' => 120,
+            ],
+            [
+                'key' => 'gh_booking_new_admin',
+                'name' => 'New stay booking alert (staff)',
+                'category' => 'bookings',
+                'audience' => 'staff',
+                'is_enabled' => true,
+                'subject' => 'New stay booking {{booking_reference}}',
+                'preheader' => 'A new guest house booking just came in.',
+                'heading' => 'New stay booking',
+                'greeting' => 'Hello,',
+                'body_html' => '<p>A new guest house booking has been placed.</p>'
+                    .'<p><strong>Reference:</strong> {{booking_reference}}<br>'
+                    .'<strong>Stay:</strong> {{listing_name}}<br>'
+                    .'<strong>Guest:</strong> {{guest_name}} ({{guest_email}})<br>'
+                    .'<strong>Check-in:</strong> {{check_in}}<br>'
+                    .'<strong>Check-out:</strong> {{check_out}}<br>'
+                    .'<strong>Guests:</strong> {{guests_count}}<br>'
+                    .'<strong>Total:</strong> {{total}}</p>',
+                'cta_label' => 'Open in admin',
+                'cta_url_template' => '{{admin_url}}',
+                'footer_note' => null,
+                'available_variables' => ['booking_reference', 'listing_name', 'guest_name', 'guest_email', 'check_in', 'check_out', 'guests_count', 'total', 'admin_url'],
+                'sort_order' => 121,
+            ],
+            [
+                'key' => 'gh_booking_confirmed_host',
+                'name' => 'Stay confirmed (host)',
+                'category' => 'bookings',
+                'audience' => 'host',
+                'is_enabled' => true,
+                'subject' => 'Stay booking {{booking_reference}} is confirmed',
+                'preheader' => 'A guest house booking on your listing has been confirmed.',
+                'heading' => 'Stay confirmed',
+                'greeting' => 'Hello,',
+                'body_html' => '<p>The stay booking <strong>{{booking_reference}}</strong> for {{listing_name}} has been confirmed.</p>'
+                    .'<p><strong>Guest:</strong> {{guest_name}} ({{guest_email}})<br>'
+                    .'<strong>Check-in:</strong> {{check_in}}<br>'
+                    .'<strong>Check-out:</strong> {{check_out}}<br>'
+                    .'<strong>Guests:</strong> {{guests_count}}<br>'
+                    .'<strong>Total:</strong> {{total}}</p>',
+                'cta_label' => 'Open host bookings',
+                'cta_url_template' => '{{frontend_url}}/host/bookings',
+                'footer_note' => null,
+                'available_variables' => ['booking_reference', 'listing_name', 'guest_name', 'guest_email', 'check_in', 'check_out', 'guests_count', 'total', 'frontend_url'],
+                'sort_order' => 122,
+            ],
+            [
+                'key' => 'gh_booking_declined_host',
+                'name' => 'Stay cancelled (host)',
+                'category' => 'bookings',
+                'audience' => 'host',
+                'is_enabled' => true,
+                'subject' => 'Stay booking {{booking_reference}} was cancelled',
+                'preheader' => 'A guest house booking on your listing has been cancelled.',
+                'heading' => 'Stay cancelled',
+                'greeting' => 'Hello,',
+                'body_html' => '<p>The stay booking <strong>{{booking_reference}}</strong> for {{listing_name}} has been cancelled.</p>'
+                    .'<p><strong>Guest:</strong> {{guest_name}} ({{guest_email}})<br>'
+                    .'<strong>Check-in:</strong> {{check_in}}<br>'
+                    .'<strong>Check-out:</strong> {{check_out}}</p>',
+                'cta_label' => 'Open host bookings',
+                'cta_url_template' => '{{frontend_url}}/host/bookings',
+                'footer_note' => null,
+                'available_variables' => ['booking_reference', 'listing_name', 'guest_name', 'guest_email', 'check_in', 'check_out', 'frontend_url'],
+                'sort_order' => 123,
             ],
 
             // ---- Host listings ----

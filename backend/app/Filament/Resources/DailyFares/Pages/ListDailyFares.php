@@ -33,7 +33,7 @@ class ListDailyFares extends ListRecords
     #[Url]
     public ?int $benchPriceTypeId = null;
 
-    /** @var 'daily'|'hourly'|'extra_hours' */
+    /** @var 'daily'|'extra_hours' */
     #[Url]
     public string $fareTab = 'daily';
 
@@ -508,7 +508,11 @@ class ListDailyFares extends ListRecords
 
     private function normalizeFareTab(): void
     {
-        if (! in_array($this->fareTab, ['daily', 'hourly', 'extra_hours'], true)) {
+        if ($this->fareTab === 'hourly') {
+            $this->fareTab = 'daily';
+        }
+
+        if (! in_array($this->fareTab, ['daily', 'extra_hours'], true)) {
             $this->fareTab = 'daily';
         }
     }
