@@ -10,8 +10,15 @@ export function buildListingQuotePayload(listing, startDate, endDate, selectedAd
     || listing.priceTypes?.[0]
     || car.price_types?.[0]
 
-  const pickupLoc = listing.pickupLocations?.[0] || car.pickup_locations?.[0]
-  const dropoffLoc = listing.dropoffLocations?.[0] || car.dropoff_locations?.[0]
+  const pickupList = listing.pickupLocations?.length ? listing.pickupLocations : car.pickup_locations || []
+  const dropoffList = listing.dropoffLocations?.length ? listing.dropoffLocations : car.dropoff_locations || []
+
+  // Prefer a single location that allows both pickup and dropoff so the
+  // preview estimate doesn't pick up a spurious one-way fee.
+  const dropoffIds = new Set(dropoffList.map((loc) => loc?.id).filter(Boolean))
+  const sharedLoc = pickupList.find((loc) => loc?.id && dropoffIds.has(loc.id))
+  const pickupLoc = sharedLoc || pickupList[0]
+  const dropoffLoc = sharedLoc || pickupLoc
 
   if (!priceType?.id || !pickupLoc?.id || !dropoffLoc?.id) return null
 

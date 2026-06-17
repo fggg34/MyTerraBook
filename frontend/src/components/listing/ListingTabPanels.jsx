@@ -55,6 +55,7 @@ export default function ListingTabPanels({
   const [descExpanded, setDescExpanded] = useState(false)
   const [blockedDates, setBlockedDates] = useState([])
   const [blockedDatesLoaded, setBlockedDatesLoaded] = useState(!isVehicle)
+  const [quoteRental, setQuoteRental] = useState(null)
   const [quoteTotal, setQuoteTotal] = useState(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
   const priceFromAmount = Number(listing.priceFromAmount) || 0
@@ -124,6 +125,7 @@ export default function ListingTabPanels({
 
   useEffect(() => {
     if (!isVehicle || !startDate || !endDate || bookingBlocked) {
+      setQuoteRental(null)
       setQuoteTotal(null)
       setQuoteLoading(false)
       return undefined
@@ -131,6 +133,7 @@ export default function ListingTabPanels({
 
     const payload = buildListingQuotePayload(listing, startDate, endDate, selectedAddonIds)
     if (!payload) {
+      setQuoteRental(null)
       setQuoteTotal(null)
       return undefined
     }
@@ -142,11 +145,16 @@ export default function ListingTabPanels({
         .post('/orders/quote', payload)
         .then((res) => {
           if (cancelled) return
-          const amount = Number(res.data?.total)
-          setQuoteTotal(Number.isFinite(amount) ? amount : null)
+          const rentalCents = Number(res.data?.base_rental_cents)
+          const totalCents = Number(res.data?.total_cents)
+          setQuoteRental(Number.isFinite(rentalCents) ? rentalCents / 100 : null)
+          setQuoteTotal(Number.isFinite(totalCents) ? totalCents / 100 : null)
         })
         .catch(() => {
-          if (!cancelled) setQuoteTotal(null)
+          if (!cancelled) {
+            setQuoteRental(null)
+            setQuoteTotal(null)
+          }
         })
         .finally(() => {
           if (!cancelled) setQuoteLoading(false)
@@ -170,7 +178,8 @@ export default function ListingTabPanels({
       ? Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86400000))
       : 0
   const fallbackTotal = nights * priceFromAmount
-  const displayTotal = quoteTotal ?? (quoteLoading ? null : fallbackTotal)
+  const displayTotal = quoteRental ?? (quoteLoading ? null : fallbackTotal)
+  const hasExtraCharges = quoteTotal != null && displayTotal != null && quoteTotal > displayTotal
   const staticMapUrl = location
     ? buildStaticMapUrl({
         latitude: location.latitude,
@@ -354,7 +363,7 @@ export default function ListingTabPanels({
           <div className="rate-row">
             <span className="rl" id="rateL">
               {startDate && endDate
-                ? `Total · ${nights} night${nights > 1 ? 's' : ''}`
+                ? `Rental · ${nights} night${nights > 1 ? 's' : ''}`
                 : typeConfig.rateLabelDefault}
             </span>
             <span className="rr" id="rateR">
@@ -375,6 +384,11 @@ export default function ListingTabPanels({
               )}
             </span>
           </div>
+          {startDate && endDate && !quoteLoading && hasExtraCharges && (
+            <p className="listing-fees-note">
+              + fees &amp; tax at checkout · {price.format(quoteTotal)} total
+            </p>
+          )}
           {listingType !== 'guesthouse' && selectedAddonIds.length > 0 && (
             <p className="listing-extras-note">
               {selectedAddonIds.length} extra{selectedAddonIds.length !== 1 ? 's' : ''} selected

@@ -68,13 +68,13 @@ class ListingPricingTest extends TestCase
         return [$car->fresh(), $basic, $pickup, $dropoff];
     }
 
-    public function test_car_detail_from_price_uses_base_fare_not_cheapest_tier(): void
+    public function test_car_detail_from_price_uses_cheapest_tier(): void
     {
         [$car] = $this->publicCarWithTieredPricing();
 
         $this->getJson("/api/cars/{$car->id}")
             ->assertOk()
-            ->assertJsonPath('data.price_types.0.from_price_per_day_cents', 350000);
+            ->assertJsonPath('data.price_types.0.from_price_per_day_cents', 200000);
     }
 
     public function test_quote_uses_base_rate_for_one_and_two_day_rentals(): void

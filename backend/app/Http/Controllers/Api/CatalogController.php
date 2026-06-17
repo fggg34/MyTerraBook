@@ -141,7 +141,7 @@ class CatalogController extends Controller
             $query->where('sub_category_id', $request->query('sub_category_id'));
         }
 
-        $minPrices = DailyFarePricing::baseFareListSubquery();
+        $minPrices = DailyFarePricing::cheapestFareListSubquery();
 
         $cars = $query
             ->leftJoinSub($minPrices, 'min_fares', 'min_fares.car_id', '=', 'cars.id')
