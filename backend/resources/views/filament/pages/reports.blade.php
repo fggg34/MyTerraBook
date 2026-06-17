@@ -44,7 +44,7 @@
         }
 
         .ir-reports-table th {
-            background: #45a06a;
+            background: #334e68;
             color: #fff;
             text-align: left;
             border: 1px solid #1f6f95;

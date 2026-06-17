@@ -16,16 +16,16 @@
             padding: 1.5rem 1.75rem;
             border-radius: 0.75rem;
             border: 1px solid var(--mtb-line);
-            border-left: 4px solid var(--mtb-green);
+            border-left: 4px solid var(--mtb-primary);
             background: #fff;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 1px 3px rgb(51 78 104 / 0.08);
         }
 
         .tb-welcome-header-greeting {
             margin: 0 0 0.25rem;
             font-size: 0.875rem;
             font-weight: 600;
-            color: var(--mtb-green-dark);
+            color: var(--mtb-primary-light);
             letter-spacing: 0.01em;
         }
 
@@ -34,7 +34,7 @@
             font-size: 1.5rem;
             line-height: 1.2;
             font-weight: 700;
-            color: var(--mtb-navy);
+            color: var(--mtb-primary-dark);
         }
 
         .tb-welcome-header-date {
@@ -45,7 +45,7 @@
             border: 1px solid var(--mtb-line);
             font-size: 0.8125rem;
             font-weight: 600;
-            color: rgb(71 85 105);
+            color: var(--mtb-muted);
             white-space: nowrap;
         }
 

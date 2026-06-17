@@ -1,7 +1,7 @@
 <style>
     .fi-sidebar .fi-user-menu-trigger {
-        border: 1px solid rgb(229 231 235 / 1);
-        background: rgb(249 250 251 / 1);
+        border: 1px solid rgb(255 255 255 / 0.12);
+        background: rgb(255 255 255 / 0.06);
         cursor: pointer;
     }
 
@@ -12,14 +12,14 @@
 
     .fi-sidebar .fi-user-menu-trigger:hover,
     .fi-sidebar .fi-user-menu-trigger:focus-visible {
-        border-color: rgb(69 160 106 / 0.45);
-        background: rgb(69 160 106 / 0.08);
+        border-color: rgb(255 255 255 / 0.25);
+        background: rgb(255 255 255 / 0.12);
     }
 
     .dark .fi-sidebar .fi-user-menu-trigger:hover,
     .dark .fi-sidebar .fi-user-menu-trigger:focus-visible {
-        border-color: rgb(69 160 106 / 0.35);
-        background: rgb(69 160 106 / 0.12);
+        border-color: rgb(255 255 255 / 0.2);
+        background: rgb(255 255 255 / 0.08);
     }
 
     .fi-sidebar .fi-user-menu-trigger-text {
@@ -35,7 +35,7 @@
         font-size: 0.8125rem;
         font-weight: 600;
         line-height: 1.2;
-        color: rgb(17 24 39 / 1);
+        color: rgb(255 255 255 / 0.92);
     }
 
     .dark .fi-sidebar .fi-user-menu-trigger-label {
@@ -50,7 +50,7 @@
         font-size: 0.6875rem;
         font-weight: 500;
         line-height: 1.2;
-        color: rgb(107 114 128 / 1);
+        color: rgb(255 255 255 / 0.55);
     }
 
     .dark .fi-sidebar .fi-user-menu-trigger-sublabel {
@@ -67,10 +67,10 @@
         align-items: center;
         justify-content: center;
         border-radius: 9999px;
-        border: 1px solid rgb(229 231 235 / 1);
-        background: rgb(255 255 255 / 1);
-        color: rgb(107 114 128 / 1);
-        box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+        border: 1px solid rgb(255 255 255 / 0.15);
+        background: var(--mtb-primary-dark, #243b53);
+        color: rgb(255 255 255 / 0.7);
+        box-shadow: 0 1px 2px rgb(15 23 42 / 0.2);
     }
 
     .fi-sidebar .fi-user-menu-collapsed-settings-icon .fi-icon {

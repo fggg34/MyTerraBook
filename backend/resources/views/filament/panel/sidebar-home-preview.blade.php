@@ -8,6 +8,10 @@
     }
 
     .fi-sidebar-item-home > .fi-sidebar-item-btn {
+        padding-inline-end: 0.5rem;
+    }
+
+    .fi-sidebar.fi-sidebar-open .fi-sidebar-item-home > .fi-sidebar-item-btn {
         padding-inline-end: 2.25rem;
     }
 
@@ -20,7 +24,7 @@
         align-items: center;
         justify-content: center;
         width: 1.75rem;
-        color: rgb(107 114 128);
+        color: rgb(255 255 255 / 0.45);
         opacity: 0;
         transition: opacity 120ms ease, color 120ms ease;
     }
@@ -31,7 +35,7 @@
     }
 
     .fi-sidebar-home-preview:hover {
-        color: var(--mtb-green, #45a06a);
+        color: #fff;
     }
 
     .fi-sidebar-home-preview svg {

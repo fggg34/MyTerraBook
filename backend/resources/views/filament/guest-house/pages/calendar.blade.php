@@ -6,7 +6,7 @@
                 <div class="flex flex-wrap gap-1">
                     @foreach ($row['cells'] as $cell)
                         <div
-                            class="flex h-10 w-10 flex-col items-center justify-center rounded text-xs {{ $cell['bookings'] > 0 ? 'bg-[#45a06a]/10 text-[#3a8d5d] dark:bg-[#45a06a]/30 dark:text-slate-100' : 'bg-gray-50 text-gray-500 dark:bg-gray-800' }}"
+                            class="flex h-10 w-10 flex-col items-center justify-center rounded text-xs {{ $cell['bookings'] > 0 ? 'bg-[#334e68]/10 text-[#243b53] dark:bg-[#334e68]/30 dark:text-slate-100' : 'bg-gray-50 text-gray-500 dark:bg-gray-800' }}"
                             title="{{ $cell['date'] }}, {{ $cell['bookings'] }} booking(s)"
                         >
                             <span>{{ $cell['day'] }}</span>

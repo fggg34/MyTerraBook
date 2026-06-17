@@ -1,14 +1,22 @@
 <style>
     :root {
-        --mtb-navy: #0f2036;
+        --mtb-primary: #334e68;
+        --mtb-primary-dark: #243b53;
+        --mtb-primary-light: #486581;
         --mtb-green: #45a06a;
         --mtb-green-dark: #3a8d5d;
-        --mtb-bg: #f4f7fb;
-        --mtb-line: #e2e7ef;
+        --mtb-bg: #e8edf2;
+        --mtb-surface: #ffffff;
+        --mtb-line: #c5d0dc;
+        --mtb-text: #1a2332;
+        --mtb-muted: #627d98;
+        /* legacy aliases */
+        --mtb-navy: var(--mtb-primary);
     }
 
     .fi-body {
         background-color: var(--mtb-bg);
+        color: var(--mtb-text);
     }
 
     .fi-layout,
@@ -18,58 +26,222 @@
         background-color: var(--mtb-bg);
     }
 
-    .fi-sidebar {
-        background-color: #fff;
-        border-right: 1px solid var(--mtb-line);
+    /* ── Sidebar ─────────────────────────────────────────────────────────── */
+    .fi-sidebar,
+    .fi-main-sidebar {
+        background-color: var(--mtb-primary) !important;
+        border-right: 1px solid var(--mtb-primary-dark);
+    }
+
+    .fi-sidebar-nav {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .fi-sidebar-nav::-webkit-scrollbar {
+        display: none;
     }
 
     .fi-sidebar-header {
-        background-color: #fff;
-        border-bottom: 1px solid var(--mtb-line);
+        background-color: var(--mtb-primary) !important;
+        border-bottom: 1px solid rgb(255 255 255 / 0.1);
     }
 
+    .fi-body-has-topbar .fi-sidebar-header {
+        background-color: var(--mtb-primary) !important;
+    }
+
+    /* Labels — override Filament text-gray-* utilities on dark sidebar */
+    .fi-sidebar .fi-sidebar-item-label,
+    .fi-sidebar .fi-sidebar-database-notifications-btn-label {
+        color: rgb(255 255 255 / 0.88) !important;
+    }
+
+    .fi-sidebar .fi-sidebar-group-label {
+        color: rgb(255 255 255 / 0.5) !important;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 0.6875rem;
+    }
+
+    .fi-sidebar .fi-sidebar-item-btn > .fi-icon,
+    .fi-sidebar .fi-sidebar-group-btn > .fi-icon,
+    .fi-sidebar .fi-sidebar-group-dropdown-trigger-btn > .fi-icon,
+    .fi-sidebar .fi-sidebar-database-notifications-btn > .fi-icon {
+        color: rgb(255 255 255 / 0.55) !important;
+    }
+
+    .fi-sidebar .fi-sidebar-item-btn:hover,
+    .fi-sidebar .fi-sidebar-item-btn:focus-visible,
+    .fi-sidebar .fi-sidebar-group-btn:hover,
+    .fi-sidebar .fi-sidebar-group-btn:focus-visible,
+    .fi-sidebar .fi-sidebar-group-dropdown-trigger-btn:hover,
+    .fi-sidebar .fi-sidebar-group-dropdown-trigger-btn:focus-visible,
+    .fi-sidebar .fi-sidebar-database-notifications-btn:hover,
+    .fi-sidebar .fi-sidebar-database-notifications-btn:focus-visible {
+        background-color: rgb(255 255 255 / 0.08) !important;
+    }
+
+    .fi-sidebar .fi-sidebar-item-btn:hover .fi-sidebar-item-label,
+    .fi-sidebar .fi-sidebar-item-btn:focus-visible .fi-sidebar-item-label {
+        color: #fff !important;
+    }
+
+    .fi-sidebar .fi-sidebar-item-btn:hover > .fi-icon,
+    .fi-sidebar .fi-sidebar-item-btn:focus-visible > .fi-icon,
+    .fi-sidebar .fi-sidebar-group-btn:hover > .fi-icon,
+    .fi-sidebar .fi-sidebar-group-btn:focus-visible > .fi-icon {
+        color: rgb(255 255 255 / 0.9) !important;
+    }
+
+    .fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+    .fi-sidebar .fi-sidebar-item.fi-sidebar-item-has-active-child-items > .fi-sidebar-item-btn {
+        background-color: rgb(255 255 255 / 0.14) !important;
+    }
+
+    .fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
+    .fi-sidebar .fi-sidebar-item.fi-sidebar-item-has-active-child-items > .fi-sidebar-item-btn .fi-sidebar-item-label {
+        color: #fff !important;
+        font-weight: 600;
+    }
+
+    .fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon,
+    .fi-sidebar .fi-sidebar-item.fi-sidebar-item-has-active-child-items > .fi-sidebar-item-btn > .fi-icon {
+        color: #fff !important;
+    }
+
+    .fi-sidebar .fi-sidebar-group.fi-active .fi-sidebar-group-label,
+    .fi-sidebar .fi-sidebar-group.fi-active .fi-sidebar-group-btn > .fi-icon {
+        color: rgb(255 255 255 / 0.9) !important;
+    }
+
+    .fi-sidebar .fi-sidebar-item-grouped-border-part {
+        background-color: rgb(255 255 255 / 0.35) !important;
+    }
+
+    .fi-sidebar .fi-sidebar-item.fi-active .fi-sidebar-item-grouped-border-part,
+    .fi-sidebar .fi-sidebar-item.fi-sidebar-item-has-active-child-items .fi-sidebar-item-grouped-border-part {
+        background-color: #fff !important;
+    }
+
+    .fi-sidebar .fi-sidebar-item-grouped-border-part-not-first,
+    .fi-sidebar .fi-sidebar-item-grouped-border-part-not-last {
+        background-color: rgb(255 255 255 / 0.2) !important;
+    }
+
+    .fi-sidebar .fi-sidebar-close-collapse-sidebar-btn,
+    .fi-sidebar .fi-sidebar-open-collapse-sidebar-btn {
+        color: rgb(255 255 255 / 0.55) !important;
+    }
+
+    .fi-sidebar .fi-sidebar-close-collapse-sidebar-btn:hover,
+    .fi-sidebar .fi-sidebar-close-collapse-sidebar-btn:focus-visible,
+    .fi-sidebar .fi-sidebar-open-collapse-sidebar-btn:hover,
+    .fi-sidebar .fi-sidebar-open-collapse-sidebar-btn:focus-visible {
+        color: #fff !important;
+        background-color: rgb(255 255 255 / 0.08) !important;
+    }
+
+    .fi-sidebar .fi-badge {
+        background-color: rgb(255 255 255 / 0.15) !important;
+        color: #fff !important;
+        border-color: rgb(255 255 255 / 0.2) !important;
+    }
+
+    @media (min-width: 1024px) {
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) {
+            width: 4.75rem;
+            min-width: 4.75rem;
+        }
+
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav {
+            padding-inline: 0.875rem;
+            padding-block: 1.5rem;
+        }
+
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav-groups {
+            gap: 0.875rem;
+        }
+
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-items {
+            gap: 0.5rem;
+        }
+
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-btn,
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn {
+            padding: 0.625rem;
+            width: 100%;
+        }
+
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-btn .fi-icon.fi-size-lg,
+        .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-dropdown-trigger-btn .fi-icon.fi-size-lg {
+            width: 1.375rem;
+            height: 1.375rem;
+        }
+    }
+
+    /* ── Topbar ──────────────────────────────────────────────────────────── */
     .fi-topbar {
-        background-color: #fff;
+        background-color: var(--mtb-surface);
         border-bottom: 1px solid var(--mtb-line);
-        box-shadow: none;
+        box-shadow: 0 1px 3px rgb(51 78 104 / 0.08);
     }
 
-    .fi-sidebar-item-btn:hover,
-    .fi-sidebar-item-btn:focus-visible {
-        background-color: rgb(69 160 106 / 0.06);
+    .fi-topbar-item-btn {
+        color: var(--mtb-primary);
     }
 
-    .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
-        background-color: rgb(69 160 106 / 0.1);
-        color: var(--mtb-green-dark);
-    }
-
-    .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-icon {
-        color: var(--mtb-green);
-    }
-
-    .fi-sidebar-group-label {
-        color: rgb(90 107 130);
-    }
-
+    /* ── Cards & sections ────────────────────────────────────────────────── */
     .fi-section,
     .fi-wi-stats-overview-stat,
     .fi-ta-ctn {
         border-color: var(--mtb-line);
+        box-shadow: 0 1px 2px rgb(51 78 104 / 0.05);
     }
 
+    .fi-section-content-ctn {
+        background-color: var(--mtb-surface);
+    }
+
+    .fi-wi-stats-overview-stat {
+        background-color: var(--mtb-surface);
+    }
+
+    /* ── Primary buttons (dark brand color needs white label text) ───────── */
+    .fi-btn.fi-color-primary:not(.fi-outlined):not(label),
+    a.fi-btn.fi-color-primary:not(.fi-outlined) {
+        --bg: var(--mtb-primary) !important;
+        --hover-bg: var(--mtb-primary-dark) !important;
+        --text: #fff !important;
+        --hover-text: #fff !important;
+        --dark-bg: var(--mtb-primary-dark) !important;
+        --dark-hover-bg: var(--mtb-primary) !important;
+        --dark-text: #fff !important;
+        --dark-hover-text: #fff !important;
+    }
+
+    .fi-btn.fi-color-primary:not(.fi-outlined):not(label) > .fi-icon,
+    a.fi-btn.fi-color-primary:not(.fi-outlined) > .fi-icon {
+        color: #fff !important;
+    }
+
+    /* ── Header actions ──────────────────────────────────────────────────── */
+    .fi-header-actions-ctn .fi-ac-btn-action.fi-outlined,
     .fi-header-actions-ctn .fi-ac-btn-action.fi-btn-variant-outline {
-        background: #fff;
+        background: var(--mtb-surface);
         border-color: var(--mtb-line);
-        color: var(--mtb-navy);
+        color: var(--mtb-primary);
         box-shadow: none;
     }
 
+    .fi-header-actions-ctn .fi-ac-btn-action.fi-outlined:hover,
+    .fi-header-actions-ctn .fi-ac-btn-action.fi-outlined:focus-visible,
     .fi-header-actions-ctn .fi-ac-btn-action.fi-btn-variant-outline:hover,
     .fi-header-actions-ctn .fi-ac-btn-action.fi-btn-variant-outline:focus-visible {
         background: var(--mtb-bg);
-        border-color: rgb(69 160 106 / 0.35);
-        color: var(--mtb-green-dark);
+        border-color: var(--mtb-primary-light);
+        color: var(--mtb-primary-dark);
     }
 
     .fi-header-actions-ctn .fi-ac-btn-action .fi-badge {
@@ -79,18 +251,7 @@
         padding-inline: 0.375rem;
     }
 
-    .fi-header-actions-ctn .fi-ac-btn-action.fi-btn-variant-filled.fi-color-primary {
-        background: var(--mtb-green);
-        border-color: var(--mtb-green);
-        color: #fff;
-    }
-
-    .fi-header-actions-ctn .fi-ac-btn-action.fi-btn-variant-filled.fi-color-primary:hover,
-    .fi-header-actions-ctn .fi-ac-btn-action.fi-btn-variant-filled.fi-color-primary:focus-visible {
-        background: var(--mtb-green-dark);
-        border-color: var(--mtb-green-dark);
-    }
-
+    /* ── Brand logo ──────────────────────────────────────────────────────── */
     .tb-admin-brand-logo {
         display: inline-flex;
         align-items: center;
@@ -99,7 +260,7 @@
         font-weight: 700;
         font-size: 1.25rem;
         letter-spacing: -0.02em;
-        color: var(--mtb-navy);
+        color: #fff;
         line-height: 1;
     }
 
@@ -109,7 +270,7 @@
         width: 2rem;
         height: 2rem;
         border-radius: 0.625rem;
-        background: linear-gradient(150deg, var(--mtb-green), #5bb481);
+        background: rgb(255 255 255 / 0.15);
         color: #fff;
         flex-shrink: 0;
     }
@@ -120,7 +281,7 @@
     }
 
     .tb-admin-brand-logo__accent {
-        color: var(--mtb-green);
+        color: rgb(255 255 255 / 0.75);
     }
 
     .tb-admin-brand-logo__image {
@@ -129,8 +290,19 @@
         width: auto;
         max-width: min(220px, 42vw);
         object-fit: contain;
+        filter: brightness(0) invert(1);
     }
 
+    /* ── Page headings ───────────────────────────────────────────────────── */
+    .fi-header-heading {
+        color: var(--mtb-primary-dark);
+    }
+
+    .fi-header-subheading {
+        color: var(--mtb-muted);
+    }
+
+    /* ── Dark mode ───────────────────────────────────────────────────────── */
     .dark .fi-body,
     .dark .fi-layout,
     .dark .fi-main-ctn,
@@ -139,14 +311,23 @@
         background-color: rgb(15 23 42);
     }
 
-    .dark .fi-sidebar,
-    .dark .fi-sidebar-header,
-    .dark .fi-topbar {
+    .dark .fi-sidebar {
+        background-color: rgb(15 23 42);
+        border-color: rgb(36 59 83);
+    }
+
+    .dark .fi-sidebar-header {
         background-color: rgb(15 23 42);
         border-color: rgb(51 65 85);
     }
 
-    /* Table badge chips, neutral labels + soft semantic status tints */
+    .dark .fi-topbar {
+        background-color: rgb(15 23 42);
+        border-color: rgb(51 65 85);
+        box-shadow: none;
+    }
+
+    /* ── Table badge chips ───────────────────────────────────────────────── */
     .fi-ta-table .fi-badge {
         border-radius: 9999px;
         font-weight: 600;
@@ -155,15 +336,15 @@
         text-transform: capitalize;
         box-shadow: none;
         border: 1px solid var(--mtb-line);
-        background-color: #eef2f8;
-        color: var(--mtb-navy);
+        background-color: #dce4ec;
+        color: var(--mtb-primary-dark);
     }
 
     .fi-ta-table .fi-badge.fi-color-gray,
     .fi-ta-table .fi-badge.fi-color-primary {
-        background-color: #eef2f8;
+        background-color: #dce4ec;
         border-color: var(--mtb-line);
-        color: var(--mtb-navy);
+        color: var(--mtb-primary-dark);
     }
 
     .fi-ta-table .fi-badge.fi-color-success {
@@ -185,9 +366,9 @@
     }
 
     .fi-ta-table .fi-badge.fi-color-info {
-        background-color: #e8f2fb;
-        border-color: rgb(15 112 184 / 0.2);
-        color: #0f70b8;
+        background-color: #dbeafe;
+        border-color: rgb(51 78 104 / 0.25);
+        color: var(--mtb-primary);
     }
 
     .dark .fi-ta-table .fi-badge {
@@ -223,7 +404,7 @@
 
     .dark .fi-ta-table .fi-badge.fi-color-info {
         background-color: rgb(20 40 60);
-        border-color: rgb(15 112 184 / 0.35);
-        color: #60a5fa;
+        border-color: rgb(51 78 104 / 0.35);
+        color: #93c5fd;
     }
 </style>

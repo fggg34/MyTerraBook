@@ -160,9 +160,9 @@
     }
 
     .ir-daily-fares-page .ir-fares-tab.is-active {
-        border-color: rgb(69 160 106 / 1);
-        background: rgb(69 160 106 / 0.1);
-        color: rgb(58 141 93 / 1);
+        border-color: var(--mtb-primary, #334e68);
+        background: rgb(51 78 104 / 0.1);
+        color: var(--mtb-primary-dark, #243b53);
     }
 
     .ir-daily-fares-page .ir-fares-grid {
@@ -309,7 +309,7 @@
     }
 
     .ir-daily-fares-page .ir-fares-primary-btn {
-        background: rgb(69 160 106 / 1);
+        background: var(--mtb-primary, #334e68);
         color: #fff;
         width: fit-content;
     }
@@ -468,7 +468,7 @@
     }
 </style>
 
-{{-- Default sidebar closed when no Alpine persist values yet. Left-edge hover opens via Alpine store; leaving strip/sidebar closes unless opened from the menu or after a click inside the sidebar. --}}
+{{-- Default sidebar collapsed (icons only). Hover expands; leaving collapses unless pinned via menu toggle or nav click. --}}
 <script>
     (function () {
         document.addEventListener('alpine:init', function () {
@@ -478,11 +478,29 @@
                     return;
                 }
 
-                if (
-                    localStorage.getItem('isOpen') === null &&
-                    localStorage.getItem('isOpenDesktop') === null
-                ) {
-                    store.close();
+                var PINNED_KEY = 'fi.sidebar.pinned';
+                var DESKTOP_BP = '(min-width: 1024px)';
+
+                function isDesktop() {
+                    return window.matchMedia(DESKTOP_BP).matches;
+                }
+
+                function isPinned() {
+                    try {
+                        return localStorage.getItem(PINNED_KEY) === '1';
+                    } catch (e) {
+                        return false;
+                    }
+                }
+
+                function setPinned(pinned) {
+                    try {
+                        if (pinned) {
+                            localStorage.setItem(PINNED_KEY, '1');
+                        } else {
+                            localStorage.removeItem(PINNED_KEY);
+                        }
+                    } catch (e) {}
                 }
 
                 var openedBy = null;
@@ -496,63 +514,107 @@
                     '.fi-topbar-open-sidebar-btn, .fi-topbar-open-collapse-sidebar-btn, .fi-sidebar-open-collapse-sidebar-btn, .fi-layout-sidebar-toggle-btn';
                 var closeToggleSelector =
                     '.fi-topbar-close-sidebar-btn, .fi-topbar-close-collapse-sidebar-btn, .fi-sidebar-close-collapse-sidebar-btn, .fi-sidebar-close-overlay';
+                var navClickSelector =
+                    '.fi-sidebar-nav a, .fi-sidebar-nav button, .fi-sidebar-footer a, .fi-sidebar-footer button, .fi-user-menu-trigger';
+
+                if (isDesktop()) {
+                    if (isPinned()) {
+                        if (!store.isOpen) {
+                            store.open();
+                        }
+                        openedBy = 'menu';
+                    } else {
+                        store.close();
+                    }
+                }
 
                 document.body.addEventListener(
                     'click',
                     function (e) {
+                        if (!isDesktop()) {
+                            return;
+                        }
+
                         var t = e.target;
+
                         if (t.closest(openToggleSelector)) {
                             openedBy = 'menu';
+                            setPinned(true);
+                            return;
                         }
+
                         if (t.closest(closeToggleSelector)) {
                             openedBy = null;
+                            setPinned(false);
+                            return;
                         }
 
                         var aside = sidebarEl();
-                        if (
-                            aside &&
-                            aside.contains(t) &&
-                            openedBy === 'hover'
-                        ) {
+                        if (aside && aside.contains(t) && t.closest(navClickSelector)) {
                             openedBy = 'menu';
+                            setPinned(true);
                         }
                     },
                     true,
                 );
 
-                var strip = document.createElement('div');
-                strip.className = 'fi-admin-sidebar-hover-strip';
-                strip.setAttribute('aria-hidden', 'true');
-                document.body.appendChild(strip);
+                function openOnHover() {
+                    if (!isDesktop() || openedBy === 'menu') {
+                        return;
+                    }
 
-                function updateStripVisibility() {
-                    var lg = window.matchMedia('(min-width: 1024px)').matches;
-                    strip.style.display = lg && !store.isOpen ? 'block' : 'none';
+                    if (!store.isOpen) {
+                        openedBy = 'hover';
+                        store.open();
+                    }
                 }
 
-                function scheduleHoverPointerCheck(e) {
+                function closeIfHoverOpened() {
                     if (openedBy !== 'hover' || !store.isOpen) {
                         return;
                     }
+
+                    store.close();
+                    openedBy = null;
+                }
+
+                function bindSidebarHover() {
+                    var aside = sidebarEl();
+                    if (!aside || aside.dataset.mtbHoverBound === '1') {
+                        return;
+                    }
+
+                    aside.dataset.mtbHoverBound = '1';
+                    aside.addEventListener('mouseenter', openOnHover);
+                }
+
+                function scheduleHoverPointerCheck(e) {
+                    if (!isDesktop() || openedBy !== 'hover' || !store.isOpen) {
+                        return;
+                    }
+
                     if (rafHoverCheck !== null) {
                         return;
                     }
+
                     rafHoverCheck = requestAnimationFrame(function () {
                         rafHoverCheck = null;
+
                         if (openedBy !== 'hover' || !store.isOpen) {
                             return;
                         }
+
                         var aside = sidebarEl();
                         if (!aside) {
                             return;
                         }
+
                         var el = document.elementFromPoint(e.clientX, e.clientY);
-                        if (el && (aside.contains(el) || strip.contains(el))) {
+                        if (el && aside.contains(el)) {
                             return;
                         }
-                        store.close();
-                        openedBy = null;
-                        updateStripVisibility();
+
+                        closeIfHoverOpened();
                     });
                 }
 
@@ -560,23 +622,8 @@
                     passive: true,
                 });
 
-                strip.addEventListener('mouseenter', function () {
-                    if (!window.matchMedia('(min-width: 1024px)').matches) {
-                        return;
-                    }
-                    if (!store.isOpen) {
-                        openedBy = 'hover';
-                        store.open();
-                    }
-                    updateStripVisibility();
-                });
-
-                document.addEventListener('livewire:navigated', function () {
-                    updateStripVisibility();
-                });
-
-                updateStripVisibility();
-                setInterval(updateStripVisibility, 400);
+                document.addEventListener('livewire:navigated', bindSidebarHover);
+                bindSidebarHover();
             });
         });
     })();

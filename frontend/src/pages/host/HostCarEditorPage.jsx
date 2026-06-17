@@ -61,7 +61,12 @@ import HostCarExtrasPanel from '../../components/host/HostCarExtrasPanel'
 import HostCarProtectionPlansPanel from '../../components/host/HostCarProtectionPlansPanel'
 import HostCarLocationsStep from '../../components/host/HostCarLocationsStep'
 import HostDisclosure from '../../components/host/HostDisclosure'
-import { HostImageDropzone, HostImageGallery } from '../../components/host/HostImageUpload'
+import {
+  HostImageDropzone,
+  HostImageGallery,
+  HOST_IMAGE_FORMAT_HINT,
+  HOST_MIN_DETAIL_IMAGES,
+} from '../../components/host/HostImageUpload'
 import HostIconMultiSelect from '../../components/host/HostIconMultiSelect'
 import HostReadinessChecklist from '../../components/host/HostReadinessChecklist'
 import HostDatePicker from '../../components/host/HostDatePicker'
@@ -451,6 +456,12 @@ export default function HostCarEditorPage() {
     })
   }
 
+  const toastInvalidImageFiles = (files) => {
+    const names = files.map((file) => file.name).filter(Boolean)
+    const suffix = names.length ? ` (${names.join(', ')})` : ''
+    toast(`Unsupported photo format${suffix}. ${HOST_IMAGE_FORMAT_HINT}`, 'error')
+  }
+
   const handleMainImage = async (file) => {
     if (!file) return
 
@@ -569,6 +580,8 @@ export default function HostCarEditorPage() {
   }
 
   const mainImagePreview = mainImage ? resolveStorageUrl(mainImage) : pendingMainPreview
+  const detailImageCount = form.details_image_paths.length + pendingDetails.length
+  const hasMainImage = !!(mainImage || pendingMainFile)
 
   const filteredSubCategories = catalog.subCategories.filter(
     (sub) => !form.main_category_id || String(sub.main_category_id) === String(form.main_category_id),
@@ -584,6 +597,18 @@ export default function HostCarEditorPage() {
   const readinessItems = useMemo(() => [
     { label: 'Vehicle name', done: !!String(form.name || '').trim(), step: 0, focusId: 'host-car-name' },
     { label: 'Category selected', done: !!form.sub_category_id, step: 0, focusId: 'host-car-sub-category' },
+    {
+      label: 'Main image uploaded',
+      done: hasMainImage,
+      step: 0,
+      focusId: 'host-car-main-image',
+    },
+    {
+      label: `At least ${HOST_MIN_DETAIL_IMAGES} detail photos`,
+      done: detailImageCount >= HOST_MIN_DETAIL_IMAGES,
+      step: 0,
+      focusId: 'host-car-detail-images',
+    },
     {
       label: 'Pickup & drop-off locations',
       done: (form.pickup_location_ids || []).length > 0 && (form.dropoff_location_ids || []).length > 0,
@@ -618,7 +643,7 @@ export default function HostCarEditorPage() {
       step: 1,
       focusId: isCampervan ? 'car-sleeps' : 'car-seats',
     },
-  ], [form, dailyFares, catalog.priceTypes, isCampervan, units.length])
+  ], [form, dailyFares, catalog.priceTypes, isCampervan, units.length, hasMainImage, detailImageCount])
   const isReady = readinessItems.every((i) => i.done)
 
   const yearOptions = useMemo(
@@ -920,16 +945,20 @@ export default function HostCarEditorPage() {
                 <p className="host-capacity-hint">Photos are previewed locally and upload when you save the vehicle.</p>
               )}
               <HostImageDropzone
+                fieldId="host-car-main-image"
                 label="Main image"
-                hint="Used on search cards and browse results only, not shown in the listing photo gallery."
+                hint={`Used on search cards and browse results only, not shown in the listing photo gallery. ${HOST_IMAGE_FORMAT_HINT}`}
                 previewSrc={mainImagePreview}
                 emptyLabel="Upload main photo"
                 onSelect={handleMainImage}
+                onInvalid={toastInvalidImageFiles}
                 onClear={pendingMainPreview ? clearMainImage : undefined}
               />
               <HostImageGallery
+                fieldId="host-car-detail-images"
                 label="Detail images"
-                hint="Shown in the listing page gallery. Add photos of the interior, exterior, and key features, guests browse these on your listing."
+                hint={`Shown in the listing page gallery. Add at least ${HOST_MIN_DETAIL_IMAGES} photos of the interior, exterior, and key features so guests can browse your listing. ${HOST_IMAGE_FORMAT_HINT}`}
+                minCount={HOST_MIN_DETAIL_IMAGES}
                 items={[
                   ...form.details_image_paths.map((path) => ({
                     key: path,
@@ -943,6 +972,7 @@ export default function HostCarEditorPage() {
                   })),
                 ]}
                 onSelect={handleDetailsImages}
+                onInvalid={toastInvalidImageFiles}
               />
             </div>
           </>

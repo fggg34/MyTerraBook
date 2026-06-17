@@ -6,13 +6,13 @@
     <title>@yield('title', 'Homepage CMS'), MyTerraBook Admin</title>
     <style>
         :root {
-            --navy: #0f2036;
+            --navy: #334e68;
             --green: #45a06a;
-            --line: #e2e7ef;
-            --slate: #5a6b82;
+            --line: #c5d0dc;
+            --slate: #627d98;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f7fb; color: #1d2b40; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #e8edf2; color: #1a2332; }
         .admin-shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
         .admin-sidebar { background: var(--navy); color: #fff; padding: 28px 20px; }
         .admin-sidebar h1 { font-size: 18px; margin-bottom: 8px; }

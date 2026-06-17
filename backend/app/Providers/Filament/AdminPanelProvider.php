@@ -48,9 +48,9 @@ class AdminPanelProvider extends PanelProvider
                 'Open Sans',
                 url: 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Quicksand:wght@700&display=swap',
             )
-            ->sidebarFullyCollapsibleOnDesktop()
+            ->sidebarCollapsibleOnDesktop()
             ->colors([
-                'primary' => Color::hex('#45a06a'),
+                'primary' => Color::hex('#334e68'),
             ])
             ->darkMode(false, true)
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
@@ -106,7 +106,7 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => view('filament.panel.body-end-scripts')->render(),
             )
             ->renderHook(
-                PanelsRenderHook::PAGE_START,
+                PanelsRenderHook::PAGE_SUB_NAVIGATION_TOP_AFTER,
                 fn (): string => view('filament.panel.impact-rent-editor-quick-access')->render(),
             );
     }

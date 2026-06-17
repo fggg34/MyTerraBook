@@ -15,5 +15,12 @@ export default defineConfig({
     host: '127.0.0.1',
     port: Number(process.env.VITE_DEV_PORT) || 5174,
     strictPort: true,
+    proxy: {
+      '/backend': {
+        target: `http://127.0.0.1:${process.env.BACKEND_PORT || 8080}`,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/backend/, ''),
+      },
+    },
   },
 })

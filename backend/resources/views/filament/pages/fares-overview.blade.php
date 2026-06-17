@@ -40,7 +40,9 @@
         }
 
         .fo-field {
+            box-sizing: border-box;
             width: 100%;
+            min-width: 0;
             border: 1px solid #cfd7e2;
             border-radius: 2px;
             background: #fff;
@@ -58,8 +60,8 @@
             height: 34px;
             border: 0;
             border-radius: 2px;
+            background: #334e68;
             color: #fff;
-            background: #0b84bf;
             font-size: 16px;
             cursor: pointer;
         }
@@ -74,7 +76,7 @@
         .fo-button {
             border: 0;
             border-radius: 2px;
-            background: #0b84bf;
+            background: #334e68;
             color: #fff;
             font-size: 12px;
             font-weight: 600;
@@ -98,7 +100,7 @@
 
         .fo-overview-grid {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 140px;
+            grid-template-columns: minmax(0, 1fr) 160px;
             gap: 10px;
             align-items: start;
         }
@@ -115,8 +117,8 @@
         }
 
         .fo-table thead th {
-            border: 1px solid #1f6f95;
-            background: #45a06a;
+            border: 1px solid #243b53;
+            background: #334e68;
             color: #fff;
             text-align: center;
             font-weight: 700;
@@ -125,8 +127,8 @@
 
         .fo-table thead th.fo-date-head {
             width: 108px;
-            background: #45a06a;
-            border-color: #1f6f95;
+            background: #334e68;
+            border-color: #243b53;
         }
 
         .fo-table .fo-day-num {
@@ -177,8 +179,8 @@
 
         .fo-period-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
+            grid-template-columns: 1fr;
+            gap: 8px;
         }
 
         @media (max-width: 1100px) {

@@ -45,7 +45,7 @@
         }
 
         .la-stat-value--warn {
-            color: var(--mtb-green-dark);
+            color: var(--mtb-primary-dark);
         }
 
         .la-panel {

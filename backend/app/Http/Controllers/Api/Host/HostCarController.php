@@ -136,9 +136,9 @@ class HostCarController extends Controller
         $this->authorize('update', $car);
 
         $request->validate([
-            'main_image' => ['nullable', 'image', 'max:8192'],
+            'main_image' => ['nullable', 'file', 'mimes:jpeg,jpg,png,webp,gif', 'max:8192'],
             'details_images' => ['nullable', 'array'],
-            'details_images.*' => ['image', 'max:8192'],
+            'details_images.*' => ['file', 'mimes:jpeg,jpg,png,webp,gif', 'max:8192'],
             'details_image_paths' => ['nullable', 'array'],
             'details_image_paths.*' => ['string'],
             'replace_details_image_paths' => ['sometimes', 'boolean'],
@@ -997,6 +997,14 @@ class HostCarController extends Controller
             }
         } elseif (($car->seats ?? 0) < 1) {
             return 'Seats must be at least 1 before submitting for review.';
+        }
+
+        if (blank($car->main_image_path)) {
+            return 'A main image is required before submitting for review.';
+        }
+
+        if (count($car->details_image_paths ?? []) < 5) {
+            return 'At least 5 detail photos are required before submitting for review.';
         }
 
         return null;

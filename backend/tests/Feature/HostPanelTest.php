@@ -482,6 +482,29 @@ class HostPanelTest extends TestCase
         ])->assertOk();
 
         $this->postJson("/api/host/cars/{$carId}/submit")
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'A main image is required before submitting for review.');
+
+        $car->update([
+            'main_image_path' => 'cars/main-test.jpg',
+            'details_image_paths' => array_map(
+                fn (int $index) => "cars/details/detail-{$index}.jpg",
+                range(1, 4),
+            ),
+        ]);
+
+        $this->postJson("/api/host/cars/{$carId}/submit")
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'At least 5 detail photos are required before submitting for review.');
+
+        $car->update([
+            'details_image_paths' => array_map(
+                fn (int $index) => "cars/details/detail-{$index}.jpg",
+                range(1, 5),
+            ),
+        ]);
+
+        $this->postJson("/api/host/cars/{$carId}/submit")
             ->assertOk()
             ->assertJsonPath('data.listing_status', ListingApprovalStatus::PendingReview->value);
 

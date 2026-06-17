@@ -1,7 +1,7 @@
-{{-- One-time reset so the new default (sidebar closed) applies for anyone who had Filament persist keys. --}}
+{{-- One-time reset so the new default (sidebar collapsed, icons only) applies for existing sessions. --}}
 <script>
     (function () {
-        var k = 'fi.sidebar.defaultClosedMigration.v1';
+        var k = 'fi.sidebar.defaultClosedMigration.v2';
         if (localStorage.getItem(k)) {
             return;
         }
@@ -9,6 +9,7 @@
         try {
             localStorage.removeItem('isOpen');
             localStorage.removeItem('isOpenDesktop');
+            localStorage.removeItem('fi.sidebar.pinned');
         } catch (e) {}
     })();
 </script>

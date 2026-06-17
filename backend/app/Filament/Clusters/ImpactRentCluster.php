@@ -23,11 +23,8 @@ class ImpactRentCluster extends Cluster
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
-    // The native cluster sub-navigation (grouped by navigation group: Catalog,
-    // Platform, Network, Operations, Pricing, Marketing) is replaced by the
-    // custom Impact Rent top bar (see impact-rent-editor-quick-access.blade.php),
-    // so disable it here to avoid rendering a duplicate/outdated menu.
-    protected static bool $shouldRegisterSubNavigation = false;
+    // Native cluster tabs are hidden in impact-rent-editor-quick-access.blade.php
+    // and replaced by the custom Impact Rent bar in the same sub-navigation slot.
 
     public static function getNavigationBadge(): ?string
     {

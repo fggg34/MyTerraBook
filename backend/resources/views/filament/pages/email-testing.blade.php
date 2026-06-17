@@ -11,7 +11,7 @@
         .et-card__title {
             font-size: 0.95rem;
             font-weight: 700;
-            color: #0f2036;
+            color: #334e68;
             margin-bottom: 0.35rem;
         }
         .et-card__desc {

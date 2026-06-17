@@ -107,7 +107,7 @@
     }
 
     .orc-day--selected {
-        box-shadow: inset 0 0 0 2px #45a06a;
+        box-shadow: inset 0 0 0 2px #334e68;
         font-weight: 700;
     }
 

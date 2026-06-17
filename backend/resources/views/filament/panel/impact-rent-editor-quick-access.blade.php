@@ -144,8 +144,9 @@
 
 @if ($inImpactRent)
     <style>
-        /* Hide native Filament cluster sub-nav tabs, replaced by the IR bar below */
-        .fi-page-sub-navigation-tabs {
+        /* Hide native Filament cluster sub-nav, replaced by the IR bar below */
+        .fi-page-sub-navigation-tabs,
+        .fi-page-sub-navigation-dropdown {
             display: none !important;
         }
     </style>
@@ -153,11 +154,11 @@
 
 @if ($showIrTabs)
     <style>
-        /* ── Outer centering wrapper ── */
+        /* ── Sub-navigation slot (matches fi-page-sub-navigation-tabs placement) ── */
         .ir-tabs-outer {
             display: flex;
             justify-content: center;
-            padding: 0.75rem 1rem 0;
+            width: 100%;
             overflow-x: auto;
             overflow-y: visible;
             scrollbar-width: none;
@@ -217,7 +218,7 @@
 
         .ir-tabs__item--active {
             background-color: rgb(249 250 251);
-            color: var(--mtb-green-dark);
+            color: var(--mtb-primary-dark);
         }
 
         /* ── Leading icon ── */
@@ -231,7 +232,7 @@
         }
 
         .ir-tabs__item--active .ir-tabs__icon {
-            color: var(--mtb-green-dark);
+            color: var(--mtb-primary-dark);
         }
 
         .ir-tabs__item:hover .ir-tabs__icon {
@@ -239,7 +240,7 @@
         }
 
         .ir-tabs__item--active:hover .ir-tabs__icon {
-            color: var(--mtb-green-dark);
+            color: var(--mtb-primary-dark);
         }
 
         /* ── Trailing chevron on dropdown triggers ── */
@@ -292,7 +293,7 @@
 
         .ir-tabs__dropdown-item--active {
             background-color: rgb(249 250 251);
-            color: var(--mtb-green-dark);
+            color: var(--mtb-primary-dark);
             font-weight: 500;
         }
 
