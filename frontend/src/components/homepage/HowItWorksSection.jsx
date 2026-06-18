@@ -18,7 +18,14 @@ export default function HowItWorksSection({ heading, steps = [] }) {
         <div className="how-head">{heading && <h2>{heading}</h2>}</div>
         <div className="how-steps" id="howSteps" ref={wrapRef}>
           {steps.map((step, index) => (
-            <div key={step.num} className={`hstep ${index === 0 ? 'active' : ''}`} data-step={index}>
+            <div
+              key={step.num}
+              className={`hstep ${index === 0 ? 'active' : ''}`}
+              data-step={index}
+              role="button"
+              tabIndex={0}
+              aria-expanded={index === 0}
+            >
               <span className="hstep-bar" />
               <div className="hstep-num">{step.num}</div>
               <div className="hstep-title">{step.title}</div>

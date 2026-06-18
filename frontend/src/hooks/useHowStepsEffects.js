@@ -1,6 +1,11 @@
 import { useEffect } from 'react'
 
 const DURATION_MS = 7000
+const CLICK_ONLY_MQ = '(max-width: 980px)'
+
+function prefersClickToOpen() {
+  return window.matchMedia(CLICK_ONLY_MQ).matches
+}
 
 function fillBar(bar, on) {
   if (!bar) return
@@ -37,16 +42,19 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
 
     const activate = (index) => {
       current = index
-      steps.forEach((step, idx) => step.classList.toggle('active', idx === index))
+      steps.forEach((step, idx) => {
+        step.classList.toggle('active', idx === index)
+        step.setAttribute('aria-expanded', idx === index ? 'true' : 'false')
+      })
       bars.forEach((bar, idx) => {
         if (idx !== index && bar) {
           bar.style.transition = 'height .3s ease'
           bar.style.height = '0%'
         }
       })
-      fillBar(bars[index], !paused)
+      fillBar(bars[index], !paused && !prefersClickToOpen())
       clearTimer()
-      if (!paused) {
+      if (!paused && !prefersClickToOpen()) {
         timer = setTimeout(() => activate((index + 1) % steps.length), duration)
       }
     }
@@ -62,18 +70,25 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
       }
     }
 
-    const onWrapEnter = () => pauseAtCurrent()
+    const onWrapEnter = () => {
+      if (prefersClickToOpen()) return
+      pauseAtCurrent()
+    }
 
     const resume = () => {
+      if (prefersClickToOpen()) return
       paused = false
       activate(current)
     }
 
-    const onStepEnter = (index) => () => {
+    const openStep = (index) => {
       paused = true
       clearTimer()
       current = index
-      steps.forEach((step, idx) => step.classList.toggle('active', idx === index))
+      steps.forEach((step, idx) => {
+        step.classList.toggle('active', idx === index)
+        step.setAttribute('aria-expanded', idx === index ? 'true' : 'false')
+      })
       bars.forEach((bar, idx) => {
         if (!bar) return
         if (idx !== index) {
@@ -86,16 +101,32 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
       })
     }
 
+    const onStepHover = (index) => () => {
+      if (prefersClickToOpen()) return
+      openStep(index)
+    }
+
     const onStepClick = (index) => () => {
+      if (prefersClickToOpen()) {
+        openStep(index)
+        return
+      }
       paused = false
       activate(index)
+    }
+
+    const onStepKeyDown = (index) => (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return
+      event.preventDefault()
+      onStepClick(index)()
     }
 
     const onWrapLeave = () => resume()
 
     steps.forEach((step, index) => {
-      step.addEventListener('mouseenter', onStepEnter(index))
+      step.addEventListener('mouseenter', onStepHover(index))
       step.addEventListener('click', onStepClick(index))
+      step.addEventListener('keydown', onStepKeyDown(index))
     })
     wrap.addEventListener('mouseenter', onWrapEnter)
     wrap.addEventListener('mouseleave', onWrapLeave)
@@ -107,13 +138,27 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
           entries.forEach((entry) => {
             if (entry.isIntersecting && !started) {
               started = true
-              activate(0)
+              if (prefersClickToOpen()) {
+                const bar = bars[0]
+                if (bar) {
+                  bar.style.transition = 'none'
+                  bar.style.height = '100%'
+                }
+              } else {
+                activate(0)
+              }
             }
           })
         },
         { threshold },
       )
       io.observe(wrap)
+    } else if (prefersClickToOpen()) {
+      const bar = bars[0]
+      if (bar) {
+        bar.style.transition = 'none'
+        bar.style.height = '100%'
+      }
     } else {
       activate(0)
     }
@@ -121,8 +166,9 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
     return () => {
       clearTimer()
       steps.forEach((step, index) => {
-        step.removeEventListener('mouseenter', onStepEnter(index))
+        step.removeEventListener('mouseenter', onStepHover(index))
         step.removeEventListener('click', onStepClick(index))
+        step.removeEventListener('keydown', onStepKeyDown(index))
       })
       wrap.removeEventListener('mouseenter', onWrapEnter)
       wrap.removeEventListener('mouseleave', onWrapLeave)

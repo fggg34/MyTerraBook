@@ -1,3 +1,7 @@
+import { useEffect, useState } from 'react'
+import useAutoAdvanceCarousel from '../../hooks/useAutoAdvanceCarousel'
+import useMediaQuery from '../../hooks/useMediaQuery'
+
 function TrustIcon({ type, image }) {
   if (image) {
     return <img src={image} alt="" className="trust-ic-img" aria-hidden="true" />
@@ -29,33 +33,86 @@ function TrustIcon({ type, image }) {
 }
 
 export default function TrustStrip({ items = [] }) {
+  const isMobile = useMediaQuery('(max-width: 768px)')
+  const [descOpen, setDescOpen] = useState(false)
+  const { activeIndex, pause, resume } = useAutoAdvanceCarousel({
+    count: items.length,
+    interval: 4000,
+    enabled: isMobile && items.length > 1,
+  })
+
+  useEffect(() => {
+    setDescOpen(false)
+  }, [activeIndex])
+
+  useEffect(() => {
+    if (!isMobile) return undefined
+    if (descOpen) pause()
+    else resume()
+    return undefined
+  }, [descOpen, isMobile, pause, resume])
+
   if (!items.length) return null
 
   return (
-    <section className="trust">
+    <section className="trust" aria-label="Trust highlights">
       <div className="wrap">
-        {items.map((item, index) => (
-          <div className="trust-item" key={`${item.title}-${index}`}>
-            <span className="trust-ic">
-              <TrustIcon type={item.icon} image={item.iconImage} />
-            </span>
-            <div className="trust-text">
-              <div className="tt-top">
-                {item.title}
-                {item.icon === 'star' && item.stars ? (
-                  <span className="trust-stars" aria-hidden="true">
-                    {Array.from({ length: item.stars }).map((_, i) => (
-                      <svg key={i} viewBox="0 0 24 24" fill="currentColor">
-                        <path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z" />
-                      </svg>
-                    ))}
-                  </span>
+        <div
+          className={`trust-track${isMobile ? ' trust-track--mobile' : ''}`}
+          style={isMobile ? { '--trust-index': activeIndex } : undefined}
+          onTouchStart={isMobile ? pause : undefined}
+          onTouchEnd={isMobile ? resume : undefined}
+          onPointerDown={isMobile ? pause : undefined}
+          onPointerUp={isMobile ? resume : undefined}
+          onPointerLeave={isMobile ? resume : undefined}
+        >
+          {items.map((item, index) => {
+            const isActive = !isMobile || index === activeIndex
+            const showSubtitle = !isMobile || (isActive && descOpen)
+
+            return (
+            <div
+              className="trust-item"
+              key={`${item.title}-${index}`}
+              aria-hidden={isMobile && index !== activeIndex ? true : undefined}
+            >
+              <span className="trust-ic">
+                <TrustIcon type={item.icon} image={item.iconImage} />
+              </span>
+              <div className="trust-text">
+                <div className="tt-top">
+                  {item.title}
+                  {item.icon === 'star' && item.stars ? (
+                    <span className="trust-stars" aria-hidden="true">
+                      {Array.from({ length: item.stars }).map((_, i) => (
+                        <svg key={i} viewBox="0 0 24 24" fill="currentColor">
+                          <path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z" />
+                        </svg>
+                      ))}
+                    </span>
+                  ) : null}
+                  {isMobile && item.subtitle ? (
+                    <button
+                      type="button"
+                      className="trust-info-btn"
+                      aria-expanded={isActive && descOpen}
+                      aria-label={`More about ${item.title}`}
+                      onClick={() => {
+                        if (index === activeIndex) setDescOpen((open) => !open)
+                      }}
+                    >
+                      ?
+                    </button>
+                  ) : null}
+                </div>
+                {showSubtitle && item.subtitle ? (
+                  <div className="tt-sub">{item.subtitle}</div>
                 ) : null}
               </div>
-              <div className="tt-sub">{item.subtitle}</div>
             </div>
-          </div>
-        ))}
+            )
+          })}
+        </div>
       </div>
     </section>
   )

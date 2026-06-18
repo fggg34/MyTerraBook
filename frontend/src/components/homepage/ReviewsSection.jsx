@@ -1,5 +1,6 @@
 import { useMemo, useRef } from 'react'
 import useDragScroll from '../../hooks/useDragScroll'
+import useMediaQuery from '../../hooks/useMediaQuery'
 import useSectionReveal from '../../hooks/useSectionReveal'
 
 const AVATAR_FILLS = ['#a9d4e6', '#bcdcab', '#f1d79a', '#cdbbea', '#a4ddcd', '#f4c1a4']
@@ -84,6 +85,7 @@ export default function ReviewsSection({
 }) {
   const sectionRef = useRef(null)
   const trackWrapRef = useRef(null)
+  const isMobile = useMediaQuery('(max-width: 768px)')
   useSectionReveal(sectionRef, { revealDoneMs: 1800 })
 
   const ratingValue = useMemo(() => {
@@ -94,11 +96,11 @@ export default function ReviewsSection({
   const reviewerLabel = source === 'google' && !isDemo ? 'Google reviewer' : 'Traveller'
   const ratingSourceLabel = source === 'google' && !isDemo ? 'Google' : 'MyTerraBook'
   const resolvedCtaLabel = ctaLabel || (source === 'google' && !isDemo ? 'Leave a Google Review' : null)
-  const useMarquee = reviews.length > 3
+  const useMarquee = !isMobile && reviews.length > 3
 
   useDragScroll(trackWrapRef, {
-    enabled: useMarquee,
-    convertAnimationFrom: '.rv-track--scroll',
+    enabled: isMobile || useMarquee,
+    convertAnimationFrom: useMarquee ? '.rv-track--scroll' : null,
   })
 
   const trackReviews = useMemo(() => {
@@ -163,18 +165,18 @@ export default function ReviewsSection({
 
         <div
           ref={trackWrapRef}
-          className={`rv-track-wrap${useMarquee ? ' rv-track-wrap--marquee' : ''}`}
-          onMouseEnter={(e) => e.currentTarget.classList.add('rv-track-wrap--paused')}
-          onMouseLeave={(e) => e.currentTarget.classList.remove('rv-track-wrap--paused')}
+          className={`rv-track-wrap${useMarquee ? ' rv-track-wrap--marquee' : ''}${isMobile ? ' rv-track-wrap--mobile' : ''}`}
+          onMouseEnter={useMarquee ? (e) => e.currentTarget.classList.add('rv-track-wrap--paused') : undefined}
+          onMouseLeave={useMarquee ? (e) => e.currentTarget.classList.remove('rv-track-wrap--paused') : undefined}
         >
-          <div className={`rv-track${useMarquee ? ' rv-track--scroll' : ' rv-track--grid'}`}>
+          <div className={`rv-track${useMarquee ? ' rv-track--scroll' : isMobile ? ' rv-track--mobile' : ' rv-track--grid'}`}>
             {trackReviews.map((review, index) => (
               <ReviewCard
                 key={`${review.name}-${index}${index >= reviews.length ? '-dup' : ''}`}
                 review={review}
                 reviewerLabel={reviewerLabel}
                 duplicate={index >= reviews.length}
-                style={useMarquee ? undefined : { '--i': index }}
+                style={useMarquee || isMobile ? undefined : { '--i': index }}
               />
             ))}
           </div>

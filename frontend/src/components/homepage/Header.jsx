@@ -31,10 +31,6 @@ function navLinkClass(href) {
   return 'nav-collapsible'
 }
 
-function isGoodToKnowLink(link) {
-  return link?.href === '/good-to-know' || link?.label === 'Good to Know'
-}
-
 export default function Header({
   navLinks = [],
   ctaLabel,
@@ -54,7 +50,7 @@ export default function Header({
   const dashboardLabel = getDashboardLabel(role)
   const showHostCta = !user || (role !== 'host' && role !== 'admin')
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || '?'
-  const mobileNavLinks = navLinks.filter((link) => !isGoodToKnowLink(link))
+  const mobileNavLinks = navLinks
 
   const closeMobile = () => setMobileOpen(false)
 
@@ -226,6 +222,7 @@ export default function Header({
               <button
                 type="button"
                 className={`user-menu-btn${userMenuOpen ? ' open' : ''}`}
+                aria-label={`${user.name} account menu`}
                 aria-expanded={userMenuOpen}
                 aria-haspopup="menu"
                 onClick={() => setUserMenuOpen((open) => !open)}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import { usePicksListings } from '../../hooks/useHomepageListings'
+import useMediaQuery from '../../hooks/useMediaQuery'
 import ProductCard from './ProductCard'
 
 function SectionLink({ href, className, children }) {
@@ -19,8 +20,25 @@ function SectionLink({ href, className, children }) {
   )
 }
 
+function CarouselNav({ direction, disabled, onClick, label }) {
+  return (
+    <button
+      className={`carousel-nav ${direction}`}
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        {direction === 'prev' ? <path d="M15 6l-6 6 6 6" /> : <path d="M9 6l6 6-6 6" />}
+      </svg>
+    </button>
+  )
+}
+
 export default function PicksSection({ heading, tabs = [] }) {
   const { items, loading } = usePicksListings()
+  const isMobile = useMediaQuery('(max-width: 768px)')
   const tabList = useMemo(() => {
     const availableTabs = tabs.filter((tab) => (items[tab.id] || []).length > 0)
     return availableTabs.length ? availableTabs : tabs
@@ -28,7 +46,13 @@ export default function PicksSection({ heading, tabs = [] }) {
   const [activeTab, setActiveTab] = useState(tabList[0]?.id || 'camper')
   const activeItems = items[activeTab] || []
   const activeTabMeta = tabList.find((t) => t.id === activeTab) || tabList[0]
-  const { trackRef, scroll, atStart, atEnd } = useHorizontalCarousel({ itemCount: activeItems.length })
+  const showCarousel = isMobile && activeItems.length > 1
+  const { trackRef, scroll, atStart, atEnd } = useHorizontalCarousel({
+    itemCount: activeItems.length,
+    gap: 12,
+    enabled: showCarousel || activeItems.length > 0,
+    scrollDurationMs: 700,
+  })
 
   useEffect(() => {
     if (!tabList.some((tab) => tab.id === activeTab)) {
@@ -56,12 +80,10 @@ export default function PicksSection({ heading, tabs = [] }) {
         </div>
 
         <div className="picks-panel">
-          <button className="carousel-nav prev" type="button" aria-label="Previous" disabled={atStart} onClick={() => scroll(-1)}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 6l-6 6 6 6" />
-            </svg>
-          </button>
-          <div className="track" ref={trackRef}>
+          {!showCarousel && (
+            <CarouselNav direction="prev" label="Previous" disabled={atStart} onClick={() => scroll(-1)} />
+          )}
+          <div className={`track${showCarousel ? ' track--carousel' : ''}`} ref={trackRef}>
             {activeItems.length ? (
               activeItems.map((item) => (
                 <ProductCard key={item.id || item.name} {...item} />
@@ -70,12 +92,17 @@ export default function PicksSection({ heading, tabs = [] }) {
               <p className="picks-empty" role="status">No listings available yet.</p>
             ) : null}
           </div>
-          <button className="carousel-nav next" type="button" aria-label="Next" disabled={atEnd} onClick={() => scroll(1)}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </button>
+          {!showCarousel && (
+            <CarouselNav direction="next" label="Next" disabled={atEnd} onClick={() => scroll(1)} />
+          )}
         </div>
+
+        {showCarousel && (
+          <div className="product-carousel-controls">
+            <CarouselNav direction="prev" label="Previous" disabled={atStart} onClick={() => scroll(-1)} />
+            <CarouselNav direction="next" label="Next" disabled={atEnd} onClick={() => scroll(1)} />
+          </div>
+        )}
 
         {activeTabMeta?.allLabel && (
           <div className="picks-foot">

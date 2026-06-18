@@ -67,19 +67,21 @@ export default function NewsSection({
 
         <div className="news-action">
           <form className="news-form" id="newsForm" onSubmit={handleSubmit}>
-            <svg className="mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="5" width="18" height="14" rx="2.5" />
-              <path d="m4 7 8 6 8-6" />
-            </svg>
-            <input
-              type="email"
-              id="newsEmail"
-              placeholder={placeholder}
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="news-form-field">
+              <svg className="mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2.5" />
+                <path d="m4 7 8 6 8-6" />
+              </svg>
+              <input
+                type="email"
+                id="newsEmail"
+                placeholder={placeholder}
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
             <button type="submit" disabled={loading}>
               {loading ? 'Subscribing…' : 'Subscribe'}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">

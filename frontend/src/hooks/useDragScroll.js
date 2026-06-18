@@ -106,7 +106,7 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
 
     const onPointerDown = (e) => {
       if (e.pointerType !== 'mouse' || e.button !== 0) return
-      if (e.target.closest(INTERACTIVE) && !e.target.closest('.pcard-stretch-link')) return
+      if (e.target.closest(INTERACTIVE) && !e.target.closest('.pcard-stretch-link, a.rcard')) return
 
       prepareScroll()
       if (!canScroll()) return
@@ -115,7 +115,7 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
       startX = e.pageX
       scrollLeftStart = el.scrollLeft
 
-      const isStretchLink = e.target.closest('.pcard-stretch-link')
+      const isStretchLink = e.target.closest('.pcard-stretch-link, a.rcard')
 
       if (isStretchLink) {
         pendingDrag = true

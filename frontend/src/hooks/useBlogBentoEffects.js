@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 
-export default function useBlogBentoEffects() {
+export default function useBlogBentoEffects(enabled = true) {
   useEffect(() => {
+    if (!enabled) return undefined
+
     const bento = document.getElementById('bento')
     if (!bento) return undefined
 
@@ -109,5 +111,5 @@ export default function useBlogBentoEffects() {
       })
       cleanups.forEach((fn) => fn())
     }
-  }, [])
+  }, [enabled])
 }

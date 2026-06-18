@@ -4,6 +4,7 @@ import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
 import { useBookingRules } from '../../hooks/useBookingRules'
+import useMediaQuery from '../../hooks/useMediaQuery'
 import useLocationOptions, { toFieldSelectOptions, useAutoSelectLocation } from '../../hooks/useLocationOptions'
 import { ensureValidDropoff } from '../../utils/bookingRules'
 import { formatDateTimeLocal, parseDateTimeLocal } from '../../utils/format'
@@ -108,6 +109,8 @@ export default function BookingModule({
         { id: 'guesthouses', label: 'Guesthouses' },
       ]
   const [activeTab, setActiveTab] = useState(tabList[0]?.id || 'campervan')
+  const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false)
+  const isMobileCompact = useMediaQuery('(max-width: 768px)')
   const isGuesthouse = activeTab === 'guesthouses'
   const vehicleMainCategory =
     activeTab === 'campervan' ? 'campervan' : activeTab === 'cars' ? 'car' : ''
@@ -169,6 +172,11 @@ export default function BookingModule({
   const dropoffDate = useMemo(() => parseDateTimeLocal(vehicleForm.dropoff_at), [vehicleForm.dropoff_at])
   const rules = useBookingRules(pickupDate, dropoffDate)
   const minRentalDays = rules.min_rental_days || 1
+  const showMobileDetails = !isMobileCompact || mobileDetailsOpen
+
+  useEffect(() => {
+    setMobileDetailsOpen(false)
+  }, [activeTab])
 
   const handleVehicleDates = ({ start, end }) => {
     const pickup_at = dateTimeWithTime(start, '11:00')
@@ -214,7 +222,7 @@ export default function BookingModule({
           Pickup locations are being configured. Assign locations to vehicles in admin to enable search.
         </p>
       )}
-      <div className="field">
+      <div className="field field--primary">
         <span className="flabel">Pick-up location</span>
         <FieldSelect
           value={vehicleForm.pickup_location_id}
@@ -225,6 +233,7 @@ export default function BookingModule({
               pickup_location_id: value,
               dropoff_location_id: sameAsPickup ? value : prev.dropoff_location_id,
             }))
+            if (isMobileCompact) setMobileDetailsOpen(true)
           }}
           options={pickupFieldOptions}
           placeholder="Select location"
@@ -234,7 +243,7 @@ export default function BookingModule({
         />
       </div>
 
-      <div className="field">
+      <div className="field field--detail">
         <span className="flabel">Drop-off location</span>
         <FieldSelect
           value={vehicleForm.dropoff_location_id}
@@ -247,7 +256,7 @@ export default function BookingModule({
         />
       </div>
 
-      <div className="field dates">
+      <div className="field dates field--detail">
         <span className="flabel">Pick-up → Drop-off</span>
         <DateRangePicker
           variant="embedded compact"
@@ -266,7 +275,7 @@ export default function BookingModule({
 
   const renderGuesthouseFields = () => (
     <>
-      <div className="field">
+      <div className="field field--primary">
         <span className="flabel">City or area</span>
         <PredictiveSearchField
           scope="guesthouse"
@@ -279,11 +288,12 @@ export default function BookingModule({
           onChange={({ value, label }) => {
             setGuestCityLabel(label)
             setGuestForm((prev) => ({ ...prev, city: value }))
+            if (isMobileCompact && value.trim()) setMobileDetailsOpen(true)
           }}
         />
       </div>
 
-      <div className="field dates">
+      <div className="field dates field--detail">
         <span className="flabel">Check-in → Check-out</span>
         <DateRangePicker
           variant="embedded compact"
@@ -297,7 +307,7 @@ export default function BookingModule({
         />
       </div>
 
-      <div className="field travelers">
+      <div className="field travelers field--detail">
         <span className="flabel">Guests</span>
         <FieldSelect
           value={guestForm.guests}
@@ -331,9 +341,11 @@ export default function BookingModule({
         </div>
 
         <div className="booking-body">
-          <div className={`search-row ${isGuesthouse ? 'mode-guesthouse' : 'mode-vehicle'}`}>
+          <div
+            className={`search-row ${isGuesthouse ? 'mode-guesthouse' : 'mode-vehicle'}${showMobileDetails ? ' search-row--expanded' : ' search-row--compact'}`}
+          >
             {isGuesthouse ? renderGuesthouseFields() : renderVehicleFields()}
-            <button className="search-btn" type="button" onClick={handleSearch}>
+            <button className="search-btn search-btn--detail" type="button" onClick={handleSearch}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="7" />
                 <path d="m20 20-3.2-3.2" />
