@@ -32,16 +32,27 @@ class SpaShellService
 
         $html = File::get($indexPath);
 
+        try {
+            $payload = $this->bootstrapPayload();
+        } catch (\Throwable $e) {
+            Log::warning('SPA bootstrap payload failed; serving shell without injected content.', [
+                'error' => $e->getMessage(),
+            ]);
+
+            // Never 500 the storefront: serve the static shell so the SPA boots and
+            // fetches content from the API itself.
+            return str_replace($marker, '', $html);
+        }
+
         if (! str_contains($html, $marker)) {
             Log::warning('SPA bootstrap marker missing from index.html.', [
                 'path' => $indexPath,
                 'marker' => $marker,
             ]);
 
-            return $this->injectBootstrap($html, $this->bootstrapPayload());
+            return $this->injectBootstrap($html, $payload);
         }
 
-        $payload = $this->bootstrapPayload();
         $script = $this->buildBootstrapScript($payload);
         $html = str_replace($marker, $script, $html);
 
