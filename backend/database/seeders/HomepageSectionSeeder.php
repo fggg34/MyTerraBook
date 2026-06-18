@@ -25,9 +25,9 @@ class HomepageSectionSeeder extends Seeder
                 'sort_order' => 2,
                 'content' => [
                     'navLinks' => [
-                        ['label' => 'Campervan', 'href' => '/campervans'],
-                        ['label' => 'Car', 'href' => '/cars'],
-                        ['label' => 'Guesthouse', 'href' => '/guesthouses'],
+                        ['label' => 'Campervans', 'href' => '/campervans'],
+                        ['label' => 'Cars', 'href' => '/cars'],
+                        ['label' => 'Guesthouses', 'href' => '/guesthouses'],
                         ['label' => 'Good to Know', 'href' => '/good-to-know'],
                     ],
                     'ctaLabel' => 'Become a host',

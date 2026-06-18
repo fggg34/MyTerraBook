@@ -366,5 +366,12 @@ class SiteContentApiTest extends TestCase
         $response->assertJsonPath('rentSection.cards.2.listingStats.minPriceCents', 11000);
         $response->assertJsonPath('rentSection.cards.2.listingStats.priceUnit', 'night');
         $response->assertJsonMissingPath('rentSection.cards.0.listingCount');
+
+        foreach ($response->json('rentSection.cards') as $card) {
+            $minPriceCents = $card['listingStats']['minPriceCents'] ?? 0;
+            if (($card['listingStats']['count'] ?? 0) > 0) {
+                $this->assertGreaterThanOrEqual(1000, $minPriceCents);
+            }
+        }
     }
 }

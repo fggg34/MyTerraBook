@@ -65,7 +65,6 @@ export default function WhatWeRentSection({ heading, subtitle, cards = [] }) {
     cardSelector: '.rcard',
     gap: 12,
     enabled: showCarousel,
-    scrollDurationMs: 700,
   })
 
   return (

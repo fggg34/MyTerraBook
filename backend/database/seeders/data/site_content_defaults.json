@@ -16,15 +16,15 @@
     "header": {
       "navLinks": [
         {
-          "label": "Campervan",
+          "label": "Campervans",
           "href": "/campervans"
         },
         {
-          "label": "Car",
+          "label": "Cars",
           "href": "/cars"
         },
         {
-          "label": "Guesthouse",
+          "label": "Guesthouses",
           "href": "/guesthouses"
         },
         {
@@ -111,7 +111,16 @@
           "href": "/cookies"
         }
       ],
-      "social": []
+      "social": [
+        {
+          "label": "Instagram",
+          "href": "https://www.instagram.com/myterrabook"
+        },
+        {
+          "label": "Facebook",
+          "href": "https://www.facebook.com/myterrabook"
+        }
+      ]
     },
     "newsSection": {
       "eyebrow": "Field notes from Iceland",

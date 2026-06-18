@@ -58,6 +58,7 @@ export function usePicksListings() {
 }
 
 export function useStayListings(limit = 8) {
+  const priceFormatter = useFormatPrice()
   const [houses, setHouses] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -82,7 +83,7 @@ export function useStayListings(limit = 8) {
     }
   }, [limit])
 
-  const cards = useMemo(() => mapGuestHousesToStayCards(houses), [houses])
+  const cards = useMemo(() => mapGuestHousesToStayCards(houses, { priceFormatter }), [houses, priceFormatter])
 
   return { cards, loading }
 }

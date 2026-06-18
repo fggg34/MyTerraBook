@@ -51,7 +51,6 @@ export default function PicksSection({ heading, tabs = [] }) {
     itemCount: activeItems.length,
     gap: 12,
     enabled: showCarousel || activeItems.length > 0,
-    scrollDurationMs: 700,
   })
 
   useEffect(() => {

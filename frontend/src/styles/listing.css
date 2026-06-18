@@ -681,9 +681,9 @@
   .faq-grid{display:grid;grid-template-columns:340px 1fr;gap:54px;align-items:start;}
   .faq-head h2{font-size:34px;line-height:1.06;letter-spacing:-0.02em;text-wrap:balance;}
   .faq-head p{font-size:15.5px;color:var(--slate);line-height:1.6;margin:16px 0 22px;}
-  .faq-contact{display:inline-flex;align-items:center;gap:9px;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:12px 22px;font-family:var(--serif);font-weight:700;font-size:15px;color:var(--navy);cursor:pointer;transition:.18s;}
-  .faq-contact:hover{border-color:var(--green);color:var(--green);}
-  .faq-contact svg{width:17px;height:17px;}
+  .listing-page .faq-contact{display:inline-flex;align-items:center;gap:9px;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:12px 22px;font-family:var(--serif);font-weight:700;font-size:15px;color:var(--navy);cursor:pointer;transition:.18s;}
+  .listing-page .faq-contact:hover{border-color:var(--green);color:var(--green);}
+  .listing-page .faq-contact svg{width:17px;height:17px;}
   .faq-list{border-top:1px solid #d4ddea;}
   .faq-item{border-bottom:1px solid #d4ddea;}
   .faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:24px;background:none;border:none;cursor:pointer;text-align:left;padding:22px 4px;font-family:var(--serif);font-weight:700;font-size:18.5px;color:var(--navy);letter-spacing:-0.01em;transition:color .15s;}

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import useDragScroll from './useDragScroll'
 
-function easeInOutCubic(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3)
 }
 
 function animateScrollLeft(el, targetLeft, duration) {
@@ -15,7 +15,7 @@ function animateScrollLeft(el, targetLeft, duration) {
 
   const step = (now) => {
     const progress = Math.min((now - startTime) / duration, 1)
-    el.scrollLeft = startLeft + distance * easeInOutCubic(progress)
+    el.scrollLeft = startLeft + distance * easeOutCubic(progress)
     if (progress < 1) {
       frameId = requestAnimationFrame(step)
     }
@@ -30,7 +30,7 @@ export default function useHorizontalCarousel({
   cardSelector = '.pcard',
   itemCount = 0,
   enabled = true,
-  scrollDurationMs = 0,
+  scrollDurationMs = 280,
 } = {}) {
   const trackRef = useRef(null)
   const [atStart, setAtStart] = useState(true)

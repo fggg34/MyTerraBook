@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
-import { Car, Caravan, ChevronDown, ChevronUp, HandCoins, Home, Phone, ShieldCheck } from 'lucide-react'
+import { Car, Caravan, HandCoins, Home, Phone, ShieldCheck } from 'lucide-react'
 import useMediaQuery from '../../hooks/useMediaQuery'
-import useScrollPinnedSteps from '../../hooks/useScrollPinnedSteps'
 import useSectionReveal from '../../hooks/useSectionReveal'
 
 const FEATURE_ICON_COMPONENTS = {
@@ -50,11 +49,11 @@ function FeatureRow({ feature }) {
   )
 }
 
-function WhyMobileStep({ feature }) {
+function WhyMobileStep({ feature, index = 0 }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <article className={`why-mobile-step wf${open ? ' open' : ''}`}>
+    <article className={`why-mobile-step wf${open ? ' open' : ''}`} style={{ '--i': index }}>
       <span className="wf-ic">
         <FeatureIcon name={feature.icon} image={feature.iconImage} />
       </span>
@@ -79,67 +78,30 @@ function WhyMobileStep({ feature }) {
   )
 }
 
-function WhyMobileScrollStory({ features, photo, badge = {} }) {
-  const [trackEl, setTrackEl] = useState(null)
-  const { activeIndex, barProgress, scrollToStep } = useScrollPinnedSteps(trackEl, {
-    stepCount: features.length,
-    enabled: features.length > 0,
-  })
-  const activeFeature = features[activeIndex]
-  const lastIndex = features.length - 1
-  const barFill = `${(features.length <= 1 ? 1 : barProgress) * 100}%`
-
-  if (!features.length || !activeFeature) return null
+function WhyMobileStory({ features, photo, badge = {} }) {
+  if (!features.length) return null
 
   return (
-    <div
-      className="why-mobile-story"
-      ref={setTrackEl}
-      style={{ '--why-story-steps': features.length }}
-    >
-      <div className="why-mobile-story__sticky">
-        <div className="why-mobile-story__photo">
-          <img src={photo || '/images/homepage/why-photo.jpg'} alt="" />
-          {(badge.rating || badge.reviewBold) && (
-            <div className="badge">
-              {badge.rating && <span className="num">{badge.rating}</span>}
-              <span className="lbl">
-                from <b>{badge.reviewBold || '12,400+ travellers'}</b>
-                <br />
-                {badge.reviewRest || 'who booked with us'}
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="why-mobile-story__panel">
-          <div className="why-mobile-story__panel-inner">
-            <div className="why-mobile-story__nav">
-              <button
-                type="button"
-                className="why-mobile-nav-btn"
-                aria-label="Previous feature"
-                disabled={activeIndex === 0}
-                onClick={() => scrollToStep(activeIndex - 1)}
-              >
-                <ChevronUp size={16} strokeWidth={2} aria-hidden />
-              </button>
-              <div className="why-mobile-story__rail" aria-hidden>
-                <span className="why-mobile-bar" style={{ height: barFill }} />
-              </div>
-              <button
-                type="button"
-                className="why-mobile-nav-btn"
-                aria-label="Next feature"
-                disabled={activeIndex === lastIndex}
-                onClick={() => scrollToStep(activeIndex + 1)}
-              >
-                <ChevronDown size={16} strokeWidth={2} aria-hidden />
-              </button>
-            </div>
-
-            <WhyMobileStep key={activeFeature.title} feature={activeFeature} />
+    <div className="why-mobile-story">
+      <div className="why-mobile-story__photo">
+        <img src={photo || '/images/homepage/why-photo.jpg'} alt="" />
+        {(badge.rating || badge.reviewBold) && (
+          <div className="badge">
+            {badge.rating && <span className="num">{badge.rating}</span>}
+            <span className="lbl">
+              from <b>{badge.reviewBold || '12,400+ travellers'}</b>
+              <br />
+              {badge.reviewRest || 'who booked with us'}
+            </span>
           </div>
+        )}
+      </div>
+
+      <div className="why-mobile-story__panel">
+        <div className="why-mobile-story__panel-inner">
+          {features.map((feature, index) => (
+            <WhyMobileStep key={feature.title} feature={feature} index={index} />
+          ))}
         </div>
       </div>
     </div>
@@ -169,7 +131,7 @@ export default function WhyMyTerraSection({
         </div>
 
         {isMobile ? (
-          <WhyMobileScrollStory features={allFeatures} photo={photo} badge={badge} />
+          <WhyMobileStory features={allFeatures} photo={photo} badge={badge} />
         ) : (
           <div className="why-split why-split--desktop" ref={splitRef}>
             <div className="why-col left">

@@ -340,6 +340,7 @@ body.search-results-active .pcard-book {
   cursor: grab;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
+  overscroll-behavior-x: contain;
 }
 
 .track img,

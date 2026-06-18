@@ -43,7 +43,6 @@ export default function StaySection({ heading, subtitle, allLabel, allHref }) {
     itemCount: cards.length,
     gap: 12,
     enabled: showCarousel || cards.length > 0,
-    scrollDurationMs: 700,
   })
 
   return (

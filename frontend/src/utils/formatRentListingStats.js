@@ -6,8 +6,10 @@ export function formatRentListingStats(stats, priceFormatter) {
   let text = `${count} ${listingLabel}`
 
   const minPriceCents = Number(stats?.minPriceCents ?? 0)
-  if (minPriceCents > 0 && priceFormatter?.formatCents) {
-    const price = priceFormatter.formatCents(minPriceCents)
+  const normalizedCents =
+    minPriceCents > 0 && minPriceCents < 100 ? minPriceCents * 100 : minPriceCents
+  if (normalizedCents > 0 && priceFormatter?.formatCents) {
+    const price = priceFormatter.formatCents(normalizedCents)
     const unit = stats?.priceUnit === 'night' ? 'night' : 'day'
     text += ` · from ${price}/${unit}`
   }

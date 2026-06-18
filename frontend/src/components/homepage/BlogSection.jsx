@@ -52,7 +52,6 @@ export default function BlogSection({ heading, subtitle, allLabel, allHref, post
     cardSelector: '.bcard',
     gap: 12,
     enabled: showCarousel,
-    scrollDurationMs: 700,
   })
 
   const allLink = allHref?.startsWith('/') ? (

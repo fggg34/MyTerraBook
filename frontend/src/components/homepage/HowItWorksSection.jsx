@@ -38,7 +38,7 @@ export default function HowItWorksSection({ heading, steps = [] }) {
                   />
                 </div>
                 <div className="hstep-tags">
-                  {step.tags?.map((tag, i) => (
+                  {[...new Set(step.tags?.filter(Boolean) ?? [])].map((tag, i) => (
                     <Fragment key={tag}>
                       {i > 0 && <span className="dot" />}
                       {tag}

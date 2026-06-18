@@ -55,8 +55,6 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
       if (animatedEl) convertAnimatedTrackToScroll(el, animatedEl)
     }
 
-    const canScroll = () => el.scrollWidth > el.clientWidth + 1
-
     const removeDragListeners = () => {
       document.removeEventListener('pointermove', onPointerMove)
       document.removeEventListener('pointerup', endDrag)
@@ -64,6 +62,7 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
     }
 
     const beginDrag = (e) => {
+      prepareScroll()
       isDragging = true
       lockScrollPhysics(el)
       el.classList.add('is-dragging')
@@ -105,28 +104,13 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
     }
 
     const onPointerDown = (e) => {
-      if (e.pointerType !== 'mouse' || e.button !== 0) return
+      if (e.pointerType === 'mouse' && e.button !== 0) return
       if (e.target.closest(INTERACTIVE) && !e.target.closest('.pcard-stretch-link, a.rcard')) return
-
-      prepareScroll()
-      if (!canScroll()) return
 
       moved = false
       startX = e.pageX
       scrollLeftStart = el.scrollLeft
-
-      const isStretchLink = e.target.closest('.pcard-stretch-link, a.rcard')
-
-      if (isStretchLink) {
-        pendingDrag = true
-        document.addEventListener('pointermove', onPointerMove, { passive: false })
-        document.addEventListener('pointerup', endDrag)
-        document.addEventListener('pointercancel', endDrag)
-        return
-      }
-
-      e.preventDefault()
-      beginDrag(e)
+      pendingDrag = true
 
       document.addEventListener('pointermove', onPointerMove, { passive: false })
       document.addEventListener('pointerup', endDrag)

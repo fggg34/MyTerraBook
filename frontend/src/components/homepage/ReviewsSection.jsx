@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import useDragScroll from '../../hooks/useDragScroll'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useSectionReveal from '../../hooks/useSectionReveal'
@@ -85,7 +85,9 @@ export default function ReviewsSection({
 }) {
   const sectionRef = useRef(null)
   const trackWrapRef = useRef(null)
+  const tapStartRef = useRef(null)
   const isMobile = useMediaQuery('(max-width: 768px)')
+  const [marqueePaused, setMarqueePaused] = useState(false)
   useSectionReveal(sectionRef, { revealDoneMs: 1800 })
 
   const ratingValue = useMemo(() => {
@@ -96,10 +98,10 @@ export default function ReviewsSection({
   const reviewerLabel = source === 'google' && !isDemo ? 'Google reviewer' : 'Traveller'
   const ratingSourceLabel = source === 'google' && !isDemo ? 'Google' : 'MyTerraBook'
   const resolvedCtaLabel = ctaLabel || (source === 'google' && !isDemo ? 'Leave a Google Review' : null)
-  const useMarquee = !isMobile && reviews.length > 3
+  const useMarquee = reviews.length > 3
 
   useDragScroll(trackWrapRef, {
-    enabled: isMobile || useMarquee,
+    enabled: useMarquee,
     convertAnimationFrom: useMarquee ? '.rv-track--scroll' : null,
   })
 
@@ -107,6 +109,25 @@ export default function ReviewsSection({
     if (!useMarquee) return reviews
     return [...reviews, ...reviews]
   }, [reviews, useMarquee])
+
+  const handleMarqueePointerDown = (event) => {
+    if (!useMarquee) return
+    tapStartRef.current = { x: event.clientX, y: event.clientY }
+  }
+
+  const handleMarqueePointerUp = (event) => {
+    if (!useMarquee || !isMobile || !tapStartRef.current) return
+    const start = tapStartRef.current
+    tapStartRef.current = null
+    const moved = Math.hypot(event.clientX - start.x, event.clientY - start.y)
+    if (moved < 10) {
+      setMarqueePaused((paused) => !paused)
+    }
+  }
+
+  const handleMarqueePointerCancel = () => {
+    tapStartRef.current = null
+  }
 
   if (!reviews.length) return null
 
@@ -165,9 +186,12 @@ export default function ReviewsSection({
 
         <div
           ref={trackWrapRef}
-          className={`rv-track-wrap${useMarquee ? ' rv-track-wrap--marquee' : ''}${isMobile ? ' rv-track-wrap--mobile' : ''}`}
-          onMouseEnter={useMarquee ? (e) => e.currentTarget.classList.add('rv-track-wrap--paused') : undefined}
-          onMouseLeave={useMarquee ? (e) => e.currentTarget.classList.remove('rv-track-wrap--paused') : undefined}
+          className={`rv-track-wrap${useMarquee ? ' rv-track-wrap--marquee' : ''}${useMarquee && marqueePaused ? ' rv-track-wrap--paused' : ''}${isMobile && !useMarquee ? ' rv-track-wrap--mobile' : ''}`}
+          onMouseEnter={useMarquee && !isMobile ? () => setMarqueePaused(true) : undefined}
+          onMouseLeave={useMarquee && !isMobile ? () => setMarqueePaused(false) : undefined}
+          onPointerDown={handleMarqueePointerDown}
+          onPointerUp={handleMarqueePointerUp}
+          onPointerCancel={handleMarqueePointerCancel}
         >
           <div className={`rv-track${useMarquee ? ' rv-track--scroll' : isMobile ? ' rv-track--mobile' : ' rv-track--grid'}`}>
             {trackReviews.map((review, index) => (
@@ -180,12 +204,6 @@ export default function ReviewsSection({
               />
             ))}
           </div>
-          {useMarquee && (
-            <>
-              <div className="rv-track-fade rv-track-fade--left" aria-hidden="true" />
-              <div className="rv-track-fade rv-track-fade--right" aria-hidden="true" />
-            </>
-          )}
         </div>
       </div>
     </section>

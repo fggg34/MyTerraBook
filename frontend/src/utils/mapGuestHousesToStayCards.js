@@ -1,10 +1,13 @@
 import { resolveStorageUrl } from '../api'
 
-function formatPrice(house) {
+function formatPrice(house, priceFormatter) {
   if (house.base_price_per_night_formatted) {
     return house.base_price_per_night_formatted.replace(/\s+/g, '')
   }
   const cents = Number(house.base_price_per_night_cents)
+  if (priceFormatter?.formatCents && Number.isFinite(cents) && cents > 0) {
+    return priceFormatter.formatCents(cents)
+  }
   if (Number.isNaN(cents)) return '€0'
   return `€${Math.round(cents / 100).toLocaleString('en-US')}`
 }
@@ -14,7 +17,7 @@ function typeLabel(type) {
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
 
-export function mapGuestHousesToStayCards(houses = []) {
+export function mapGuestHousesToStayCards(houses = [], { priceFormatter } = {}) {
   return houses.map((house) => {
     const specs = [
       { type: 'bed', label: `Sleeps ${house.max_guests || 1}` },
@@ -32,7 +35,7 @@ export function mapGuestHousesToStayCards(houses = []) {
       name: house.name,
       image: resolveStorageUrl(house.thumbnail) || '/images/homepage/cardhouse.jpg',
       href: `/guesthouses/${house.slug}`,
-      price: formatPrice(house),
+      price: formatPrice(house, priceFormatter),
       per: 'night',
       badge: house.rating ? `${house.rating} ★` : 'Guesthouse',
       specs,

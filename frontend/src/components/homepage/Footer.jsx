@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import SiteLogo from '../branding/SiteLogo'
 import LangCurrencyMenu from './LangCurrencyMenu'
@@ -31,6 +31,31 @@ const COMPANY_LINKS = [
   { label: 'FAQs', href: '/faq' },
   { label: 'Contact', href: '/contact' },
 ]
+
+function FooterSocialIcon({ label }) {
+  const normalized = label?.toLowerCase() ?? ''
+  if (normalized.includes('facebook')) {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.7c0-.9.3-1.5 1.5-1.5h1.5V4.6c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.2H8v3h2.6V21h2.9Z" />
+      </svg>
+    )
+  }
+  if (normalized.includes('instagram')) {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+    )
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+    </svg>
+  )
+}
 
 function findColumnLinks(columns, titles) {
   const col = columns.find((c) => titles.some((t) => c.title?.toLowerCase().includes(t)))
@@ -65,6 +90,50 @@ function FooterColumnToggle({ id, title, open, onToggle, children }) {
   )
 }
 
+function FooterAccountBlock({ accountLinks, hostCtaLabel, hostCtaHref }) {
+  const signInLink = accountLinks.find((link) => /sign in|log in/i.test(link.label)) ?? accountLinks[0]
+  const registerLink =
+    accountLinks.find((link) => /create account|register|sign up/i.test(link.label)) ??
+    accountLinks.find((link) => link !== signInLink)
+
+  return (
+    <div className="ftr-account">
+      <p className="ftr-account-label">Account</p>
+
+      <div className="ftr-account-actions">
+        {signInLink && (
+          <FooterLink href={signInLink.href} className="ftr-account-btn">
+            {signInLink.label}
+          </FooterLink>
+        )}
+        {registerLink && (
+          <FooterLink href={registerLink.href} className="ftr-account-btn ftr-account-btn--solid">
+            {registerLink.label}
+          </FooterLink>
+        )}
+      </div>
+
+      {hostCtaLabel && (
+        <FooterLink href={hostCtaHref || '/become-a-host'} className="ftr-account-host">
+          <span className="ftr-account-host-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" />
+            </svg>
+          </span>
+          <span className="ftr-account-host-copy">
+            <strong>{hostCtaLabel}</strong>
+            <span>List your van or guesthouse</span>
+          </span>
+          <svg className="ftr-account-host-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </FooterLink>
+      )}
+    </div>
+  )
+}
+
 export default function Footer({
   tagline,
   address,
@@ -76,7 +145,7 @@ export default function Footer({
   hostCtaHref,
 }) {
   const isMobile = useMediaQuery('(max-width: 768px)')
-  const [openSections, setOpenSections] = useState({ book: true, company: false, account: false })
+  const [openSections, setOpenSections] = useState({ book: true, company: false })
 
   const bookLinks = findColumnLinks(columns, ['book', 'menu']) ?? BOOK_LINKS
   const companyLinks = findColumnLinks(columns, ['company', 'pages', 'explore']) ?? COMPANY_LINKS
@@ -88,11 +157,7 @@ export default function Footer({
   }, [])
 
   useEffect(() => {
-    if (!isMobile) {
-      setOpenSections({ book: true, company: true, account: true })
-    } else {
-      setOpenSections({ book: true, company: false, account: false })
-    }
+    setOpenSections({ book: true, company: false })
   }, [isMobile])
 
   const bookList = (
@@ -119,23 +184,11 @@ export default function Footer({
   )
 
   const accountBlock = (
-    <>
-      <ul className="ftr-host-links">
-        {accountLinks.map((link) => (
-          <li key={link.label}>
-            <FooterLink href={link.href}>{link.label}</FooterLink>
-          </li>
-        ))}
-      </ul>
-      {hostCtaLabel && (
-        <FooterLink href={hostCtaHref || '/become-a-host'} className="ftr-host-cta">
-          {hostCtaLabel}
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" />
-          </svg>
-        </FooterLink>
-      )}
-    </>
+    <FooterAccountBlock
+      accountLinks={accountLinks}
+      hostCtaLabel={hostCtaLabel}
+      hostCtaHref={hostCtaHref}
+    />
   )
 
   return (
@@ -151,9 +204,7 @@ export default function Footer({
                   {social.map((item) => (
                     <FooterLink key={item.label} href={item.href}>
                       <span aria-label={item.label}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="9" />
-                        </svg>
+                        <FooterSocialIcon label={item.label} />
                       </span>
                     </FooterLink>
                   ))}
@@ -179,24 +230,7 @@ export default function Footer({
                 >
                   {companyList}
                 </FooterColumnToggle>
-                <div className={`ftr-host ftr-col--account${openSections.account ? ' is-open' : ''}`}>
-                  <button
-                    type="button"
-                    className="ftr-col-toggle"
-                    aria-expanded={openSections.account}
-                    aria-controls="ftr-panel-account"
-                    id="ftr-toggle-account"
-                    onClick={() => toggleSection('account')}
-                  >
-                    <span>Account</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </button>
-                  <div className="ftr-col-panel" id="ftr-panel-account" role="region" aria-labelledby="ftr-toggle-account" aria-hidden={!openSections.account}>
-                    {accountBlock}
-                  </div>
-                </div>
+                {accountBlock}
               </>
             ) : (
               <>
@@ -208,10 +242,7 @@ export default function Footer({
                   <h4>Company</h4>
                   {companyList}
                 </div>
-                <div className="ftr-host">
-                  <h4>Account</h4>
-                  {accountBlock}
-                </div>
+                {accountBlock}
               </>
             )}
           </div>
@@ -232,7 +263,7 @@ export default function Footer({
               </div>
             </div>
 
-            <LangCurrencyMenu variant="footer" />
+            {!isMobile && <LangCurrencyMenu variant="footer" />}
           </div>
 
           <div className="ftr-bot">

@@ -128,39 +128,68 @@ export default function Header({
         aria-modal="true"
         aria-label="Navigation menu"
       >
-        <div className="mobile-menu-main">
-          {mobileNavLinks.map((link) => (
-            <NavLink key={link.label} href={link.href} onClick={closeMobile} className="mobile-menu-link">
-              {link.label}
-            </NavLink>
-          ))}
+        <div className="mobile-menu-scroll">
+          <div className="mobile-menu-main">
+            {mobileNavLinks.map((link) => (
+              <NavLink key={link.label} href={link.href} onClick={closeMobile} className="mobile-menu-link">
+                {link.label}
+              </NavLink>
+            ))}
+          </div>
         </div>
 
-        <div className="mobile-menu-footer">
-          {((showHostCta && ctaLabel) || !user) && (
-            <div className="mobile-menu-actions">
-              {showHostCta && ctaLabel &&
-                (ctaHref?.startsWith('/') ? (
-                  <Link className="mobile-menu-action mobile-menu-action--host" to={ctaHref} onClick={closeMobile}>
-                    {ctaLabel}
-                  </Link>
-                ) : (
-                  <a className="mobile-menu-action mobile-menu-action--host" href={ctaHref || '#host'} onClick={closeMobile}>
-                    {ctaLabel}
-                  </a>
-                ))}
-              {!user &&
-                (signInHref?.startsWith('/') ? (
-                  <Link className="mobile-menu-action mobile-menu-action--signin" to={signInHref || '/login'} onClick={closeMobile}>
-                    {signInLabel || 'Sign in'}
-                  </Link>
-                ) : (
-                  <a className="mobile-menu-action mobile-menu-action--signin" href={signInHref || '/login'} onClick={closeMobile}>
-                    {signInLabel || 'Sign in'}
-                  </a>
-                ))}
+        <div className="mobile-menu-bottom">
+          {user ? (
+            <>
+              <div className="mobile-menu-account-head">
+                <span className="user-avatar" aria-hidden>
+                  {userInitial}
+                </span>
+                <div className="mobile-menu-account-meta">
+                  <span className="mobile-menu-account-name">{user.name}</span>
+                  <span className="mobile-menu-account-label">{dashboardLabel}</span>
+                </div>
+              </div>
+              <div className="mobile-menu-bottom-actions">
+                <Link
+                  className="mobile-menu-action mobile-menu-action--solid"
+                  to={dashboardPath}
+                  onClick={closeMobile}
+                >
+                  {dashboardLabel}
+                </Link>
+                <button type="button" className="mobile-menu-action mobile-menu-action--logout" onClick={handleLogout}>
+                  Log out
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="mobile-menu-bottom-actions">
+              {(signInHref?.startsWith('/') ? (
+                <Link className="mobile-menu-action mobile-menu-action--signin" to={signInHref || '/login'} onClick={closeMobile}>
+                  {signInLabel || 'Sign in'}
+                </Link>
+              ) : (
+                <a className="mobile-menu-action mobile-menu-action--signin" href={signInHref || '/login'} onClick={closeMobile}>
+                  {signInLabel || 'Sign in'}
+                </a>
+              ))}
+              <Link className="mobile-menu-action mobile-menu-action--solid" to="/register" onClick={closeMobile}>
+                Create account
+              </Link>
             </div>
           )}
+
+          {showHostCta && ctaLabel &&
+            (ctaHref?.startsWith('/') ? (
+              <Link className="mobile-menu-action mobile-menu-action--host mobile-menu-action--full" to={ctaHref} onClick={closeMobile}>
+                {ctaLabel}
+              </Link>
+            ) : (
+              <a className="mobile-menu-action mobile-menu-action--host mobile-menu-action--full" href={ctaHref || '#host'} onClick={closeMobile}>
+                {ctaLabel}
+              </a>
+            ))}
 
           <div className="mobile-menu-currency">
             <LangCurrencyMenu variant="mobile" />

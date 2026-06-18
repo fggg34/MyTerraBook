@@ -6,16 +6,21 @@ function getStickyOffset() {
   return Number.isFinite(parsed) ? parsed : 64
 }
 
+function getViewportHeight() {
+  return window.visualViewport?.height ?? window.innerHeight
+}
+
 function computeStepState(track, stepCount) {
   if (!track || stepCount < 1) {
     return { activeIndex: 0, barProgress: 0 }
   }
 
   const stickyTop = getStickyOffset()
-  const scrollRange = track.offsetHeight - window.innerHeight + stickyTop
+  const viewportHeight = getViewportHeight()
+  const scrollRange = track.offsetHeight - viewportHeight + stickyTop
 
   if (scrollRange <= 0) {
-    return { activeIndex: 0, barProgress: stepCount <= 1 ? 1 : 0 }
+    return { activeIndex: 0, barProgress: stepCount <= 1 ? 1 : 1 / stepCount }
   }
 
   const rect = track.getBoundingClientRect()
@@ -28,7 +33,7 @@ function computeStepState(track, stepCount) {
 
   const scaled = progress * stepCount
   const withinStep = scaled - activeIndex
-  const barProgress = Math.max(0, Math.min(1, (activeIndex + withinStep) / (stepCount - 1)))
+  const barProgress = Math.max(0, Math.min(1, (activeIndex + withinStep + 1) / stepCount))
 
   return { activeIndex, barProgress }
 }
@@ -59,11 +64,18 @@ export default function useScrollPinnedSteps(track, { stepCount = 1, enabled = t
     window.visualViewport?.addEventListener('resize', update)
     window.visualViewport?.addEventListener('scroll', update)
 
+    let resizeObserver
+    if ('ResizeObserver' in window) {
+      resizeObserver = new ResizeObserver(update)
+      resizeObserver.observe(track)
+    }
+
     return () => {
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
       window.visualViewport?.removeEventListener('resize', update)
       window.visualViewport?.removeEventListener('scroll', update)
+      resizeObserver?.disconnect()
     }
   }, [applyState, enabled, stepCount, track])
 
@@ -74,7 +86,8 @@ export default function useScrollPinnedSteps(track, { stepCount = 1, enabled = t
 
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       const stickyTop = getStickyOffset()
-      const scrollRange = el.offsetHeight - window.innerHeight + stickyTop
+      const viewportHeight = getViewportHeight()
+      const scrollRange = el.offsetHeight - viewportHeight + stickyTop
       if (scrollRange <= 0) return
 
       const clamped = Math.max(0, Math.min(stepCount - 1, index))

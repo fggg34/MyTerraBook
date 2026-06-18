@@ -31,9 +31,9 @@ export const defaultHomepageData = {
   },
   header: {
     navLinks: [
-      { label: 'Campervan', href: '/campervans' },
-      { label: 'Car', href: '/cars' },
-      { label: 'Guesthouse', href: '/guesthouses' },
+      { label: 'Campervans', href: '/campervans' },
+      { label: 'Cars', href: '/cars' },
+      { label: 'Guesthouses', href: '/guesthouses' },
       { label: 'Good to Know', href: '/good-to-know' },
     ],
     ctaLabel: 'Become a host',
@@ -537,6 +537,9 @@ export const defaultHomepageData = {
       { label: 'Privacy', href: '/privacy' },
       { label: 'Cookies', href: '/cookies' },
     ],
-    social: [],
+    social: [
+      { label: 'Instagram', href: 'https://www.instagram.com/myterrabook' },
+      { label: 'Facebook', href: 'https://www.facebook.com/myterrabook' },
+    ],
   },
 }

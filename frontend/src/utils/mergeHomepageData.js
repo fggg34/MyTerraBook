@@ -12,12 +12,37 @@ function mergeCards(cards, fallbackCards) {
   }))
 }
 
+function fixIcelandicPlaceNames(text) {
+  if (typeof text !== 'string') return text
+  return text.replace(/\bReykjavik\b/g, 'Reykjavík').replace(/\bKeflavik\b/g, 'Keflavík')
+}
+
 function mergeSteps(steps, fallbackSteps) {
   if (!Array.isArray(steps) || !steps.length) return fallbackSteps
-  return steps.map((step, index) => ({
-    ...fallbackSteps[index],
-    ...step,
-    image: resolveCmsImage(step.image, fallbackSteps[index]?.image),
+  return steps.map((step, index) => {
+    const fallback = fallbackSteps[index] || {}
+    const mergedTags = Array.isArray(step.tags)
+      ? [...new Set(step.tags.filter(Boolean))]
+      : fallback.tags
+    return {
+      ...fallback,
+      ...step,
+      title: fixIcelandicPlaceNames(step.title ?? fallback.title),
+      description: fixIcelandicPlaceNames(step.description ?? fallback.description),
+      tags: mergedTags?.length ? mergedTags : fallback.tags,
+      image: resolveCmsImage(step.image, fallback.image),
+    }
+  })
+}
+
+function mergeFeatures(features, fallbackFeatures) {
+  if (!Array.isArray(fallbackFeatures) || !fallbackFeatures.length) {
+    return Array.isArray(features) ? features : []
+  }
+  if (!Array.isArray(features) || !features.length) return fallbackFeatures
+  return fallbackFeatures.map((feature, index) => ({
+    ...feature,
+    ...(features[index] || {}),
   }))
 }
 
@@ -90,12 +115,8 @@ export function mergeHomepageData(apiData = {}) {
       ...defaults.whySection.badge,
       ...apiData.whySection?.badge,
     },
-    featuresLeft: apiData.whySection?.featuresLeft?.length
-      ? apiData.whySection.featuresLeft
-      : defaults.whySection.featuresLeft,
-    featuresRight: apiData.whySection?.featuresRight?.length
-      ? apiData.whySection.featuresRight
-      : defaults.whySection.featuresRight,
+    featuresLeft: mergeFeatures(apiData.whySection?.featuresLeft, defaults.whySection.featuresLeft),
+    featuresRight: mergeFeatures(apiData.whySection?.featuresRight, defaults.whySection.featuresRight),
   }
 
   const picksSection = {
