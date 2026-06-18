@@ -95,4 +95,28 @@ HTML);
         $response->assertOk();
         $response->assertSee('Storefront is temporarily unavailable', false);
     }
+
+    public function test_spa_shell_does_not_start_a_session(): void
+    {
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => SiteContentDefaults::forPage('home'),
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $response = $this->get('/spa-shell');
+
+        $response->assertOk();
+        $response->assertCookieMissing(config('session.cookie'));
+    }
 }

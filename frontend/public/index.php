@@ -3,8 +3,8 @@
 /**
  * Storefront entry for shared hosting (public_html/index.php).
  *
- * Some hosts use DirectoryIndex index.php before index.html. Without this file, an old
- * index.php that bootstraps Laravel sends visitors to the admin login instead of the SPA.
+ * Renders the SPA shell directly — no HTTP kernel / session middleware — so admin
+ * Filament sessions in the same browser are not overwritten.
  */
 define('LARAVEL_START', microtime(true));
 
@@ -27,18 +27,11 @@ require $backendRoot.'/vendor/autoload.php';
 $app = require_once $backendRoot.'/bootstrap/app.php';
 
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+$kernel->bootstrap();
 
-$request = Illuminate\Http\Request::create(
-    '/spa-shell',
-    'GET',
-    server: [
-        'HTTP_HOST' => $_SERVER['HTTP_HOST'] ?? 'localhost',
-        'HTTPS' => (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'on' : 'off',
-        'SERVER_NAME' => $_SERVER['SERVER_NAME'] ?? 'localhost',
-        'REQUEST_URI' => '/spa-shell',
-    ],
-);
+$html = $app->make(App\Services\SpaShellService::class)->renderShell();
 
-$response = $kernel->handle($request);
-$response->send();
-$kernel->terminate($request, $response);
+header('Content-Type: text/html; charset=UTF-8');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+echo $html;

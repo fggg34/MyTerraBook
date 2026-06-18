@@ -13,8 +13,12 @@ DirectoryIndex index.php index.html
   RewriteEngine On
   RewriteBase /
   RewriteRule ^index\.html$ /backend/spa-shell [L]
-  # Do not rewrite real files/dirs (assets, vite.svg, etc.)
+  # Do not rewrite real files/dirs (assets, vite.svg, etc.) or Laravel admin/Livewire paths
   RewriteCond %{REQUEST_URI} !^/backend
+  RewriteCond %{REQUEST_URI} !^/admin(/|$)
+  RewriteCond %{REQUEST_URI} !^/livewire
+  RewriteCond %{REQUEST_URI} !^/api(/|$)
+  RewriteCond %{REQUEST_URI} !^/sanctum(/|$)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ /backend/spa-shell [L]

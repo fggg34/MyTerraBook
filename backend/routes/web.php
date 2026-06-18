@@ -5,10 +5,19 @@ use App\Http\Controllers\Api\Admin\OrderCheckinPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\FaviconController;
 use App\Http\Controllers\SpaShellController;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 Route::get('/favicon.ico', [FaviconController::class, 'show']);
-Route::get('/spa-shell', [SpaShellController::class, 'show'])->name('spa.shell');
+Route::get('/spa-shell', [SpaShellController::class, 'show'])
+    ->name('spa.shell')
+    ->withoutMiddleware([
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        ValidateCsrfToken::class,
+    ]);
 
 // Filament admin lives at /admin (login: /admin/login). Root redirects there for convenience.
 Route::get('/', function () {
