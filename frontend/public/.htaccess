@@ -8,6 +8,7 @@
 
 # SPA: serve Laravel shell with CMS bootstrap for client routes; do not rewrite Laravel API under /backend
 Options -Indexes
+DirectoryIndex index.php index.html
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -16,5 +17,5 @@ Options -Indexes
   RewriteCond %{REQUEST_URI} !^/backend
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /backend/spa-shell [L]
+  RewriteRule ^ /backend/spa-shell [L]
 </IfModule>
