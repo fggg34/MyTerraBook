@@ -4,9 +4,11 @@ use App\Http\Controllers\Admin\HomepageController as AdminHomepageController;
 use App\Http\Controllers\Api\Admin\OrderCheckinPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\FaviconController;
+use App\Http\Controllers\SpaShellController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/favicon.ico', [FaviconController::class, 'show']);
+Route::get('/spa-shell', [SpaShellController::class, 'show'])->name('spa.shell');
 
 // Filament admin lives at /admin (login: /admin/login). Root redirects there for convenience.
 Route::get('/', function () {

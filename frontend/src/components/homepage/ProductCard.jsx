@@ -29,7 +29,7 @@ export default function ProductCard({
       )}
       <div className="pcard-media">
         {badge && <span className="pbadge">{badge}</span>}
-        <img src={image} alt={imageAlt || name} />
+        <img src={image} alt={imageAlt || name} draggable={false} />
       </div>
       <div className="pcard-foot">
         <h3>{name}</h3>

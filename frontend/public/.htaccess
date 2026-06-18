@@ -6,15 +6,15 @@
   AddType image/svg+xml svg svgz
 </IfModule>
 
-# SPA: serve index.html for client routes; do not rewrite Laravel API under /backend
+# SPA: serve Laravel shell with CMS bootstrap for client routes; do not rewrite Laravel API under /backend
 Options -Indexes
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  RewriteRule ^index\.html$ - [L]
+  RewriteRule ^index\.html$ /backend/spa-shell [L]
   # Do not rewrite real files/dirs (assets, vite.svg, etc.)
   RewriteCond %{REQUEST_URI} !^/backend
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /index.html [L]
+  RewriteRule . /backend/spa-shell [L]
 </IfModule>

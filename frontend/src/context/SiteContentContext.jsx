@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../api'
 import {
   buildSiteDataFromContent,
@@ -6,22 +6,39 @@ import {
   mergeAllSiteContent,
 } from '../data/defaultSiteContentData'
 import { mergePageContent } from '../utils/mergePageContent'
+import { getBootstrappedSiteContent } from '../utils/siteBootstrap'
 
 const SiteContentContext = createContext(null)
 
+const bootstrappedPages = getBootstrappedSiteContent()
+const initialPages = bootstrappedPages ? mergeAllSiteContent(bootstrappedPages) : null
+
 export function SiteContentProvider({ children }) {
-  const [pages, setPages] = useState(defaultSiteContentData)
-  const [loading, setLoading] = useState(true)
+  const [pages, setPages] = useState(initialPages ?? defaultSiteContentData)
+  const [loading, setLoading] = useState(initialPages == null)
+  const bootstrappedRef = useRef(initialPages != null)
 
   useEffect(() => {
+    let cancelled = false
+
     api
       .get('/site-content')
       .then((res) => {
+        if (cancelled) return
         const apiPages = res.data?.data ?? res.data ?? {}
         setPages(mergeAllSiteContent(apiPages))
       })
-      .catch(() => setPages(defaultSiteContentData))
-      .finally(() => setLoading(false))
+      .catch(() => {
+        if (cancelled || bootstrappedRef.current) return
+        setPages(defaultSiteContentData)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const siteData = useMemo(() => buildSiteDataFromContent(pages), [pages])

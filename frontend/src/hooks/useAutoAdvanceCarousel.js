@@ -8,6 +8,14 @@ export default function useAutoAdvanceCarousel({
   const [activeIndex, setActiveIndex] = useState(0)
   const pausedRef = useRef(false)
   const timerRef = useRef(null)
+  const holdTimerRef = useRef(null)
+
+  const clearHold = useCallback(() => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current)
+      holdTimerRef.current = null
+    }
+  }, [])
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
@@ -23,16 +31,30 @@ export default function useAutoAdvanceCarousel({
 
   const pause = useCallback(() => {
     pausedRef.current = true
-    clearTimer()
-  }, [clearTimer])
+    clearHold()
+  }, [clearHold])
 
   const resume = useCallback(() => {
     pausedRef.current = false
-  }, [])
+    clearHold()
+  }, [clearHold])
+
+  const hold = useCallback(
+    (ms = 6000) => {
+      clearHold()
+      pausedRef.current = true
+      holdTimerRef.current = setTimeout(() => {
+        pausedRef.current = false
+        holdTimerRef.current = null
+      }, ms)
+    },
+    [clearHold],
+  )
 
   useEffect(() => {
     if (!enabled || count < 2) {
       clearTimer()
+      clearHold()
       setActiveIndex(0)
       return undefined
     }
@@ -45,8 +67,11 @@ export default function useAutoAdvanceCarousel({
       if (!pausedRef.current) advance()
     }, interval)
 
-    return clearTimer
-  }, [enabled, count, interval, advance, clearTimer])
+    return () => {
+      clearTimer()
+      clearHold()
+    }
+  }, [enabled, count, interval, advance, clearTimer, clearHold])
 
-  return { activeIndex, pause, resume, setActiveIndex }
+  return { activeIndex, pause, resume, hold, setActiveIndex }
 }

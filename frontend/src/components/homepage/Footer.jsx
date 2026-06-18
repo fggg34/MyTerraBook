@@ -157,7 +157,11 @@ export default function Footer({
   }, [])
 
   useEffect(() => {
-    setOpenSections({ book: true, company: false })
+    if (!isMobile) {
+      setOpenSections({ book: true, company: true })
+    } else {
+      setOpenSections({ book: true, company: false })
+    }
   }, [isMobile])
 
   const bookList = (
@@ -183,12 +187,32 @@ export default function Footer({
     </ul>
   )
 
-  const accountBlock = (
+  const mobileAccountBlock = (
     <FooterAccountBlock
       accountLinks={accountLinks}
       hostCtaLabel={hostCtaLabel}
       hostCtaHref={hostCtaHref}
     />
+  )
+
+  const desktopAccountBlock = (
+    <>
+      <ul className="ftr-host-links">
+        {accountLinks.map((link) => (
+          <li key={link.label}>
+            <FooterLink href={link.href}>{link.label}</FooterLink>
+          </li>
+        ))}
+      </ul>
+      {hostCtaLabel && (
+        <FooterLink href={hostCtaHref || '/become-a-host'} className="ftr-host-cta">
+          {hostCtaLabel}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </FooterLink>
+      )}
+    </>
   )
 
   return (
@@ -230,7 +254,7 @@ export default function Footer({
                 >
                   {companyList}
                 </FooterColumnToggle>
-                {accountBlock}
+                {mobileAccountBlock}
               </>
             ) : (
               <>
@@ -242,7 +266,10 @@ export default function Footer({
                   <h4>Company</h4>
                   {companyList}
                 </div>
-                {accountBlock}
+                <div className="ftr-host">
+                  <h4>Account</h4>
+                  {desktopAccountBlock}
+                </div>
               </>
             )}
           </div>

@@ -10,6 +10,6 @@ class HomepageController extends Controller
 {
     public function show(SiteContentService $siteContent): JsonResponse
     {
-        return response()->json($siteContent->homepagePayload());
+        return response()->json($siteContent->homepagePayloadCached());
     }
 }

@@ -1,6 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import useAutoAdvanceCarousel from '../../hooks/useAutoAdvanceCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
+import useTrustStripSwipe from '../../hooks/useTrustStripSwipe'
+
+const AUTO_INTERVAL_MS = 7000
+const HOLD_AFTER_TAP_MS = 6000
+const HOLD_AFTER_SWIPE_MS = 7000
+const HOLD_AFTER_READ_MS = 9000
 
 function TrustIcon({ type, image }) {
   if (image) {
@@ -34,11 +40,57 @@ function TrustIcon({ type, image }) {
 
 export default function TrustStrip({ items = [] }) {
   const isMobile = useMediaQuery('(max-width: 768px)')
+  const trackRef = useRef(null)
+  const dragGuardRef = useRef(false)
+  const descOpenRef = useRef(false)
+  const hadDescOpenRef = useRef(false)
   const [descOpen, setDescOpen] = useState(false)
-  const { activeIndex, pause, resume } = useAutoAdvanceCarousel({
+  const swipeEnabled = isMobile && items.length > 1
+  const { activeIndex, pause, hold, setActiveIndex } = useAutoAdvanceCarousel({
     count: items.length,
-    interval: 4000,
-    enabled: isMobile && items.length > 1,
+    interval: AUTO_INTERVAL_MS,
+    enabled: swipeEnabled,
+  })
+
+  descOpenRef.current = descOpen
+
+  const holdUnlessReading = useCallback(
+    (ms) => {
+      if (descOpenRef.current) return
+      hold(ms)
+    },
+    [hold],
+  )
+
+  const handleSwipe = useCallback(() => {
+    dragGuardRef.current = true
+    setDescOpen(false)
+    holdUnlessReading(HOLD_AFTER_SWIPE_MS)
+    window.setTimeout(() => {
+      dragGuardRef.current = false
+    }, 0)
+  }, [holdUnlessReading])
+
+  const handleTap = useCallback(() => {
+    holdUnlessReading(HOLD_AFTER_TAP_MS)
+  }, [holdUnlessReading])
+
+  const handleDragStart = useCallback(() => {
+    pause()
+  }, [pause])
+
+  const handleDragEnd = useCallback(() => {
+    holdUnlessReading(HOLD_AFTER_SWIPE_MS)
+  }, [holdUnlessReading])
+
+  const { dragOffset, isDragging } = useTrustStripSwipe(trackRef, {
+    count: items.length,
+    setActiveIndex,
+    enabled: swipeEnabled,
+    onSwipe: handleSwipe,
+    onTap: handleTap,
+    onDragStart: handleDragStart,
+    onDragEnd: handleDragEnd,
   })
 
   useEffect(() => {
@@ -46,11 +98,18 @@ export default function TrustStrip({ items = [] }) {
   }, [activeIndex])
 
   useEffect(() => {
-    if (!isMobile) return undefined
-    if (descOpen) pause()
-    else resume()
+    if (!swipeEnabled) return undefined
+    if (descOpen) {
+      pause()
+      hadDescOpenRef.current = true
+      return undefined
+    }
+    if (hadDescOpenRef.current) {
+      hold(HOLD_AFTER_READ_MS)
+    }
+    hadDescOpenRef.current = false
     return undefined
-  }, [descOpen, isMobile, pause, resume])
+  }, [descOpen, hold, pause, swipeEnabled])
 
   if (!items.length) return null
 
@@ -58,58 +117,62 @@ export default function TrustStrip({ items = [] }) {
     <section className="trust" aria-label="Trust highlights">
       <div className="wrap">
         <div
-          className={`trust-track${isMobile ? ' trust-track--mobile' : ''}`}
-          style={isMobile ? { '--trust-index': activeIndex } : undefined}
-          onTouchStart={isMobile ? pause : undefined}
-          onTouchEnd={isMobile ? resume : undefined}
-          onPointerDown={isMobile ? pause : undefined}
-          onPointerUp={isMobile ? resume : undefined}
-          onPointerLeave={isMobile ? resume : undefined}
+          ref={trackRef}
+          className={`trust-track${isMobile ? ' trust-track--mobile' : ''}${isDragging ? ' is-dragging' : ''}`}
+          style={
+            isMobile
+              ? {
+                  '--trust-index': activeIndex,
+                  '--trust-offset': `${dragOffset}px`,
+                }
+              : undefined
+          }
         >
           {items.map((item, index) => {
             const isActive = !isMobile || index === activeIndex
             const showSubtitle = !isMobile || (isActive && descOpen)
 
             return (
-            <div
-              className="trust-item"
-              key={`${item.title}-${index}`}
-              aria-hidden={isMobile && index !== activeIndex ? true : undefined}
-            >
-              <span className="trust-ic">
-                <TrustIcon type={item.icon} image={item.iconImage} />
-              </span>
-              <div className="trust-text">
-                <div className="tt-top">
-                  {item.title}
-                  {item.icon === 'star' && item.stars ? (
-                    <span className="trust-stars" aria-hidden="true">
-                      {Array.from({ length: item.stars }).map((_, i) => (
-                        <svg key={i} viewBox="0 0 24 24" fill="currentColor">
-                          <path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z" />
-                        </svg>
-                      ))}
-                    </span>
-                  ) : null}
-                  {isMobile && item.subtitle ? (
-                    <button
-                      type="button"
-                      className="trust-info-btn"
-                      aria-expanded={isActive && descOpen}
-                      aria-label={`More about ${item.title}`}
-                      onClick={() => {
-                        if (index === activeIndex) setDescOpen((open) => !open)
-                      }}
-                    >
-                      ?
-                    </button>
+              <div
+                className="trust-item"
+                key={`${item.title}-${index}`}
+                aria-hidden={isMobile && index !== activeIndex ? true : undefined}
+              >
+                <span className="trust-ic">
+                  <TrustIcon type={item.icon} image={item.iconImage} />
+                </span>
+                <div className="trust-text">
+                  <div className="tt-top">
+                    {item.title}
+                    {item.icon === 'star' && item.stars ? (
+                      <span className="trust-stars" aria-hidden="true">
+                        {Array.from({ length: item.stars }).map((_, i) => (
+                          <svg key={i} viewBox="0 0 24 24" fill="currentColor">
+                            <path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.6 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z" />
+                          </svg>
+                        ))}
+                      </span>
+                    ) : null}
+                    {isMobile && item.subtitle ? (
+                      <button
+                        type="button"
+                        className="trust-info-btn"
+                        aria-expanded={isActive && descOpen}
+                        aria-label={`More about ${item.title}`}
+                        onClick={() => {
+                          if (dragGuardRef.current || index !== activeIndex) return
+                          setDescOpen((open) => !open)
+                        }}
+                      >
+                        ?
+                      </button>
+                    ) : null}
+                  </div>
+                  {showSubtitle && item.subtitle ? (
+                    <div className="tt-sub">{item.subtitle}</div>
                   ) : null}
                 </div>
-                {showSubtitle && item.subtitle ? (
-                  <div className="tt-sub">{item.subtitle}</div>
-                ) : null}
               </div>
-            </div>
             )
           })}
         </div>

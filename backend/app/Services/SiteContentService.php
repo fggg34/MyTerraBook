@@ -90,9 +90,39 @@ class SiteContentService
         ];
     }
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function allPagesCached(): array
+    {
+        return Cache::remember('site_content.all', 3600, fn (): array => $this->allPages());
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function homepagePayloadCached(): array
+    {
+        return Cache::remember('site_content.homepage', 3600, fn (): array => $this->homepagePayload());
+    }
+
+    /**
+     * Payload embedded in the SPA HTML shell for first-paint CMS content.
+     *
+     * @return array{siteContent: array<string, array<string, mixed>>, homepage: array<string, mixed>}
+     */
+    public function bootstrapPayload(): array
+    {
+        return [
+            'siteContent' => $this->allPagesCached(),
+            'homepage' => $this->homepagePayloadCached(),
+        ];
+    }
+
     public function clearCache(): void
     {
         Cache::forget('site_content.all');
+        Cache::forget('site_content.homepage');
     }
 
     /**

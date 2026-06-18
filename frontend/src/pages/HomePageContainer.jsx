@@ -4,7 +4,10 @@ import { useSiteLayout } from '../context/SiteLayoutContext'
 import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
 import { mergeHomepageData } from '../utils/mergeHomepageData'
+import { getBootstrappedHomepage } from '../utils/siteBootstrap'
 import HomePage from './HomePage'
+
+const bootstrappedHomepage = getBootstrappedHomepage()
 
 export default function HomePageContainer() {
   const { siteData } = useSiteLayout()
@@ -15,13 +18,23 @@ export default function HomePageContainer() {
       backgroundImage: siteData?.hero?.backgroundImage,
     },
   })
-  const [homepageData, setHomepageData] = useState(null)
+  const [homepageData, setHomepageData] = useState(bootstrappedHomepage)
 
   useEffect(() => {
+    let cancelled = false
+
     api
       .get('/homepage')
-      .then((res) => setHomepageData(res.data || null))
-      .catch(() => setHomepageData(null))
+      .then((res) => {
+        if (!cancelled) setHomepageData(res.data || null)
+      })
+      .catch(() => {
+        if (!cancelled && !bootstrappedHomepage) setHomepageData(null)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const pageData = useMemo(() => {

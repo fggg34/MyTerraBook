@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Http\Responses\FilamentLoginResponse;
+use App\Models\BlogPost;
 use App\Models\Car;
 use App\Models\GuestHouse;
 use App\Models\GuestHouseBooking;
 use App\Models\Order;
+use App\Observers\BlogPostObserver;
 use App\Observers\GuestHouseBookingObserver;
 use App\Observers\OrderObserver;
 use App\Policies\CarPolicy;
@@ -41,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
 
         Order::observe(OrderObserver::class);
         GuestHouseBooking::observe(GuestHouseBookingObserver::class);
+        BlogPost::observe(BlogPostObserver::class);
 
         $this->app->bind(FilamentLoginResponseContract::class, FilamentLoginResponse::class);
 

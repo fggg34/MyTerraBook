@@ -44,6 +44,7 @@ export default function Header({
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef(null)
   const headerRef = useRef(null)
+  const hamburgerRef = useRef(null)
 
   const role = normalizeUserRole(user)
   const dashboardPath = user ? getPostLoginPath(user) : null
@@ -52,7 +53,10 @@ export default function Header({
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || '?'
   const mobileNavLinks = navLinks
 
-  const closeMobile = () => setMobileOpen(false)
+  const closeMobile = () => {
+    setMobileOpen(false)
+    hamburgerRef.current?.blur()
+  }
 
   useEffect(() => {
     document.body.classList.toggle('mobile-nav-open', mobileOpen)
@@ -204,6 +208,7 @@ export default function Header({
       <div className="wrap nav-chrome">
         <div className="nav-mobile-left">
           <button
+            ref={hamburgerRef}
             className="hamburger"
             type="button"
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}

@@ -8,7 +8,6 @@ use App\Models\SiteContentPage;
 use App\Services\SiteContentService;
 use App\Support\ResolvesPublicStorageUrls;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
 
 class SiteContentController extends Controller
 {
@@ -16,9 +15,7 @@ class SiteContentController extends Controller
 
     public function index(): JsonResponse
     {
-        $payload = Cache::remember('site_content.all', 3600, function (): array {
-            return app(SiteContentService::class)->allPages();
-        });
+        $payload = app(SiteContentService::class)->allPagesCached();
 
         return response()
             ->json(['data' => $payload])

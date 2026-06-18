@@ -47,6 +47,7 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
     let isDragging = false
     let pendingDrag = false
     let startX = 0
+    let startY = 0
     let scrollLeftStart = 0
     let moved = false
 
@@ -69,15 +70,27 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
       el.setPointerCapture?.(e.pointerId)
     }
 
+    const cancelPendingDrag = () => {
+      pendingDrag = false
+      removeDragListeners()
+    }
+
     const onPointerMove = (e) => {
       if (!isDragging && !pendingDrag) return
 
       const dx = e.pageX - startX
+      const dy = e.pageY - startY
 
       if (!isDragging && pendingDrag) {
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return
+        if (Math.abs(dy) > Math.abs(dx)) {
+          cancelPendingDrag()
+          return
+        }
         if (Math.abs(dx) <= DRAG_THRESHOLD) return
         pendingDrag = false
         startX = e.pageX
+        startY = e.pageY
         scrollLeftStart = el.scrollLeft
         beginDrag(e)
       }
@@ -104,11 +117,13 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
     }
 
     const onPointerDown = (e) => {
+      if (e.pointerType === 'touch') return
       if (e.pointerType === 'mouse' && e.button !== 0) return
       if (e.target.closest(INTERACTIVE) && !e.target.closest('.pcard-stretch-link, a.rcard')) return
 
       moved = false
       startX = e.pageX
+      startY = e.pageY
       scrollLeftStart = el.scrollLeft
       pendingDrag = true
 
