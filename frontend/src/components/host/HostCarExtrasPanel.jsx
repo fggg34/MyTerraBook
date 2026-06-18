@@ -3,7 +3,7 @@ import { Search, Settings, X } from 'lucide-react'
 import CatalogIcon from '../../utils/CatalogIcon'
 import {
   defaultRentalOptionAmountEuros,
-  hostRentalOptionPriceSuffix,
+  guestRentalOptionSubLabel,
   resolveRentalOptionIsDailyCost,
 } from '../../utils/rentalOptionPricing'
 
@@ -124,7 +124,7 @@ export default function HostCarExtrasPanel({
             const isEditing = isActive && String(editingId) === String(option.id)
             const suggested = defaultRentalOptionAmountEuros(option)
             const isDailyCost = resolveRentalOptionIsDailyCost(saved, option)
-            const suffix = hostRentalOptionPriceSuffix(isDailyCost)
+            const chargeLabel = guestRentalOptionSubLabel(isDailyCost)
             const savedAmount = Number(saved?.cost_euros ?? 0)
 
             if (!isActive) {
@@ -153,66 +153,86 @@ export default function HostCarExtrasPanel({
               return (
                 <div key={option.id} className="host-extras-card is-enabled is-editing">
                   <div className="host-extras-card__edit">
-                    <span className="host-extras-card__icon">
-                      <CatalogIcon
-                        name={option.icon}
-                        iconUrl={option.icon_url}
-                        size={16}
-                        imgClassName="host-icon-option__img"
-                      />
-                    </span>
-                    <div className="host-extras-card__price">
-                      <span className="host-extras-card__price-prefix">{currency.inputPrefix}</span>
-                      <input
-                        ref={priceInputRef}
-                        id={`extra-price-${option.id}`}
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        aria-label={`Price for ${option.name}`}
-                        placeholder={suggested > 0 ? String(suggested) : '0'}
-                        value={draftPrice}
-                        onChange={(e) => setDraftPrice(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveEdit(option.id)
-                          if (e.key === 'Escape') {
-                            if (isPendingNew) {
-                              cancelEditing(option.id)
-                            } else {
-                              cancelEditing(option.id)
-                            }
-                          }
-                        }}
-                      />
-                      <div
-                        className="host-extras-card__pricing-type"
-                        role="group"
-                        aria-label={`Pricing type for ${option.name}`}
+                    <div className="host-extras-card__edit-header">
+                      <span className="host-extras-card__icon">
+                        <CatalogIcon
+                          name={option.icon}
+                          iconUrl={option.icon_url}
+                          size={16}
+                          imgClassName="host-icon-option__img"
+                        />
+                      </span>
+                      <span className="host-extras-card__name">{option.name}</span>
+                      <button
+                        type="button"
+                        className="host-extras-card__action host-extras-card__action--remove"
+                        aria-label={`Cancel editing ${option.name}`}
+                        onClick={() => cancelEditing(option.id)}
                       >
-                        <button
-                          type="button"
-                          className={!draftIsDailyCost ? 'is-active' : ''}
-                          aria-pressed={!draftIsDailyCost}
-                          onClick={() => setDraftIsDailyCost(false)}
+                        <X size={15} strokeWidth={2.2} />
+                      </button>
+                    </div>
+
+                    <div className="host-extras-card__edit-fields">
+                      <label
+                        className="host-extras-card__field"
+                        htmlFor={`extra-price-${option.id}`}
+                      >
+                        <span className="host-extras-card__field-label">Price</span>
+                        <div className="host-extras-card__price">
+                          <span className="host-extras-card__price-prefix">{currency.inputPrefix}</span>
+                          <input
+                            ref={priceInputRef}
+                            id={`extra-price-${option.id}`}
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            placeholder={suggested > 0 ? String(suggested) : '0'}
+                            value={draftPrice}
+                            onChange={(e) => setDraftPrice(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveEdit(option.id)
+                              if (e.key === 'Escape') cancelEditing(option.id)
+                            }}
+                          />
+                        </div>
+                      </label>
+
+                      <div className="host-extras-card__field">
+                        <span className="host-extras-card__field-label" id={`extra-charge-${option.id}`}>
+                          Charge
+                        </span>
+                        <div
+                          className="host-extras-card__pricing-type"
+                          role="group"
+                          aria-labelledby={`extra-charge-${option.id}`}
                         >
-                          Flat
-                        </button>
-                        <button
-                          type="button"
-                          className={draftIsDailyCost ? 'is-active' : ''}
-                          aria-pressed={draftIsDailyCost}
-                          onClick={() => setDraftIsDailyCost(true)}
-                        >
-                          / day
-                        </button>
+                          <button
+                            type="button"
+                            className={!draftIsDailyCost ? 'is-active' : ''}
+                            aria-pressed={!draftIsDailyCost}
+                            onClick={() => setDraftIsDailyCost(false)}
+                          >
+                            {guestRentalOptionSubLabel(false)}
+                          </button>
+                          <button
+                            type="button"
+                            className={draftIsDailyCost ? 'is-active' : ''}
+                            aria-pressed={draftIsDailyCost}
+                            onClick={() => setDraftIsDailyCost(true)}
+                          >
+                            {guestRentalOptionSubLabel(true)}
+                          </button>
+                        </div>
                       </div>
                     </div>
+
                     <button
                       type="button"
                       className="host-extras-card__save"
                       onClick={() => saveEdit(option.id)}
                     >
-                      Save
+                      Save price
                     </button>
                   </div>
                 </div>
@@ -233,7 +253,7 @@ export default function HostCarExtrasPanel({
                   <div className="host-extras-card__saved-text">
                     <span className="host-extras-card__name">{option.name}</span>
                     <span className="host-extras-card__saved-price">
-                      {currency.formatAmount(savedAmount)} {suffix}
+                      {currency.formatAmount(savedAmount)} · {chargeLabel.toLowerCase()}
                     </span>
                   </div>
                   <button

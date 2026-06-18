@@ -2517,13 +2517,48 @@ a.host-overview-card:hover .host-overview-card-link {
   box-shadow: 0 0 0 2px rgba(69, 160, 106, 0.12);
 }
 
-.host-extras-card__saved,
-.host-extras-card__edit {
+.host-extras-card__saved {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
   min-width: 0;
+}
+
+.host-extras-card__edit {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px;
+  min-width: 0;
+}
+
+.host-extras-card__edit-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.host-extras-card__edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.host-extras-card__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.host-extras-card__field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.2;
 }
 
 .host-extras-card__saved-text {
@@ -2566,10 +2601,10 @@ a.host-overview-card:hover .host-overview-card-link {
 }
 
 .host-extras-card__save {
-  flex: 0 0 auto;
+  width: 100%;
   border: none;
   border-radius: 8px;
-  padding: 6px 10px;
+  padding: 8px 10px;
   font-size: 12px;
   font-weight: 700;
   font-family: inherit;
@@ -2612,13 +2647,12 @@ a.host-overview-card:hover .host-overview-card-link {
 }
 
 .host-extras-card__edit .host-extras-card__price {
-  flex: 1 1 auto;
-  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   padding: 0;
   border: none;
+  min-width: 0;
 }
 
 .host-extras-card__price-prefix,
@@ -2650,8 +2684,8 @@ a.host-overview-card:hover .host-overview-card-link {
 }
 
 .host-extras-card__pricing-type {
-  flex: 0 0 auto;
-  display: inline-flex;
+  display: flex;
+  width: 100%;
   border: 1px solid #dbe3ee;
   border-radius: 8px;
   overflow: hidden;
@@ -2659,10 +2693,11 @@ a.host-overview-card:hover .host-overview-card-link {
 }
 
 .host-extras-card__pricing-type button {
+  flex: 1 1 0;
   border: none;
-  padding: 5px 7px;
-  font-size: 11px;
-  font-weight: 700;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
   font-family: inherit;
   color: #64748b;
   background: transparent;

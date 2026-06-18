@@ -1,4 +1,4 @@
-import LucideIcon from './iconCatalog'
+import LucideIcon, { hasIcon } from './iconCatalog'
 
 const SPEC_LUCIDE_MAP = {
   seat: 'users',
@@ -54,8 +54,14 @@ export function normalizeSpec(spec) {
   }
 }
 
+export function resolveListingSpecIconName(icon) {
+  if (!icon) return 'users'
+  if (hasIcon(icon)) return icon
+  return SPEC_LUCIDE_MAP[icon] || icon
+}
+
 export function SpecIcon({ icon, className = 'detail-specs-char-ic', size = 16, strokeWidth = 1.8 }) {
-  const lucideName = SPEC_LUCIDE_MAP[icon] || 'users'
+  const lucideName = resolveListingSpecIconName(icon)
   return (
     <span className={className} aria-hidden="true">
       <LucideIcon name={lucideName} size={size} strokeWidth={strokeWidth} />

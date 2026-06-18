@@ -1,4 +1,5 @@
-import { SpecIcon } from '../../utils/listingSpecIcons'
+import CatalogIcon from '../../utils/CatalogIcon'
+import { resolveListingSpecIconName } from '../../utils/listingSpecIcons'
 
 export default function ListingSpecGrid({ detailSpecs = [] }) {
   if (!detailSpecs.length) return null
@@ -8,7 +9,16 @@ export default function ListingSpecGrid({ detailSpecs = [] }) {
       {detailSpecs.map((spec) => (
         <div key={`${spec.icon}-${spec.label}`} className="basic-item">
           <span className="basic-ic" aria-hidden>
-            <SpecIcon icon={spec.icon} className="spec-ic" size={24} strokeWidth={1.8} />
+            <span className="spec-ic">
+              <CatalogIcon
+                name={resolveListingSpecIconName(spec.icon)}
+                iconUrl={spec.iconUrl}
+                size={24}
+                strokeWidth={1.8}
+                imgClassName="spec-ic-img"
+                fallback={resolveListingSpecIconName(spec.icon)}
+              />
+            </span>
           </span>
           <div className="basic-copy">
             <div className="basic-title">{spec.label}</div>

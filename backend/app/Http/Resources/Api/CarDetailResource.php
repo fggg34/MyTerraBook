@@ -4,6 +4,7 @@ namespace App\Http\Resources\Api;
 
 use App\Models\Car;
 use App\Support\Money;
+use App\Support\VehicleSpecIconResolver;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,6 +29,13 @@ class CarDetailResource extends JsonResource
             ? $car->locations->filter(fn ($loc) => (bool) $loc->pivot->allows_dropoff)->values()
             : $car->locations()->wherePivot('allows_dropoff', true)->get();
 
+        $transmissionIcon = VehicleSpecIconResolver::forTransmission($car->transmission);
+        $fuelTypeIcon = VehicleSpecIconResolver::forFuelType($car->fuel_type);
+        $driveTypeValue = $car->drive_type instanceof \App\Enums\DriveType
+            ? $car->drive_type->value
+            : ($car->drive_type ?: null);
+        $driveTypeIcon = VehicleSpecIconResolver::forDriveType($driveTypeValue);
+
         return [
             'id' => $car->id,
             'name' => $car->name,
@@ -40,10 +48,14 @@ class CarDetailResource extends JsonResource
             'main_category' => MainCategoryResource::make($car->subCategory?->mainCategory),
             'category' => SubCategoryResource::make($car->subCategory),
             'transmission' => filled($car->transmission) ? $car->transmission : ',',
+            'transmission_icon' => $transmissionIcon['icon'] ?? null,
+            'transmission_icon_url' => $transmissionIcon['icon_url'] ?? null,
             'fuel_type' => filled($car->fuel_type) ? $car->fuel_type : ',',
-            'drive_type' => $car->drive_type instanceof \App\Enums\DriveType
-                ? $car->drive_type->value
-                : ($car->drive_type ?: null),
+            'fuel_type_icon' => $fuelTypeIcon['icon'] ?? null,
+            'fuel_type_icon_url' => $fuelTypeIcon['icon_url'] ?? null,
+            'drive_type' => $driveTypeValue,
+            'drive_type_icon' => $driveTypeIcon['icon'] ?? null,
+            'drive_type_icon_url' => $driveTypeIcon['icon_url'] ?? null,
             'seats' => $car->seats,
             'sleeps' => $car->sleeps,
             'bags' => $car->bags,

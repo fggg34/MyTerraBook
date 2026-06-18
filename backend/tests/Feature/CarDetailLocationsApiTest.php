@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Car;
+use App\Models\Characteristic;
 use App\Models\Location;
 use App\Models\MainCategory;
 use App\Models\SubCategory;
@@ -44,5 +45,30 @@ class CarDetailLocationsApiTest extends TestCase
         $pickupNames = collect($response->json('data.pickup_locations'))->pluck('name')->all();
         $this->assertContains('Airport', $pickupNames);
         $this->assertNotContains('City Center', $pickupNames);
+    }
+
+    public function test_car_detail_includes_spec_icons_from_characteristics_catalogue(): void
+    {
+        Characteristic::query()->create([
+            'name' => 'Manual Transmission',
+            'icon' => 'wrench',
+            'display_text' => 'Manual Transmission',
+        ]);
+
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Compact', 'is_active' => true, 'is_search_filter' => true]);
+        $car = Car::query()->create([
+            'name' => 'Manual Test Car',
+            'slug' => 'manual-test-car',
+            'sub_category_id' => $category->id,
+            'transmission' => 'manual',
+            'fuel_type' => 'diesel',
+            'drive_type' => 'fwd',
+            'is_active' => true,
+        ]);
+
+        $this->getJson("/api/cars/{$car->id}")
+            ->assertOk()
+            ->assertJsonPath('data.transmission_icon', 'wrench');
     }
 }

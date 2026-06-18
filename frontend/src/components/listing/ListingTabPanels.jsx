@@ -13,10 +13,14 @@ import ListingAmenities from './ListingAmenities'
 import ListingOptionalExtras from './ListingOptionalExtras'
 import ListingSleepingPanel from './ListingSleepingPanel'
 import ListingSection from './ListingSection'
+import ListingWriteReview from './ListingWriteReview'
 import CatalogIcon from '../../utils/CatalogIcon'
 
 export default function ListingTabPanels({
   listing,
+  reviews = [],
+  reviewTarget,
+  onReviewsChange,
   onRequestBook,
   initialPickup,
   initialDropoff,
@@ -192,6 +196,16 @@ export default function ListingTabPanels({
   const amenitiesTitle =
     listingType === 'car' ? 'Vehicle features' : listingType === 'guesthouse' ? 'Amenities' : 'Features'
   const sectionDesc = typeConfig.sectionDescriptions || {}
+  const showInlineReviewCta = !reviews?.length
+  const inlineReviewAfterPickup = showInlineReviewCta && isVehicle && hasPickupInfo
+  const inlineReviewAfterLocation = showInlineReviewCta && listingType === 'guesthouse' && location?.formattedLine
+  const inlineReviewFallback = showInlineReviewCta && !inlineReviewAfterPickup && !inlineReviewAfterLocation
+
+  const inlineReviewCta = (
+    <div className="listing-write-review-inline">
+      <ListingWriteReview reviewTarget={reviewTarget} onReviewsChange={onReviewsChange} />
+    </div>
+  )
 
   return (
     <div className="split">
@@ -318,6 +332,8 @@ export default function ListingTabPanels({
           </ListingSection>
         ) : null}
 
+        {inlineReviewAfterPickup ? inlineReviewCta : null}
+
         {isVehicle && !conditions.length && !hasPickupInfo ? (
           <ListingSection title={conditionsTitle}>
             <p className="listing-empty-hint">No rental conditions listed.</p>
@@ -344,6 +360,10 @@ export default function ListingTabPanels({
             ) : null}
           </ListingSection>
         ) : null}
+
+        {inlineReviewAfterLocation ? inlineReviewCta : null}
+
+        {inlineReviewFallback ? inlineReviewCta : null}
       </div>
 
       <aside className="listing-book">

@@ -34,9 +34,27 @@ function buildDetailSpecs(car) {
   const transmission = formatSpecLabel(car.transmission)
   const fuel = formatSpecLabel(car.fuel_type)
   const drive = car.drive_type ? driveLabel(car.drive_type) : null
-  if (transmission) specs.push({ label: transmission, icon: 'gearbox' })
-  if (fuel) specs.push({ label: fuel, icon: 'fuel' })
-  if (drive) specs.push({ label: drive, icon: car.drive_type || 'drive' })
+  if (transmission) {
+    specs.push({
+      label: transmission,
+      icon: car.transmission_icon || 'gearbox',
+      iconUrl: car.transmission_icon_url || null,
+    })
+  }
+  if (fuel) {
+    specs.push({
+      label: fuel,
+      icon: car.fuel_type_icon || 'fuel',
+      iconUrl: car.fuel_type_icon_url || null,
+    })
+  }
+  if (drive) {
+    specs.push({
+      label: drive,
+      icon: car.drive_type_icon || car.drive_type || 'drive',
+      iconUrl: car.drive_type_icon_url || null,
+    })
+  }
   if (car.seats != null) specs.push({ label: `${car.seats} seats`, icon: 'seats' })
   if (car.sleeps != null && car.sleeps > 0) specs.push({ label: `Sleeps ${car.sleeps}`, icon: 'sleeps' })
   if (car.bags != null) specs.push({ label: `${car.bags} bags`, icon: 'bags' })

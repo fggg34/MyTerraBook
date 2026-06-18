@@ -83,6 +83,9 @@ export default function ListingPageContent({
         <div className="wrap">
           <ListingTabPanels
             listing={listing}
+            reviews={listing.reviews}
+            reviewTarget={reviewTarget}
+            onReviewsChange={onReviewsChange}
             onRequestBook={onRequestBook}
             initialPickup={initialPickup}
             initialDropoff={initialDropoff}

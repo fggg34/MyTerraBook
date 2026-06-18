@@ -240,6 +240,7 @@
   .basic-item{display:flex;gap:16px;align-items:flex-start;}
   .basic-ic{width:var(--listing-icon-slot);flex:0 0 auto;display:flex;justify-content:center;color:var(--listing-icon);}
   .basic-ic .spec-ic{width:var(--listing-icon-size);height:var(--listing-icon-size);}
+  .basic-ic .spec-ic-img{width:var(--listing-icon-size);height:var(--listing-icon-size);}
   .basic-copy{line-height:1.35;min-width:0;}
   .basic-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:2px;}
   .basic-hint{font-size:13px;color:var(--slate);}
@@ -773,6 +774,7 @@
   .listing-page .rev-track .rcard-rev,.listing-page .rev-track .rev-feature{flex:0 0 calc((100% - 54px) / 4);min-width:220px;}
 }
 .listing-page .reviews-empty{font-size:15px;color:var(--slate);line-height:1.55;margin:0 0 8px;}
+.listing-page .listing-write-review-inline{margin-top:8px;}
 .listing-page .gp-tile{
   flex:0 0 300px;height:300px;border-radius:18px;overflow:hidden;position:relative;
   background:#e9eef5;box-shadow:0 14px 30px -22px rgba(15,32,54,.55);
