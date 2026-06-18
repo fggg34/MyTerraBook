@@ -11,6 +11,7 @@ use App\Models\GuestHouse;
 use App\Models\GuestHouseAvailabilityBlock;
 use App\Models\GuestHouseImage;
 use App\Models\GuestHouseSeasonalPrice;
+use App\Support\HostPricingValidation;
 use App\Services\Email\EmailService;
 use App\Services\ListingSeoService;
 use Illuminate\Http\JsonResponse;
@@ -264,7 +265,34 @@ class HostGuestHouseController extends Controller
             'blocked_from' => ['required', 'date'],
             'blocked_to' => ['required', 'date', 'after_or_equal:blocked_from'],
             'note' => ['nullable', 'string', 'max:500'],
+        ], [
+            'blocked_to.after_or_equal' => 'The end date must be on or after the start date.',
+        ], [
+            'blocked_from' => 'start date',
+            'blocked_to' => 'end date',
         ]);
+
+        HostPricingValidation::assertNotPastDate('blocked_from', $data['blocked_from']);
+
+        $overlapping = $guestHouse->availabilityBlocks()
+            ->where('source', 'manual')
+            ->get()
+            ->first(fn ($block) => HostPricingValidation::dateRangesOverlap(
+                (string) $data['blocked_from'],
+                (string) $data['blocked_to'],
+                (string) $block->blocked_from,
+                (string) $block->blocked_to,
+            ));
+
+        if ($overlapping) {
+            return response()->json([
+                'message' => sprintf(
+                    'This block overlaps an existing block (%s – %s). Remove or adjust the existing block first.',
+                    $overlapping->blocked_from->format('j M Y'),
+                    $overlapping->blocked_to->format('j M Y'),
+                ),
+            ], 422);
+        }
 
         $block = $guestHouse->availabilityBlocks()->create([
             ...$data,

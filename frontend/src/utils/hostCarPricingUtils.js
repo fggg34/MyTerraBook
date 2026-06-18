@@ -11,19 +11,10 @@ export const PROTECTION_TIER_ORDER = [
   PROTECTION_TIER_SLUGS.full,
 ]
 
-export const PROTECTION_TIER_HOST_LABELS = {
-  basic: {
-    title: 'Standard coverage',
-    note: 'Included with your daily rental rate',
-  },
-  plus: {
-    title: 'Enhanced coverage',
-    note: 'Lower guest deposit',
-  },
-  max: {
-    title: 'Full coverage',
-    note: 'Zero guest deposit',
-  },
+export const PROTECTION_TIER_HOST_NOTES = {
+  basic: 'Included with your daily rental rate',
+  plus: 'Lower guest deposit',
+  max: 'Zero guest deposit',
 }
 
 export function findPriceType(priceTypes, slug) {
@@ -38,6 +29,54 @@ export function standardPriceTypeId(priceTypes) {
 
 export const BASE_FARE_FROM_DAYS = 1
 export const BASE_FARE_TO_DAYS = 365
+
+export const MAX_DISCOUNT_PERCENT_BIPS = 10000
+export const MAX_SURCHARGE_PERCENT_BIPS = 20000
+
+export function dayRangesOverlap(aFrom, aTo, bFrom, bTo) {
+  return Number(aFrom) <= Number(bTo) && Number(bFrom) <= Number(aTo)
+}
+
+export function findOverlappingTier(tiers, fromDays, toDays, excludeId = null) {
+  return tiers.find((tier) => {
+    if (excludeId != null && tier.id === excludeId) return false
+    return dayRangesOverlap(fromDays, toDays, tier.from_days, tier.to_days)
+  }) || null
+}
+
+export function baseDailyRateEuros(baseFare) {
+  if (!baseFare) return null
+  return baseFare.price_per_day_cents / 100
+}
+
+export function validateSeasonalDraft(draft) {
+  if (draft.value_mode === 'percentage') {
+    const bips = Number(draft.value_percent_bips) || 0
+    if (draft.type === 'discount' && bips > MAX_DISCOUNT_PERCENT_BIPS) {
+      return 'Discounts cannot exceed 100%.'
+    }
+    if (draft.type === 'charge' && bips > MAX_SURCHARGE_PERCENT_BIPS) {
+      return 'Surcharge seems unusually high (max 200%). Lower it or contact support.'
+    }
+  }
+  if (draft.value_mode === 'fixed') {
+    const cents = Number(draft.value_fixed_cents) || 0
+    if (cents <= 0) {
+      return 'Enter an amount greater than zero.'
+    }
+  }
+  return null
+}
+
+/** ISO date or datetime strings (YYYY-MM-DD or full ISO). */
+export function dateRangesOverlap(aFrom, aTo, bFrom, bTo) {
+  if (!aFrom || !aTo || !bFrom || !bTo) return false
+  const aStart = String(aFrom).slice(0, 10)
+  const aEnd = String(aTo).slice(0, 10)
+  const bStart = String(bFrom).slice(0, 10)
+  const bEnd = String(bTo).slice(0, 10)
+  return aStart <= bEnd && bStart <= aEnd
+}
 
 export function findBaseDailyFare(standardFares) {
   if (!standardFares.length) return null

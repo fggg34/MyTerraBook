@@ -25,6 +25,7 @@ class Location extends Model
         'default_closing_time',
         'suggested_preselected_time',
         'is_active',
+        'host_user_id',
     ];
 
     protected function casts(): array

@@ -16,6 +16,8 @@ use App\Models\HourlyFare;
 use App\Models\LocationFee;
 use App\Models\OutOfHoursFee;
 use App\Models\SpecialPrice;
+use App\Support\DailyFarePricing;
+use App\Support\HostPricingValidation;
 use App\Services\Email\EmailService;
 use App\Services\ListingSeoService;
 use Illuminate\Http\JsonResponse;
@@ -281,6 +283,8 @@ class HostCarController extends Controller
             $data['price_per_day_cents'] = (int) round($data['price_per_day_euros'] * 100);
         }
 
+        HostPricingValidation::assertDailyFareRules($car, $data);
+
         $fare = $car->dailyFares()->create($data);
 
         return response()->json(['data' => $fare->load('priceType')], 201);
@@ -302,6 +306,15 @@ class HostCarController extends Controller
         if (isset($data['price_per_day_euros'])) {
             $data['price_per_day_cents'] = (int) round($data['price_per_day_euros'] * 100);
         }
+
+        $merged = [
+            'price_type_id' => $data['price_type_id'] ?? $dailyFare->price_type_id,
+            'from_days' => $data['from_days'] ?? $dailyFare->from_days,
+            'to_days' => $data['to_days'] ?? $dailyFare->to_days,
+            'price_per_day_cents' => $data['price_per_day_cents'] ?? $dailyFare->price_per_day_cents,
+        ];
+
+        HostPricingValidation::assertDailyFareRules($car, $merged, $dailyFare);
 
         $dailyFare->update($data);
 
@@ -451,7 +464,35 @@ class HostCarController extends Controller
             'ends_at' => ['required', 'date', 'after:starts_at'],
             'units_blocked' => ['integer', 'min:1'],
             'notes' => ['nullable', 'string', 'max:500'],
+        ], [
+            'ends_at.after' => 'The end date must be after the start date.',
+        ], [
+            'starts_at' => 'start date',
+            'ends_at' => 'end date',
         ]);
+
+        HostPricingValidation::assertNotPastDate('starts_at', $data['starts_at']);
+
+        $overlapping = $car->availabilityBlocks()
+            ->where('source', 'manual')
+            ->where('is_active', true)
+            ->get()
+            ->first(fn (AvailabilityBlock $block) => HostPricingValidation::dateRangesOverlap(
+                (string) $data['starts_at'],
+                (string) $data['ends_at'],
+                (string) $block->starts_at,
+                (string) $block->ends_at,
+            ));
+
+        if ($overlapping) {
+            return response()->json([
+                'message' => sprintf(
+                    'This block overlaps an existing block (%s – %s). Remove or adjust the existing block first.',
+                    $overlapping->starts_at->format('j M Y'),
+                    $overlapping->ends_at->format('j M Y'),
+                ),
+            ], 422);
+        }
 
         $unitsAvailable = max(1, (int) $car->units_available);
         $unitsBlocked = (int) ($data['units_blocked'] ?? 1);
@@ -509,11 +550,18 @@ class HostCarController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'date_from' => ['required', 'date'],
             'date_to' => ['required', 'date', 'after_or_equal:date_from'],
-            'type' => ['required', 'string'],
-            'value_mode' => ['required', 'string'],
+            'type' => ['required', 'string', Rule::in(['charge', 'discount'])],
+            'value_mode' => ['required', 'string', Rule::in(['percentage', 'fixed'])],
             'value_fixed_cents' => ['nullable', 'integer', 'min:0'],
             'value_percent_bips' => ['nullable', 'integer', 'min:0'],
+        ], [
+            'date_to.after_or_equal' => 'The end date must be on or after the start date.',
+        ], [
+            'date_from' => 'start date',
+            'date_to' => 'end date',
         ]);
+
+        HostPricingValidation::assertSpecialPriceRules($data);
 
         $data['vehicle_ids'] = [$car->id];
         $price = SpecialPrice::query()->create($data);
@@ -539,15 +587,36 @@ class HostCarController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'date_from' => ['sometimes', 'date'],
             'date_to' => ['sometimes', 'date'],
-            'type' => ['sometimes', 'string'],
-            'value_mode' => ['sometimes', 'string'],
+            'type' => ['sometimes', 'string', Rule::in(['charge', 'discount'])],
+            'value_mode' => ['sometimes', 'string', Rule::in(['percentage', 'fixed'])],
             'value_fixed_cents' => ['nullable', 'integer', 'min:0'],
             'value_percent_bips' => ['nullable', 'integer', 'min:0'],
+        ], [
+            'date_to.after_or_equal' => 'The end date must be on or after the start date.',
+        ], [
+            'date_from' => 'start date',
+            'date_to' => 'end date',
         ]);
 
-        if (isset($data['date_from'], $data['date_to']) && $data['date_to'] < $data['date_from']) {
-            abort(422, 'The date to field must be a date after or equal to date from.');
+        $merged = [
+            'name' => $data['name'] ?? $specialPrice->name,
+            'date_from' => $data['date_from'] ?? $specialPrice->date_from?->toDateString(),
+            'date_to' => $data['date_to'] ?? $specialPrice->date_to?->toDateString(),
+            'type' => $data['type'] ?? $specialPrice->type,
+            'value_mode' => $data['value_mode'] ?? $specialPrice->value_mode,
+            'value_fixed_cents' => array_key_exists('value_fixed_cents', $data)
+                ? $data['value_fixed_cents']
+                : $specialPrice->value_fixed_cents,
+            'value_percent_bips' => array_key_exists('value_percent_bips', $data)
+                ? $data['value_percent_bips']
+                : $specialPrice->value_percent_bips,
+        ];
+
+        if ($merged['date_to'] < $merged['date_from']) {
+            abort(422, 'The end date must be on or after the start date.');
         }
+
+        HostPricingValidation::assertSpecialPriceRules($merged);
 
         $specialPrice->update($data);
         $specialPrice->refresh();

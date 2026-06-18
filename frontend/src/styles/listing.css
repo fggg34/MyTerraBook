@@ -226,6 +226,7 @@
   /* ---------- Main layout (single scroll) ---------- */
   .layout{padding:34px 0 90px;}
   .split{display:grid;grid-template-columns:1fr 392px;gap:46px;align-items:start;}
+  .split > .maincol,.split > .listing-book{min-width:0;}
 
   .listing-header{margin-bottom:28px;}
   .listing-header .listing-title{margin-bottom:10px;}
@@ -734,12 +735,14 @@
     .nav-right .host,.lang-cur{display:none;}
     .hamburger{display:block;}
     .split{grid-template-columns:1fr;gap:36px;}
-    .listing-page .listing-book{position:static;}
+    .split > .maincol,.split > .listing-book{min-width:0;}
+    .listing-page .listing-book{position:static;order:-1;}
+    .gallery{height:360px;}
   }
   @media(max-width:980px){
     .wrap{padding:0 24px;}
-    .gallery{grid-template-columns:1fr 1fr;height:auto;grid-auto-rows:200px;}
-    .gslot.main{grid-column:1 / -1;grid-row:auto;height:300px;}
+    .gallery{grid-template-columns:1fr;height:auto;grid-auto-rows:200px;}
+    .gslot.main{grid-column:1;grid-row:auto;height:300px;}
     .listing-title{font-size:30px;}
     .amen-grid,.sleep-grid{grid-template-columns:1fr 1fr;}
     .cond-list,.addon-list,.pickup-loc-list{grid-template-columns:1fr;}

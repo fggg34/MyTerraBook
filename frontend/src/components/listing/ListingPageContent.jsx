@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import { useToast } from '../../context/ToastContext'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { sharePage } from '../../utils/sharePage'
 import ProductCard from '../homepage/ProductCard'
 import { mapCarToResultCard } from '../../utils/mapCarToResultCard'
@@ -26,6 +27,7 @@ export default function ListingPageContent({
   onToggleAddon,
 }) {
   const { toast } = useToast()
+  const price = useFormatPrice()
   const [bookingBlocked, setBookingBlocked] = useState(false)
   const { trackRef: simTrackRef, scroll: scrollSimilar, atStart: simAtStart, atEnd: simAtEnd } = useHorizontalCarousel({
     itemCount: related.length,
@@ -52,6 +54,7 @@ export default function ListingPageContent({
         searchQuery,
         categoryName: item.category_name,
         vehicleType: listing.listingType,
+        priceFormatter: price,
       },
     )
     return { ...card, href: `${detailBase}/${item.id}${searchQuery ? `?${searchQuery}` : ''}` }

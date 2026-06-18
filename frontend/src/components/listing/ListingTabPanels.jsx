@@ -375,7 +375,10 @@ export default function ListingTabPanels({
               endLabel={typeConfig.dateEndLabel || 'Drop-off'}
               startDate={startDate}
               endDate={endDate}
-              pricePerDay={priceFromAmount}
+              totalAmount={startDate && endDate ? displayTotal : null}
+              totalLoading={quoteLoading}
+              formatTotal={price.format}
+              fixedPopper
               blockedDates={blockedDates}
               onChange={handleDateChange}
             />

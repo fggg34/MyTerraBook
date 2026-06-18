@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Check, Shield } from 'lucide-react'
 import { getProtectionPresentation } from '../../data/requestToBookConfig'
 import {
-  PROTECTION_TIER_HOST_LABELS,
+  PROTECTION_TIER_HOST_NOTES,
   catalogProtectionTiers,
 } from '../../utils/hostCarPricingUtils'
 
@@ -33,7 +33,7 @@ export default function HostCarProtectionPlansPanel({
           <span className="host-fare-head-icon"><Shield size={18} /></span>
           <div className="host-fare-head-text">
             <h3>Protection plans</h3>
-            <p>Choose which coverage tiers guests can pick at checkout. Standard is always included once you set a daily rate.</p>
+            <p>Choose which coverage tiers guests can pick at checkout. Basic is always included once you set a daily rate.</p>
           </div>
         </div>
         {offeredCount > 0 && (
@@ -43,10 +43,7 @@ export default function HostCarProtectionPlansPanel({
 
       <div className="host-protection-plans">
         {tiers.map((tier, index) => {
-          const labels = PROTECTION_TIER_HOST_LABELS[tier.slug] || {
-            title: tier.priceType.name,
-            note: '',
-          }
+          const note = PROTECTION_TIER_HOST_NOTES[tier.slug] || ''
           const presentation = getProtectionPresentation(tier.priceType, index)
           const isStandard = tier.isStandard
           const isOffered = isStandard
@@ -63,13 +60,12 @@ export default function HostCarProtectionPlansPanel({
                   {isOffered ? <Check size={16} strokeWidth={2.5} /> : <Shield size={16} strokeWidth={2} />}
                 </span>
                 <div className="host-protection-plan__text">
-                  <span className="host-protection-plan__name">{labels.title}</span>
+                  <span className="host-protection-plan__name">{tier.priceType.name}</span>
                   <span className="host-protection-plan__meta">
-                    {tier.priceType.name}
-                    {presentation.deposit ? ` · ${presentation.deposit}` : ''}
+                    {presentation.deposit ? presentation.deposit : 'Deposit varies'}
                   </span>
-                  {labels.note && (
-                    <span className="host-protection-plan__note">{labels.note}</span>
+                  {note && (
+                    <span className="host-protection-plan__note">{note}</span>
                   )}
                 </div>
               </div>

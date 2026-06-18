@@ -10,6 +10,10 @@ export function getHostCatalog(type) {
   return api.get(`/host/catalog/${type}`)
 }
 
+export function createHostLocation(payload) {
+  return api.post('/host/catalog/locations', payload)
+}
+
 /** Public catalog, no auth required; used as fallback for host vehicle editor. */
 export function getPublicMainCategories() {
   return api.get('/main-categories')

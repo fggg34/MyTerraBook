@@ -152,6 +152,45 @@ class HostCarPricingTest extends TestCase
         $this->assertSame(34500, $quote['base_rental_cents']);
     }
 
+    public function test_quote_api_splits_rental_subtotal_for_protection_upgrade(): void
+    {
+        [$car, $basic, $plus] = $this->hostWithCar();
+        $car->update(['is_active' => true, 'listing_status' => \App\Enums\ListingApprovalStatus::Approved]);
+        $pickup = \App\Models\Location::query()->create(['name' => 'P3', 'slug' => 'p3', 'is_active' => true]);
+        $dropoff = \App\Models\Location::query()->create(['name' => 'D3', 'slug' => 'd3', 'is_active' => true]);
+        $car->locations()->attach([
+            $pickup->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+            $dropoff->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+        ]);
+
+        $this->postJson("/api/host/cars/{$car->id}/daily-fares", [
+            'price_type_id' => $basic->id,
+            'from_days' => 1,
+            'to_days' => 365,
+            'price_per_day_euros' => 80,
+        ])->assertCreated();
+
+        $this->postJson("/api/host/cars/{$car->id}/daily-fares", [
+            'price_type_id' => $plus->id,
+            'from_days' => 1,
+            'to_days' => 365,
+            'price_per_day_euros' => 110,
+        ])->assertCreated();
+
+        $response = $this->postJson('/api/orders/quote', [
+            'car_id' => $car->id,
+            'price_type_id' => $plus->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => '2026-06-01 10:00:00',
+            'dropoff_at' => '2026-06-12 10:00:00',
+        ])->assertOk();
+
+        $this->assertSame('880.00', $response->json('basic_rental_subtotal'));
+        $this->assertSame('330.00', $response->json('protection_upgrade_subtotal'));
+        $this->assertSame('1210.00', $response->json('rental_subtotal'));
+    }
+
     public function test_submit_requires_base_daily_fare_one_to_three_sixty_five(): void
     {
         [$car, $basic] = $this->hostWithCar();
@@ -403,8 +442,9 @@ class HostCarPricingTest extends TestCase
             'name' => 'GPS Device',
             'cost_cents' => 130000,
             'is_daily_cost' => false,
+            'max_cost_cap_cents' => null,
         ]);
-        $car->rentalOptions()->attach($option->id);
+        $car->rentalOptions()->attach($option->id, ['cost_cents' => null]);
 
         $this->postJson("/api/host/cars/{$car->id}/daily-fares", [
             'price_type_id' => $basic->id,
@@ -427,5 +467,133 @@ class HostCarPricingTest extends TestCase
 
         $this->assertSame(130000, $quote['extras_cents']);
         $this->assertSame(130000, $quote['extras_lines'][0]['unit_price_cents']);
+    }
+
+    public function test_duration_tier_rejects_overlap_above_base_and_zero_price(): void
+    {
+        [$car, $basic] = $this->hostWithCar();
+
+        $this->postJson("/api/host/cars/{$car->id}/daily-fares", [
+            'price_type_id' => $basic->id,
+            'from_days' => 1,
+            'to_days' => 365,
+            'price_per_day_euros' => 100,
+        ])->assertCreated();
+
+        $this->postJson("/api/host/cars/{$car->id}/daily-fares", [
+            'price_type_id' => $basic->id,
+            'from_days' => 7,
+            'to_days' => 14,
+            'price_per_day_euros' => 80,
+        ])->assertCreated();
+
+        $this->postJson("/api/host/cars/{$car->id}/daily-fares", [
+            'price_type_id' => $basic->id,
+            'from_days' => 10,
+            'to_days' => 20,
+            'price_per_day_euros' => 75,
+        ])->assertStatus(422);
+
+        $this->postJson("/api/host/cars/{$car->id}/daily-fares", [
+            'price_type_id' => $basic->id,
+            'from_days' => 15,
+            'to_days' => 21,
+            'price_per_day_euros' => 120,
+        ])->assertStatus(422);
+
+        $this->postJson("/api/host/cars/{$car->id}/daily-fares", [
+            'price_type_id' => $basic->id,
+            'from_days' => 15,
+            'to_days' => 21,
+            'price_per_day_euros' => 0,
+        ])->assertStatus(422);
+    }
+
+    public function test_special_price_rejects_excessive_discount_and_surcharge(): void
+    {
+        [$car] = $this->hostWithCar();
+
+        $this->postJson("/api/host/cars/{$car->id}/special-prices", [
+            'name' => 'Too much off',
+            'date_from' => '2026-07-01',
+            'date_to' => '2026-08-31',
+            'type' => 'discount',
+            'value_mode' => 'percentage',
+            'value_percent_bips' => 15000,
+        ])->assertStatus(422);
+
+        $this->postJson("/api/host/cars/{$car->id}/special-prices", [
+            'name' => 'Too much on',
+            'date_from' => '2026-07-01',
+            'date_to' => '2026-08-31',
+            'type' => 'charge',
+            'value_mode' => 'percentage',
+            'value_percent_bips' => 25000,
+        ])->assertStatus(422);
+    }
+
+    public function test_fixed_discount_special_price_applies_per_day_in_quote(): void
+    {
+        [$car, $basic] = $this->hostWithCar();
+        $pickup = \App\Models\Location::query()->create(['name' => 'P6', 'slug' => 'p6', 'is_active' => true]);
+        $dropoff = \App\Models\Location::query()->create(['name' => 'D6', 'slug' => 'd6', 'is_active' => true]);
+        $car->locations()->attach([
+            $pickup->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+            $dropoff->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+        ]);
+
+        $this->postJson("/api/host/cars/{$car->id}/daily-fares", [
+            'price_type_id' => $basic->id,
+            'from_days' => 1,
+            'to_days' => 365,
+            'price_per_day_euros' => 100,
+        ])->assertCreated();
+
+        $this->postJson("/api/host/cars/{$car->id}/special-prices", [
+            'name' => 'Winter deal',
+            'date_from' => '2026-06-01',
+            'date_to' => '2026-06-30',
+            'type' => 'discount',
+            'value_mode' => 'fixed',
+            'value_fixed_cents' => 1000,
+        ])->assertCreated();
+
+        $svc = app(RentalQuoteService::class);
+        $quote = $svc->quote(
+            $car->fresh(),
+            $basic->id,
+            Carbon::parse('2026-06-01 10:00'),
+            Carbon::parse('2026-06-04 10:00'),
+            $pickup->id,
+            $dropoff->id,
+            [],
+            null,
+        );
+
+        $this->assertSame(3, $quote['rental_days']);
+        $this->assertSame(27000, $quote['base_rental_cents']);
+    }
+
+    public function test_availability_block_rejects_overlap_and_past_dates(): void
+    {
+        [$car] = $this->hostWithCar();
+
+        $this->postJson("/api/host/cars/{$car->id}/availability-blocks", [
+            'starts_at' => now()->addDays(5)->toDateString().' 10:00:00',
+            'ends_at' => now()->addDays(10)->toDateString().' 10:00:00',
+            'units_blocked' => 1,
+        ])->assertCreated();
+
+        $this->postJson("/api/host/cars/{$car->id}/availability-blocks", [
+            'starts_at' => now()->addDays(8)->toDateString().' 10:00:00',
+            'ends_at' => now()->addDays(12)->toDateString().' 10:00:00',
+            'units_blocked' => 1,
+        ])->assertStatus(422);
+
+        $this->postJson("/api/host/cars/{$car->id}/availability-blocks", [
+            'starts_at' => now()->subDays(2)->toDateString().' 10:00:00',
+            'ends_at' => now()->addDays(1)->toDateString().' 10:00:00',
+            'units_blocked' => 1,
+        ])->assertStatus(422);
     }
 }

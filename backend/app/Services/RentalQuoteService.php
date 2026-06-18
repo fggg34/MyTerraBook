@@ -13,6 +13,7 @@ use App\Models\OutOfHoursFee;
 use App\Models\PriceType;
 use App\Models\Setting;
 use App\Models\SpecialPrice;
+use App\Support\DailyFarePricing;
 use App\Support\RentalOptionPricing;
 use App\Models\TaxRate;
 use App\Support\PricingCurrency;
@@ -205,6 +206,56 @@ class RentalQuoteService
         ];
     }
 
+    /**
+     * Split selected-tier rental into basic-tier base + protection upgrade for checkout display.
+     *
+     * @return array{basic_rental_cents: int, protection_upgrade_cents: int}
+     */
+    public function splitRentalSubtotal(
+        Car $car,
+        int $selectedPriceTypeId,
+        CarbonInterface $pickupAt,
+        CarbonInterface $dropoffAt,
+        int $pickupLocationId,
+        int $dropoffLocationId,
+        array $rentalOptionSelections,
+        ?string $couponCode,
+        int $selectedBaseRentalCents,
+    ): array {
+        $basicId = DailyFarePricing::standardPriceTypeId();
+        if ($basicId === null || $selectedPriceTypeId === $basicId) {
+            return [
+                'basic_rental_cents' => $selectedBaseRentalCents,
+                'protection_upgrade_cents' => 0,
+            ];
+        }
+
+        try {
+            $basicQuote = $this->quote(
+                $car,
+                $basicId,
+                $pickupAt,
+                $dropoffAt,
+                $pickupLocationId,
+                $dropoffLocationId,
+                $rentalOptionSelections,
+                $couponCode,
+            );
+        } catch (InvalidArgumentException) {
+            return [
+                'basic_rental_cents' => $selectedBaseRentalCents,
+                'protection_upgrade_cents' => 0,
+            ];
+        }
+
+        $basicCents = (int) $basicQuote['base_rental_cents'];
+
+        return [
+            'basic_rental_cents' => $basicCents,
+            'protection_upgrade_cents' => max(0, $selectedBaseRentalCents - $basicCents),
+        ];
+    }
+
     private function resolveBaseRentalCharge(
         int $carId,
         int $priceTypeId,
@@ -367,7 +418,7 @@ class RentalQuoteService
                 $adjusted -= (int) floor($adjusted * (int) $sp->value_percent_bips / 10000);
             }
             if ($sp->type === 'discount' && $sp->value_mode === 'fixed' && $sp->value_fixed_cents !== null) {
-                $adjusted = max(0, $adjusted - (int) $sp->value_fixed_cents);
+                $adjusted = max(0, $adjusted - (int) $sp->value_fixed_cents * $rentalDays);
             }
             if ($sp->type === 'charge' && $sp->value_mode === 'fixed' && $sp->value_fixed_cents !== null) {
                 $adjusted += (int) $sp->value_fixed_cents * $rentalDays;

@@ -62,10 +62,14 @@ export default function BookingSummarySidebar({
 
   const rentalDays = quote?.rental_days || nights
 
+  const basicRentalAmount = isVehicle && quote
+    ? Number(quote.basic_rental_subtotal ?? quote.rental_subtotal)
+    : null
+
   const quotedRateDisplay = (() => {
     if (!quote || rentalDays <= 0) return null
-    if (isVehicle && quote.rental_subtotal != null) {
-      return price.format(Number(quote.rental_subtotal) / rentalDays)
+    if (isVehicle && basicRentalAmount != null && Number.isFinite(basicRentalAmount)) {
+      return price.format(basicRentalAmount / rentalDays)
     }
     if (!isVehicle && quote.base_total != null) {
       return price.formatCents(Math.round(Number(quote.base_total) / rentalDays))
@@ -118,14 +122,8 @@ export default function BookingSummarySidebar({
     (l) => !locationFees.includes(l) && !oohFees.includes(l),
   )
 
-  const protectionCost = isVehicle && quote && selectedPriceType
-    ? (() => {
-        const baseCents = selectedPriceType.from_price_per_day_cents || 0
-        const days = quote.rental_days || nights
-        const standardCents = item?.price_types?.[0]?.from_price_per_day_cents || 0
-        const extra = Math.max(0, (baseCents - standardCents) * days)
-        return extra > 0 ? { name: selectedPriceType.name, amount: extra / 100, currency: quote.currency } : null
-      })()
+  const protectionUpgradeAmount = isVehicle && quote && Number(quote.protection_upgrade_subtotal) > 0
+    ? Number(quote.protection_upgrade_subtotal)
     : null
 
   const addonLines = isVehicle && quote?.extras_lines?.length
@@ -189,7 +187,7 @@ export default function BookingSummarySidebar({
                 <span className="ll">
                   {quotedRateDisplay || listingRateDisplay} × {rentalDays} {config.step1.rateUnit}{rentalDays !== 1 ? 's' : ''}
                 </span>
-                <span className="lv">{price.format(quote.rental_subtotal)}</span>
+                <span className="lv">{price.format(basicRentalAmount ?? quote.rental_subtotal)}</span>
               </div>
               {locationFees.map((line) => (
                 <div key={`${line.kind}-${line.label}-${line.amount}`} className="lrow">
@@ -209,10 +207,10 @@ export default function BookingSummarySidebar({
                   <span className="lv">{price.format(line.amount)}</span>
                 </div>
               ))}
-              {protectionCost && (
+              {protectionUpgradeAmount != null && selectedPriceType && (
                 <div className="lrow">
-                  <span className="ll">{protectionCost.name} protection ×{quote.rental_days || nights}</span>
-                  <span className="lv">{price.format(protectionCost.amount)}</span>
+                  <span className="ll">{selectedPriceType.name} protection ×{quote.rental_days || nights}</span>
+                  <span className="lv">{price.format(protectionUpgradeAmount)}</span>
                 </div>
               )}
               {addonLines.map((line) => (

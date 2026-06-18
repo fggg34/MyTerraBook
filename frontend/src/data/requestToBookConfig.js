@@ -11,37 +11,37 @@ export const STEPPER_STEPS = [
 /** Protection plan presentation keyed by price_type slug (fallback by index). */
 export const PROTECTION_PLAN_PRESENTATION = {
   basic: {
-    deposit: '€1,500 deposit',
+    deposit: '250.000 kr deposit',
     features: ['Collision damage waiver', '24/7 roadside assistance'],
     included: true,
     mostPopular: false,
   },
   plus: {
-    deposit: '€500 deposit',
-    features: ['Everything in Basic', 'Lower €500 excess', 'Tyres & windscreen'],
+    deposit: '100.000 kr deposit',
+    features: ['Everything in Basic', 'Lower excess', 'Tyres & windscreen'],
     included: false,
     mostPopular: true,
   },
   max: {
-    deposit: '€0 deposit',
+    deposit: '0 kr deposit',
     features: ['Everything in Plus', 'Zero excess, zero deposit', 'Gravel, ash & underbody'],
     included: false,
     mostPopular: false,
   },
   'standard-rate': {
-    deposit: '€1,500 deposit',
+    deposit: '250.000 kr deposit',
     features: ['Collision damage waiver', '24/7 roadside assistance'],
     included: true,
     mostPopular: false,
   },
   'premium-rate': {
-    deposit: '€500 deposit',
-    features: ['Everything in Basic', 'Lower €500 excess', 'Tyres & windscreen'],
+    deposit: '100.000 kr deposit',
+    features: ['Everything in Basic', 'Lower excess', 'Tyres & windscreen'],
     included: false,
     mostPopular: true,
   },
   'long-term-rate': {
-    deposit: '€0 deposit',
+    deposit: '0 kr deposit',
     features: ['Everything in Plus', 'Zero excess, zero deposit', 'Extended rental cover'],
     included: false,
     mostPopular: false,
@@ -60,7 +60,7 @@ export function getProtectionPresentation(priceType, index = 0) {
     : fallback.features
 
   return {
-    deposit: priceType?.attribute_value_per_day || fallback.deposit,
+    deposit: priceType?.attribute_value_per_day || fallback.deposit || 'Deposit varies',
     features,
     included: fallback.included || (priceType?.from_price_per_day_cents ?? 0) === 0,
     mostPopular: index === 1,

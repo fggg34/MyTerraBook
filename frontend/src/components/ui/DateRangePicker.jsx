@@ -41,10 +41,6 @@ function fmtDisplay(d, useFullMonth = false) {
   return `${d.getDate()} ${month}`
 }
 
-function euro(n) {
-  return `€${n.toLocaleString('en-IE')}`
-}
-
 const CALENDAR_ICON = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
@@ -62,6 +58,9 @@ const DateRangePicker = forwardRef(function DateRangePicker(
     minNights = 1,
     maxNights = null,
     pricePerDay = null,
+    totalAmount = null,
+    totalLoading = false,
+    formatTotal = null,
     blockedDates = [],
     variant = 'default',
     fixedPopper = false,
@@ -216,6 +215,37 @@ const DateRangePicker = forwardRef(function DateRangePicker(
 
   const footnote = (() => {
     if (dStart && dEnd) {
+      if (totalLoading) {
+        return (
+          <>
+            <b>
+              {nights} night{nights > 1 ? 's' : ''}
+            </b>{' '}
+            <span>· … total</span>
+          </>
+        )
+      }
+      if (totalAmount != null && formatTotal) {
+        return (
+          <>
+            <b>
+              {nights} night{nights > 1 ? 's' : ''}
+            </b>{' '}
+            <span>· {formatTotal(totalAmount)} total</span>
+          </>
+        )
+      }
+      if (pricePerDay != null && formatTotal) {
+        const total = nights * Number(pricePerDay)
+        return (
+          <>
+            <b>
+              {nights} night{nights > 1 ? 's' : ''}
+            </b>{' '}
+            <span>· {formatTotal(total)} total</span>
+          </>
+        )
+      }
       if (pricePerDay != null) {
         const total = nights * Number(pricePerDay)
         return (
@@ -223,7 +253,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
             <b>
               {nights} night{nights > 1 ? 's' : ''}
             </b>{' '}
-            <span>· {euro(total)} total</span>
+            <span>· {total.toLocaleString()} total</span>
           </>
         )
       }

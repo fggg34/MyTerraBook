@@ -59,8 +59,22 @@ class PublicOrderController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
+        $split = $this->quoteService->splitRentalSubtotal(
+            $car,
+            $request->integer('price_type_id'),
+            $pickup,
+            $dropoff,
+            $request->integer('pickup_location_id'),
+            $request->integer('dropoff_location_id'),
+            $request->input('rental_options', []),
+            $request->input('coupon_code'),
+            (int) $quote['base_rental_cents'],
+        );
+
         return response()->json([
             'rental_subtotal' => Money::formatDecimalFromCents($quote['base_rental_cents']),
+            'basic_rental_subtotal' => Money::formatDecimalFromCents($split['basic_rental_cents']),
+            'protection_upgrade_subtotal' => Money::formatDecimalFromCents($split['protection_upgrade_cents']),
             'rental_before_specials' => Money::formatDecimalFromCents($quote['rental_before_specials_cents']),
             'special_discount_amount' => Money::formatDecimalFromCents($quote['special_discount_cents']),
             'special_surcharge_amount' => Money::formatDecimalFromCents($quote['special_surcharge_cents']),

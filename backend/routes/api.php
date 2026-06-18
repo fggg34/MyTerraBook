@@ -148,6 +148,7 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
         Route::get('main-categories', [HostCatalogController::class, 'mainCategories']);
         Route::get('categories', [HostCatalogController::class, 'categories']);
         Route::get('locations', [HostCatalogController::class, 'locations']);
+        Route::post('locations', [HostCatalogController::class, 'storeLocation']);
         Route::get('characteristics', [HostCatalogController::class, 'characteristics']);
         Route::get('rental-options', [HostCatalogController::class, 'rentalOptions']);
         Route::get('rental-conditions', [HostCatalogController::class, 'rentalConditions']);

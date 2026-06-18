@@ -206,7 +206,6 @@ class CatalogController extends Controller
         $priceTypes = PriceType::query()
             ->whereIn('id', array_keys($fromPriceByType))
             ->where('is_active', true)
-            ->orderBy('name')
             ->get()
             ->map(fn (PriceType $pt) => [
                 'id' => $pt->id,
@@ -216,6 +215,7 @@ class CatalogController extends Controller
                 'attribute_value_per_day' => $pt->attribute_value_per_day,
                 'from_price_per_day_cents' => (int) ($fromPriceByType[$pt->id] ?? 0),
             ])
+            ->sortBy('from_price_per_day_cents')
             ->values()
             ->all();
 

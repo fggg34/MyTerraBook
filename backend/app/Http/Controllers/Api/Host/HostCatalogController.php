@@ -42,16 +42,25 @@ class HostCatalogController extends Controller
         return response()->json(['data' => $rows]);
     }
 
-    public function locations(): JsonResponse
+    public function locations(Request $request): JsonResponse
     {
+        $hostUserId = $request->user()?->id;
+
         $rows = Location::query()
             ->with(['schedules:id,location_id,weekday,opening_time,closing_time,is_closed'])
             ->where('is_active', true)
+            ->where(function ($query) use ($hostUserId) {
+                $query->whereNull('host_user_id');
+                if ($hostUserId) {
+                    $query->orWhere('host_user_id', $hostUserId);
+                }
+            })
             ->orderBy('name')
             ->get([
                 'id',
                 'name',
                 'slug',
+                'address',
                 'default_opening_time',
                 'default_closing_time',
                 'suggested_preselected_time',
@@ -60,6 +69,7 @@ class HostCatalogController extends Controller
                 'id' => $location->id,
                 'name' => $location->name,
                 'slug' => $location->slug,
+                'address' => $location->address,
                 'default_opening_time' => self::formatTime($location->default_opening_time),
                 'default_closing_time' => self::formatTime($location->default_closing_time),
                 'suggested_preselected_time' => self::formatTime($location->suggested_preselected_time),
@@ -72,6 +82,32 @@ class HostCatalogController extends Controller
             ]);
 
         return response()->json(['data' => $rows]);
+    }
+
+    public function storeLocation(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $location = Location::query()->create([
+            'name' => $data['name'],
+            'address' => $data['address'] ?? null,
+            'is_active' => true,
+            'host_user_id' => $request->user()->id,
+        ]);
+
+        return response()->json(['data' => [
+            'id' => $location->id,
+            'name' => $location->name,
+            'slug' => $location->slug,
+            'address' => $location->address,
+            'default_opening_time' => self::formatTime($location->default_opening_time),
+            'default_closing_time' => self::formatTime($location->default_closing_time),
+            'suggested_preselected_time' => self::formatTime($location->suggested_preselected_time),
+            'schedules' => [],
+        ]], 201);
     }
 
     private static function formatTime(mixed $value): ?string
@@ -163,7 +199,21 @@ class HostCatalogController extends Controller
 
     public function priceTypes(): JsonResponse
     {
-        $rows = PriceType::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug', 'attribute_label']);
+        $slugOrder = ['basic' => 0, 'plus' => 1, 'max' => 2];
+
+        $rows = PriceType::query()
+            ->where('is_active', true)
+            ->get(['id', 'name', 'slug', 'attribute_label', 'attribute_value_per_day'])
+            ->sortBy(fn (PriceType $pt) => $slugOrder[$pt->slug] ?? 99)
+            ->values()
+            ->map(fn (PriceType $pt) => [
+                'id' => $pt->id,
+                'name' => $pt->name,
+                'slug' => $pt->slug,
+                'attribute_label' => $pt->attribute_label,
+                'attribute_value_per_day' => $pt->attribute_value_per_day,
+            ])
+            ->all();
 
         return response()->json(['data' => $rows]);
     }

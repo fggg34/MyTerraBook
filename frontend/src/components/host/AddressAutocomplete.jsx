@@ -118,7 +118,10 @@ export default function AddressAutocomplete({
           </div>
         </div>
         {!mapsApiKey && (
-          <p className="host-field-hint">Address suggestions are unavailable until a Google Maps API key is configured in admin.</p>
+          <p className="host-field-hint">Enter your address manually below.</p>
+        )}
+        {mapsApiKey && loadError && (
+          <p className="host-field-hint">Address suggestions are unavailable. Enter your address manually below.</p>
         )}
       </div>
     )

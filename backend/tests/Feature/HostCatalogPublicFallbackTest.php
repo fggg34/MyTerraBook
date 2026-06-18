@@ -56,4 +56,26 @@ class HostCatalogPublicFallbackTest extends TestCase
                 'main_category_id' => $car->id,
             ]);
     }
+
+    public function test_host_can_create_custom_location(): void
+    {
+        $host = User::factory()->host()->create();
+        Sanctum::actingAs($host);
+
+        $this->postJson('/api/host/catalog/locations', [
+            'name' => 'My driveway',
+            'address' => 'Route 1',
+        ])->assertCreated()
+            ->assertJsonPath('data.name', 'My driveway');
+
+        $this->getJson('/api/host/catalog/locations')
+            ->assertOk()
+            ->assertJsonPath('data.0.name', 'My driveway');
+
+        $this->assertDatabaseHas('locations', [
+            'name' => 'My driveway',
+            'host_user_id' => $host->id,
+            'is_active' => true,
+        ]);
+    }
 }

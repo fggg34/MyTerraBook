@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   addHostGuestHouseAvailability,
@@ -23,11 +23,10 @@ import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { useToast } from '../../context/ToastContext'
 import { useHostCurrency } from '../../hooks/useHostCurrency'
-import { normalizeTimeString } from '../../utils/format'
+import { dateRangesOverlap } from '../../utils/hostCarPricingUtils'
+import { formatDate, normalizeTimeString } from '../../utils/format'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
 import { formatLocationLine } from '../../utils/parseGooglePlace'
-
-const emptySeasonalDraft = { name: '', date_from: '', date_to: '', price_per_night_euros: 120, minimum_nights: '' }
 
 function buildSeasonalPriceRows(seasonalPrices, seasonalDraft) {
   const rows = [...seasonalPrices]
@@ -49,7 +48,6 @@ const STEPS = ['Basics', 'Details', 'Pricing', 'Rules', 'Availability', 'Review'
 
 const emptyForm = {
   name: '',
-  slug: '',
   type: 'apartment',
   city: 'Reykjavík',
   short_description: '',
@@ -60,7 +58,7 @@ const emptyForm = {
   beds: 1,
   min_nights: 1,
   max_nights: '',
-  base_price_per_night_euros: 120,
+  base_price_per_night_euros: '',
   cleaning_fee_euros: 0,
   security_deposit_euros: 0,
   check_in_time: '15:00',
@@ -79,6 +77,13 @@ export default function HostGuestHouseEditorPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const currency = useHostCurrency()
+  const emptySeasonalDraft = useMemo(() => ({
+    name: '',
+    date_from: '',
+    date_to: '',
+    price_per_night_euros: currency.exampleAmounts.guesthouseNightly,
+    minimum_nights: '',
+  }), [currency.exampleAmounts.guesthouseNightly])
   const [step, setStep] = useState(0)
   const [form, setForm] = useState(emptyForm)
   const [status, setStatus] = useState('draft')
@@ -94,7 +99,12 @@ export default function HostGuestHouseEditorPage() {
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [recordId, setRecordId] = useState(isNew ? null : Number(id))
+  const [pendingFocusId, setPendingFocusId] = useState(null)
   const { mapsApiKey } = useMapsConfig()
+
+  useEffect(() => {
+    setSeasonalDraft(emptySeasonalDraft)
+  }, [emptySeasonalDraft])
 
   const handleLocationChange = (location) => {
     setForm((prev) => ({
@@ -116,11 +126,11 @@ export default function HostGuestHouseEditorPage() {
     setForm({
       ...emptyForm,
       ...data,
-      slug: data.slug || '',
       max_nights: data.max_nights || '',
       latitude: data.latitude ?? '',
       longitude: data.longitude ?? '',
       amenity_ids: data.amenity_ids || [],
+      base_price_per_night_euros: data.base_price_per_night_euros ?? '',
       check_in_time: normalizeTimeString(data.check_in_time || emptyForm.check_in_time),
       check_out_time: normalizeTimeString(data.check_out_time || emptyForm.check_out_time),
     })
@@ -154,13 +164,13 @@ export default function HostGuestHouseEditorPage() {
       const seasonalPriceRows = buildSeasonalPriceRows(seasonalPrices, seasonalDraft)
       const payload = {
         ...form,
-        slug: form.slug || null,
         max_nights: form.max_nights ? Number(form.max_nights) : null,
         latitude: form.latitude === '' ? null : Number(form.latitude),
         longitude: form.longitude === '' ? null : Number(form.longitude),
         amenity_ids: form.amenity_ids,
         seasonal_prices: seasonalPriceRows,
       }
+      delete payload.slug
       if (recordId) {
         const res = await updateHostGuestHouse(recordId, payload)
         const saved = res.data.data
@@ -192,8 +202,6 @@ export default function HostGuestHouseEditorPage() {
   }
 
   const handleSubmitReview = async () => {
-    // Always persist the latest form state (including seasonal prices and other
-    // unsaved edits) before submitting, so nothing is silently dropped.
     const houseId = await save()
     if (!houseId) return
     try {
@@ -250,22 +258,68 @@ export default function HostGuestHouseEditorPage() {
   }
 
   const readinessItems = [
-    { label: 'Listing name', done: !!String(form.name || '').trim() },
+    { label: 'Listing name', done: !!String(form.name || '').trim(), step: 0, focusId: 'host-gh-name' },
     {
       label: 'Full address, city & country',
       done: String(form.address || '').trim().length >= 5
         && !!String(form.city || '').trim()
         && !!String(form.country || '').trim(),
+      step: 0,
+      focusId: 'host-gh-address',
     },
-    { label: 'Max guests set', done: Number(form.max_guests) > 0 },
-    { label: 'Bedrooms set', done: form.bedrooms != null && Number(form.bedrooms) >= 0 },
-    { label: 'Bathrooms set', done: Number(form.bathrooms) > 0 },
-    { label: 'City set', done: !!String(form.city || '').trim() },
-    { label: 'Nightly price above zero', done: Number(form.base_price_per_night_euros) > 0 },
-    { label: 'At least one photo (cover or gallery)', done: !!thumbnail || gallery.length > 0 },
-    { label: 'At least one amenity', done: (form.amenity_ids || []).length > 0 },
+    { label: 'Max guests set', done: Number(form.max_guests) > 0, step: 1, focusId: 'host-gh-max-guests' },
+    { label: 'Bedrooms set', done: form.bedrooms != null && Number(form.bedrooms) >= 0, step: 1, focusId: 'host-gh-bedrooms' },
+    { label: 'Bathrooms set', done: Number(form.bathrooms) > 0, step: 1, focusId: 'host-gh-bathrooms' },
+    { label: 'Nightly price above zero', done: Number(form.base_price_per_night_euros) > 0, step: 2, focusId: 'host-gh-nightly-price' },
+    { label: 'At least one photo (cover or gallery)', done: !!thumbnail || gallery.length > 0, step: 0, focusId: 'host-gh-photos' },
+    { label: 'At least one amenity', done: (form.amenity_ids || []).length > 0, step: 1, focusId: 'host-gh-amenities' },
   ]
   const isReady = readinessItems.every((i) => i.done)
+  const missingReadinessLabels = readinessItems.filter((i) => !i.done).map((i) => i.label)
+  const submitDisabledTitle = missingReadinessLabels.length > 0
+    ? `Still needed: ${missingReadinessLabels.join(', ')}`
+    : undefined
+
+  const goToReadinessItem = (item) => {
+    if (item.step != null) setStep(item.step)
+    if (item.focusId) setPendingFocusId(item.focusId)
+  }
+
+  useEffect(() => {
+    if (!pendingFocusId) return undefined
+    const timer = window.setTimeout(() => {
+      const el = document.getElementById(pendingFocusId)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        if (typeof el.focus === 'function') {
+          el.focus({ preventScroll: true })
+        }
+      }
+      setPendingFocusId(null)
+    }, 80)
+    return () => window.clearTimeout(timer)
+  }, [step, pendingFocusId])
+
+  const findOverlappingGuestBlock = (from, to) => availability.find(
+    (block) => block.source === 'manual' && dateRangesOverlap(from, to, block.blocked_from, block.blocked_to),
+  )
+
+  const addGuestBlock = async () => {
+    const overlap = findOverlappingGuestBlock(blockDraft.blocked_from, blockDraft.blocked_to)
+    if (overlap) {
+      toast(`This block overlaps an existing block (${formatDate(overlap.blocked_from)} – ${formatDate(overlap.blocked_to)}). Remove or adjust the existing block first.`, 'error')
+      return
+    }
+    try {
+      await addHostGuestHouseAvailability(recordId, blockDraft)
+      setBlockDraft({ blocked_from: '', blocked_to: '', note: '' })
+      getHostGuestHouseAvailability(recordId).then((r) => setAvailability(r.data.data || []))
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not add block', 'error')
+    }
+  }
+
+  if (loading) return <p className="text-sm text-slate-500">Loading…</p>
 
   return (
     <div className="host-wizard">
@@ -285,8 +339,7 @@ export default function HostGuestHouseEditorPage() {
         {step === 0 && (
           <>
             <p className="host-step-note">Name, address and a cover photo are required to publish. Save first to enable photo uploads.</p>
-            <div className="host-field"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-            <div className="host-field"><label>Slug</label><input value={form.slug} placeholder="Auto-generated from name" onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
+            <div className="host-field" id="host-gh-name"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="host-field"><label>Type</label>
               <HostSelect
                 value={form.type}
@@ -295,19 +348,21 @@ export default function HostGuestHouseEditorPage() {
                 ariaLabel="Property type"
               />
             </div>
-            <AddressAutocomplete
-              mapsApiKey={mapsApiKey}
-              value={{
-                address: form.address,
-                city: form.city,
-                country: form.country,
-                formattedAddress: form.address ? formatLocationLine(form) : '',
-              }}
-              onChange={handleLocationChange}
-            />
+            <div id="host-gh-address">
+              <AddressAutocomplete
+                mapsApiKey={mapsApiKey}
+                value={{
+                  address: form.address,
+                  city: form.city,
+                  country: form.country,
+                  formattedAddress: form.address ? formatLocationLine(form) : '',
+                }}
+                onChange={handleLocationChange}
+              />
+            </div>
             <div className="host-field"><label>Short description</label><textarea rows={3} value={form.short_description} onChange={(e) => setForm({ ...form, short_description: e.target.value })} /></div>
             {recordId ? (
-              <>
+              <div id="host-gh-photos">
                 <div className="host-field"><label>Cover photo</label>
                   <p className="host-capacity-hint">Used on search cards and browse results only, not shown in the listing photo gallery.</p>
                   {thumbnail && <img src={resolveStorageUrl(thumbnail)} alt="Cover" className="mb-2 h-24 w-auto rounded-lg object-cover" />}
@@ -325,7 +380,7 @@ export default function HostGuestHouseEditorPage() {
                   </div>
                   <input type="file" accept="image/*" multiple onChange={handleGallery} />
                 </div>
-              </>
+              </div>
             ) : (
               <p className="text-sm text-slate-500">Save the guesthouse first to upload photos.</p>
             )}
@@ -336,12 +391,12 @@ export default function HostGuestHouseEditorPage() {
             <p className="host-step-note">Max guests, bedrooms, bathrooms and city appear on product cards and are required before submit.</p>
             <div className="host-field"><label>Full description</label><textarea rows={6} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="host-field"><label>Max guests</label><input type="number" min={1} required value={form.max_guests} onChange={(e) => setForm({ ...form, max_guests: Number(e.target.value) })} /></div>
-              <div className="host-field"><label>Bedrooms</label><input type="number" min={0} required value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: Number(e.target.value) })} /></div>
-              <div className="host-field"><label>Bathrooms</label><input type="number" min={1} required value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: Number(e.target.value) })} /></div>
+              <div className="host-field" id="host-gh-max-guests"><label>Max guests</label><input type="number" min={1} required value={form.max_guests} onChange={(e) => setForm({ ...form, max_guests: Number(e.target.value) })} /></div>
+              <div className="host-field" id="host-gh-bedrooms"><label>Bedrooms</label><input type="number" min={0} required value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: Number(e.target.value) })} /></div>
+              <div className="host-field" id="host-gh-bathrooms"><label>Bathrooms</label><input type="number" min={1} required value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Total beds</label><input type="number" value={form.beds} onChange={(e) => setForm({ ...form, beds: Number(e.target.value) })} /></div>
             </div>
-            <div className="host-field"><label>Amenities</label>
+            <div className="host-field" id="host-gh-amenities"><label>Amenities</label>
               <HostIconMultiSelect
                 items={amenities}
                 selectedIds={form.amenity_ids}
@@ -356,7 +411,7 @@ export default function HostGuestHouseEditorPage() {
           <>
             <p className="host-step-note">Set a <strong>nightly price above zero</strong> to publish. Cleaning fee, deposit and seasonal prices are optional.</p>
             <div className="grid grid-cols-2 gap-3">
-              <div className="host-field"><label>Nightly price ({currency.code})</label><input type="number" value={form.base_price_per_night_euros} onChange={(e) => setForm({ ...form, base_price_per_night_euros: Number(e.target.value) })} /></div>
+              <div className="host-field" id="host-gh-nightly-price"><label>Nightly price ({currency.code})</label><input type="number" placeholder={`e.g. ${currency.exampleAmounts.guesthouseNightly}`} value={form.base_price_per_night_euros} onChange={(e) => setForm({ ...form, base_price_per_night_euros: e.target.value === '' ? '' : Number(e.target.value) })} /></div>
               <div className="host-field"><label>Cleaning fee ({currency.code})</label><input type="number" value={form.cleaning_fee_euros} onChange={(e) => setForm({ ...form, cleaning_fee_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Security deposit ({currency.code})</label><input type="number" value={form.security_deposit_euros} onChange={(e) => setForm({ ...form, security_deposit_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Tax rate</label>
@@ -378,7 +433,7 @@ export default function HostGuestHouseEditorPage() {
             >
             <div className="grid grid-cols-2 gap-3">
               <div className="host-field"><label>Name</label><input value={seasonalDraft.name} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, name: e.target.value })} /></div>
-              <div className="host-field"><label>Price / night ({currency.code})</label><input type="number" value={seasonalDraft.price_per_night_euros} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, price_per_night_euros: Number(e.target.value) })} /></div>
+              <div className="host-field"><label>Price / night ({currency.code})</label><input type="number" placeholder={`e.g. ${currency.exampleAmounts.guesthouseNightly}`} value={seasonalDraft.price_per_night_euros} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, price_per_night_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>From date</label><HostDatePicker value={seasonalDraft.date_from} onChange={(v) => setSeasonalDraft({ ...seasonalDraft, date_from: v })} /></div>
               <div className="host-field"><label>To date</label><HostDatePicker value={seasonalDraft.date_to} onChange={(v) => setSeasonalDraft({ ...seasonalDraft, date_to: v })} minDate={seasonalDraft.date_from ? new Date(seasonalDraft.date_from) : undefined} /></div>
               <div className="host-field"><label>Minimum nights</label><input type="number" value={seasonalDraft.minimum_nights} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, minimum_nights: e.target.value })} /></div>
@@ -390,7 +445,7 @@ export default function HostGuestHouseEditorPage() {
             <ul className="mt-3 space-y-2 text-sm">
               {seasonalPrices.map((sp, index) => (
                 <li key={sp.id ?? `new-${index}`} className="flex justify-between">
-                  <span>{sp.name}: {currency.formatAmount(sp.price_per_night_euros)}/night ({sp.date_from} → {sp.date_to}){sp.minimum_nights ? `, min ${sp.minimum_nights} nights` : ''}</span>
+                  <span>{sp.name}: {currency.formatAmount(sp.price_per_night_euros)}/night ({formatDate(sp.date_from)} → {formatDate(sp.date_to)}){sp.minimum_nights ? `, min ${sp.minimum_nights} nights` : ''}</span>
                   <button type="button" className="host-btn danger" onClick={() => setSeasonalPrices((prev) => prev.filter((_, i) => i !== index))}>Remove</button>
                 </li>
               ))}
@@ -425,19 +480,11 @@ export default function HostGuestHouseEditorPage() {
                 <div className="host-field"><label>To</label><HostDatePicker value={blockDraft.blocked_to} onChange={(v) => setBlockDraft({ ...blockDraft, blocked_to: v })} minDate={blockDraft.blocked_from ? new Date(blockDraft.blocked_from) : undefined} /></div>
                 <div className="host-field"><label>Note</label><input value={blockDraft.note} onChange={(e) => setBlockDraft({ ...blockDraft, note: e.target.value })} /></div>
               </div>
-              <button type="button" className="host-btn secondary" disabled={!blockDraft.blocked_from || !blockDraft.blocked_to} onClick={async () => {
-                try {
-                  await addHostGuestHouseAvailability(recordId, blockDraft)
-                  setBlockDraft({ blocked_from: '', blocked_to: '', note: '' })
-                  getHostGuestHouseAvailability(recordId).then((r) => setAvailability(r.data.data || []))
-                } catch (err) {
-                  toast(err.response?.data?.message || 'Could not add block', 'error')
-                }
-              }}>Add block</button>
+              <button type="button" className="host-btn secondary" disabled={!blockDraft.blocked_from || !blockDraft.blocked_to} onClick={addGuestBlock}>Add block</button>
               <ul className="mt-3 space-y-2 text-sm">
                 {availability.map((b) => (
                   <li key={b.id} className="flex justify-between">
-                    <span>{b.blocked_from} → {b.blocked_to} {b.source === 'manual' ? '' : `[${b.source}]`}</span>
+                    <span>{formatDate(b.blocked_from)} → {formatDate(b.blocked_to)} {b.source === 'manual' ? '' : `[${b.source}]`}</span>
                     {b.source === 'manual' && <button type="button" className="host-btn danger" onClick={async () => {
                       await removeHostGuestHouseAvailability(recordId, b.id)
                       getHostGuestHouseAvailability(recordId).then((r) => setAvailability(r.data.data || []))
@@ -455,7 +502,7 @@ export default function HostGuestHouseEditorPage() {
                 ? 'Everything looks ready. Save your changes, then submit for admin approval.'
                 : 'Complete the items below, then save and submit for admin approval.'}
             </p>
-            <HostReadinessChecklist items={readinessItems} />
+            <HostReadinessChecklist items={readinessItems} onGoTo={goToReadinessItem} />
             <ul className="mt-4 space-y-2 text-sm">
               <li><strong>Name:</strong> {form.name || '-'}</li>
               <li><strong>Location:</strong> {formatLocationLine(form) || '-'}</li>
@@ -466,9 +513,17 @@ export default function HostGuestHouseEditorPage() {
         <div className="host-actions">
           {step > 0 && <button type="button" className="host-btn secondary" onClick={() => setStep(step - 1)}>Back</button>}
           {step < STEPS.length - 1 && <button type="button" className="host-btn secondary" onClick={() => setStep(step + 1)}>Next</button>}
-          <button type="button" className="host-btn primary" disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save'}</button>
+          <button type="button" className="host-btn primary" disabled={saving} onClick={save}>{saving ? 'Saving…' : (step === STEPS.length - 1 ? 'Save draft' : 'Save')}</button>
           {recordId && ['draft', 'rejected'].includes(status) && (
-            <button type="button" className="host-btn primary" onClick={handleSubmitReview}>Submit for review</button>
+            <button
+              type="button"
+              className="host-btn primary"
+              disabled={!isReady}
+              title={submitDisabledTitle}
+              onClick={handleSubmitReview}
+            >
+              Submit for review
+            </button>
           )}
           <Link to="/host/guesthouses" className="host-btn secondary">Back to list</Link>
         </div>

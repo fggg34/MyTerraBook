@@ -2,6 +2,12 @@ import DatePicker from 'react-datepicker'
 import { Calendar } from 'lucide-react'
 import { formatDateOnly, parseDateTimeLocal } from '../../utils/format'
 
+function startOfToday() {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
 export default function HostDatePicker({
   value,
   onChange,
@@ -11,6 +17,7 @@ export default function HostDatePicker({
   disabled = false,
 }) {
   const selected = value ? parseDateTimeLocal(value) : null
+  const effectiveMinDate = minDate ?? startOfToday()
 
   return (
     <div className="host-datepicker-wrap">
@@ -18,7 +25,7 @@ export default function HostDatePicker({
         selected={selected}
         onChange={(date) => onChange(date ? formatDateOnly(date) : '')}
         dateFormat="dd MMM yyyy"
-        minDate={minDate}
+        minDate={effectiveMinDate}
         maxDate={maxDate}
         disabled={disabled}
         placeholderText={placeholder}

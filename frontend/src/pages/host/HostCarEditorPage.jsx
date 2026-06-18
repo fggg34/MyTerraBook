@@ -24,6 +24,7 @@ import {
   getHostCarSpecialPrices,
   getHostCarUnits,
   getHostCatalog,
+  createHostLocation,
   getPublicMainCategories,
   getPublicSubCategories,
   removeHostCarAvailability,
@@ -42,9 +43,13 @@ import {
 import {
   BASE_FARE_FROM_DAYS,
   BASE_FARE_TO_DAYS,
+  dateRangesOverlap,
   durationTierFares,
   filterStandardPriceTypeRows,
   findBaseDailyFare,
+  findPriceType,
+  findOverlappingTier,
+  baseDailyRateEuros,
   hasUnsavedProtectionPricing,
   inferProtectionAddOnEuros,
   readProtectionOffers,
@@ -52,6 +57,7 @@ import {
   standardDailyFares,
   standardPriceTypeId,
   syncProtectionAddOn,
+  validateSeasonalDraft,
 } from '../../utils/hostCarPricingUtils'
 import {
   buildHostRentalOptionSyncPayload,
@@ -74,7 +80,7 @@ import HostDateTimePicker from '../../components/host/HostDateTimePicker'
 import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import LucideIcon from '../../utils/iconCatalog'
-import { normalizeTimeString } from '../../utils/format'
+import { normalizeTimeString, formatDate } from '../../utils/format'
 import { useToast } from '../../context/ToastContext'
 import { useHostCurrency } from '../../hooks/useHostCurrency'
 
@@ -187,7 +193,7 @@ export default function HostCarEditorPage() {
   const [locationFeeDraft, setLocationFeeDraft] = useState({
     pickup_location_id: '',
     dropoff_location_id: '',
-    cost_euros: 0,
+    cost_euros: '',
     is_one_way_fee: false,
     multiply_by_days: false,
   })
@@ -197,14 +203,15 @@ export default function HostCarEditorPage() {
     time_from: '20:00',
     time_to: '08:00',
     applies_to: 'both',
-    pickup_cost_euros: 35,
-    dropoff_cost_euros: 35,
+    pickup_cost_euros: '',
+    dropoff_cost_euros: '',
     location_ids: [],
   })
   const [baseDailyPrice, setBaseDailyPrice] = useState('')
   const [baseDailySaving, setBaseDailySaving] = useState(false)
-  const [tierDraft, setTierDraft] = useState({ from_days: 7, to_days: 14, price_per_day_euros: 0 })
-  const [extraDraft, setExtraDraft] = useState({ charge_per_extra_hour_euros: 10 })
+  const [tierDraft, setTierDraft] = useState({ from_days: 7, to_days: 14, price_per_day_euros: '' })
+  const [tierValidationError, setTierValidationError] = useState('')
+  const [extraDraft, setExtraDraft] = useState({ charge_per_extra_hour_euros: '' })
   const [plusAddOn, setPlusAddOn] = useState('')
   const [maxAddOn, setMaxAddOn] = useState('')
   const [protectionOffers, setProtectionOffers] = useState({ plus: false, max: false })
@@ -340,12 +347,6 @@ export default function HostCarEditorPage() {
   }, [isNew, recordId, status])
 
   const save = async () => {
-    const timeError = validateCarTimes(form)
-    if (timeError) {
-      toast(timeError, 'error')
-      return null
-    }
-
     setSaving(true)
     try {
       const mainSlug = catalog.mainCategories.find(
@@ -420,7 +421,9 @@ export default function HostCarEditorPage() {
   const handleSubmitReview = async () => {
     const timeError = validateCarTimes(form)
     if (timeError) {
-      toast(timeError, 'error')
+      toast('Set pickup and drop-off times on the Locations step (all four fields).', 'error')
+      setStep(2)
+      setPendingFocusId('host-car-times')
       return
     }
 
@@ -672,9 +675,9 @@ export default function HostCarEditorPage() {
 
   const canConfigureTimes = selectedPickupLocations.length > 0 && selectedDropoffLocations.length > 0
 
-
-  const tierRangeInvalid = Number(tierDraft.to_days) <= Number(tierDraft.from_days)
   const standardPriceType = useMemo(() => standardPriceTypeId(catalog.priceTypes), [catalog.priceTypes])
+  const plusTierName = useMemo(() => findPriceType(catalog.priceTypes, 'plus')?.name || 'Plus', [catalog.priceTypes])
+  const maxTierName = useMemo(() => findPriceType(catalog.priceTypes, 'max')?.name || 'Max', [catalog.priceTypes])
   const hostDailyFares = useMemo(
     () => standardDailyFares(dailyFares, catalog.priceTypes),
     [dailyFares, catalog.priceTypes],
@@ -702,6 +705,87 @@ export default function HostCarEditorPage() {
   const seasonalFixedAmountLabel = specialDraft.type === 'discount'
     ? currency.fixedDiscountLabel
     : currency.fixedSurchargeLabel
+
+  const tierRangeInvalid = Number(tierDraft.to_days) <= Number(tierDraft.from_days)
+  const overlappingTier = useMemo(
+    () => findOverlappingTier(durationTiers, tierDraft.from_days, tierDraft.to_days),
+    [durationTiers, tierDraft.from_days, tierDraft.to_days],
+  )
+  const baseRateEuros = useMemo(() => baseDailyRateEuros(baseDailyFare), [baseDailyFare])
+  const tierPriceTooHigh = useMemo(() => {
+    const price = Number(tierDraft.price_per_day_euros)
+    if (!price || !baseRateEuros) return false
+    return price >= baseRateEuros
+  }, [tierDraft.price_per_day_euros, baseRateEuros])
+  const tierPriceZero = tierDraft.price_per_day_euros !== '' && Number(tierDraft.price_per_day_euros) <= 0
+  const seasonalValidationError = useMemo(() => validateSeasonalDraft(specialDraft), [specialDraft])
+  const missingReadinessLabels = useMemo(
+    () => readinessItems.filter((i) => !i.done).map((i) => i.label),
+    [readinessItems],
+  )
+  const submitDisabledTitle = missingReadinessLabels.length > 0
+    ? `Still needed: ${missingReadinessLabels.join(', ')}`
+    : undefined
+
+  const refreshLocations = () => {
+    getHostCatalog('locations').then((res) => {
+      setCatalog((prev) => ({ ...prev, locations: res.data?.data || [] }))
+    })
+  }
+
+  const validateTierDraft = () => {
+    if (tierRangeInvalid) {
+      return '“From day” must be lower than “To day”.'
+    }
+    if (overlappingTier) {
+      return `This range overlaps with Days ${overlappingTier.from_days}–${overlappingTier.to_days}. Adjust the dates or remove the existing tier first.`
+    }
+    if (tierPriceZero || tierDraft.price_per_day_euros === '' || Number(tierDraft.price_per_day_euros) <= 0) {
+      return 'Enter a daily rate greater than zero.'
+    }
+    if (tierPriceTooHigh && baseDailyFare) {
+      return `Duration tiers must be cheaper than your standard daily rate (${currency.formatCents(baseDailyFare.price_per_day_cents)}/day).`
+    }
+    return ''
+  }
+
+  const addDurationTier = async () => {
+    const error = validateTierDraft()
+    if (error) {
+      setTierValidationError(error)
+      return
+    }
+    setTierValidationError('')
+    try {
+      await createHostCarDailyFare(recordId, buildStandardFarePayload({
+        ...tierDraft,
+        price_per_day_euros: Number(tierDraft.price_per_day_euros),
+      }))
+      setTierDraft({ from_days: 7, to_days: 14, price_per_day_euros: '' })
+      loadPricing(recordId)
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not add tier', 'error')
+    }
+  }
+
+  const findOverlappingBlock = (startsAt, endsAt) => availability.find(
+    (block) => dateRangesOverlap(startsAt, endsAt, block.starts_at, block.ends_at),
+  )
+
+  const addAvailabilityBlock = async () => {
+    const overlap = findOverlappingBlock(blockDraft.starts_at, blockDraft.ends_at)
+    if (overlap) {
+      toast(`This block overlaps an existing block (${formatDate(overlap.starts_at)} – ${formatDate(overlap.ends_at)}). Remove or adjust the existing block first.`, 'error')
+      return
+    }
+    try {
+      await addHostCarAvailability(recordId, blockDraft)
+      setBlockDraft({ starts_at: '', ends_at: '', units_blocked: 1, notes: '' })
+      loadPricing(recordId)
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not add block', 'error')
+    }
+  }
 
   useEffect(() => {
     const base = findBaseDailyFare(standardDailyFares(dailyFares, catalog.priceTypes))
@@ -787,11 +871,11 @@ export default function HostCarEditorPage() {
       return false
     }
     if (protectionOffers.plus && (!plusAddOn || Number(plusAddOn) <= 0)) {
-      if (!silent) toast('Enter a daily price for Enhanced coverage or turn it off.', 'error')
+      if (!silent) toast(`Enter a daily price for ${plusTierName} or turn it off.`, 'error')
       return false
     }
     if (protectionOffers.max && (!maxAddOn || Number(maxAddOn) <= 0)) {
-      if (!silent) toast('Enter a daily price for Full coverage or turn it off.', 'error')
+      if (!silent) toast(`Enter a daily price for ${maxTierName} or turn it off.`, 'error')
       return false
     }
     setProtectionSaving(true)
@@ -864,7 +948,7 @@ export default function HostCarEditorPage() {
   }
 
   const resetExtraDraft = () => {
-    setExtraDraft({ charge_per_extra_hour_euros: 10 })
+    setExtraDraft({ charge_per_extra_hour_euros: '' })
     setEditingExtraHourFareId(null)
   }
 
@@ -872,7 +956,7 @@ export default function HostCarEditorPage() {
     setLocationFeeDraft({
       pickup_location_id: '',
       dropoff_location_id: '',
-      cost_euros: 0,
+      cost_euros: '',
       is_one_way_fee: false,
       multiply_by_days: false,
     })
@@ -885,8 +969,8 @@ export default function HostCarEditorPage() {
       time_from: '20:00',
       time_to: '08:00',
       applies_to: 'both',
-      pickup_cost_euros: 35,
-      dropoff_cost_euros: 35,
+      pickup_cost_euros: '',
+      dropoff_cost_euros: '',
       location_ids: [],
     })
     setEditingOohFeeId(null)
@@ -1116,6 +1200,15 @@ export default function HostCarEditorPage() {
             editingLocationFeeId={editingLocationFeeId}
             editingOohFeeId={editingOohFeeId}
             onAddLocationFee={async () => {
+              const duplicate = locationFees.find(
+                (fee) => String(fee.pickup_location_id) === String(locationFeeDraft.pickup_location_id)
+                  && String(fee.dropoff_location_id) === String(locationFeeDraft.dropoff_location_id)
+                  && fee.id !== editingLocationFeeId,
+              )
+              if (duplicate) {
+                toast('A fee for this pickup and drop-off combination already exists. Edit the existing fee instead.', 'error')
+                return
+              }
               try {
                 const payload = {
                   pickup_location_id: Number(locationFeeDraft.pickup_location_id),
@@ -1154,6 +1247,16 @@ export default function HostCarEditorPage() {
               if (editingLocationFeeId === feeId) resetLocationFeeDraft()
             }}
             onAddOohFee={async () => {
+              const duplicate = outOfHoursFees.find(
+                (fee) => fee.time_from?.slice(0, 5) === oohFeeDraft.time_from
+                  && fee.time_to?.slice(0, 5) === oohFeeDraft.time_to
+                  && fee.applies_to === oohFeeDraft.applies_to
+                  && fee.id !== editingOohFeeId,
+              )
+              if (duplicate) {
+                toast('An out-of-hours fee with the same time window already exists. Edit the existing fee instead.', 'error')
+                return
+              }
               try {
                 const payload = {
                   ...oohFeeDraft,
@@ -1189,6 +1292,11 @@ export default function HostCarEditorPage() {
               await deleteHostCarOutOfHoursFee(recordId, feeId)
               setOutOfHoursFees((prev) => prev.filter((f) => f.id !== feeId))
               if (editingOohFeeId === feeId) resetOohFeeDraft()
+            }}
+            onCreateLocation={async (payload) => {
+              const res = await createHostLocation(payload)
+              refreshLocations()
+              return res.data.data
             }}
           />
         )}
@@ -1267,7 +1375,7 @@ export default function HostCarEditorPage() {
                       id="base-daily-price"
                       type="number"
                       min={0}
-                      placeholder="e.g. 95"
+                      placeholder={`e.g. ${currency.exampleAmounts.dailyRate}`}
                       value={baseDailyPrice}
                       onChange={(e) => setBaseDailyPrice(e.target.value)}
                     />
@@ -1300,24 +1408,28 @@ export default function HostCarEditorPage() {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="host-field"><label>From day</label><input type="number" min={1} className={tierRangeInvalid ? 'has-error' : ''} value={tierDraft.from_days} onChange={(e) => setTierDraft({ ...tierDraft, from_days: Number(e.target.value) })} /></div>
                   <div className="host-field"><label>To day</label><input type="number" min={1} className={tierRangeInvalid ? 'has-error' : ''} value={tierDraft.to_days} onChange={(e) => setTierDraft({ ...tierDraft, to_days: Number(e.target.value) })} /></div>
-                  <div className="host-field"><label>{currency.amountLabel('/ day')}</label><input type="number" min={0} value={tierDraft.price_per_day_euros} onChange={(e) => setTierDraft({ ...tierDraft, price_per_day_euros: Number(e.target.value) })} /></div>
+                  <div className="host-field"><label>{currency.amountLabel('/ day')}</label><input type="number" min={0} className={(tierRangeInvalid || tierPriceTooHigh || tierPriceZero) ? 'has-error' : ''} value={tierDraft.price_per_day_euros} onChange={(e) => { setTierDraft({ ...tierDraft, price_per_day_euros: e.target.value === '' ? '' : Number(e.target.value) }); setTierValidationError('') }} placeholder={`e.g. ${Math.round((currency.exampleAmounts.dailyRate || 95) * 0.85)}`} /></div>
                 </div>
                 {tierRangeInvalid && (
                   <p className="host-field-error"><AlertCircle size={14} /> “From day” must be lower than “To day”.</p>
                 )}
+                {overlappingTier && !tierRangeInvalid && (
+                  <p className="host-field-error"><AlertCircle size={14} /> This range overlaps with Days {overlappingTier.from_days}–{overlappingTier.to_days}. Adjust the dates or remove the existing tier first.</p>
+                )}
+                {tierPriceTooHigh && baseDailyFare && (
+                  <p className="host-field-error"><AlertCircle size={14} /> Duration tiers must be cheaper than your standard daily rate ({currency.formatCents(baseDailyFare.price_per_day_cents)}/day).</p>
+                )}
+                {tierPriceZero && (
+                  <p className="host-field-error"><AlertCircle size={14} /> Enter a daily rate greater than zero.</p>
+                )}
+                {tierValidationError && !tierRangeInvalid && !overlappingTier && !tierPriceTooHigh && !tierPriceZero && (
+                  <p className="host-field-error"><AlertCircle size={14} /> {tierValidationError}</p>
+                )}
                 <button
                   type="button"
                   className="host-btn-add"
-                  disabled={!standardPriceType || !baseDailyFare || tierRangeInvalid || !tierDraft.price_per_day_euros}
-                  onClick={async () => {
-                    try {
-                      await createHostCarDailyFare(recordId, buildStandardFarePayload(tierDraft))
-                      setTierDraft({ from_days: 7, to_days: 14, price_per_day_euros: 0 })
-                      loadPricing(recordId)
-                    } catch (err) {
-                      toast(err.response?.data?.message || 'Could not add tier', 'error')
-                    }
-                  }}
+                  disabled={!standardPriceType || !baseDailyFare || tierRangeInvalid}
+                  onClick={addDurationTier}
                 >
                   <Plus size={16} /> Add duration tier
                 </button>
@@ -1369,16 +1481,30 @@ export default function HostCarEditorPage() {
                     />
                   </div>
                   {specialDraft.value_mode === 'percentage' ? (
-                    <div className="host-field"><label>Percentage</label><input type="number" min={0} max={100} step={0.1} value={specialDraft.value_percent_bips / 100} onChange={(e) => setSpecialDraft({ ...specialDraft, value_percent_bips: Math.round(Number(e.target.value) * 100) })} /></div>
+                    <div className="host-field"><label>Percentage</label><input type="number" min={0} max={specialDraft.type === 'discount' ? 100 : 200} step={0.1} value={specialDraft.value_percent_bips / 100} onChange={(e) => {
+                      const raw = Number(e.target.value)
+                      const max = specialDraft.type === 'discount' ? 100 : 200
+                      const clamped = Math.min(max, Math.max(0, raw))
+                      setSpecialDraft({ ...specialDraft, value_percent_bips: Math.round(clamped * 100) })
+                    }} /></div>
                   ) : (
                     <div className="host-field">
                       <label>{seasonalFixedAmountLabel}</label>
-                      <input type="number" min={0} value={specialDraft.value_fixed_cents / 100} onChange={(e) => setSpecialDraft({ ...specialDraft, value_fixed_cents: Math.round(Number(e.target.value) * 100) })} />
+                      <input type="number" min={0} value={specialDraft.value_fixed_cents ? specialDraft.value_fixed_cents / 100 : ''} onChange={(e) => {
+                        setSpecialDraft({ ...specialDraft, value_fixed_cents: e.target.value === '' ? 0 : Math.round(Number(e.target.value) * 100) })
+                      }} />
                     </div>
                   )}
                 </div>
+                {seasonalValidationError && (
+                  <p className="host-field-error"><AlertCircle size={14} /> {seasonalValidationError}</p>
+                )}
                 <div className="host-fare-actions">
-                  <button type="button" className="host-btn-add" disabled={!specialDraft.name || !specialDraft.date_from || !specialDraft.date_to} onClick={async () => {
+                  <button type="button" className="host-btn-add" disabled={!specialDraft.name || !specialDraft.date_from || !specialDraft.date_to || !!seasonalValidationError} onClick={async () => {
+                    if (seasonalValidationError) {
+                      toast(seasonalValidationError, 'error')
+                      return
+                    }
                     try {
                       const payload = {
                         name: specialDraft.name,
@@ -1421,10 +1547,8 @@ export default function HostCarEditorPage() {
                           {sp.type === 'discount' ? 'Discount' : 'Surcharge'}{' '}
                           {sp.value_mode === 'percentage'
                             ? `${(sp.value_percent_bips / 100).toFixed(1)}%`
-                            : sp.type === 'discount'
-                              ? `${currency.formatCents(sp.value_fixed_cents || 0)} off total`
-                              : `${currency.formatCents(sp.value_fixed_cents || 0)}/day`}
-                          {' '}({sp.date_from} → {sp.date_to})
+                            : `${currency.formatCents(sp.value_fixed_cents || 0)}/day`}
+                          {' '}({formatDate(sp.date_from)} → {formatDate(sp.date_to)})
                         </span>
                         <button type="button" className="host-btn secondary host-btn-compact" onClick={() => {
                           setEditingSpecialPriceId(sp.id)
@@ -1461,27 +1585,27 @@ export default function HostCarEditorPage() {
                   </div>
                 </div>
                 {!protectionOffers.plus && !protectionOffers.max && (
-                  <p className="host-field-hint">Select Enhanced or Full coverage above to set upgrade prices.</p>
+                  <p className="host-field-hint">Select {plusTierName} or {maxTierName} above to set upgrade prices.</p>
                 )}
                 <div className="grid grid-cols-2 gap-3">
                   {protectionOffers.plus && (
                     <div className="host-field">
-                      <label>Enhanced coverage</label>
+                      <label>{plusTierName}</label>
                       <span className="host-field-note">Lower guest deposit</span>
                       <div className="host-addon-input">
                         <span className="host-addon-input__prefix">+ {currency.inputPrefix}</span>
-                        <input type="number" min={0} placeholder="e.g. 15" value={plusAddOn} onChange={(e) => setPlusAddOn(e.target.value)} />
+                        <input type="number" min={0} placeholder={`e.g. ${currency.exampleAmounts.enhancedCoverage}`} value={plusAddOn} onChange={(e) => setPlusAddOn(e.target.value)} />
                         <span className="host-addon-input__suffix">/ day</span>
                       </div>
                     </div>
                   )}
                   {protectionOffers.max && (
                     <div className="host-field">
-                      <label>Full coverage</label>
+                      <label>{maxTierName}</label>
                       <span className="host-field-note">Zero guest deposit</span>
                       <div className="host-addon-input">
                         <span className="host-addon-input__prefix">+ {currency.inputPrefix}</span>
-                        <input type="number" min={0} placeholder="e.g. 35" value={maxAddOn} onChange={(e) => setMaxAddOn(e.target.value)} />
+                        <input type="number" min={0} placeholder={`e.g. ${currency.exampleAmounts.fullCoverage}`} value={maxAddOn} onChange={(e) => setMaxAddOn(e.target.value)} />
                         <span className="host-addon-input__suffix">/ day</span>
                       </div>
                     </div>
@@ -1492,12 +1616,12 @@ export default function HostCarEditorPage() {
                     <span className="host-fare-preview-label">Guest will see</span>
                     {protectionOffers.plus && plusAddOn && (
                       <span className="host-fare-tag is-preview">
-                        <span className="host-fare-tag-text">Enhanced <ArrowRight size={12} /> <strong>+{currency.formatAmount(Number(plusAddOn))}/day</strong> on top of your rate</span>
+                        <span className="host-fare-tag-text">{plusTierName} <ArrowRight size={12} /> <strong>+{currency.formatAmount(Number(plusAddOn))}/day</strong> on top of your rate</span>
                       </span>
                     )}
                     {protectionOffers.max && maxAddOn && (
                       <span className="host-fare-tag is-preview">
-                        <span className="host-fare-tag-text">Full <ArrowRight size={12} /> <strong>+{currency.formatAmount(Number(maxAddOn))}/day</strong> on top of your rate</span>
+                        <span className="host-fare-tag-text">{maxTierName} <ArrowRight size={12} /> <strong>+{currency.formatAmount(Number(maxAddOn))}/day</strong> on top of your rate</span>
                       </span>
                     )}
                   </div>
@@ -1530,7 +1654,7 @@ export default function HostCarEditorPage() {
                     <p>Amount charged for each hour a guest keeps the vehicle beyond their booked window.</p>
                   </div>
                 </div>
-                <div className="host-field"><label>{currency.amountLabel('/ extra hour')}</label><input type="number" min={0} value={extraDraft.charge_per_extra_hour_euros} onChange={(e) => setExtraDraft({ ...extraDraft, charge_per_extra_hour_euros: Number(e.target.value) })} /></div>
+                <div className="host-field"><label>{currency.amountLabel('/ extra hour')}</label><input type="number" min={0} placeholder={`e.g. ${currency.exampleAmounts.extraHour}`} value={extraDraft.charge_per_extra_hour_euros} onChange={(e) => setExtraDraft({ ...extraDraft, charge_per_extra_hour_euros: e.target.value === '' ? '' : Number(e.target.value) })} /></div>
                 <div className="host-fare-preview">
                   <span className="host-fare-preview-label">Preview</span>
                   <span className="host-fare-tag is-preview">
@@ -1539,11 +1663,17 @@ export default function HostCarEditorPage() {
                   </span>
                 </div>
                 <div className="host-fare-actions">
-                  <button type="button" className="host-btn-add" disabled={!standardPriceType} onClick={async () => {
+                  <button type="button" className="host-btn-add" disabled={!standardPriceType || !extraDraft.charge_per_extra_hour_euros} onClick={async () => {
                     try {
-                      const payload = buildStandardFarePayload(extraDraft)
+                      const payload = buildStandardFarePayload({
+                        ...extraDraft,
+                        charge_per_extra_hour_euros: Number(extraDraft.charge_per_extra_hour_euros),
+                      })
                       if (editingExtraHourFareId) {
                         await updateHostCarExtraHourFare(recordId, editingExtraHourFareId, payload)
+                        toast('Extra-hour charge updated', 'success')
+                      } else if (hostExtraHourFares.length > 0) {
+                        await updateHostCarExtraHourFare(recordId, hostExtraHourFares[0].id, payload)
                         toast('Extra-hour charge updated', 'success')
                       } else {
                         await createHostCarExtraHourFare(recordId, payload)
@@ -1589,8 +1719,8 @@ export default function HostCarEditorPage() {
               <p className="host-step-note">Block dates when the vehicle is unavailable for booking, maintenance, personal use, etc.</p>
               <h3 className="mb-2 font-semibold text-brand-950">Blocked dates</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="host-field"><label>From</label><HostDateTimePicker value={blockDraft.starts_at} onChange={(v) => setBlockDraft({ ...blockDraft, starts_at: v })} placeholder="Select start date & time" /></div>
-                <div className="host-field"><label>To</label><HostDateTimePicker value={blockDraft.ends_at} onChange={(v) => setBlockDraft({ ...blockDraft, ends_at: v })} placeholder="Select end date & time" /></div>
+                <div className="host-field"><label>From</label><HostDateTimePicker value={blockDraft.starts_at} onChange={(v) => setBlockDraft({ ...blockDraft, starts_at: v })} minDate={new Date()} placeholder="Select start date & time" /></div>
+                <div className="host-field"><label>To</label><HostDateTimePicker value={blockDraft.ends_at} onChange={(v) => setBlockDraft({ ...blockDraft, ends_at: v })} minDate={blockDraft.starts_at ? new Date(blockDraft.starts_at) : new Date()} placeholder="Select end date & time" /></div>
                 <div className="host-field">
                   <label>Units blocked</label>
                   <input
@@ -1608,19 +1738,11 @@ export default function HostCarEditorPage() {
                 </div>
                 <div className="host-field"><label>Notes</label><input value={blockDraft.notes} onChange={(e) => setBlockDraft({ ...blockDraft, notes: e.target.value })} /></div>
               </div>
-              <button type="button" className="host-btn secondary" disabled={!blockDraft.starts_at || !blockDraft.ends_at} onClick={async () => {
-                try {
-                  await addHostCarAvailability(recordId, blockDraft)
-                  setBlockDraft({ starts_at: '', ends_at: '', units_blocked: 1, notes: '' })
-                  loadPricing(recordId)
-                } catch (err) {
-                  toast(err.response?.data?.message || 'Could not add block', 'error')
-                }
-              }}>Add block</button>
+              <button type="button" className="host-btn secondary" disabled={!blockDraft.starts_at || !blockDraft.ends_at} onClick={addAvailabilityBlock}>Add block</button>
               <ul className="mt-3 space-y-2 text-sm">
                 {availability.map((b) => (
                   <li key={b.id} className="flex justify-between">
-                    <span>{new Date(b.starts_at).toLocaleDateString()} → {new Date(b.ends_at).toLocaleDateString()} ({b.units_blocked} unit) {b.source === 'manual' ? '' : `[${b.source}]`}</span>
+                    <span>{formatDate(b.starts_at)} → {formatDate(b.ends_at)} ({b.units_blocked} unit) {b.source === 'manual' ? '' : `[${b.source}]`}</span>
                     {b.source === 'manual' && <button type="button" className="host-btn danger" onClick={async () => { await removeHostCarAvailability(recordId, b.id); loadPricing(recordId) }}>Remove</button>}
                   </li>
                 ))}
@@ -1663,13 +1785,13 @@ export default function HostCarEditorPage() {
             </button>
           </div>
           <div className="host-wizard-actions__right">
-            <button type="button" className="host-btn primary" disabled={saving} onClick={save}>{saving ? 'Saving…' : 'Save'}</button>
+            <button type="button" className="host-btn primary" disabled={saving} onClick={save}>{saving ? 'Saving…' : (step === STEPS.length - 1 ? 'Save draft' : 'Save')}</button>
             {step === STEPS.length - 1 && recordId && ['draft', 'rejected'].includes(status) && (
               <button
                 type="button"
                 className="host-btn primary"
                 disabled={!isReady}
-                title={!isReady ? 'Complete all checklist items before submitting' : undefined}
+                title={submitDisabledTitle}
                 onClick={handleSubmitReview}
               >
                 Submit for review

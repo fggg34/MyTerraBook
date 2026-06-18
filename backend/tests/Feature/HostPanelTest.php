@@ -10,6 +10,7 @@ use App\Models\Car;
 use App\Models\MainCategory;
 use App\Models\SubCategory;
 use App\Models\GuestHouse;
+use App\Models\GuestHouseAmenity;
 use App\Models\Location;
 use App\Models\LocationFee;
 use App\Models\OutOfHoursFee;
@@ -100,7 +101,15 @@ class HostPanelTest extends TestCase
             'beds' => 1,
             'min_nights' => 1,
             'base_price_per_night' => 10000,
+            'thumbnail' => 'guesthouses/test-cover.jpg',
         ]);
+
+        $amenity = GuestHouseAmenity::query()->create([
+            'name' => 'Wi-Fi',
+            'icon' => 'wifi',
+            'group' => 'Essentials',
+        ]);
+        $house->amenities()->attach($amenity->id);
 
         Sanctum::actingAs($host);
 

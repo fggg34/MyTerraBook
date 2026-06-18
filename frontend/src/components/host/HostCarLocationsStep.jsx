@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import HostDisclosure from './HostDisclosure'
 import HostMultiSelect from './HostMultiSelect'
 import HostSelect from './HostSelect'
 import HostTimePicker from './HostTimePicker'
 import { useHostCurrency } from '../../hooks/useHostCurrency'
+import { useToast } from '../../context/ToastContext'
 
 function toLocationOptions(locations = []) {
   return locations.map((loc) => ({
@@ -10,6 +12,44 @@ function toLocationOptions(locations = []) {
     label: loc.name,
     subtitle: loc.address || undefined,
   }))
+}
+
+function CustomLocationForm({
+  customLocationDraft,
+  setCustomLocationDraft,
+  creatingLocation,
+  onCreate,
+}) {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="host-field">
+          <label>Location name</label>
+          <input
+            value={customLocationDraft.name}
+            onChange={(e) => setCustomLocationDraft({ ...customLocationDraft, name: e.target.value })}
+            placeholder="e.g. My guesthouse driveway"
+          />
+        </div>
+        <div className="host-field">
+          <label>Address (optional)</label>
+          <input
+            value={customLocationDraft.address}
+            onChange={(e) => setCustomLocationDraft({ ...customLocationDraft, address: e.target.value })}
+            placeholder="Street or area"
+          />
+        </div>
+      </div>
+      <button
+        type="button"
+        className="host-btn secondary"
+        disabled={creatingLocation || !customLocationDraft.name.trim()}
+        onClick={onCreate}
+      >
+        {creatingLocation ? 'Adding…' : 'Add location'}
+      </button>
+    </>
+  )
 }
 
 export default function HostCarLocationsStep({
@@ -36,8 +76,12 @@ export default function HostCarLocationsStep({
   onEditOohFee,
   onCancelOohFeeEdit,
   onDeleteOohFee,
+  onCreateLocation,
 }) {
   const currency = useHostCurrency()
+  const { toast } = useToast()
+  const [customLocationDraft, setCustomLocationDraft] = useState({ name: '', address: '' })
+  const [creatingLocation, setCreatingLocation] = useState(false)
   const allLocationOptions = toLocationOptions(catalogLocations)
   const pickupOptions = toLocationOptions(selectedPickupLocations)
   const dropoffOptions = toLocationOptions(selectedDropoffLocations)
@@ -47,7 +91,34 @@ export default function HostCarLocationsStep({
     ),
   )
 
-  if (catalogLocations.length === 0) {
+  const handleCreateLocation = async () => {
+    if (!customLocationDraft.name.trim()) {
+      toast('Enter a location name.', 'error')
+      return
+    }
+    if (!onCreateLocation) return
+    setCreatingLocation(true)
+    try {
+      const location = await onCreateLocation({
+        name: customLocationDraft.name.trim(),
+        address: customLocationDraft.address.trim() || null,
+      })
+      const id = String(location.id)
+      setForm({
+        ...form,
+        pickup_location_ids: [...form.pickup_location_ids, id],
+        dropoff_location_ids: [...form.dropoff_location_ids, id],
+      })
+      setCustomLocationDraft({ name: '', address: '' })
+      toast('Location added', 'success')
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not add location', 'error')
+    } finally {
+      setCreatingLocation(false)
+    }
+  }
+
+  if (catalogLocations.length === 0 && !onCreateLocation) {
     return (
       <p className="host-field-hint">
         No pickup or drop-off locations are available yet. Ask an admin to add active locations in Impact Rent.
@@ -55,9 +126,25 @@ export default function HostCarLocationsStep({
     )
   }
 
+  if (catalogLocations.length === 0) {
+    return (
+      <>
+        <p className="host-step-note">Add a custom pickup and drop-off location below, then set all four time windows (required before submit).</p>
+        <HostDisclosure title="Add a custom location" hint="Create a pickup or drop-off point for this vehicle." defaultOpen>
+          <CustomLocationForm
+            customLocationDraft={customLocationDraft}
+            setCustomLocationDraft={setCustomLocationDraft}
+            creatingLocation={creatingLocation}
+            onCreate={handleCreateLocation}
+          />
+        </HostDisclosure>
+      </>
+    )
+  }
+
   return (
     <>
-      <p className="host-step-note">Choose at least one pickup and one drop-off location, then set the time windows. Fees are optional.</p>
+      <p className="host-step-note">Choose at least one pickup and one drop-off location, then set all four time windows (required before submit). Location fees are optional.</p>
       <div className="host-locations-grid" id="host-car-locations">
         <div className="host-field">
           <label>Pickup locations</label>
@@ -84,10 +171,21 @@ export default function HostCarLocationsStep({
         </div>
       </div>
 
+      {onCreateLocation && (
+        <HostDisclosure title="Add a custom location" hint="Create a pickup or drop-off point that is not in the list yet." defaultOpen={false}>
+          <CustomLocationForm
+            customLocationDraft={customLocationDraft}
+            setCustomLocationDraft={setCustomLocationDraft}
+            creatingLocation={creatingLocation}
+            onCreate={handleCreateLocation}
+          />
+        </HostDisclosure>
+      )}
+
       {canConfigureTimes ? (
         <section className="host-subsection" id="host-car-times">
           <div className="host-subsection-head">
-            <h3>Pickup & drop-off times</h3>
+            <h3>Pickup & drop-off times <span className="host-required-badge">Required before submit</span></h3>
             <p>Set the pickup and drop-off time windows guests can book for this vehicle.</p>
           </div>
           <div className="host-locations-grid">
