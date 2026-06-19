@@ -2,9 +2,51 @@ import { useEffect } from 'react'
 
 const DURATION_MS = 7000
 const CLICK_ONLY_MQ = '(max-width: 980px)'
+const DESKTOP_MQ = '(min-width: 981px)'
 
 function prefersClickToOpen() {
   return window.matchMedia(CLICK_ONLY_MQ).matches
+}
+
+function syncOpenHeights(wrap, steps) {
+  const section = wrap.closest('.how')
+
+  if (!window.matchMedia(DESKTOP_MQ).matches) {
+    wrap.style.removeProperty('--how-step-height')
+    wrap.style.removeProperty('--how-step-body-height')
+    section?.style.removeProperty('--how-section-height')
+    return
+  }
+
+  const activeBefore = steps.findIndex((step) => step.classList.contains('active'))
+  let maxStep = 0
+  let maxBody = 0
+  let maxSection = 0
+
+  wrap.classList.add('how-steps--measure')
+
+  steps.forEach((_, index) => {
+    steps.forEach((step, idx) => {
+      step.classList.toggle('active', idx === index)
+    })
+
+    const step = steps[index]
+    const body = step.querySelector('.hstep-body')
+    maxStep = Math.max(maxStep, step.offsetHeight)
+    if (body) maxBody = Math.max(maxBody, body.offsetHeight)
+    if (section) maxSection = Math.max(maxSection, section.offsetHeight)
+  })
+
+  wrap.classList.remove('how-steps--measure')
+
+  const restoreIndex = activeBefore >= 0 ? activeBefore : 0
+  steps.forEach((step, idx) => {
+    step.classList.toggle('active', idx === restoreIndex)
+  })
+
+  wrap.style.setProperty('--how-step-height', `${maxStep}px`)
+  wrap.style.setProperty('--how-step-body-height', `${maxBody}px`)
+  section?.style.setProperty('--how-section-height', `${maxSection}px`)
 }
 
 function fillBar(bar, on) {
@@ -32,6 +74,14 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
     let timer = null
     let paused = false
     let started = false
+    let resizeTimer = null
+
+    const remeasure = () => syncOpenHeights(wrap, steps)
+
+    const onResize = () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(remeasure, 150)
+    }
 
     const clearTimer = () => {
       if (timer) {
@@ -131,6 +181,14 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
     wrap.addEventListener('mouseenter', onWrapEnter)
     wrap.addEventListener('mouseleave', onWrapLeave)
 
+    remeasure()
+    window.addEventListener('resize', onResize)
+    wrap.querySelectorAll('.hstep-media img').forEach((img) => {
+      if (!img.complete) {
+        img.addEventListener('load', remeasure, { once: true })
+      }
+    })
+
     let io
     if ('IntersectionObserver' in window) {
       io = new IntersectionObserver(
@@ -165,6 +223,8 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
 
     return () => {
       clearTimer()
+      clearTimeout(resizeTimer)
+      window.removeEventListener('resize', onResize)
       steps.forEach((step, index) => {
         step.removeEventListener('mouseenter', onStepHover(index))
         step.removeEventListener('click', onStepClick(index))
@@ -173,6 +233,9 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
       wrap.removeEventListener('mouseenter', onWrapEnter)
       wrap.removeEventListener('mouseleave', onWrapLeave)
       if (io) io.disconnect()
+      wrap.style.removeProperty('--how-step-height')
+      wrap.style.removeProperty('--how-step-body-height')
+      wrap.closest('.how')?.style.removeProperty('--how-section-height')
       delete wrap.dataset.howFxInit
     }
   }, [wrapRef, stepCount, duration, threshold])

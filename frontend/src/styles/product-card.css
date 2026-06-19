@@ -336,8 +336,8 @@ body.search-results-active .pcard-book {
 .sim-track,
 .rev-track,
 .drag-scroll,
+.reviews .rv-track-wrap,
 .gp-marquee.is-manual-scroll,
-.rv-track-wrap--marquee.is-manual-scroll,
 .host-proof-marquee.is-manual-scroll {
   cursor: grab;
   -webkit-overflow-scrolling: touch;
@@ -347,7 +347,8 @@ body.search-results-active .pcard-book {
 
 .track img,
 .sim-track img,
-.drag-scroll img {
+.drag-scroll img,
+.reviews .rv-track-wrap img {
   -webkit-user-drag: none;
   user-select: none;
 }
@@ -356,8 +357,8 @@ body.search-results-active .pcard-book {
 .sim-track.is-dragging,
 .rev-track.is-dragging,
 .drag-scroll.is-dragging,
+.reviews .rv-track-wrap.is-dragging,
 .gp-marquee.is-manual-scroll.is-dragging,
-.rv-track-wrap--marquee.is-manual-scroll.is-dragging,
 .host-proof-marquee.is-manual-scroll.is-dragging {
   cursor: grabbing;
   scroll-behavior: auto !important;
@@ -373,13 +374,13 @@ body.search-results-active .pcard-book {
 .track.is-dragging *,
 .sim-track.is-dragging *,
 .rev-track.is-dragging *,
-.drag-scroll.is-dragging * {
+.drag-scroll.is-dragging *,
+.reviews .rv-track-wrap.is-dragging * {
   pointer-events: none;
   user-select: none;
 }
 
 .gp-marquee.is-manual-scroll,
-.rv-track-wrap--marquee.is-manual-scroll,
 .host-proof-marquee.is-manual-scroll {
   overflow-x: auto;
   scrollbar-width: none;
@@ -387,13 +388,11 @@ body.search-results-active .pcard-book {
 }
 
 .gp-marquee.is-manual-scroll::-webkit-scrollbar,
-.rv-track-wrap--marquee.is-manual-scroll::-webkit-scrollbar,
 .host-proof-marquee.is-manual-scroll::-webkit-scrollbar {
   display: none;
 }
 
 .gp-marquee.is-manual-scroll .gp-track,
-.rv-track-wrap--marquee.is-manual-scroll .rv-track--scroll,
 .host-proof-marquee.is-manual-scroll .host-proof-track {
   animation: none !important;
   transform: none !important;

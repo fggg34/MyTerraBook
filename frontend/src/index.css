@@ -203,6 +203,8 @@
 .back-to-top {
   position: fixed;
   z-index: 40;
+  right: 24px;
+  bottom: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -218,10 +220,7 @@
     background 0.18s ease,
     color 0.18s ease,
     border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    top 0.22s ease,
-    bottom 0.22s ease,
-    right 0.22s ease;
+    box-shadow 0.18s ease;
 }
 
 .back-to-top:hover,
@@ -237,4 +236,10 @@
 .back-to-top svg {
   width: 20px;
   height: 20px;
+}
+
+@media (max-width: 768px) {
+  .back-to-top {
+    will-change: transform;
+  }
 }

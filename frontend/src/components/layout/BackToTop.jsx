@@ -1,73 +1,159 @@
 import { ArrowUp } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const BTN_SIZE = 44
 const VIEWPORT_EDGE = 24
-const CARD_INSET = 16
+const MOBILE_QUERY = '(max-width: 768px)'
+const FOOTER_TRACK_LEAD = 320
 
-function getDefaultPosition() {
-  return {
-    bottom: VIEWPORT_EDGE,
-    top: null,
-    right: VIEWPORT_EDGE,
+function readMetaDocCenter() {
+  const meta = document.querySelector('.ftr-meta')
+  if (!meta) return null
+
+  const rect = meta.getBoundingClientRect()
+  return window.scrollY + rect.top + rect.height / 2
+}
+
+function applyMobileLift(button, mq, metaDocCenter) {
+  if (!button || !mq.matches) {
+    button?.style.removeProperty('transform')
+    return
+  }
+
+  const scrollBottom = window.scrollY + window.innerHeight
+  const docHeight = document.documentElement.scrollHeight
+
+  if (scrollBottom < docHeight - FOOTER_TRACK_LEAD || metaDocCenter == null) {
+    if (button.style.transform) button.style.removeProperty('transform')
+    return
+  }
+
+  const btnCenterAtDefault = window.innerHeight - VIEWPORT_EDGE - BTN_SIZE / 2
+  const metaViewportCenter = metaDocCenter - window.scrollY
+  const lift = Math.max(0, Math.round(btnCenterAtDefault - metaViewportCenter))
+  const transform = lift > 0 ? `translate3d(0, -${lift}px, 0)` : ''
+
+  if (button.style.transform !== transform) {
+    if (transform) button.style.transform = transform
+    else button.style.removeProperty('transform')
   }
 }
 
 export default function BackToTop() {
+  const buttonRef = useRef(null)
   const [visible, setVisible] = useState(false)
-  const [pos, setPos] = useState(getDefaultPosition)
+  const visibleRef = useRef(false)
+  const rafRef = useRef(0)
+  const metaDocCenterRef = useRef(null)
+  const inFooterZoneRef = useRef(false)
 
   useEffect(() => {
+    const mq = window.matchMedia(MOBILE_QUERY)
+
+    const refreshMetaCenter = () => {
+      metaDocCenterRef.current = readMetaDocCenter()
+    }
+
     const update = () => {
-      setVisible(window.scrollY > 400)
+      const shouldShow = window.scrollY > 400
 
-      const meta = document.querySelector('.ftr-meta')
-      if (!meta) {
-        setPos(getDefaultPosition())
+      if (shouldShow !== visibleRef.current) {
+        visibleRef.current = shouldShow
+        setVisible(shouldShow)
+      }
+
+      if (!shouldShow || !mq.matches || !buttonRef.current) return
+
+      const scrollBottom = window.scrollY + window.innerHeight
+      const docHeight = document.documentElement.scrollHeight
+      const nearFooter = scrollBottom >= docHeight - FOOTER_TRACK_LEAD
+
+      if (nearFooter && !inFooterZoneRef.current) {
+        refreshMetaCenter()
+        inFooterZoneRef.current = true
+      } else if (!nearFooter) {
+        inFooterZoneRef.current = false
+      }
+
+      applyMobileLift(buttonRef.current, mq, metaDocCenterRef.current)
+    }
+
+    const onScroll = () => {
+      if (!mq.matches) {
+        if (visibleRef.current !== window.scrollY > 400) {
+          const shouldShow = window.scrollY > 400
+          visibleRef.current = shouldShow
+          setVisible(shouldShow)
+        }
         return
       }
 
-      const rect = meta.getBoundingClientRect()
-      const vh = window.innerHeight
-      const inView = rect.top < vh - VIEWPORT_EDGE && rect.bottom > VIEWPORT_EDGE
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = requestAnimationFrame(update)
+    }
 
-      if (!inView) {
-        setPos(getDefaultPosition())
-        return
+    const onResize = () => {
+      refreshMetaCenter()
+      update()
+    }
+
+    const onMqChange = () => {
+      if (!mq.matches && buttonRef.current) {
+        buttonRef.current.style.removeProperty('transform')
+        inFooterZoneRef.current = false
       }
+      update()
+    }
 
-      const card = meta.closest('.ftr-card')
-      const cardRect = card?.getBoundingClientRect()
-      const right = cardRect
-        ? Math.max(VIEWPORT_EDGE, window.innerWidth - cardRect.right + CARD_INSET)
-        : VIEWPORT_EDGE
-      const centerY = rect.top + rect.height / 2 - BTN_SIZE / 2
-      const top = Math.max(VIEWPORT_EDGE, Math.min(centerY, vh - BTN_SIZE - VIEWPORT_EDGE))
-
-      setPos({ bottom: null, top, right })
+    let resizeObserver
+    const meta = document.querySelector('.ftr-meta')
+    if (meta && 'ResizeObserver' in window) {
+      resizeObserver = new ResizeObserver(() => {
+        if (!mq.matches) return
+        refreshMetaCenter()
+        if (inFooterZoneRef.current && buttonRef.current) {
+          applyMobileLift(buttonRef.current, mq, metaDocCenterRef.current)
+        }
+      })
+      resizeObserver.observe(meta)
     }
 
     update()
-    window.addEventListener('scroll', update, { passive: true })
-    window.addEventListener('resize', update)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onResize)
+    mq.addEventListener('change', onMqChange)
+
     return () => {
-      window.removeEventListener('scroll', update)
-      window.removeEventListener('resize', update)
+      cancelAnimationFrame(rafRef.current)
+      resizeObserver?.disconnect()
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
+      mq.removeEventListener('change', onMqChange)
     }
   }, [])
 
-  if (!visible) return null
+  useEffect(() => {
+    if (!visible || !buttonRef.current) return undefined
 
-  const style = {
-    right: pos.right,
-    ...(pos.top != null ? { top: pos.top } : { bottom: pos.bottom }),
-  }
+    const mq = window.matchMedia(MOBILE_QUERY)
+    if (!mq.matches) {
+      buttonRef.current.style.removeProperty('transform')
+      return undefined
+    }
+
+    metaDocCenterRef.current = readMetaDocCenter()
+    applyMobileLift(buttonRef.current, mq, metaDocCenterRef.current)
+
+    return undefined
+  }, [visible])
+
+  if (!visible) return null
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       className="back-to-top"
-      style={style}
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Back to top"
     >

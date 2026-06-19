@@ -5,18 +5,20 @@ export default function useSectionReveal(
   { revealDoneMs = 1700, threshold = 0.12, onReveal, watch = true } = {},
 ) {
   const runReveal = (sec) => {
-    if (sec.classList.contains('revealed')) return
+    if (sec.classList.contains('revealed')) return false
     sec.classList.add('revealed')
     onReveal?.()
     window.setTimeout(() => sec.classList.add('reveal-done'), revealDoneMs)
+    return true
   }
 
   const maybeReveal = (sec) => {
+    if (sec.classList.contains('revealed')) return true
+
     const rect = sec.getBoundingClientRect()
     const vh = window.innerHeight || document.documentElement.clientHeight
     if (rect.top < vh * 0.92 && rect.bottom > vh * 0.04) {
-      runReveal(sec)
-      return true
+      return runReveal(sec)
     }
     return false
   }
@@ -43,16 +45,28 @@ export default function useSectionReveal(
     if (!sec || sec.classList.contains('revealed')) return undefined
 
     let io
+    let t1
+    let t2
 
-    const onReveal = () => {
-      if (maybeReveal(sec) && io) io.disconnect()
+    const stopWatching = () => {
+      if (io) io.disconnect()
+      window.removeEventListener('scroll', checkReveal)
+      window.removeEventListener('resize', checkReveal)
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+    }
+
+    const checkReveal = () => {
+      if (maybeReveal(sec)) {
+        stopWatching()
+      }
     }
 
     if ('IntersectionObserver' in window) {
       io = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting) onReveal()
+            if (entry.isIntersecting) checkReveal()
           })
         },
         { threshold, rootMargin: '0px 0px -40px 0px' },
@@ -60,18 +74,12 @@ export default function useSectionReveal(
       io.observe(sec)
     }
 
-    window.addEventListener('scroll', onReveal, { passive: true })
-    window.addEventListener('resize', onReveal)
-    onReveal()
-    const t1 = window.setTimeout(onReveal, 120)
-    const t2 = window.setTimeout(onReveal, 500)
+    window.addEventListener('scroll', checkReveal, { passive: true })
+    window.addEventListener('resize', checkReveal)
+    checkReveal()
+    t1 = window.setTimeout(checkReveal, 120)
+    t2 = window.setTimeout(checkReveal, 500)
 
-    return () => {
-      if (io) io.disconnect()
-      window.removeEventListener('scroll', onReveal)
-      window.removeEventListener('resize', onReveal)
-      window.clearTimeout(t1)
-      window.clearTimeout(t2)
-    }
+    return stopWatching
   }, [sectionRef, revealDoneMs, threshold, onReveal, watch])
 }

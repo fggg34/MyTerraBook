@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
-import useDragScroll from '../../hooks/useDragScroll'
+import { useMemo, useRef } from 'react'
 import useMediaQuery from '../../hooks/useMediaQuery'
+import useReviewsMarquee from '../../hooks/useReviewsMarquee'
 import useSectionReveal from '../../hooks/useSectionReveal'
 
 const AVATAR_FILLS = ['#a9d4e6', '#bcdcab', '#f1d79a', '#cdbbea', '#a4ddcd', '#f4c1a4']
@@ -85,10 +85,10 @@ export default function ReviewsSection({
 }) {
   const sectionRef = useRef(null)
   const trackWrapRef = useRef(null)
-  const tapStartRef = useRef(null)
   const isMobile = useMediaQuery('(max-width: 768px)')
-  const [marqueePaused, setMarqueePaused] = useState(false)
+  const showMarquee = reviews.length > 1
   useSectionReveal(sectionRef, { revealDoneMs: 1800 })
+  useReviewsMarquee(trackWrapRef, { enabled: showMarquee })
 
   const ratingValue = useMemo(() => {
     const match = String(rating ?? '').match(/[\d.]+/)
@@ -98,36 +98,11 @@ export default function ReviewsSection({
   const reviewerLabel = source === 'google' && !isDemo ? 'Google reviewer' : 'Traveller'
   const ratingSourceLabel = source === 'google' && !isDemo ? 'Google' : 'MyTerraBook'
   const resolvedCtaLabel = ctaLabel || (source === 'google' && !isDemo ? 'Leave a Google Review' : null)
-  const useMarquee = reviews.length > 3
-
-  useDragScroll(trackWrapRef, {
-    enabled: useMarquee,
-    convertAnimationFrom: useMarquee ? '.rv-track--scroll' : null,
-  })
 
   const trackReviews = useMemo(() => {
-    if (!useMarquee) return reviews
+    if (!showMarquee) return reviews
     return [...reviews, ...reviews]
-  }, [reviews, useMarquee])
-
-  const handleMarqueePointerDown = (event) => {
-    if (!useMarquee) return
-    tapStartRef.current = { x: event.clientX, y: event.clientY }
-  }
-
-  const handleMarqueePointerUp = (event) => {
-    if (!useMarquee || !isMobile || !tapStartRef.current) return
-    const start = tapStartRef.current
-    tapStartRef.current = null
-    const moved = Math.hypot(event.clientX - start.x, event.clientY - start.y)
-    if (moved < 10) {
-      setMarqueePaused((paused) => !paused)
-    }
-  }
-
-  const handleMarqueePointerCancel = () => {
-    tapStartRef.current = null
-  }
+  }, [reviews, showMarquee])
 
   if (!reviews.length) return null
 
@@ -183,29 +158,31 @@ export default function ReviewsSection({
             </div>
           )}
         </div>
+      </div>
 
-        <div
-          ref={trackWrapRef}
-          className={`rv-track-wrap${useMarquee ? ' rv-track-wrap--marquee' : ''}${useMarquee && marqueePaused ? ' rv-track-wrap--paused' : ''}${isMobile && !useMarquee ? ' rv-track-wrap--mobile' : ''}`}
-          onMouseEnter={useMarquee && !isMobile ? () => setMarqueePaused(true) : undefined}
-          onMouseLeave={useMarquee && !isMobile ? () => setMarqueePaused(false) : undefined}
-          onPointerDown={handleMarqueePointerDown}
-          onPointerUp={handleMarqueePointerUp}
-          onPointerCancel={handleMarqueePointerCancel}
-        >
-          <div className={`rv-track${useMarquee ? ' rv-track--scroll' : isMobile ? ' rv-track--mobile' : ' rv-track--grid'}`}>
-            {trackReviews.map((review, index) => (
-              <ReviewCard
-                key={`${review.name}-${index}${index >= reviews.length ? '-dup' : ''}`}
-                review={review}
-                reviewerLabel={reviewerLabel}
-                duplicate={index >= reviews.length}
-                style={useMarquee || isMobile ? undefined : { '--i': index }}
-              />
-            ))}
+      {showMarquee ? (
+        <div className="rv-carousel-panel">
+          <div className="rv-track-wrap" ref={trackWrapRef}>
+            <div className={`rv-track rv-track--marquee${isMobile ? ' rv-track--carousel' : ''}`}>
+              {trackReviews.map((review, index) => (
+                <ReviewCard
+                  key={`${review.name}-${index}${index >= reviews.length ? '-dup' : ''}`}
+                  review={review}
+                  reviewerLabel={reviewerLabel}
+                  duplicate={index >= reviews.length}
+                  style={{ '--i': index % reviews.length }}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="wrap">
+          <div className="rv-track rv-track--single">
+            <ReviewCard review={reviews[0]} reviewerLabel={reviewerLabel} style={{ '--i': 0 }} />
+          </div>
+        </div>
+      )}
     </section>
   )
 }

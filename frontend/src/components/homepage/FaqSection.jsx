@@ -34,8 +34,7 @@ export default function FaqSection({ heading, lead, phone, email, items = [] }) 
               <div className="faq-contacts">
                 {phone && (
                   <a
-                    className="faq-contact faq-rise"
-                    style={{ '--d': '.18s' }}
+                    className="faq-contact"
                     href={`tel:${phone.replace(/\s/g, '')}`}
                   >
                     <span className="faq-cic">
@@ -48,8 +47,7 @@ export default function FaqSection({ heading, lead, phone, email, items = [] }) 
                 )}
                 {email && (
                   <a
-                    className="faq-contact faq-rise"
-                    style={{ '--d': '.24s' }}
+                    className="faq-contact"
                     href={`mailto:${email}`}
                   >
                     <span className="faq-cic">
