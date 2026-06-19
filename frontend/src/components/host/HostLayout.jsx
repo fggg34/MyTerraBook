@@ -46,7 +46,7 @@ export default function HostLayout() {
   return (
     <>
       <PageHead {...seo} />
-      <div className="host-panel-page mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="host-panel-page host-account mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="host-panel-topbar">
         <div className="host-panel-topbar__intro">
           <p className="text-sm font-semibold text-slate-500">{copy.eyebrow ?? 'Host panel'}</p>
