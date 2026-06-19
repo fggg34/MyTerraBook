@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import DateRangePicker from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
+import { GUESTHOUSE_CITY_SEARCH_PROPS } from '../../data/guesthouseSearchField'
 import FilterPopover from './FilterPopover'
 import FilterSidePanel from './FilterSidePanel'
 import PriceRangeFilter from './PriceRangeFilter'
@@ -256,8 +257,7 @@ export default function SearchResultsChrome({
                 <div className="hfield hfield--control hfield--primary">
                   <span className="hf-label">City or area</span>
                   <PredictiveSearchField
-                    scope="guesthouse"
-                    allowFreeText
+                    {...GUESTHOUSE_CITY_SEARCH_PROPS}
                     value={guestDraft.city}
                     displayValue={guestCityLabel}
                     placeholder="e.g. Reykjavík"

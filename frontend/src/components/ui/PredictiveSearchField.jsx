@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import useFixedMenuPosition from '../../hooks/useFixedMenuPosition'
 import useSearchSuggestions from '../../hooks/useSearchSuggestions'
@@ -17,6 +17,11 @@ export default function PredictiveSearchField({
   limit = 8,
   enabled = true,
   allowFreeText = false,
+  menuMode = 'fixed',
+  openOnFocus = true,
+  maxMenuHeight = 260,
+  closeOnViewportResize = false,
+  suggestionTypes = null,
   onFocus,
   onActivate,
 }) {
@@ -35,11 +40,19 @@ export default function PredictiveSearchField({
     role,
     pickupLocationId,
     limit,
-    enabled: enabled && open,
+    enabled: enabled && open && (openOnFocus || !!query.trim()),
   })
 
-  const menuStyle = useFixedMenuPosition(inputRef, open, {
-    deps: [suggestions.length, query],
+  const isInlineMenu = menuMode === 'inline'
+
+  const visibleSuggestions = useMemo(() => {
+    if (!suggestionTypes?.length) return suggestions
+    return suggestions.filter((item) => suggestionTypes.includes(item.type))
+  }, [suggestions, suggestionTypes])
+
+  const menuStyle = useFixedMenuPosition(inputRef, open && !isInlineMenu, {
+    maxHeight: maxMenuHeight,
+    deps: [visibleSuggestions.length, query],
   })
 
   useEffect(() => {
@@ -54,6 +67,18 @@ export default function PredictiveSearchField({
     })
     return () => window.cancelAnimationFrame(id)
   }, [pendingFocus])
+
+  useEffect(() => {
+    if (!open || !closeOnViewportResize) return undefined
+
+    const closeMenu = () => {
+      setOpen(false)
+      setHighlight(-1)
+    }
+
+    window.visualViewport?.addEventListener('resize', closeMenu)
+    return () => window.visualViewport?.removeEventListener('resize', closeMenu)
+  }, [open, closeOnViewportResize])
 
   useEffect(() => {
     if (!open) return undefined
@@ -85,7 +110,11 @@ export default function PredictiveSearchField({
   const onInputChange = (event) => {
     const next = event.target.value
     setQuery(next)
-    setOpen(true)
+    if (next.trim() || openOnFocus) {
+      setOpen(true)
+    } else {
+      setOpen(false)
+    }
     setHighlight(-1)
     if (allowFreeText) {
       onChange?.({
@@ -110,16 +139,16 @@ export default function PredictiveSearchField({
       setQuery(displayValue || '')
       return
     }
-    if (!suggestions.length) return
+    if (!visibleSuggestions.length) return
     if (event.key === 'ArrowDown') {
       event.preventDefault()
-      setHighlight((prev) => (prev + 1) % suggestions.length)
+      setHighlight((prev) => (prev + 1) % visibleSuggestions.length)
     } else if (event.key === 'ArrowUp') {
       event.preventDefault()
-      setHighlight((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1))
+      setHighlight((prev) => (prev <= 0 ? visibleSuggestions.length - 1 : prev - 1))
     } else if (event.key === 'Enter' && highlight >= 0) {
       event.preventDefault()
-      selectSuggestion(suggestions[highlight])
+      selectSuggestion(visibleSuggestions[highlight])
     }
   }
 
@@ -133,30 +162,28 @@ export default function PredictiveSearchField({
 
   const handleFocus = () => {
     onFocus?.()
-    setOpen(true)
+    if (openOnFocus) setOpen(true)
   }
 
-  const showMenu = open && (loading || suggestions.length > 0 || query.trim())
+  const showMenu = open && (
+    loading
+    || visibleSuggestions.length > 0
+    || query.trim()
+  )
 
-  const menu = showMenu && menuStyle && (
-    <ul
-      ref={menuRef}
-      id={listId}
-      className="predictive-search-menu"
-      style={menuStyle}
-      role="listbox"
-    >
-      {loading && !suggestions.length && (
+  const menuContent = (
+    <>
+      {loading && !visibleSuggestions.length && (
         <li className="predictive-search-status" role="presentation">
           Searching…
         </li>
       )}
-      {!loading && !suggestions.length && query.trim() && (
+      {!loading && !visibleSuggestions.length && query.trim() && (
         <li className="predictive-search-status" role="presentation">
           No matches found
         </li>
       )}
-      {suggestions.map((item, index) => (
+      {visibleSuggestions.map((item, index) => (
         <li key={item.id} role="presentation">
           <button
             type="button"
@@ -172,11 +199,28 @@ export default function PredictiveSearchField({
           </button>
         </li>
       ))}
+    </>
+  )
+
+  const menu = showMenu && (isInlineMenu || menuStyle) && (
+    <ul
+      ref={menuRef}
+      id={listId}
+      className={`predictive-search-menu${isInlineMenu ? ' predictive-search-menu--inline' : ''}`}
+      style={isInlineMenu
+        ? { maxHeight: maxMenuHeight }
+        : menuStyle}
+      role="listbox"
+    >
+      {menuContent}
     </ul>
   )
 
   return (
-    <div className={`predictive-search ${className}`} ref={rootRef}>
+    <div
+      className={`predictive-search${isInlineMenu ? ' predictive-search--inline' : ''}${showMenu ? ' is-open' : ''} ${className}`.trim()}
+      ref={rootRef}
+    >
       <div className="field-control-wrap">
         {icon}
         <input
@@ -198,7 +242,7 @@ export default function PredictiveSearchField({
         />
       </div>
 
-      {menu && createPortal(menu, document.body)}
+      {menu && (isInlineMenu ? menu : createPortal(menu, document.body))}
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
+import { GUESTHOUSE_CITY_SEARCH_PROPS } from '../../data/guesthouseSearchField'
 import { useBookingRules } from '../../hooks/useBookingRules'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useLocationOptions, { toFieldSelectOptions, useAutoSelectLocation } from '../../hooks/useLocationOptions'
@@ -292,8 +293,7 @@ export default function BookingModule({
       <div className="field field--primary">
         <span className="flabel">City or area</span>
         <PredictiveSearchField
-          scope="guesthouse"
-          allowFreeText
+          {...GUESTHOUSE_CITY_SEARCH_PROPS}
           value={guestForm.city}
           displayValue={guestCityLabel}
           placeholder="e.g. Reykjavík, Akureyri"

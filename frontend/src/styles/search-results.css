@@ -128,6 +128,24 @@ nav.main a.nav-collapsible{
 .hfield--dates{min-width:200px;}
 .hfield--control .field-select,
 .hfield--control .predictive-search{width:100%;min-width:0;}
+.hfield--control .predictive-search--inline{
+  position:relative;
+}
+.hfield--control .predictive-search-menu--inline{
+  position:absolute;
+  top:calc(100% + 4px);
+  left:0;
+  right:0;
+  width:100%;
+  z-index:1200;
+}
+.hsearch:has(.predictive-search.is-open),
+.hsearch-inner:has(.predictive-search.is-open){
+  overflow:visible;
+}
+.hfield--control:has(.predictive-search.is-open){
+  z-index:6;
+}
 .hfield--control .field-control-wrap{
   display:flex;align-items:center;gap:8px;min-width:0;
 }

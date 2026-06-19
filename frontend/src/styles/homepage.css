@@ -321,6 +321,21 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   .field:hover{border-color:#c9d3e2;}
   .predictive-search,
   .field-select{width:100%;min-width:0;}
+  .predictive-search--inline{
+    position:relative;
+  }
+  .predictive-search-menu--inline{
+    position:absolute;
+    top:calc(100% + 4px);
+    left:0;
+    right:0;
+    width:100%;
+    z-index:1200;
+  }
+  .booking-body:has(.predictive-search.is-open),
+  .field:has(.predictive-search.is-open){
+    z-index:6;
+  }
   .field-select.disabled{opacity:.58;}
   .field-select.disabled .field-select-trigger{cursor:not-allowed;}
   .field-select-trigger{
