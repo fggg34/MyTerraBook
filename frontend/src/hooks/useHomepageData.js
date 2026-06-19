@@ -1,19 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
-import { getBootstrappedHomepage } from '../utils/siteBootstrap'
-import { preloadSiteAssets, readHomepageCache, writeHomepageCache } from '../utils/siteContentCache'
-
-const bootstrappedHomepage = getBootstrappedHomepage()
-const cachedHomepage = readHomepageCache()
-const initialHomepage = bootstrappedHomepage ?? cachedHomepage
-const hasInstantHomepage = initialHomepage != null
+import { getInstantHomepage } from '../utils/siteBootstrap'
+import { preloadSiteAssets, writeHomepageCache } from '../utils/siteContentCache'
 
 export default function useHomepageData() {
-  const [homepageData, setHomepageData] = useState(initialHomepage)
-  const [loading, setLoading] = useState(!hasInstantHomepage)
+  const hadInstantHomepageRef = useRef(Boolean(getInstantHomepage()))
+  const [homepageData, setHomepageData] = useState(() => getInstantHomepage())
+  const [loading, setLoading] = useState(() => !hadInstantHomepageRef.current)
 
   useEffect(() => {
     let cancelled = false
+    const instantHomepage = getInstantHomepage()
+
+    if (instantHomepage) {
+      setHomepageData(instantHomepage)
+      setLoading(false)
+    } else {
+      setLoading(true)
+    }
 
     api
       .get('/homepage')
@@ -23,11 +27,11 @@ export default function useHomepageData() {
         setHomepageData(data)
         if (data) {
           writeHomepageCache(data)
-          preloadSiteAssets(null, data)
+          preloadSiteAssets(null, data, null, null)
         }
       })
       .catch(() => {
-        if (!cancelled && !hasInstantHomepage) setHomepageData(null)
+        if (!cancelled && !instantHomepage) setHomepageData(null)
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -41,6 +45,6 @@ export default function useHomepageData() {
   return {
     homepageData,
     homepageLoading: loading,
-    hasInstantHomepage,
+    hasInstantHomepage: hadInstantHomepageRef.current,
   }
 }

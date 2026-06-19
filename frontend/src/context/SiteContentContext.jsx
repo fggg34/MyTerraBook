@@ -5,28 +5,23 @@ import {
   defaultSiteContentData,
 } from '../data/defaultSiteContentData'
 import { mergePageContent } from '../utils/mergePageContent'
-import { getBootstrappedSiteContent, mergeBranding } from '../utils/siteBootstrap'
+import { getInstantSiteContent, mergeBranding } from '../utils/siteBootstrap'
 import {
   preloadSiteAssets,
   readBlogPostsCache,
   readHomepageCache,
-  readSiteContentCache,
   readSitePagesCache,
+  writeHomepageCache,
   writeSiteContentCache,
 } from '../utils/siteContentCache'
 
 const SiteContentContext = createContext(null)
 
-const bootstrappedPages = getBootstrappedSiteContent()
-const cachedPages = readSiteContentCache()
-const initialPages = bootstrappedPages ?? cachedPages ?? {}
-const hasInstantContent = Boolean(bootstrappedPages ?? cachedPages)
-
 export function SiteContentProvider({ children }) {
-  const [pages, setPages] = useState(initialPages)
-  const [loading, setLoading] = useState(!hasInstantContent)
+  const hadInstantContentRef = useRef(Boolean(getInstantSiteContent()))
+  const [pages, setPages] = useState(() => getInstantSiteContent() ?? {})
+  const [loading, setLoading] = useState(() => !hadInstantContentRef.current)
   const [useDefaults, setUseDefaults] = useState(false)
-  const hadInstantContentRef = useRef(hasInstantContent)
 
   useEffect(() => {
     let cancelled = false
@@ -38,6 +33,10 @@ export function SiteContentProvider({ children }) {
         const apiPages = res.data?.data ?? res.data ?? {}
         setPages(apiPages)
         writeSiteContentCache(apiPages)
+        const cachedHomepage = readHomepageCache()
+        if (!cachedHomepage?.hero) {
+          writeHomepageCache(buildSiteDataFromContent(apiPages, { useDefaults: false }))
+        }
         preloadSiteAssets(
           apiPages,
           readHomepageCache(),

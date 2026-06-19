@@ -9,14 +9,11 @@ import {
   readSitePageCache,
   readSitePagesCache,
   writeSitePageCache,
-  writeSitePagesCache,
 } from '../utils/siteContentCache'
-
-const bootstrappedSitePages = getBootstrappedSitePages() ?? readSitePagesCache()
 
 function getInstantSitePage(slug) {
   if (!slug) return null
-  return getBootstrappedSitePage(slug) ?? readSitePageCache(slug) ?? bootstrappedSitePages?.[slug] ?? null
+  return getBootstrappedSitePage(slug) ?? readSitePageCache(slug) ?? getBootstrappedSitePages()?.[slug] ?? readSitePagesCache()?.[slug] ?? null
 }
 
 export default function useSitePage(slug) {

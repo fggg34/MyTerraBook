@@ -1,10 +1,8 @@
 import {
-  hasInstantSiteData,
   preloadAllCachedAssets,
   preloadSiteAssets,
   readBlogPostsCache,
   readHomepageCache,
-  readSiteContentCache,
   readSitePagesCache,
   seedClientCacheFromBootstrap,
 } from './siteContentCache'
@@ -13,6 +11,8 @@ import {
   getBootstrappedHomepage,
   getBootstrappedSiteContent,
   getBootstrappedSitePages,
+  getInstantHomepage,
+  hasInstantSiteData,
   readSiteBootstrap,
 } from './siteBootstrap'
 
@@ -25,6 +25,19 @@ function resolveBootstrapApiUrl() {
     return '/backend/api/bootstrap'
   }
   return 'http://127.0.0.1:8080/api/bootstrap'
+}
+
+function isHomepageCacheComplete() {
+  const homepage = readHomepageCache() ?? getInstantHomepage()
+  return Boolean(homepage?.hero?.heading || homepage?.hero?.backgroundImage)
+}
+
+function needsBootstrapTopUp() {
+  return (
+    !readSitePagesCache()?.about
+    || !readBlogPostsCache()?.length
+    || !isHomepageCacheComplete()
+  )
 }
 
 export async function ensureClientSiteCache() {
@@ -42,7 +55,7 @@ export async function ensureClientSiteCache() {
 
   if (hasInstantSiteData()) {
     preloadAllCachedAssets()
-    if (!readSitePagesCache()?.about || !readBlogPostsCache()?.length) {
+    if (needsBootstrapTopUp()) {
       fetchBootstrapPayload().then((payload) => {
         if (payload) seedClientCacheFromBootstrap(payload)
       })

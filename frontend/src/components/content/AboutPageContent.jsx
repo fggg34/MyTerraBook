@@ -6,6 +6,7 @@ import { useSiteLayout } from '../../context/SiteLayoutContext'
 import { usePageContent, useSiteContent } from '../../context/SiteContentContext'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import useHomepageData from '../../hooks/useHomepageData'
+import { getInstantHomepage } from '../../utils/siteBootstrap'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useSectionReveal from '../../hooks/useSectionReveal'
@@ -78,15 +79,19 @@ export default function AboutPageContent() {
   const valuesRef = useRef(null)
   const offerRef = useRef(null)
 
+  const instantHomepage = getInstantHomepage()
   const contentReady =
     !pageLoading
     && (hasInstantContent || !siteLoading)
-    && (hasInstantHomepage || !homepageLoading)
+    && (hasInstantHomepage || Boolean(instantHomepage) || !homepageLoading)
 
   const rentSection = useMemo(() => {
     if (!contentReady) return {}
-    return mergeHomepageData({ ...siteData, ...homepageData }, { useImageFallbacks: useDefaults }).rentSection ?? {}
-  }, [siteData, homepageData, contentReady, useDefaults])
+    return mergeHomepageData(
+      { ...siteData, ...(homepageData ?? instantHomepage ?? {}) },
+      { useImageFallbacks: useDefaults },
+    ).rentSection ?? {}
+  }, [siteData, homepageData, instantHomepage, contentReady, useDefaults])
 
   const offerCards = useMemo(() => {
     const cards = rentSection.cards ?? []

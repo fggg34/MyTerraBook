@@ -133,10 +133,6 @@ export function writeBlogPostCache(slug, post) {
   writeEntry(KEYS.blogPosts, next)
 }
 
-export function hasInstantSiteData() {
-  return Boolean(readSiteContentCache() || readHomepageCache())
-}
-
 function collectImageUrls(value, urls, depth = 0) {
   if (depth > 8 || value == null) return
 

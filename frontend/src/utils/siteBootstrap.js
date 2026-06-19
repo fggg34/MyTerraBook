@@ -1,3 +1,6 @@
+import { buildSiteDataFromContent } from '../data/defaultSiteContentData'
+import { readHomepageCache, readSiteContentCache } from './siteContentCache'
+
 /**
  * Read CMS bootstrap payload injected by Laravel into the production HTML shell.
  * In local dev (Vite), this is null until /api/bootstrap is fetched.
@@ -54,6 +57,33 @@ export function getInitialSiteContent(getCached = () => null) {
 
 export function getInitialHomepage(getCached = () => null) {
   return getBootstrappedHomepage() ?? getCached()
+}
+
+export function getInstantSiteContent() {
+  return getBootstrappedSiteContent() ?? readSiteContentCache()
+}
+
+export function getInstantHomepage() {
+  const bootstrapHomepage = getBootstrappedHomepage()
+  if (bootstrapHomepage && Object.keys(bootstrapHomepage).length > 0) {
+    return bootstrapHomepage
+  }
+
+  const cachedHomepage = readHomepageCache()
+  if (cachedHomepage && Object.keys(cachedHomepage).length > 0) {
+    return cachedHomepage
+  }
+
+  const pages = getInstantSiteContent()
+  if (pages && (pages.home || pages.global)) {
+    return buildSiteDataFromContent(pages, { useDefaults: false })
+  }
+
+  return null
+}
+
+export function hasInstantSiteData() {
+  return Boolean(getInstantSiteContent() || getInstantHomepage())
 }
 
 export function getBootstrappedBranding() {

@@ -11,10 +11,8 @@ import {
   writeBlogPostsCache,
 } from '../utils/siteContentCache'
 
-const bootstrappedPosts = getBootstrappedBlogPosts() ?? readBlogPostsCache() ?? []
-
 function getInstantBlogPosts() {
-  return getBootstrappedBlogPosts() ?? readBlogPostsCache() ?? bootstrappedPosts
+  return getBootstrappedBlogPosts() ?? readBlogPostsCache() ?? []
 }
 
 function getInstantBlogPost(slug) {
