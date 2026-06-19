@@ -1,18 +1,35 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { getDefaultSitePage } from '../data/defaultSitePageData'
-import { readSitePageCache, writeSitePageCache } from '../utils/siteContentCache'
+import {
+  getBootstrappedSitePage,
+  getBootstrappedSitePages,
+} from '../utils/siteBootstrap'
+import {
+  readSitePageCache,
+  readSitePagesCache,
+  writeSitePageCache,
+  writeSitePagesCache,
+} from '../utils/siteContentCache'
+
+const bootstrappedSitePages = getBootstrappedSitePages() ?? readSitePagesCache()
+
+function getInstantSitePage(slug) {
+  if (!slug) return null
+  return getBootstrappedSitePage(slug) ?? readSitePageCache(slug) ?? bootstrappedSitePages?.[slug] ?? null
+}
 
 export default function useSitePage(slug) {
-  const [page, setPage] = useState(() => (slug ? readSitePageCache(slug) : null))
-  const [loading, setLoading] = useState(() => Boolean(slug) && !readSitePageCache(slug))
+  const instantPage = getInstantSitePage(slug)
+  const [page, setPage] = useState(instantPage)
+  const [loading, setLoading] = useState(Boolean(slug) && !instantPage)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!slug) return undefined
 
     let cancelled = false
-    const cachedPage = readSitePageCache(slug)
+    const cachedPage = getInstantSitePage(slug)
     const defaultPage = getDefaultSitePage(slug)
 
     if (cachedPage) {
@@ -50,4 +67,9 @@ export default function useSitePage(slug) {
   }, [slug])
 
   return { page, loading, error }
+}
+
+export function hydrateSitePagesFromBootstrap(sitePages) {
+  if (!sitePages || typeof sitePages !== 'object') return
+  writeSitePagesCache(sitePages)
 }

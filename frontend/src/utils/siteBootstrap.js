@@ -1,6 +1,6 @@
 /**
  * Read CMS bootstrap payload injected by Laravel into the production HTML shell.
- * In local dev (Vite), this is null and the app fetches /api/site-content instead.
+ * In local dev (Vite), this is null until /api/bootstrap is fetched.
  */
 export function readSiteBootstrap() {
   if (typeof window === 'undefined') return null
@@ -23,6 +23,29 @@ export function getBootstrappedHomepage() {
   const homepage = bootstrap?.homepage
   if (!homepage || typeof homepage !== 'object') return null
   return homepage
+}
+
+export function getBootstrappedSitePages() {
+  const bootstrap = readSiteBootstrap()
+  const sitePages = bootstrap?.sitePages
+  if (!sitePages || typeof sitePages !== 'object') return null
+  return sitePages
+}
+
+export function getBootstrappedSitePage(slug) {
+  if (!slug) return null
+  return getBootstrappedSitePages()?.[slug] ?? null
+}
+
+export function getBootstrappedBlogPosts() {
+  const bootstrap = readSiteBootstrap()
+  const posts = bootstrap?.blogPosts
+  return Array.isArray(posts) ? posts : null
+}
+
+export function getBootstrappedBlogPost(slug) {
+  if (!slug) return null
+  return getBootstrappedBlogPosts()?.find((post) => post?.slug === slug) ?? null
 }
 
 export function getInitialSiteContent(getCached = () => null) {

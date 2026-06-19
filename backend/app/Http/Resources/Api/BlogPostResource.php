@@ -24,7 +24,8 @@ class BlogPostResource extends JsonResource
             'kicker' => $this->kicker,
             'excerpt' => $this->excerpt,
             'body' => $this->when(
-                $request->route()?->getName() === 'api.blog-posts.show',
+                $request->route()?->getName() === 'api.blog-posts.show'
+                    || (bool) $request->input('include_body'),
                 $this->body,
             ),
             'featured_image' => $this->resolveImageUrl($this->featured_image),

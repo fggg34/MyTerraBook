@@ -6,7 +6,14 @@ import {
 } from '../data/defaultSiteContentData'
 import { mergePageContent } from '../utils/mergePageContent'
 import { getBootstrappedSiteContent, mergeBranding } from '../utils/siteBootstrap'
-import { preloadSiteAssets, readSiteContentCache, writeSiteContentCache } from '../utils/siteContentCache'
+import {
+  preloadSiteAssets,
+  readBlogPostsCache,
+  readHomepageCache,
+  readSiteContentCache,
+  readSitePagesCache,
+  writeSiteContentCache,
+} from '../utils/siteContentCache'
 
 const SiteContentContext = createContext(null)
 
@@ -31,7 +38,12 @@ export function SiteContentProvider({ children }) {
         const apiPages = res.data?.data ?? res.data ?? {}
         setPages(apiPages)
         writeSiteContentCache(apiPages)
-        preloadSiteAssets(apiPages, null)
+        preloadSiteAssets(
+          apiPages,
+          readHomepageCache(),
+          readSitePagesCache(),
+          readBlogPostsCache(),
+        )
       })
       .catch(() => {
         if (cancelled) return

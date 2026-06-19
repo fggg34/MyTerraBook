@@ -3,17 +3,31 @@
 namespace App\Services;
 
 use App\Data\SiteContentDefaults;
+use App\Http\Resources\Api\BlogPostResource;
+use App\Models\BlogPost;
 use App\Models\Car;
 use App\Models\DailyFare;
 use App\Models\GuestHouse;
 use App\Models\SiteContentPage;
+use App\Models\SitePage;
 use App\Support\ResolvesPublicStorageUrls;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SiteContentService
 {
     use ResolvesPublicStorageUrls;
+
+    /** @var list<string> */
+    private const SITE_PAGE_SLUGS = [
+        'about',
+        'faq',
+        'contact',
+        'terms',
+        'privacy',
+        'cookies',
+    ];
 
     /**
      * @return array<string, mixed>
@@ -109,20 +123,143 @@ class SiteContentService
     /**
      * Payload embedded in the SPA HTML shell for first-paint CMS content.
      *
-     * @return array{siteContent: array<string, array<string, mixed>>, homepage: array<string, mixed>}
+     * @return array{
+     *     siteContent: array<string, array<string, mixed>>,
+     *     homepage: array<string, mixed>,
+     *     sitePages: array<string, array<string, mixed>>,
+     *     blogPosts: list<array<string, mixed>>
+     * }
      */
     public function bootstrapPayload(): array
     {
         return [
             'siteContent' => $this->allPagesCached(),
             'homepage' => $this->homepagePayloadCached(),
+            'sitePages' => $this->allSitePagesCached(),
+            'blogPosts' => $this->blogPostsBootstrapCached(),
         ];
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function allSitePagesCached(): array
+    {
+        return Cache::remember('site_content.site_pages', 3600, fn (): array => $this->allSitePages());
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function allSitePages(): array
+    {
+        $result = [];
+
+        foreach (self::SITE_PAGE_SLUGS as $slug) {
+            $payload = $this->sitePageApiPayload($slug);
+            if ($payload !== null) {
+                $result[$slug] = $payload;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function sitePageApiPayload(string $slug): ?array
+    {
+        $content = $this->pageContent($slug);
+
+        if ($content !== []) {
+            return $this->buildSitePageApiData($slug, $content);
+        }
+
+        $page = SitePage::query()
+            ->where('slug', $slug)
+            ->where('is_published', true)
+            ->first();
+
+        if ($page === null) {
+            return null;
+        }
+
+        return [
+            'slug' => $page->slug,
+            'title' => $page->title,
+            'eyebrow' => $page->eyebrow,
+            'lead' => $page->lead,
+            'body' => $page->body,
+            'content' => $page->content ?? [],
+            'published_at' => $page->published_at?->toIso8601String(),
+        ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function blogPostsBootstrapCached(): array
+    {
+        return Cache::remember('site_content.blog_posts_bootstrap', 3600, fn (): array => $this->blogPostsBootstrap());
+    }
+
+    /**
+     * Full published blog posts for client-side cache (includes article body).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function blogPostsBootstrap(): array
+    {
+        $posts = BlogPost::query()
+            ->published()
+            ->orderBy('sort_order')
+            ->orderByDesc('published_at')
+            ->get();
+
+        $mapped = BlogPostResource::collection($posts)
+            ->toArray(Request::create('/api/bootstrap', 'GET', ['include_body' => true]));
+
+        return array_values(array_is_list($mapped) ? $mapped : ($mapped['data'] ?? []));
     }
 
     public function clearCache(): void
     {
         Cache::forget('site_content.all');
         Cache::forget('site_content.homepage');
+        Cache::forget('site_content.site_pages');
+        Cache::forget('site_content.blog_posts_bootstrap');
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function buildSitePageApiData(string $slug, array $content): array
+    {
+        return [
+            'slug' => $slug,
+            'title' => $content['hero']['title'] ?? '',
+            'eyebrow' => $content['hero']['eyebrow'] ?? '',
+            'lead' => $content['hero']['lead'] ?? '',
+            'body' => $content['body'] ?? null,
+            'content' => array_filter([
+                'phone' => $content['phone'] ?? null,
+                'email' => $content['email'] ?? null,
+                'items' => $content['items'] ?? null,
+                'address' => $content['address'] ?? null,
+                'hours' => $content['hours'] ?? null,
+                'show_form' => $content['show_form'] ?? null,
+                'stats' => $content['stats'] ?? null,
+                'pillars' => $content['pillars'] ?? null,
+                'offerings' => $content['offerings'] ?? null,
+                'categories' => $content['categories'] ?? null,
+                'quickLinks' => $content['quickLinks'] ?? null,
+                'cta' => $content['cta'] ?? null,
+                'formLabels' => $content['formLabels'] ?? null,
+            ], fn ($value) => $value !== null),
+            'published_at' => now()->toIso8601String(),
+        ];
     }
 
     /**

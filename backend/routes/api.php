@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\BlogPostController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\HomepageController;
+use App\Http\Controllers\Api\SiteBootstrapController;
 use App\Http\Controllers\Api\SiteContentController;
 use App\Http\Controllers\Api\SitePageController;
 use App\Http\Controllers\Api\MeGuestHouseBookingPdfController;
@@ -78,6 +79,7 @@ Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
 Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
 Route::get('/homepage', [HomepageController::class, 'show']);
+Route::get('/bootstrap', [SiteBootstrapController::class, 'show']);
 Route::get('/site-content', [SiteContentController::class, 'index']);
 Route::get('/site-content/{pageKey}', [SiteContentController::class, 'show']);
 Route::get('/site-pages/{slug}', [SitePageController::class, 'show']);

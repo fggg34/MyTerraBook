@@ -38,6 +38,7 @@ class BlogPostObserver
             'slug',
             'title',
             'excerpt',
+            'body',
             'featured_image',
             'image_alt',
             'kicker',
