@@ -2216,6 +2216,21 @@ a.host-overview-card:hover .host-overview-card-link {
   flex: 0 0 auto;
 }
 
+/* Neutralize global homepage `.host-btn` / `.host-actions` rules (defined
+   unscoped in homepage.css) that otherwise leak into the dashboard at
+   <=560px and stretch every panel control to full width. Higher specificity
+   keeps panel buttons sized to content unless a layout explicitly stretches
+   them (e.g. table action rows). */
+.host-panel-topbar .host-btn,
+.host-shell .host-btn {
+  width: auto;
+}
+
+.host-shell .host-actions {
+  flex-direction: row;
+  align-items: center;
+}
+
 /* ============================================================
    Tablet / mobile — shell becomes a stacked card with a
    horizontal scrollable tab nav instead of a tall sidebar
