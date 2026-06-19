@@ -39,6 +39,7 @@ export default function Header({
   const userMenuRef = useRef(null)
   const headerRef = useRef(null)
   const hamburgerRef = useRef(null)
+  const mobileMenuScrollRef = useRef(null)
 
   const role = normalizeUserRole(user)
   const dashboardPath = user ? getPostLoginPath(user) : null
@@ -58,28 +59,37 @@ export default function Header({
   }, [mobileOpen])
 
   useEffect(() => {
-    if (!mobileOpen || !headerRef.current) {
-      document.documentElement.style.removeProperty('--mobile-nav-top')
-      return undefined
-    }
-    const header = headerRef.current
-    const syncMenuOffset = () => {
-      const chrome = header.querySelector('.nav-chrome')
-      const bottom = chrome?.getBoundingClientRect().bottom ?? header.getBoundingClientRect().bottom
-      document.documentElement.style.setProperty('--mobile-nav-top', `${bottom}px`)
-    }
-    syncMenuOffset()
-    requestAnimationFrame(syncMenuOffset)
-    window.addEventListener('resize', syncMenuOffset)
-    return () => window.removeEventListener('resize', syncMenuOffset)
-  }, [mobileOpen])
-
-  useEffect(() => {
     if (!mobileOpen) return undefined
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+
+    mobileMenuScrollRef.current?.scrollTo(0, 0)
+
+    const scrollY = window.scrollY
+    const body = document.body
+    const html = document.documentElement
+    const prevBody = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      touchAction: body.style.touchAction,
+    }
+    const prevHtmlOverflow = html.style.overflow
+
+    body.style.overflow = 'hidden'
+    body.style.position = 'fixed'
+    body.style.top = `-${scrollY}px`
+    body.style.width = '100%'
+    body.style.touchAction = 'none'
+    html.style.overflow = 'hidden'
+
     return () => {
-      document.body.style.overflow = prevOverflow
+      body.style.overflow = prevBody.overflow
+      body.style.position = prevBody.position
+      body.style.top = prevBody.top
+      body.style.width = prevBody.width
+      body.style.touchAction = prevBody.touchAction
+      html.style.overflow = prevHtmlOverflow
+      window.scrollTo(0, scrollY)
     }
   }, [mobileOpen])
 
@@ -126,7 +136,7 @@ export default function Header({
         aria-modal="true"
         aria-label="Navigation menu"
       >
-        <div className="mobile-menu-scroll">
+        <div className="mobile-menu-scroll" ref={mobileMenuScrollRef}>
           <div className="mobile-menu-main">
             {mobileNavLinks.map((link) => (
               <NavLink key={link.label} href={link.href} onClick={closeMobile} className="mobile-menu-link">
