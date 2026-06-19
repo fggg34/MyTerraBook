@@ -80,12 +80,10 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   header.nav.menu-open{z-index:10002;background:#fff;isolation:isolate;}
   body.mobile-nav-open .topbar{display:none;}
   body.mobile-nav-open{
-    overflow:hidden;
     touch-action:none;
   }
   html.scroll-lock,
   body.scroll-lock{
-    overflow:hidden !important;
     overscroll-behavior:none;
     touch-action:none;
   }
@@ -895,6 +893,15 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   }
   @media(max-width:768px){
     :root{--nav-h:64px;}
+    body.mobile-nav-open header.nav.menu-open{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      width:100%;
+      z-index:10002;
+      background:#fff;
+    }
     header.nav .wrap{
       display:grid;
       grid-template-columns:1fr auto 1fr;
