@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import useFixedMenuPosition from '../../hooks/useFixedMenuPosition'
 import useSearchSuggestions from '../../hooks/useSearchSuggestions'
 
 export default function PredictiveSearchField({
@@ -16,15 +17,17 @@ export default function PredictiveSearchField({
   limit = 8,
   enabled = true,
   allowFreeText = false,
+  onFocus,
+  onActivate,
 }) {
   const listId = useId()
   const rootRef = useRef(null)
   const inputRef = useRef(null)
   const menuRef = useRef(null)
+  const [pendingFocus, setPendingFocus] = useState(false)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState(displayValue || '')
   const [highlight, setHighlight] = useState(-1)
-  const [menuStyle, setMenuStyle] = useState(null)
 
   const { suggestions, loading } = useSearchSuggestions({
     scope,
@@ -35,34 +38,22 @@ export default function PredictiveSearchField({
     enabled: enabled && open,
   })
 
+  const menuStyle = useFixedMenuPosition(inputRef, open, {
+    deps: [suggestions.length, query],
+  })
+
   useEffect(() => {
     setQuery(displayValue || '')
   }, [displayValue])
 
-  const updateMenuPosition = useCallback(() => {
-    const el = inputRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    setMenuStyle({
-      position: 'fixed',
-      top: rect.bottom + 6,
-      left: rect.left,
-      width: rect.width,
-      zIndex: 1200,
-    })
-  }, [])
-
   useEffect(() => {
-    if (!open) return undefined
-    updateMenuPosition()
-    const onScrollOrResize = () => updateMenuPosition()
-    window.addEventListener('scroll', onScrollOrResize, true)
-    window.addEventListener('resize', onScrollOrResize)
-    return () => {
-      window.removeEventListener('scroll', onScrollOrResize, true)
-      window.removeEventListener('resize', onScrollOrResize)
-    }
-  }, [open, updateMenuPosition, suggestions.length])
+    if (!pendingFocus) return undefined
+    setPendingFocus(false)
+    const id = window.requestAnimationFrame(() => {
+      inputRef.current?.focus()
+    })
+    return () => window.cancelAnimationFrame(id)
+  }, [pendingFocus])
 
   useEffect(() => {
     if (!open) return undefined
@@ -132,6 +123,19 @@ export default function PredictiveSearchField({
     }
   }
 
+  const handleActivate = (event) => {
+    const shouldDeferFocus = onActivate?.(event) === true
+    if (shouldDeferFocus) {
+      setPendingFocus(true)
+      event.preventDefault()
+    }
+  }
+
+  const handleFocus = () => {
+    onFocus?.()
+    setOpen(true)
+  }
+
   const showMenu = open && (loading || suggestions.length > 0 || query.trim())
 
   const menu = showMenu && menuStyle && (
@@ -182,10 +186,8 @@ export default function PredictiveSearchField({
           value={query}
           placeholder={placeholder}
           onChange={onInputChange}
-          onFocus={() => {
-            setOpen(true)
-            updateMenuPosition()
-          }}
+          onPointerDown={handleActivate}
+          onFocus={handleFocus}
           onKeyDown={onKeyDown}
           aria-label={ariaLabel}
           aria-expanded={showMenu}

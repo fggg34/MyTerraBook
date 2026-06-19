@@ -26,7 +26,9 @@ const pick = (name, price, gearbox, seats, sleeps, bags, image = IMG.cardCamper,
 export const defaultHomepageData = {
   topbar: {
     text: 'Become a Host and start earning money!',
+    mobileText: 'Become a Host — start earning today!',
     linkLabel: 'List your van or guesthouse',
+    mobileLinkLabel: 'List your van',
     linkHref: '/become-a-host',
   },
   header: {
@@ -47,6 +49,9 @@ export const defaultHomepageData = {
     subtitle:
       'Campervans, 4×4s and warm guesthouses, everything you need for the Ring Road, in one booking.',
     backgroundImage: IMG.hero,
+    mobileHeading: 'Iceland road trips, one booking.',
+    mobileSubtitle: 'Campervans, 4×4s & guesthouses for the Ring Road.',
+    mobileBackgroundImage: IMG.cardCamper,
     tabs: [
       { id: 'campervan', label: 'Campervan' },
       { id: 'cars', label: 'Cars' },

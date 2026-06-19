@@ -103,7 +103,7 @@ trait ResolvesPublicStorageUrls
     {
         $imageSectionKeys = [
             'branding' => ['logoImage', 'favicon'],
-            'hero' => ['backgroundImage', 'image'],
+            'hero' => ['backgroundImage', 'mobileBackgroundImage', 'image'],
             'rentSection' => [],
             'whySection' => ['photo'],
             'howSection' => [],

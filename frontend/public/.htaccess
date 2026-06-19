@@ -6,13 +6,15 @@
   AddType image/svg+xml svg svgz
 </IfModule>
 
-# SPA: serve Laravel shell with CMS bootstrap for client routes; do not rewrite Laravel API under /backend
+# SPA: serve storefront shell (index.php injects CMS bootstrap; falls back to index.html).
+# Nginx equivalent: try_files $uri $uri/ /index.php /index.html; (see nginx.conf.example)
 Options -Indexes
 DirectoryIndex index.php index.html
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  RewriteRule ^index\.html$ /backend/spa-shell [L]
+  # Run index.html through the shell so bootstrap is injected (same as client routes)
+  RewriteRule ^index\.html$ index.php [L]
   # Do not rewrite real files/dirs (assets, vite.svg, etc.) or Laravel admin/Livewire paths
   RewriteCond %{REQUEST_URI} !^/backend
   RewriteCond %{REQUEST_URI} !^/admin(/|$)
@@ -21,5 +23,5 @@ DirectoryIndex index.php index.html
   RewriteCond %{REQUEST_URI} !^/sanctum(/|$)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^ /backend/spa-shell [L]
+  RewriteRule ^ index.php [L]
 </IfModule>

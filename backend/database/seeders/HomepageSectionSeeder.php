@@ -15,6 +15,7 @@ class HomepageSectionSeeder extends Seeder
                 'sort_order' => 1,
                 'content' => [
                     'text' => 'Become a Host and start earning money!',
+                    'mobileText' => 'Become a Host — start earning today!',
                     'linkLabel' => 'List your van or guesthouse',
                     'linkHref' => '/become-a-host',
                     'isVisible' => true,
@@ -44,6 +45,9 @@ class HomepageSectionSeeder extends Seeder
                     'heading' => "Book with the world's leading roadtrip provider!",
                     'subtitle' => 'Campervans, 4×4s and warm guesthouses, everything you need for the Ring Road, in one booking.',
                     'backgroundImage' => '/images/homepage/hero.jpg',
+                    'mobileHeading' => 'Iceland road trips, one booking.',
+                    'mobileSubtitle' => 'Campervans, 4×4s & guesthouses for the Ring Road.',
+                    'mobileBackgroundImage' => '/images/homepage/cardcamper.jpg',
                     'tabs' => [
                         ['id' => 'campervan', 'label' => 'Campervan'],
                         ['id' => 'cars', 'label' => 'Cars'],

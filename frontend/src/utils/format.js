@@ -38,11 +38,12 @@ export function createPriceFormatter({
   const formatConverted = (amountInBase) => {
     const converted = convertFromBase(amountInBase, displayCurrency, exchangeRates, baseCurrency)
     const maxDecimals = currencyMeta.decimals ?? 2
+    const minDecimals = maxDecimals >= 2 ? 2 : maxDecimals
     try {
       return new Intl.NumberFormat('en-GB', {
         style: 'currency',
         currency: displayCurrency,
-        minimumFractionDigits: 0,
+        minimumFractionDigits: minDecimals,
         maximumFractionDigits: maxDecimals,
       }).format(converted)
     } catch {

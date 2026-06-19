@@ -39,7 +39,8 @@ export default function useSearchResultsIntroEffects(rootRef, { ready = true } =
 
     const init = async () => {
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      if (reduce) {
+      const isMobile = window.matchMedia('(max-width: 768px)').matches
+      if (reduce || isMobile) {
         revealStatic(root)
         return
       }

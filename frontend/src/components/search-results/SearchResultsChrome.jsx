@@ -6,6 +6,7 @@ import FilterPopover from './FilterPopover'
 import FilterSidePanel from './FilterSidePanel'
 import PriceRangeFilter from './PriceRangeFilter'
 import useSearchChromeDraft from '../../hooks/useSearchChromeDraft'
+import useMediaQuery from '../../hooks/useMediaQuery'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { SORT_OPTIONS } from '../../data/searchResultsConfig'
 import { defaultPriceFilters, isPriceFilterActive } from '../../utils/searchPriceBounds'
@@ -70,6 +71,8 @@ export default function SearchResultsChrome({
 }) {
   const [sortOpen, setSortOpen] = useState(false)
   const [openPop, setOpenPop] = useState(null)
+  const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false)
+  const isMobileCompact = useMediaQuery('(max-width: 768px)')
   const priceWrapRef = useRef(null)
   const transWrapRef = useRef(null)
   const allFiltersWrapRef = useRef(null)
@@ -98,6 +101,34 @@ export default function SearchResultsChrome({
     guestStartDate,
     guestEndDate,
   } = useSearchChromeDraft({ vehicleType, query, updateSearch })
+
+  const hasSearchDetails = useMemo(() => {
+    if (isGuesthouse) {
+      return Boolean(query.city || query.check_in || query.check_out)
+    }
+    return Boolean(
+      query.pickup_location_id ||
+      query.dropoff_location_id ||
+      query.pickup_at ||
+      query.dropoff_at,
+    )
+  }, [isGuesthouse, query])
+
+  const showMobileDetails = !isMobileCompact || mobileDetailsOpen || hasSearchDetails
+
+  useEffect(() => {
+    setMobileDetailsOpen(false)
+  }, [vehicleType, isGuesthouse])
+
+  useEffect(() => {
+    if (isMobileCompact && hasSearchDetails) {
+      setMobileDetailsOpen(true)
+    }
+  }, [isMobileCompact, hasSearchDetails])
+
+  const expandMobileDetails = () => {
+    if (isMobileCompact) setMobileDetailsOpen(true)
+  }
 
   const pickupOptions = useMemo(
     () => pickupLocations.map((loc) => ({ value: loc.value, label: loc.label, subtitle: loc.subtitle })),
@@ -212,10 +243,17 @@ export default function SearchResultsChrome({
     <>
       <div className="hsearch" id="hsearch">
         <div className="hsearch-inner">
-          <div className="hsearch-bar">
+          {!isGuesthouse && pickupEmpty && showMobileDetails && (
+            <p className="location-empty-hint" role="status">
+              Pickup locations are being configured. Assign locations to vehicles in admin.
+            </p>
+          )}
+          <div
+            className={`hsearch-bar${showMobileDetails ? ' hsearch-bar--expanded' : ' hsearch-bar--compact'}`}
+          >
             {isGuesthouse ? (
               <>
-                <div className="hfield hfield--control">
+                <div className="hfield hfield--control hfield--primary">
                   <span className="hf-label">City or area</span>
                   <PredictiveSearchField
                     scope="guesthouse"
@@ -225,13 +263,15 @@ export default function SearchResultsChrome({
                     placeholder="e.g. Reykjavík"
                     icon={PIN_ICON}
                     ariaLabel="City or area"
+                    onFocus={expandMobileDetails}
                     onChange={({ value, label }) => {
                       setGuestCityLabel(label)
                       setGuestDraft((prev) => ({ ...prev, city: value }))
+                      expandMobileDetails()
                     }}
                   />
                 </div>
-                <div className="hfield hfield--control hfield--dates">
+                <div className="hfield hfield--control hfield--dates hfield--detail">
                   <span className="hf-label">Check-in → Check-out</span>
                   <DateRangePicker
                     variant="embedded compact"
@@ -244,7 +284,7 @@ export default function SearchResultsChrome({
                     onChange={handleGuestDates}
                   />
                 </div>
-                <div className="hfield hfield--control hfield--guests">
+                <div className="hfield hfield--control hfield--guests hfield--detail">
                   <span className="hf-label">Guests</span>
                   <FieldSelect
                     value={guestDraft.guests}
@@ -253,6 +293,7 @@ export default function SearchResultsChrome({
                       value: String(n),
                       label: `${n} ${n === 1 ? 'guest' : 'guests'}`,
                     }))}
+                    placeholder="Guests"
                     icon={PERSON_ICON}
                     ariaLabel="Number of guests"
                   />
@@ -260,12 +301,7 @@ export default function SearchResultsChrome({
               </>
             ) : (
               <>
-                {pickupEmpty && (
-                  <p className="location-empty-hint" role="status" style={{ marginBottom: 12 }}>
-                    Pickup locations are being configured. Assign locations to vehicles in admin.
-                  </p>
-                )}
-                <div className="hfield hfield--control">
+                <div className="hfield hfield--control hfield--primary">
                   <span className="hf-label">Pick-up location</span>
                   <FieldSelect
                     value={vehicleDraft.pickup_location_id}
@@ -276,15 +312,17 @@ export default function SearchResultsChrome({
                         pickup_location_id: value,
                         dropoff_location_id: sameAsPickup ? value : prev.dropoff_location_id,
                       }))
+                      expandMobileDetails()
                     }}
                     options={pickupOptions}
                     placeholder="Select location"
                     icon={PIN_ICON}
                     ariaLabel="Pick-up location"
                     disabled={pickupEmpty}
+                    onOpen={expandMobileDetails}
                   />
                 </div>
-                <div className="hfield hfield--control">
+                <div className="hfield hfield--control hfield--detail">
                   <span className="hf-label">Drop-off location</span>
                   <FieldSelect
                     value={vehicleDraft.dropoff_location_id}
@@ -294,9 +332,10 @@ export default function SearchResultsChrome({
                     icon={PIN_ICON}
                     ariaLabel="Drop-off location"
                     disabled={!vehicleDraft.pickup_location_id || pickupEmpty}
+                    onOpen={expandMobileDetails}
                   />
                 </div>
-                <div className="hfield hfield--control hfield--dates">
+                <div className="hfield hfield--control hfield--dates hfield--detail">
                   <span className="hf-label">Pick-up → Drop-off</span>
                   <DateRangePicker
                     variant="embedded compact"
@@ -312,7 +351,14 @@ export default function SearchResultsChrome({
                 </div>
               </>
             )}
-            <button className="hsearch-btn" type="button" onClick={applyDraft}>
+            <button
+              className="hsearch-btn hsearch-btn--detail"
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                applyDraft()
+              }}
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="7" />
                 <path d="m20 20-3.2-3.2" />
@@ -325,7 +371,8 @@ export default function SearchResultsChrome({
 
       <div className="filterbar" id="filterbar">
         <div className="filterbar-inner">
-          <div className="chips" id="chips">
+          <div className="chips-scroll">
+            <div className="chips" id="chips">
             <div className="chip-wrap" ref={priceWrapRef}>
               <button
                 className={`chip chip--filter ${openPop === 'price' ? 'open' : ''} ${priceActive ? 'active' : ''}`}
@@ -553,6 +600,7 @@ export default function SearchResultsChrome({
                 Clear all ✕
               </button>
             )}
+            </div>
           </div>
 
           <div className="fb-right">
@@ -584,6 +632,9 @@ export default function SearchResultsChrome({
               </div>
             </div>
           </div>
+        </div>
+        <div className="filterbar-mobile-count" aria-live="polite">
+          <b>{totalCount}</b> {totalCount === 1 ? config.unitSingular : config.unitPlural} found
         </div>
       </div>
     </>

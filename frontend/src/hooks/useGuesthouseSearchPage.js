@@ -147,7 +147,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
   const visibleCards = cards.slice(0, visibleCount)
   const cityLabel = query.city || 'Iceland'
   const dateLabel = formatDateRange(query.check_in, query.check_out)
-  const guestsLabel = query.guests || '2'
+  const guestsLabel = query.guests || ''
 
   const updateSearch = (patch) => {
     const next = new URLSearchParams(searchParams)

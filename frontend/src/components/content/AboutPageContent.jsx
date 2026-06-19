@@ -4,6 +4,8 @@ import { api, resolveCmsImage } from '../../api'
 import { useSiteLayout } from '../../context/SiteLayoutContext'
 import { usePageContent } from '../../context/SiteContentContext'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
+import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
+import useMediaQuery from '../../hooks/useMediaQuery'
 import useSectionReveal from '../../hooks/useSectionReveal'
 import { formatRentListingStats } from '../../utils/formatRentListingStats'
 import { mergeHomepageData } from '../../utils/mergeHomepageData'
@@ -54,6 +56,22 @@ function PillarIcon({ type, image }) {
   return icons[type] || icons.shield
 }
 
+function CarouselNav({ direction, disabled, onClick, label }) {
+  return (
+    <button
+      className={`carousel-nav ${direction}`}
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {direction === 'prev' ? <path d="M15 6l-6 6 6 6" /> : <path d="M9 6l6 6-6 6" />}
+      </svg>
+    </button>
+  )
+}
+
 export default function AboutPageContent() {
   const { page } = usePageContent('about')
   const { siteData } = useSiteLayout()
@@ -100,6 +118,14 @@ export default function AboutPageContent() {
   const paragraphs = parseParagraphs(page.body)
   const chapterImages = [FALLBACK_IMAGES.camper, FALLBACK_IMAGES.car, FALLBACK_IMAGES.house]
   const heroImage = hero.image || FALLBACK_IMAGES.hero
+  const isMobile = useMediaQuery('(max-width: 959px)')
+  const showOfferCarousel = isMobile && offerCards.length > 1
+  const { trackRef: offerTrackRef, scroll: scrollOffers, atStart: offersAtStart, atEnd: offersAtEnd } = useHorizontalCarousel({
+    itemCount: offerCards.length,
+    cardSelector: '.about-offer-card',
+    gap: 12,
+    enabled: showOfferCarousel,
+  })
 
   useSectionReveal(storyRef, { revealDoneMs: 1400, threshold: 0.1, watch: paragraphs.length > 0 })
   useSectionReveal(statsRef, { revealDoneMs: 1000, threshold: 0.15, watch: stats.length > 0 })
@@ -113,9 +139,14 @@ export default function AboutPageContent() {
     const chapters = root.querySelectorAll('.about-chapter')
     if (!chapters.length) return undefined
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reduceMotion) {
+    const revealAll = () => {
       chapters.forEach((chapter) => chapter.classList.add('is-revealed'))
+    }
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const isMobile = window.matchMedia('(max-width: 959px)').matches
+    if (reduceMotion || isMobile) {
+      revealAll()
       return undefined
     }
 
@@ -132,13 +163,13 @@ export default function AboutPageContent() {
           }
         })
       },
-      { threshold: 0.22, rootMargin: '0px 0px -8% 0px' },
+      { threshold: 0.12, rootMargin: '0px 0px 0px 0px' },
     )
 
     chapters.forEach((chapter) => {
       const rect = chapter.getBoundingClientRect()
       const vh = window.innerHeight || document.documentElement.clientHeight
-      if (rect.top < vh * 0.9 && rect.bottom > 0) {
+      if (rect.top < vh * 0.95 && rect.bottom > 0) {
         reveal(chapter)
       } else {
         io.observe(chapter)
@@ -273,33 +304,44 @@ export default function AboutPageContent() {
             {offeringsSection.tag && <span className="about-section-tag">{offeringsSection.tag}</span>}
             {offeringsSection.heading && <h2>{offeringsSection.heading}</h2>}
           </header>
-          <div className="about-offer-grid">
-            {offerCards.map((item, index) => (
-              <Link
-                key={item.href || item.label}
-                to={item.href}
-                className="about-offer-card about-rise"
-                style={{ '--d': `${0.06 + index * 0.08}s` }}
-              >
-                <div className="about-offer-media">
-                  <img src={item.image} alt="" loading="lazy" />
-                </div>
-                <div className="about-offer-body">
-                  {item.listingLabel && (
-                    <span className="about-offer-listings">{item.listingLabel}</span>
-                  )}
-                  <h3>{item.label}</h3>
-                  {item.tag && <span className="about-offer-tag">{item.tag}</span>}
-                  <span className="about-offer-link">
-                    Browse listings
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
-                  </span>
-                </div>
-              </Link>
-            ))}
+          <div className="about-offer-panel">
+            <div
+              className={`about-offer-grid${showOfferCarousel ? ' about-offer-grid--carousel' : ''}`}
+              ref={showOfferCarousel ? offerTrackRef : undefined}
+            >
+              {offerCards.map((item, index) => (
+                <Link
+                  key={item.href || item.label}
+                  to={item.href}
+                  className="about-offer-card about-rise"
+                  style={{ '--d': `${0.06 + index * 0.08}s` }}
+                >
+                  <div className="about-offer-media">
+                    <img src={item.image} alt="" loading="lazy" />
+                  </div>
+                  <div className="about-offer-body">
+                    {item.listingLabel && (
+                      <span className="about-offer-listings">{item.listingLabel}</span>
+                    )}
+                    <h3>{item.label}</h3>
+                    {item.tag && <span className="about-offer-tag">{item.tag}</span>}
+                    <span className="about-offer-link">
+                      Browse listings
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6" />
+                      </svg>
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
+          {showOfferCarousel && (
+            <div className="about-offer-carousel-controls product-carousel-controls">
+              <CarouselNav direction="prev" label="Previous listing category" disabled={offersAtStart} onClick={() => scrollOffers(-1)} />
+              <CarouselNav direction="next" label="Next listing category" disabled={offersAtEnd} onClick={() => scrollOffers(1)} />
+            </div>
+          )}
         </div>
       </section>
 

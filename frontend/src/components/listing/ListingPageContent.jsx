@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
+import useMediaQuery from '../../hooks/useMediaQuery'
 import { useToast } from '../../context/ToastContext'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { sharePage } from '../../utils/sharePage'
@@ -10,6 +11,22 @@ import { mapGuestHouseToResultCard } from '../../utils/mapGuestHouseToResultCard
 import ListingGallery from './ListingGallery'
 import ListingReviewsSection from './ListingReviewsSection'
 import ListingTabPanels from './ListingTabPanels'
+
+function CarouselNav({ direction, disabled, onClick, label }) {
+  return (
+    <button
+      className={`carousel-nav ${direction}`}
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        {direction === 'prev' ? <path d="M15 6l-6 6 6 6" /> : <path d="M9 6l6 6-6 6" />}
+      </svg>
+    </button>
+  )
+}
 
 export default function ListingPageContent({
   listing,
@@ -29,9 +46,7 @@ export default function ListingPageContent({
   const { toast } = useToast()
   const price = useFormatPrice()
   const [bookingBlocked, setBookingBlocked] = useState(false)
-  const { trackRef: simTrackRef, scroll: scrollSimilar, atStart: simAtStart, atEnd: simAtEnd } = useHorizontalCarousel({
-    itemCount: related.length,
-  })
+  const isMobile = useMediaQuery('(max-width: 768px)')
 
   const handleShare = async () => {
     const result = await sharePage({ title: listing.name, text: listing.name })
@@ -58,6 +73,13 @@ export default function ListingPageContent({
       },
     )
     return { ...card, href: `${detailBase}/${item.id}${searchQuery ? `?${searchQuery}` : ''}` }
+  })
+
+  const showSimilarCarousel = isMobile && relatedCards.length > 1
+  const { trackRef: simTrackRef, scroll: scrollSimilar, atStart: simAtStart, atEnd: simAtEnd } = useHorizontalCarousel({
+    itemCount: relatedCards.length,
+    gap: 12,
+    enabled: showSimilarCarousel || relatedCards.length > 0,
   })
 
   return (
@@ -113,36 +135,26 @@ export default function ListingPageContent({
           <div className="wrap">
             <div className="similar-head">
               <h2>{typeConfig.similarTitle}</h2>
-              <div className="sim-nav">
-                <button
-                  className="sim-arrow"
-                  type="button"
-                  aria-label="Previous"
-                  disabled={simAtStart}
-                  onClick={() => scrollSimilar(-1)}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m15 18-6-6 6-6" />
-                  </svg>
-                </button>
-                <button
-                  className="sim-arrow"
-                  type="button"
-                  aria-label="Next"
-                  disabled={simAtEnd}
-                  onClick={() => scrollSimilar(1)}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </button>
+            </div>
+            <div className="similar-panel">
+              {!showSimilarCarousel && (
+                <CarouselNav direction="prev" label="Previous" disabled={simAtStart} onClick={() => scrollSimilar(-1)} />
+              )}
+              <div className={`track${showSimilarCarousel ? ' track--carousel' : ''}`} ref={simTrackRef}>
+                {relatedCards.map((card) => (
+                  <ProductCard key={card.id} {...card} />
+                ))}
               </div>
+              {!showSimilarCarousel && (
+                <CarouselNav direction="next" label="Next" disabled={simAtEnd} onClick={() => scrollSimilar(1)} />
+              )}
             </div>
-            <div className="sim-track" ref={simTrackRef}>
-              {relatedCards.map((card) => (
-                <ProductCard key={card.id} {...card} />
-              ))}
-            </div>
+            {showSimilarCarousel && (
+              <div className="product-carousel-controls">
+                <CarouselNav direction="prev" label="Previous" disabled={simAtStart} onClick={() => scrollSimilar(-1)} />
+                <CarouselNav direction="next" label="Next" disabled={simAtEnd} onClick={() => scrollSimilar(1)} />
+              </div>
+            )}
           </div>
         </section>
       )}

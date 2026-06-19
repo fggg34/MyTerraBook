@@ -236,7 +236,7 @@ class SiteContentService
     {
         $uploadKeys = [
             'branding' => ['logoImage', 'favicon'],
-            'hero' => ['backgroundImage', 'image'],
+            'hero' => ['backgroundImage', 'mobileBackgroundImage', 'image'],
             'newsSection' => ['backgroundImage'],
         ];
 
@@ -444,6 +444,7 @@ class SiteContentService
             'image',
             'photo',
             'backgroundImage',
+            'mobileBackgroundImage',
             'logoImage',
             'favicon',
             'houseImage',

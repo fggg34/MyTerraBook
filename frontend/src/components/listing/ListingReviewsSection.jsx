@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import useDragScroll from '../../hooks/useDragScroll'
+import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
+import useMediaQuery from '../../hooks/useMediaQuery'
 import {
   buildMarqueePhotos,
   computeRating,
@@ -7,6 +9,22 @@ import {
   pickFeatureImage,
 } from '../../utils/listingReviews'
 import ListingWriteReview from './ListingWriteReview'
+
+function CarouselNav({ direction, disabled, onClick, label }) {
+  return (
+    <button
+      className={`carousel-nav ${direction}`}
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        {direction === 'prev' ? <path d="M15 6l-6 6 6 6" /> : <path d="M9 6l6 6-6 6" />}
+      </svg>
+    </button>
+  )
+}
 
 function ReviewCard({ review }) {
   const [expanded, setExpanded] = useState(false)
@@ -49,14 +67,20 @@ export default function ListingReviewsSection({ listing, typeConfig, reviewTarge
   const featureImage = useMemo(() => pickFeatureImage(allReviews), [allReviews])
   const marqueePhotos = useMemo(() => buildMarqueePhotos(guestPhotos), [guestPhotos])
   const gpMarqueeRef = useRef(null)
-  const revTrackRef = useRef(null)
+  const isMobile = useMediaQuery('(max-width: 768px)')
+  const carouselItemCount = (featureImage ? 1 : 0) + allReviews.length
+  const showRevCarousel = isMobile && carouselItemCount > 1
+  const { trackRef: revTrackRef, scroll: scrollReviews, atStart: revAtStart, atEnd: revAtEnd } = useHorizontalCarousel({
+    itemCount: carouselItemCount,
+    gap: 18,
+    cardSelector: '.rev-feature, .rcard-rev',
+    enabled: hasReviews,
+  })
 
   useDragScroll(gpMarqueeRef, {
     enabled: guestPhotos.length > 0,
     convertAnimationFrom: '.gp-track',
   })
-
-  useDragScroll(revTrackRef, { enabled: hasReviews })
 
   if (!hasReviews) {
     return null
@@ -125,6 +149,12 @@ export default function ListingReviewsSection({ listing, typeConfig, reviewTarge
                   <ReviewCard key={rev.id} review={rev} />
                 ))}
               </div>
+              {showRevCarousel ? (
+                <div className="product-carousel-controls rev-carousel-controls">
+                  <CarouselNav direction="prev" label="Previous review" disabled={revAtStart} onClick={() => scrollReviews(-1)} />
+                  <CarouselNav direction="next" label="Next review" disabled={revAtEnd} onClick={() => scrollReviews(1)} />
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

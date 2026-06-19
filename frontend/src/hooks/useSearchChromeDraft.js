@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import useLocationOptions, { useAutoSelectLocation } from './useLocationOptions'
+import useLocationOptions from './useLocationOptions'
 import { useBookingRules } from './useBookingRules'
 import { ensureValidDropoff } from '../utils/bookingRules'
 import { formatDateTimeLocal, parseDateTimeLocal } from '../utils/format'
@@ -38,7 +38,7 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     city: '',
     check_in: '',
     check_out: '',
-    guests: '2',
+    guests: '',
   })
   const [guestCityLabel, setGuestCityLabel] = useState('')
 
@@ -57,27 +57,6 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     limit: 50,
   })
 
-  useAutoSelectLocation({
-    options: pickupOptions,
-    value: vehicleDraft.pickup_location_id,
-    onSelect: (id) => {
-      setVehicleDraft((prev) => ({
-        ...prev,
-        pickup_location_id: id,
-        dropoff_location_id: prev.dropoff_location_id || id,
-      }))
-    },
-  })
-
-  useAutoSelectLocation({
-    options: dropoffOptions,
-    value: vehicleDraft.dropoff_location_id,
-    pickupValueForDropoff: vehicleDraft.pickup_location_id,
-    onSelect: (id) => {
-      setVehicleDraft((prev) => ({ ...prev, dropoff_location_id: id }))
-    },
-  })
-
   const pickupLocations = pickupOptions
   const dropoffLocations = dropoffOptions
 
@@ -87,7 +66,7 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
         city: query.city || '',
         check_in: query.check_in || '',
         check_out: query.check_out || '',
-        guests: query.guests || '2',
+        guests: query.guests || '',
       })
       setGuestCityLabel(query.city || '')
       return

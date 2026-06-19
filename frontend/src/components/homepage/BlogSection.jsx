@@ -46,7 +46,7 @@ export default function BlogSection({ heading, subtitle, allLabel, allHref, post
   const isMobile = useMediaQuery('(max-width: 768px)')
   const showCarousel = isMobile && posts.length > 0
   const showControls = showCarousel && posts.length > 1
-  useBlogBentoEffects(!showCarousel)
+  useBlogBentoEffects({ enabled: posts.length > 0, carousel: showCarousel })
   const { trackRef, scroll, atStart, atEnd } = useHorizontalCarousel({
     itemCount: posts.length,
     cardSelector: '.bcard',

@@ -68,15 +68,17 @@ export default function Step2ExtrasCover({
             <h3>Host add-ons</h3>
             <span className="bh-sub">{config.step2.addonsSubtitle}</span>
           </div>
-          {addons.map((opt) => (
-            <AddonRow
-              key={opt.id}
-              option={opt}
-              selected={form.rental_option_ids.includes(Number(opt.id))}
-              nights={nights}
-              onToggle={toggleAddon}
-            />
-          ))}
+          <div className="addon-list">
+            {addons.map((opt) => (
+              <AddonRow
+                key={opt.id}
+                option={opt}
+                selected={form.rental_option_ids.includes(Number(opt.id))}
+                nights={nights}
+                onToggle={toggleAddon}
+              />
+            ))}
+          </div>
         </div>
       )}
 

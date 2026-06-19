@@ -58,7 +58,10 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
       const city = query.city || 'Iceland'
       const dates =
         query.check_in && query.check_out ? formatShortRange(query.check_in, query.check_out) : 'Dates'
-      return `${city} · ${dates} · ${guestsLabel || query.guests || 2} guests`
+      const guestPart = guestsLabel || query.guests
+        ? `${guestsLabel || query.guests} guests`
+        : 'Guests'
+      return `${city} · ${dates} · ${guestPart}`
     }
     const loc = pickupLabel.includes('(') ? pickupLabel.match(/\(([^)]+)\)/)?.[1] || 'KEF' : 'KEF'
     const dates = query.pickup_at && query.dropoff_at ? formatShortRange(query.pickup_at, query.dropoff_at) : 'Dates'

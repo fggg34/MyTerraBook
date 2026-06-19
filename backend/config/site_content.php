@@ -239,7 +239,8 @@ return [
                 'topbar' => [
                     'label' => 'Top bar',
                     'fields' => [
-                        ['key' => 'text', 'type' => 'text', 'label' => 'Banner text', 'columnSpanFull' => true],
+                        ['key' => 'text', 'type' => 'text', 'label' => 'Banner text (desktop)', 'columnSpanFull' => true],
+                        ['key' => 'mobileText', 'type' => 'text', 'label' => 'Banner text (mobile)', 'helperText' => 'Shorter copy for small screens. Uses desktop text if empty.', 'columnSpanFull' => true],
                         ['key' => 'linkLabel', 'type' => 'text', 'label' => 'Link label'],
                         ['key' => 'linkHref', 'type' => 'text', 'label' => 'Link URL'],
                     ],
@@ -313,9 +314,12 @@ return [
                 'hero' => [
                     'label' => 'Hero',
                     'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'columnSpanFull' => true],
-                        ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
-                        ['key' => 'backgroundImage', 'type' => 'image', 'label' => 'Background image'],
+                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading (desktop)', 'columnSpanFull' => true],
+                        ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle (desktop)', 'columnSpanFull' => true],
+                        ['key' => 'backgroundImage', 'type' => 'image', 'label' => 'Background image (desktop)'],
+                        ['key' => 'mobileHeading', 'type' => 'text', 'label' => 'Heading (mobile)', 'helperText' => 'Uses desktop heading if empty.', 'columnSpanFull' => true],
+                        ['key' => 'mobileSubtitle', 'type' => 'textarea', 'label' => 'Subtitle (mobile)', 'helperText' => 'Uses desktop subtitle if empty.', 'columnSpanFull' => true],
+                        ['key' => 'mobileBackgroundImage', 'type' => 'image', 'label' => 'Background image (mobile)', 'helperText' => 'Uses desktop image if empty.'],
                         ['key' => 'tabs', 'type' => 'repeater', 'label' => 'Search tabs', 'fields' => [
                             ['key' => 'id', 'type' => 'text', 'label' => 'ID'],
                             ['key' => 'label', 'type' => 'text', 'label' => 'Label'],

@@ -1,11 +1,29 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import useMediaQuery from '../../hooks/useMediaQuery'
+
+function AllPhotosButton({ photoCount, onClick }) {
+  return (
+    <button className="allphotos" type="button" onClick={onClick}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      </svg>
+      View all {photoCount} photos
+    </button>
+  )
+}
 
 export default function ListingGallery({ images, photoCount }) {
   const slots = [0, 1, 2, 3, 4]
   const main = images[0]
   const rest = images.slice(1)
   const hasImages = images.length > 0
+  const isMobileGallery = useMediaQuery('(max-width: 980px)')
 
+  const carouselRef = useRef(null)
+  const [carouselIndex, setCarouselIndex] = useState(0)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
 
@@ -14,6 +32,13 @@ export default function ListingGallery({ images, photoCount }) {
     setActive(Math.min(Math.max(index, 0), images.length - 1))
     setOpen(true)
   }
+
+  const syncCarouselIndex = useCallback(() => {
+    const el = carouselRef.current
+    if (!el || el.clientWidth === 0) return
+    const index = Math.round(el.scrollLeft / el.clientWidth)
+    setCarouselIndex(Math.min(Math.max(index, 0), images.length - 1))
+  }, [images.length])
 
   const close = useCallback(() => setOpen(false), [])
   const goPrev = useCallback(
@@ -49,42 +74,55 @@ export default function ListingGallery({ images, photoCount }) {
   return (
     <div className="gallery-wrap">
       <div className="wrap">
-        <div className="gallery">
-          <div className="gslot main">
-            {main ? (
-              <img src={main.url} alt={main.alt} onClick={() => openAt(0)} role="button" />
-            ) : (
-              <div className="listing-ph" />
-            )}
+        {isMobileGallery ? (
+          <div className="gallery gallery--carousel">
+            <div className="gallery-carousel" ref={carouselRef} onScroll={syncCarouselIndex}>
+              {hasImages ? (
+                images.map((image, i) => (
+                  <div key={`${image.url}-${i}`} className="gallery-slide">
+                    <img src={image.url} alt={image.alt} onClick={() => openAt(i)} role="button" />
+                  </div>
+                ))
+              ) : (
+                <div className="gallery-slide">
+                  <div className="listing-ph" />
+                </div>
+              )}
+            </div>
+            {hasImages ? (
+              <AllPhotosButton photoCount={photoCount} onClick={() => openAt(carouselIndex)} />
+            ) : null}
           </div>
-          {slots.slice(1, 4).map((i) => (
-            <div key={i} className="gslot">
-              {rest[i - 1] ? (
-                <img src={rest[i - 1].url} alt={rest[i - 1].alt} onClick={() => openAt(i)} role="button" />
+        ) : (
+          <div className="gallery">
+            <div className="gslot main">
+              {main ? (
+                <img src={main.url} alt={main.alt} onClick={() => openAt(0)} role="button" />
               ) : (
                 <div className="listing-ph" />
               )}
             </div>
-          ))}
-          <div className="gslot">
-            {rest[3] ? (
-              <img src={rest[3].url} alt={rest[3].alt} onClick={() => openAt(4)} role="button" />
-            ) : (
-              <div className="listing-ph" />
-            )}
-            {hasImages ? (
-              <button className="allphotos" type="button" onClick={() => openAt(0)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                  <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                  <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                  <rect x="14" y="14" width="7" height="7" rx="1.5" />
-                </svg>
-                View all {photoCount} photos
-              </button>
-            ) : null}
+            {slots.slice(1, 4).map((i) => (
+              <div key={i} className="gslot">
+                {rest[i - 1] ? (
+                  <img src={rest[i - 1].url} alt={rest[i - 1].alt} onClick={() => openAt(i)} role="button" />
+                ) : (
+                  <div className="listing-ph" />
+                )}
+              </div>
+            ))}
+            <div className="gslot">
+              {rest[3] ? (
+                <img src={rest[3].url} alt={rest[3].alt} onClick={() => openAt(4)} role="button" />
+              ) : (
+                <div className="listing-ph" />
+              )}
+              {hasImages ? (
+                <AllPhotosButton photoCount={photoCount} onClick={() => openAt(0)} />
+              ) : null}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {open && activeImage ? (

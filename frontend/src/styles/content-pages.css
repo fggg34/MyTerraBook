@@ -2077,6 +2077,14 @@
   gap: 20px;
 }
 
+.about-offerings {
+  background: #e7eef8;
+}
+
+.about-offer-panel {
+  position: relative;
+}
+
 @media (min-width: 900px) {
   .about-offer-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -2171,7 +2179,7 @@
 }
 
 .about-cta {
-  padding: 0 0 96px;
+  padding: 48px 0 96px;
 }
 
 .about-cta-panel {
@@ -2249,6 +2257,21 @@
     aspect-ratio: 16 / 11;
   }
 
+  .about-hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .about-hero-actions .about-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .about-stat-label {
+    font-size: 0.76rem;
+    line-height: 1.25;
+  }
+
   .about-story,
   .about-values,
   .about-offerings {
@@ -2260,11 +2283,173 @@
   }
 
   .about-chapters {
-    gap: 40px;
+    gap: 32px;
+  }
+
+  /* Scroll-reveal animations reserve invisible blocks on mobile — show content immediately */
+  .about-chapter-media,
+  .about-chapter-body,
+  .about-rise {
+    opacity: 1;
+    transform: none;
+  }
+
+  .about-chapter-media img {
+    transform: scale(1);
+  }
+
+  .about-chapter-media {
+    aspect-ratio: 16 / 10;
+  }
+
+  .about-pillar {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 4px 16px;
+    align-items: start;
+    padding: 18px 16px;
+    border-radius: 18px;
+    border-color: rgba(15, 32, 54, 0.08);
+    box-shadow: 0 6px 18px -12px rgba(15, 32, 54, 0.16);
+  }
+
+  .about-pillar:hover {
+    transform: none;
+    box-shadow: 0 6px 18px -12px rgba(15, 32, 54, 0.16);
+  }
+
+  .about-pillars {
+    gap: 10px;
+  }
+
+  .about-pillar-icon {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 0;
+    border-radius: 12px;
+  }
+
+  .about-pillar-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .about-pillar-icon-img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .about-pillar h3 {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .about-pillar p {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .about-offerings .wrap {
+    overflow: visible;
+  }
+
+  .about-offer-panel {
+    padding-inline: 0;
+    overflow: visible;
+  }
+
+  .about-offer-grid.about-offer-grid--carousel {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin: 0 -20px;
+    padding: 0 20px 2px;
+    scroll-padding-inline: 20px;
+    max-width: none;
+    touch-action: pan-x pan-y;
+  }
+
+  .about-offer-grid.about-offer-grid--carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .about-offer-grid.about-offer-grid--carousel .about-offer-card {
+    flex: 0 0 calc((100vw - 52px) / 1.25);
+    width: calc((100vw - 52px) / 1.25);
+    scroll-snap-align: start;
+    box-shadow: 0 16px 40px -28px rgba(15, 32, 54, 0.14);
+  }
+
+  .about-offer-grid.about-offer-grid--carousel .about-offer-card:hover {
+    transform: none;
+  }
+
+  .about-offer-carousel-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .about-offer-carousel-controls .carousel-nav {
+    display: grid;
+    place-items: center;
+    position: static;
+    transform: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--bg, #fbfcfe);
+    color: var(--blue, #34629e);
+    border: 1px solid var(--line, #e2e7ef);
+    box-shadow: none;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+
+  .about-offer-carousel-controls .carousel-nav svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .about-offer-carousel-controls .carousel-nav:hover:not(:disabled) {
+    background: var(--blue, #34629e);
+    border-color: var(--blue, #34629e);
+    color: #fff;
+  }
+
+  .about-offer-carousel-controls .carousel-nav:disabled {
+    opacity: 0.4;
+    cursor: default;
+    background: var(--bg, #fbfcfe);
+    color: var(--blue, #34629e);
+    border-color: var(--line, #e2e7ef);
+  }
+
+  .about-offer-carousel-controls .carousel-nav:disabled:hover {
+    background: var(--bg, #fbfcfe);
+    border-color: var(--line, #e2e7ef);
+    color: var(--blue, #34629e);
   }
 
   .about-cta {
-    padding-bottom: 72px;
+    padding: 40px 0 72px;
   }
 
   .about-cta-panel {

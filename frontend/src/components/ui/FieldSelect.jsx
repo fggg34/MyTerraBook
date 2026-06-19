@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import useFixedMenuPosition from '../../hooks/useFixedMenuPosition'
 
 const CHEVRON_ICON = (
   <svg className="field-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -17,6 +18,7 @@ export default function FieldSelect({
   disabled = false,
   className = '',
   searchable = false,
+  onOpen,
 }) {
   const listId = useId()
   const rootRef = useRef(null)
@@ -25,7 +27,6 @@ export default function FieldSelect({
   const searchRef = useRef(null)
   const [open, setOpen] = useState(false)
   const [highlight, setHighlight] = useState(-1)
-  const [menuStyle, setMenuStyle] = useState(null)
   const [query, setQuery] = useState('')
 
   const selected = options.find((opt) => opt.value === value)
@@ -35,18 +36,10 @@ export default function FieldSelect({
     ? options.filter((opt) => String(opt.label).toLowerCase().includes(query.trim().toLowerCase()))
     : options
 
-  const updateMenuPosition = useCallback(() => {
-    const el = triggerRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    setMenuStyle({
-      position: 'fixed',
-      top: rect.bottom + 6,
-      left: rect.left,
-      width: Math.max(rect.width, 220),
-      zIndex: 1200,
-    })
-  }, [])
+  const menuStyle = useFixedMenuPosition(triggerRef, open, {
+    minWidth: 220,
+    deps: [options.length],
+  })
 
   const closeMenu = useCallback(() => {
     setOpen(false)
@@ -56,12 +49,12 @@ export default function FieldSelect({
 
   const openMenu = useCallback(() => {
     if (disabled) return
-    updateMenuPosition()
+    onOpen?.()
     setOpen(true)
     setQuery('')
     const idx = options.findIndex((opt) => opt.value === value)
     setHighlight(idx >= 0 ? idx : 0)
-  }, [disabled, options, updateMenuPosition, value])
+  }, [disabled, onOpen, options, value])
 
   const selectOption = (opt) => {
     onChange?.(opt.value)
@@ -75,18 +68,6 @@ export default function FieldSelect({
     }
     return undefined
   }, [open, searchable])
-
-  useEffect(() => {
-    if (!open) return undefined
-    updateMenuPosition()
-    const onScrollOrResize = () => updateMenuPosition()
-    window.addEventListener('scroll', onScrollOrResize, true)
-    window.addEventListener('resize', onScrollOrResize)
-    return () => {
-      window.removeEventListener('scroll', onScrollOrResize, true)
-      window.removeEventListener('resize', onScrollOrResize)
-    }
-  }, [open, updateMenuPosition, options.length])
 
   useEffect(() => {
     if (!open) return undefined

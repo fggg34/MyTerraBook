@@ -234,9 +234,9 @@
   .listing-header__rating{margin-top:14px;}
 
   .listing-basics{margin-bottom:36px;}
-  .basics-grid{display:grid;grid-template-columns:1fr;gap:18px 48px;}
+  .basics-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 24px;}
   @media(min-width:640px){
-    .basics-grid{grid-template-columns:1fr 1fr;}
+    .basics-grid{gap:18px 48px;}
   }
   .basic-item{display:flex;gap:16px;align-items:flex-start;}
   .basic-ic{width:var(--listing-icon-slot);flex:0 0 auto;display:flex;justify-content:center;color:var(--listing-icon);}
@@ -633,6 +633,7 @@
   @media(max-width:680px){
     .rev-summary{flex-direction:column;gap:24px;}
     .rev-carousel{border-left:none;padding-left:0;width:100%;}
+    .rev-carousel-controls{margin-top:16px;}
     .rev-grid{grid-template-columns:1fr;}
     .rev-overall,.rev-cats{border-left:none;padding-left:0;}
     .rev-summary-main{gap:14px;width:100%;max-width:none;}
@@ -668,15 +669,9 @@
   /* ---------- Similar rentals + FAQ (shared soft band) ---------- */
   .similar{background:#e7eef8;padding:84px 0 100px;}
   .faqs{background:#e7eef8;padding:44px 0 100px;}
-  .similar-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:30px;}
+  .similar-head{margin-bottom:30px;}
   .similar-head h2{font-size:36px;line-height:1.05;letter-spacing:-0.02em;text-wrap:balance;max-width:640px;}
-  .sim-nav{display:flex;gap:10px;flex:0 0 auto;}
-  .sim-arrow{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--navy);display:grid;place-items:center;box-shadow:0 10px 24px -14px rgba(15,32,54,.4);transition:.18s;}
-  .sim-arrow:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
-  .sim-arrow:disabled{opacity:.4;cursor:default;background:#fff;color:var(--navy);border-color:var(--line);}
-  .sim-arrow svg{width:20px;height:20px;}
-  .sim-track{display:flex;gap:var(--pcard-gap,24px);overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:6px;}
-  .sim-track::-webkit-scrollbar{display:none;}
+  .similar-panel{position:relative;padding-inline:0;overflow:visible;}
 
   .listing-page .faq-grid{display:grid;grid-template-columns:340px 1fr;gap:54px;align-items:start;}
   .listing-page .faq-head h2{font-size:34px;line-height:1.06;letter-spacing:-0.02em;text-wrap:balance;}
@@ -741,8 +736,21 @@
   }
   @media(max-width:980px){
     .wrap{padding:0 24px;}
-    .gallery{grid-template-columns:1fr;height:auto;grid-auto-rows:200px;}
-    .gslot.main{grid-column:1;grid-row:auto;height:300px;}
+    .gallery--carousel{
+      position:relative;display:block;height:300px;
+      border-radius:20px;overflow:hidden;
+    }
+    .gallery-carousel{
+      display:flex;overflow-x:auto;height:100%;
+      scroll-snap-type:x mandatory;scroll-behavior:smooth;
+      -webkit-overflow-scrolling:touch;scrollbar-width:none;
+    }
+    .gallery-carousel::-webkit-scrollbar{display:none;}
+    .gallery-slide{
+      flex:0 0 100%;height:100%;scroll-snap-align:center;
+      background:#e9eef5;
+    }
+    .gallery--carousel .allphotos{z-index:3;}
     .listing-title{font-size:30px;}
     .amen-grid,.sleep-grid{grid-template-columns:1fr 1fr;}
     .cond-list,.addon-list,.pickup-loc-list{grid-template-columns:1fr;}
@@ -753,8 +761,6 @@
     .listing-rating--tabbar{margin-left:auto;padding:0 0 10px;}
     .listing-rating--tabbar .rscore .num{font-size:22px;}
     .rating-strip .rscore .num{font-size:32px;}
-    .basics-grid{grid-template-columns:1fr;}
-    .amen-grid{grid-template-columns:1fr;}
     .listing-section{margin:36px 0;}
     .listing-title{font-size:28px;}
     .glx-overlay{padding:14px;}
@@ -768,6 +774,7 @@
 
 /* Gallery / review images (replaces offline image-slot) */
 .listing-page .gslot img{width:100%;height:100%;object-fit:cover;display:block;}
+.listing-page .gallery-slide img{width:100%;height:100%;object-fit:cover;display:block;}
 .listing-page .listing-ph{width:100%;height:100%;min-height:120px;background:linear-gradient(135deg,#e9eef5,#dce5f1);}
 .listing-page .rev-feature img{width:100%;height:100%;object-fit:cover;display:block;min-height:480px;}
 .listing-page .rev-grid--no-feature{grid-template-columns:repeat(3,1fr);}

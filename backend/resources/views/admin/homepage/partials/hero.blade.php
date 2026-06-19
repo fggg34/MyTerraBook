@@ -1,14 +1,26 @@
 <div class="field">
-    <label>Heading (H1)</label>
+    <label>Heading (desktop)</label>
     <input type="text" name="content[heading]" value="{{ $content['heading'] ?? '' }}">
 </div>
 <div class="field">
-    <label>Subtitle</label>
+    <label>Subtitle (desktop)</label>
     <textarea name="content[subtitle]">{{ $content['subtitle'] ?? '' }}</textarea>
 </div>
 <div class="field">
-    <label>Background image path</label>
+    <label>Background image (desktop)</label>
     <input type="text" name="content[backgroundImage]" value="{{ $content['backgroundImage'] ?? '' }}" placeholder="Upload below or paste URL">
+</div>
+<div class="field">
+    <label>Heading (mobile)</label>
+    <input type="text" name="content[mobileHeading]" value="{{ $content['mobileHeading'] ?? '' }}" placeholder="Uses desktop heading if empty">
+</div>
+<div class="field">
+    <label>Subtitle (mobile)</label>
+    <textarea name="content[mobileSubtitle]" placeholder="Uses desktop subtitle if empty">{{ $content['mobileSubtitle'] ?? '' }}</textarea>
+</div>
+<div class="field">
+    <label>Background image (mobile)</label>
+    <input type="text" name="content[mobileBackgroundImage]" value="{{ $content['mobileBackgroundImage'] ?? '' }}" placeholder="Uses desktop image if empty">
 </div>
 <div class="grid-2">
     <div class="field">

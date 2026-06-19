@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import useCarouselScrollGuard from '../../hooks/useCarouselScrollGuard'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
@@ -128,18 +128,17 @@ export default function ReviewsSection({
   const [activeReview, setActiveReview] = useState(null)
   const isMobile = useMediaQuery('(max-width: 768px)')
   const showMobileCarousel = isMobile && reviews.length > 1
-  const showMarquee = reviews.length > 1
+  const showMarquee = reviews.length > 1 && !showMobileCarousel
   const scrollGuardRef = useCarouselScrollGuard(trackWrapRef, { enabled: showMobileCarousel })
 
   useSectionReveal(sectionRef, { revealDoneMs: 1800 })
   const { pause, resume } = useReviewsMarquee(trackWrapRef, { enabled: showMarquee })
-  const { scroll } = useHorizontalCarousel({
+  const { scroll, atStart, atEnd } = useHorizontalCarousel({
     trackRef: trackWrapRef,
     itemCount: reviews.length,
-    cardSelector: '.rv-card:not([aria-hidden="true"])',
+    cardSelector: '.rv-card',
     gap: 12,
     enabled: showMobileCarousel,
-    dragScroll: false,
   })
 
   const ratingValue = useMemo(() => {
@@ -156,20 +155,20 @@ export default function ReviewsSection({
     return reviews
   }, [reviews, showMarquee])
 
+  useEffect(() => {
+    if (!showMobileCarousel) return
+    const el = trackWrapRef.current
+    if (el) el.scrollLeft = 0
+  }, [showMobileCarousel, reviews.length])
+
   const openReview = (review) => {
-    pause()
+    if (showMarquee) pause()
     setActiveReview(review)
   }
 
   const closeReview = () => {
     setActiveReview(null)
-    resume()
-  }
-
-  const stepCarousel = (direction) => {
-    pause()
-    scroll(direction)
-    window.setTimeout(resume, 280)
+    if (showMarquee) resume()
   }
 
   if (!reviews.length) return null
@@ -250,8 +249,8 @@ export default function ReviewsSection({
           </div>
           {showMobileCarousel && (
             <div className="reviews-carousel-controls product-carousel-controls">
-              <CarouselNav direction="prev" label="Previous review" onClick={() => stepCarousel(-1)} />
-              <CarouselNav direction="next" label="Next review" onClick={() => stepCarousel(1)} />
+              <CarouselNav direction="prev" label="Previous review" disabled={atStart} onClick={() => scroll(-1)} />
+              <CarouselNav direction="next" label="Next review" disabled={atEnd} onClick={() => scroll(1)} />
             </div>
           )}
         </div>

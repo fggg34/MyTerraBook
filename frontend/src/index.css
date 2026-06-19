@@ -5,10 +5,14 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
+    max-width: 100%;
   }
 
   body {
     @apply bg-slate-50 text-brand-900 antialiased;
+    overflow-x: clip;
+    max-width: 100%;
   }
 }
 
@@ -241,5 +245,9 @@
 @media (max-width: 768px) {
   .back-to-top {
     will-change: transform;
+    width: 48px;
+    height: 48px;
+    right: 16px;
+    bottom: 20px;
   }
 }

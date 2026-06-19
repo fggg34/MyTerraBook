@@ -174,6 +174,18 @@ export default function BookingModule({
   const minRentalDays = rules.min_rental_days || 1
   const showMobileDetails = !isMobileCompact || mobileDetailsOpen
 
+  const expandMobileDetails = () => {
+    if (isMobileCompact) setMobileDetailsOpen(true)
+  }
+
+  const handleGuesthouseActivate = () => {
+    if (isMobileCompact && !showMobileDetails) {
+      setMobileDetailsOpen(true)
+      return true
+    }
+    return false
+  }
+
   useEffect(() => {
     setMobileDetailsOpen(false)
   }, [activeTab])
@@ -240,6 +252,7 @@ export default function BookingModule({
           icon={PIN_ICON}
           ariaLabel="Pick-up location"
           disabled={pickupEmpty}
+          onOpen={expandMobileDetails}
         />
       </div>
 
@@ -253,6 +266,7 @@ export default function BookingModule({
           icon={PIN_ICON}
           ariaLabel="Drop-off location"
           disabled={!vehicleForm.pickup_location_id || pickupEmpty}
+          onOpen={expandMobileDetails}
         />
       </div>
 
@@ -285,6 +299,8 @@ export default function BookingModule({
           placeholder="e.g. Reykjavík, Akureyri"
           icon={PIN_ICON}
           ariaLabel="City or area"
+          onActivate={handleGuesthouseActivate}
+          onFocus={expandMobileDetails}
           onChange={({ value, label }) => {
             setGuestCityLabel(label)
             setGuestForm((prev) => ({ ...prev, city: value }))

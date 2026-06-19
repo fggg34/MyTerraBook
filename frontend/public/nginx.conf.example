@@ -1,0 +1,45 @@
+# MyTerraBook storefront — nginx SPA fallback (adjust server_name / root paths).
+#
+# Place inside your server { } block. Document root should contain index.php,
+# index.html, assets/, and .htaccess is not used on nginx.
+
+server {
+    listen 80;
+    server_name example.com;
+    root /var/www/myterrabook/public_html;
+    index index.php index.html;
+
+    # Static assets (long cache)
+    location /assets/ {
+        try_files $uri =404;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Laravel backend (API, admin, spa-shell)
+    location /backend/ {
+        alias /var/www/myterrabook/public_html/backend/public/;
+        try_files $uri $uri/ @backend;
+
+        location ~ \.php$ {
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $request_filename;
+            fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+        }
+    }
+
+    location @backend {
+        rewrite ^/backend/(.*)$ /backend/index.php?/$1 last;
+    }
+
+    # SPA: serve real files when present, otherwise storefront shell
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /index.php {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+    }
+}

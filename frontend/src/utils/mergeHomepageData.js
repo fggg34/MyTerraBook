@@ -94,10 +94,15 @@ function mapFeaturedBlogPost(post) {
 export function mergeHomepageData(apiData = {}) {
   const defaults = defaultHomepageData
 
+  const rawMobileBg = apiData.hero?.mobileBackgroundImage
   const hero = {
     ...defaults.hero,
     ...apiData.hero,
     backgroundImage: resolveCmsImage(apiData.hero?.backgroundImage, defaults.hero.backgroundImage),
+    mobileBackgroundImage:
+      rawMobileBg === ''
+        ? ''
+        : resolveCmsImage(rawMobileBg ?? defaults.hero.mobileBackgroundImage, defaults.hero.mobileBackgroundImage),
     footerLinkHref: normalizeHomepageHref(apiData.hero?.footerLinkHref ?? defaults.hero.footerLinkHref),
   }
 

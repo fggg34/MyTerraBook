@@ -64,6 +64,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
     blockedDates = [],
     variant = 'default',
     fixedPopper = false,
+    showSegmentLabels = false,
     className = '',
   },
   ref,
@@ -85,7 +86,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
   })
 
   const isCompact = variant.includes('compact')
-  const showLabels = !isCompact
+  const showLabels = showSegmentLabels || !isCompact
 
   const measurePopper = useCallback(() => {
     if (!fixedPopper || !fieldRef.current) return null

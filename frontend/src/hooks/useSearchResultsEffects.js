@@ -15,16 +15,31 @@ export default function useSearchResultsEffects({ rootRef, totalCount, visibleCo
     const progressEl = document.getElementById('scrollProgress')
     const resfloat = root.querySelector('#resfloat')
     const rfBar = root.querySelector('#rfBar')
-    const intro = root.querySelector('.results-intro')
     const progressTextEl = root.querySelector('#progressText')
+    let condensed = false
+
+    const mobileCollapseAt = () => {
+      if (window.innerWidth > 768) return 120
+      const inner = document.getElementById('hsearch')?.querySelector('.hsearch-inner')
+      const height = inner?.scrollHeight ?? 72
+      return Math.min(Math.max(height - 16, 72), 220)
+    }
 
     const onScroll = () => {
       const y = window.scrollY
-      const introBottom = intro ? intro.getBoundingClientRect().bottom + y : 400
-      const condensed = y > introBottom - 120
-      chrome?.setCondensed?.(condensed)
-      chromeEl.classList.toggle('condensed', condensed)
-      document.body.classList.toggle('search-chrome-condensed', condensed)
+      const isMobile = window.innerWidth <= 768
+      const collapseAt = isMobile ? mobileCollapseAt() : 120
+      const expandAt = isMobile ? 0 : 32
+
+      if (!condensed && y > collapseAt) condensed = true
+      else if (condensed && y <= expandAt) condensed = false
+
+      const isCondensed = chromeEl.classList.contains('condensed')
+      if (isCondensed !== condensed) {
+        chrome?.setCondensed?.(condensed)
+        chromeEl.classList.toggle('condensed', condensed)
+        document.body.classList.toggle('search-chrome-condensed', condensed)
+      }
 
       const stuck = y > 80
       chromeEl.classList.toggle('stuck', stuck)
@@ -38,7 +53,11 @@ export default function useSearchResultsEffects({ rootRef, totalCount, visibleCo
       const progressTextVisible = progressTextEl
         ? progressTextEl.getBoundingClientRect().top <= window.innerHeight - 80
         : false
-      const showFloat = y > 500 && visibleCount < totalCount && !progressTextVisible
+      const showFloat =
+        window.innerWidth > 768 &&
+        y > 500 &&
+        visibleCount < totalCount &&
+        !progressTextVisible
       resfloat?.classList.toggle('show', showFloat)
 
       const progress = totalCount > 0 ? visibleCount / totalCount : 0
@@ -67,9 +86,12 @@ export default function useSearchResultsEffects({ rootRef, totalCount, visibleCo
 
     const pill = document.getElementById('hsearchPill')
     const onPill = () => {
+      condensed = false
+      chrome?.setCondensed?.(false)
+      chrome?.setStuck?.(false)
       chromeEl.classList.remove('condensed', 'stuck')
       document.body.classList.remove('search-chrome-condensed', 'search-chrome-stuck')
-      intro?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
     pill?.addEventListener('click', onPill)
 

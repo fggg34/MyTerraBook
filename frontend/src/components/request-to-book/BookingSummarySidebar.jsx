@@ -333,15 +333,13 @@ export default function BookingSummarySidebar({
             Apply
           </button>
         </div>
-        {promoApplied && (
-          <p className="promo-saved">
-            <Check aria-hidden />
-            You&apos;re saving{' '}
-            {bookingType === 'guesthouse'
-              ? price.formatCents(quote.discount_amount)
-              : price.format(quote.discount_amount)}
-          </p>
-        )}
+        <p className={`promo-saved${promoApplied ? '' : ' is-empty'}`} aria-hidden={!promoApplied}>
+          <Check aria-hidden />
+          You&apos;re saving{' '}
+          {bookingType === 'guesthouse'
+            ? price.formatCents(quote?.discount_amount)
+            : price.format(quote?.discount_amount)}
+        </p>
       </div>
       <div className="reassure">
         {config.reassurance.map((r, i) => (

@@ -89,11 +89,18 @@ export function useAutoSelectLocation({ options, value, onSelect, pickupValueFor
   useEffect(() => {
     if (!options.length) return undefined
 
-    const stillValid = value && options.some((loc) => loc.value === value)
-    if (stillValid) return undefined
+    const normalizedValue = value == null || value === '' ? '' : String(value)
+    if (normalizedValue) {
+      const stillValid = options.some((loc) => String(loc.value) === normalizedValue)
+      if (stillValid) return undefined
+      // Keep an explicit user/query selection until matching options arrive.
+      return undefined
+    }
 
-    const fallback =
-      options.find((loc) => loc.value === pickupValueForDropoff) || options[0]
+    const pickupMatch = pickupValueForDropoff
+      ? options.find((loc) => String(loc.value) === String(pickupValueForDropoff))
+      : null
+    const fallback = pickupMatch || options[0]
     if (fallback) onSelect(fallback.value)
     return undefined
   }, [options, value, onSelect, pickupValueForDropoff])

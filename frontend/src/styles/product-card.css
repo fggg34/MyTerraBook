@@ -243,13 +243,11 @@
 }
 
 /* Carousel rows (Hand-picked, stay section, similar stays) */
-.track,
-.sim-track {
+.track {
   align-items: stretch;
 }
 
-.track .pcard,
-.sim-track .pcard {
+.track .pcard {
   flex: 0 0 var(--pcard-col-width);
   width: var(--pcard-col-width);
   align-self: stretch;
@@ -282,20 +280,26 @@
 }
 
 @media (max-width: 768px) {
-  .track:not(.track--carousel) .pcard,
-  .sim-track .pcard {
+  .track:not(.track--carousel) .pcard {
     flex: 0 0 60%;
     width: 60%;
   }
 }
 
 @media (max-width: 480px) {
-  .track:not(.track--carousel) .pcard,
-  .sim-track .pcard {
+  .track:not(.track--carousel) .pcard {
     flex: 0 0 80%;
     width: 80%;
   }
+}
 
+@media (max-width: 1080px) {
+  .results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
   .results-grid {
     grid-template-columns: 1fr;
     max-width: 440px;
@@ -309,20 +313,29 @@
   .specs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
 
-@media (max-width: 1080px) {
-  .results-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .pcard-price {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .pcard-price .pill {
+    font-size: 18px;
+  }
+
+  .pcard-cta {
+    flex-wrap: wrap;
   }
 }
 
-body.homepage-active .pcard-book {
+body.homepage-active .pcard-book,
+body.listing-active .pcard-book {
   text-decoration: none;
   color: #fff;
 }
 
-body.homepage-active .pcard-book svg {
+body.homepage-active .pcard-book svg,
+body.listing-active .pcard-book svg {
   color: #fff;
 }
 
@@ -333,7 +346,6 @@ body.search-results-active .pcard-book {
 
 /* Drag-to-scroll (mouse) for horizontal carousels */
 .track,
-.sim-track,
 .rev-track,
 .drag-scroll,
 .reviews .rv-track-wrap,
@@ -346,7 +358,6 @@ body.search-results-active .pcard-book {
 }
 
 .track img,
-.sim-track img,
 .drag-scroll img,
 .reviews .rv-track-wrap img {
   -webkit-user-drag: none;
@@ -354,7 +365,6 @@ body.search-results-active .pcard-book {
 }
 
 .track.is-dragging,
-.sim-track.is-dragging,
 .rev-track.is-dragging,
 .drag-scroll.is-dragging,
 .reviews .rv-track-wrap.is-dragging,
@@ -366,13 +376,11 @@ body.search-results-active .pcard-book {
   user-select: none;
 }
 
-.track.is-dragging .pcard,
-.sim-track.is-dragging .pcard {
+.track.is-dragging .pcard {
   scroll-snap-align: none !important;
 }
 
 .track.is-dragging *,
-.sim-track.is-dragging *,
 .rev-track.is-dragging *,
 .drag-scroll.is-dragging *,
 .reviews .rv-track-wrap.is-dragging * {

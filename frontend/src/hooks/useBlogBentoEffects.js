@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-export default function useBlogBentoEffects(enabled = true) {
+export default function useBlogBentoEffects({ enabled = true, carousel = false } = {}) {
   useEffect(() => {
     if (!enabled) return undefined
 
@@ -19,16 +19,18 @@ export default function useBlogBentoEffects(enabled = true) {
       return undefined
     }
 
-    const froms = cards.map((card, i) => {
-      if (card.classList.contains('featured')) return { x: -120, y: 60, r: -5 }
-      const dirs = [
-        { x: 90, y: -70, r: 4 },
-        { x: 120, y: -45, r: 5 },
-        { x: 75, y: 80, r: -4 },
-        { x: 120, y: 65, r: 4 },
-      ]
-      return dirs[(i - 1) % dirs.length]
-    })
+    const froms = carousel
+      ? cards.map((_, i) => ({ y: 28 + (i % 3) * 6 }))
+      : cards.map((card, i) => {
+          if (card.classList.contains('featured')) return { x: -120, y: 60, r: -5 }
+          const dirs = [
+            { x: 90, y: -70, r: 4 },
+            { x: 120, y: -45, r: 5 },
+            { x: 75, y: 80, r: -4 },
+            { x: 120, y: 65, r: 4 },
+          ]
+          return dirs[(i - 1) % dirs.length]
+        })
 
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
     const easeOutCubic = (t) => 1 - (1 - t) ** 3
@@ -41,10 +43,20 @@ export default function useBlogBentoEffects(enabled = true) {
       const p = clamp((vh * 0.94 - rect.top) / (vh * 0.62), 0, 1)
 
       cards.forEach((card, i) => {
-        const d = i * 0.1
+        const d = i * (carousel ? 0.08 : 0.1)
         const lp = clamp((p - d) / (1 - d), 0, 1)
         const e = easeOutCubic(lp)
         const f = froms[i]
+
+        if (carousel) {
+          const y = (f.y * (1 - e)).toFixed(1)
+          const sc = (0.94 + 0.06 * e).toFixed(3)
+          card.style.transform = `translate3d(0,${y}px,0) scale(${sc})`
+          card.style.opacity = (0.42 + 0.58 * e).toFixed(3)
+          card.style.filter = 'none'
+          return
+        }
+
         const x = (f.x * (1 - e)).toFixed(1)
         const y = (f.y * (1 - e)).toFixed(1)
         const rot = (f.r * (1 - e)).toFixed(2)
@@ -111,5 +123,5 @@ export default function useBlogBentoEffects(enabled = true) {
       })
       cleanups.forEach((fn) => fn())
     }
-  }, [enabled])
+  }, [enabled, carousel])
 }
