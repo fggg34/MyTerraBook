@@ -83,6 +83,12 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     overflow:hidden;
     touch-action:none;
   }
+  html.scroll-lock,
+  body.scroll-lock{
+    overflow:hidden !important;
+    overscroll-behavior:none;
+    touch-action:none;
+  }
   body.mobile-nav-open .back-to-top{
     visibility:hidden;
     pointer-events:none;
@@ -96,6 +102,13 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   .nav-mobile-left{display:none;align-items:center;flex:0 0 auto;}
   .logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:700;font-size:23px;color:var(--navy);letter-spacing:-0.02em;}
   .logo .site-logo__image{display:block;height:36px;width:auto;max-width:min(220px,42vw);object-fit:contain;}
+  .site-logo__placeholder{
+    display:inline-block;
+    width:min(160px,36vw);
+    height:36px;
+    border-radius:8px;
+    background:linear-gradient(145deg,#e3eaf4,#eef2f8);
+  }
   .logo .mark{
     width:34px;height:34px;border-radius:10px;
     background:linear-gradient(150deg,var(--green),#5bb481);

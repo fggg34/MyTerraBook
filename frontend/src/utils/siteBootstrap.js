@@ -24,3 +24,47 @@ export function getBootstrappedHomepage() {
   if (!homepage || typeof homepage !== 'object') return null
   return homepage
 }
+
+export function getBootstrappedBranding() {
+  const pages = getBootstrappedSiteContent()
+  const branding = pages?.global?.branding
+  if (!branding || typeof branding !== 'object') return null
+  return branding
+}
+
+export function mergeBranding(apiBranding = {}) {
+  const boot = getBootstrappedBranding()
+  if (!boot) return apiBranding
+  return { ...boot, ...apiBranding }
+}
+
+export function applyBootstrapDocumentMeta() {
+  if (typeof document === 'undefined') return
+
+  const branding = getBootstrappedBranding()
+  if (!branding) return
+
+  const prefix = branding.prefix ?? 'My'
+  const accent = branding.accent ?? 'Terra'
+  const suffix = branding.suffix ?? 'Book'
+  document.title = `${prefix}${accent}${suffix}`
+
+  const favicon = branding.favicon
+  if (!favicon) return
+
+  let link = document.querySelector("link[rel~='icon']")
+  if (!link) {
+    link = document.createElement('link')
+    link.rel = 'icon'
+    document.head.appendChild(link)
+  }
+
+  const ext = String(favicon).split('.').pop()?.toLowerCase()
+  const typeMap = { svg: 'image/svg+xml', png: 'image/png', ico: 'image/x-icon' }
+  if (ext && typeMap[ext]) {
+    link.type = typeMap[ext]
+  } else {
+    link.removeAttribute('type')
+  }
+  link.href = favicon
+}

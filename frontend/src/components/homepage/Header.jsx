@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import SiteLogo from '../branding/SiteLogo'
 import { getDashboardLabel, getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
+import useScrollLock from '../../hooks/useScrollLock'
 import LangCurrencyMenu from './LangCurrencyMenu'
 
 function NavLink({ href, children, onClick, className = '' }) {
@@ -58,42 +59,14 @@ export default function Header({
     return () => document.body.classList.remove('mobile-nav-open')
   }, [mobileOpen])
 
+  useScrollLock(mobileOpen)
+
   useEffect(() => {
     if (!mobileOpen) return undefined
-
     const resetScroll = requestAnimationFrame(() => {
       mobileMenuScrollRef.current?.scrollTo(0, 0)
     })
-
-    const scrollY = window.scrollY
-    const body = document.body
-    const html = document.documentElement
-    const prevBody = {
-      overflow: body.style.overflow,
-      position: body.style.position,
-      top: body.style.top,
-      width: body.style.width,
-      touchAction: body.style.touchAction,
-    }
-    const prevHtmlOverflow = html.style.overflow
-
-    body.style.overflow = 'hidden'
-    body.style.position = 'fixed'
-    body.style.top = `-${scrollY}px`
-    body.style.width = '100%'
-    body.style.touchAction = 'none'
-    html.style.overflow = 'hidden'
-
-    return () => {
-      cancelAnimationFrame(resetScroll)
-      body.style.overflow = prevBody.overflow
-      body.style.position = prevBody.position
-      body.style.top = prevBody.top
-      body.style.width = prevBody.width
-      body.style.touchAction = prevBody.touchAction
-      html.style.overflow = prevHtmlOverflow
-      window.scrollTo(0, scrollY)
-    }
+    return () => cancelAnimationFrame(resetScroll)
   }, [mobileOpen])
 
   useEffect(() => {

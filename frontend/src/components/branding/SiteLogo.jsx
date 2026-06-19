@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
+import { useMemo } from 'react'
 import { useSiteContent } from '../../context/SiteContentContext'
+import { mergeBranding } from '../../utils/siteBootstrap'
 
 function GlobeMark({ className = 'mark' }) {
   return (
@@ -22,43 +24,59 @@ function MountainMark({ className = 'mark' }) {
   )
 }
 
-export default function SiteLogo({ variant = 'header', className = '', asLink = true }) {
-  const { branding } = useSiteContent()
-  const mode = branding.logoMode ?? 'text'
-  const prefix = branding.prefix ?? 'My'
-  const accent = branding.accent ?? 'Terra'
-  const suffix = branding.suffix ?? 'Book'
-  const logoImage = branding.logoImage
+function LogoPlaceholder({ className = '' }) {
+  return <span className={`site-logo__placeholder ${className}`.trim()} aria-hidden="true" />
+}
 
-  const text = (
-    <>
-      {mode === 'image' && logoImage ? (
-        <img src={logoImage} alt={`${prefix}${accent}${suffix}`} className="site-logo__image" />
-      ) : variant === 'auth' ? (
-        <>
-          <MountainMark />
-          <span>{prefix}{accent}{suffix}</span>
-        </>
-      ) : (
-        <>
-          <GlobeMark />
-          <span>
-            {prefix}
-            <span className="terra">{accent}</span>
-            {suffix}
-          </span>
-        </>
-      )}
-    </>
-  )
+export default function SiteLogo({ variant = 'header', className = '', asLink = true }) {
+  const { branding, loading } = useSiteContent()
+  const effectiveBranding = useMemo(() => mergeBranding(branding), [branding])
+  const mode = effectiveBranding.logoMode
+  const prefix = effectiveBranding.prefix ?? 'My'
+  const accent = effectiveBranding.accent ?? 'Terra'
+  const suffix = effectiveBranding.suffix ?? 'Book'
+  const logoImage = effectiveBranding.logoImage
+  const hasResolvedBranding = Boolean(mode || logoImage)
+
+  let content
+
+  if (mode === 'image') {
+    if (logoImage) {
+      content = <img src={logoImage} alt={`${prefix}${accent}${suffix}`} className="site-logo__image" />
+    } else if (loading) {
+      content = <LogoPlaceholder />
+    } else {
+      content = <LogoPlaceholder />
+    }
+  } else if (loading && !hasResolvedBranding) {
+    content = <LogoPlaceholder />
+  } else if (variant === 'auth') {
+    content = (
+      <>
+        <MountainMark />
+        <span>{prefix}{accent}{suffix}</span>
+      </>
+    )
+  } else {
+    content = (
+      <>
+        <GlobeMark />
+        <span>
+          {prefix}
+          <span className="terra">{accent}</span>
+          {suffix}
+        </span>
+      </>
+    )
+  }
 
   if (!asLink) {
-    return <span className={className}>{text}</span>
+    return <span className={className}>{content}</span>
   }
 
   return (
-    <Link to="/" className={className || 'logo'} aria-label="MyTerraBook home">
-      {text}
+    <Link to="/" className={className || 'logo'} aria-label={`${prefix}${accent}${suffix} home`}>
+      {content}
     </Link>
   )
 }

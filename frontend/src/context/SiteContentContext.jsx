@@ -5,7 +5,7 @@ import {
   defaultSiteContentData,
 } from '../data/defaultSiteContentData'
 import { mergePageContent } from '../utils/mergePageContent'
-import { getBootstrappedSiteContent } from '../utils/siteBootstrap'
+import { getBootstrappedSiteContent, mergeBranding } from '../utils/siteBootstrap'
 
 const SiteContentContext = createContext(null)
 
@@ -63,7 +63,7 @@ export function SiteContentProvider({ children }) {
     [pages, useDefaults],
   )
 
-  const branding = useMemo(() => global.branding ?? {}, [global])
+  const branding = useMemo(() => mergeBranding(global.branding ?? {}), [global])
 
   useEffect(() => {
     if (typeof document === 'undefined') return

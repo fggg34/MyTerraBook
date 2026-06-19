@@ -1,11 +1,11 @@
 import { createContext, useContext } from 'react'
-import { useSiteContent } from './SiteContentContext'
+import useSiteChromeData from '../hooks/useSiteChromeData'
 
 const SiteLayoutContext = createContext(null)
 
 /** @deprecated Prefer useSiteContent(); kept for existing layout components. */
 export function SiteLayoutProvider({ children }) {
-  const { siteData } = useSiteContent()
+  const siteData = useSiteChromeData()
   return <SiteLayoutContext.Provider value={{ siteData }}>{children}</SiteLayoutContext.Provider>
 }
 
@@ -15,6 +15,6 @@ export function useSiteLayout() {
     return fromLegacy
   }
 
-  const { siteData } = useSiteContent()
+  const siteData = useSiteChromeData()
   return { siteData }
 }

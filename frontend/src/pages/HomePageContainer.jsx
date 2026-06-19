@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api'
 import { useSiteContent } from '../context/SiteContentContext'
+import useSiteChromeData from '../hooks/useSiteChromeData'
 import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
 import { mergeHomepageData } from '../utils/mergeHomepageData'
@@ -11,7 +12,8 @@ const bootstrappedHomepage = getBootstrappedHomepage()
 const hasBootstrappedHomepage = bootstrappedHomepage != null
 
 export default function HomePageContainer() {
-  const { siteData, loading: siteLoading, useDefaults } = useSiteContent()
+  const siteData = useSiteChromeData()
+  const { loading: siteLoading, useDefaults } = useSiteContent()
   const [homepageData, setHomepageData] = useState(bootstrappedHomepage)
   const [homepageLoading, setHomepageLoading] = useState(!hasBootstrappedHomepage)
 

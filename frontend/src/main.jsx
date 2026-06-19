@@ -3,11 +3,14 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import ScrollToTop from './components/layout/ScrollToTop.jsx'
+import { applyBootstrapDocumentMeta } from './utils/siteBootstrap'
 import './i18n'
 import './index.css'
 import './styles/product-card.css'
 import './styles/homepage.css'
 import './styles/content-pages.css'
+
+applyBootstrapDocumentMeta()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
