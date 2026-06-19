@@ -1461,6 +1461,18 @@
       "robots": "index"
     }
   },
+  "campsite-map": {
+    "header": {
+      "title": "Campsite Map of Iceland",
+      "lead": "Plan overnight stops along the Ring Road with registered campsites across Iceland. Use the map to explore locations before you travel."
+    },
+    "note": "Overnight stays in campervans and motorhomes are permitted at registered campsites. Always check opening dates and facilities before you arrive.",
+    "seo": {
+      "title": "Campsite Map of Iceland",
+      "description": "Interactive map of registered campsites across Iceland for campervan and motorhome travellers planning Ring Road stops.",
+      "robots": "index"
+    }
+  },
   "search-campervan": {
     "id": "campervan",
     "route": "/campervans",

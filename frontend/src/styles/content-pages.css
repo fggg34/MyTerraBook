@@ -3815,3 +3815,53 @@
     justify-content: center;
   }
 }
+
+/* ── Campsite map page ── */
+
+.campsite-map-page .content-hero h1 {
+  max-width: 22ch;
+}
+
+.campsite-map-body {
+  padding: 40px 0 88px;
+}
+
+.campsite-map-embed {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line, #e2e7ef);
+  box-shadow: 0 10px 36px rgba(15, 32, 54, 0.08);
+  background: #fff;
+}
+
+.campsite-map-embed iframe {
+  display: block;
+  width: 100%;
+  height: min(78vh, 720px);
+  min-height: 420px;
+  border: 0;
+}
+
+.campsite-map-note {
+  margin: 20px 0 0;
+  max-width: 72ch;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--slate, #5a6b82);
+}
+
+@media (max-width: 760px) {
+  .campsite-map-body {
+    padding: 24px 0 64px;
+  }
+
+  .campsite-map-embed {
+    border-radius: 12px;
+  }
+
+  .campsite-map-embed iframe {
+    min-height: 360px;
+    height: min(70vh, 560px);
+  }
+}

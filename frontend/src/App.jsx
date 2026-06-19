@@ -40,6 +40,7 @@ import HostRegisterPage from './pages/host/HostRegisterPage'
 import GuestHouseCheckoutPage from './pages/guest-houses/GuestHouseCheckoutPage'
 import SitePagePage from './pages/SitePagePage'
 import GoodToKnowPage from './pages/GoodToKnowPage'
+import CampsiteMapPage from './pages/CampsiteMapPage'
 import NewsletterUnsubscribePage from './pages/NewsletterUnsubscribePage'
 import GoodToKnowPostPage from './pages/GoodToKnowPostPage'
 
@@ -169,6 +170,7 @@ function AppRoutes() {
         <Route path="/cookies" element={<SitePagePage forcedSlug="cookies" />} />
         <Route path="/good-to-know" element={<GoodToKnowPage />} />
         <Route path="/good-to-know/:slug" element={<GoodToKnowPostPage />} />
+        <Route path="/campsite-map" element={<CampsiteMapPage />} />
         <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/host/login" element={<LoginPage hostIntent />} />
