@@ -1,6 +1,6 @@
 .host-shell {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 240px minmax(0, 1fr);
   min-height: calc(100vh - 120px);
   gap: 0;
 }
@@ -47,6 +47,7 @@
 .host-main {
   padding: 32px;
   background: #fbfcfe;
+  min-width: 0;
 }
 
 .host-dashboard {
@@ -2221,7 +2222,7 @@ a.host-overview-card:hover .host-overview-card-link {
    ============================================================ */
 @media (max-width: 900px) {
   .host-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     border: 1px solid #e6ebf2;
     border-radius: 16px;
     overflow: hidden;
@@ -2233,6 +2234,11 @@ a.host-overview-card:hover .host-overview-card-link {
     border-bottom: 1px solid #e2e7ef;
     padding: 10px 10px;
     background: #fff;
+    min-width: 0;
+  }
+
+  .host-main {
+    min-width: 0;
   }
 
   .host-sidebar h2 {
@@ -2381,11 +2387,14 @@ a.host-overview-card:hover .host-overview-card-link {
     border-bottom: 1px solid #f1f3f8;
     font-size: 13.5px;
     text-align: right;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .host-table td::before {
     content: attr(data-label);
     flex: 0 0 auto;
+    max-width: 45%;
     font-size: 12px;
     font-weight: 700;
     color: #5a6b82;
