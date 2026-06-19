@@ -230,9 +230,9 @@ class SiteContentFormBuilder
 
         $repeater->itemLabel(function (array $state) use ($subFields): ?string {
             foreach ($subFields as $subField) {
-                $subKey = $subField['key'] ?? null;
-                if ($subKey && ! empty($state[$subKey])) {
-                    return (string) $state[$subKey];
+                $label = $this->resolveRepeaterItemLabelValue($state, $subField);
+                if ($label !== null && $label !== '') {
+                    return $label;
                 }
             }
 
@@ -240,6 +240,31 @@ class SiteContentFormBuilder
         });
 
         return $repeater;
+    }
+
+    /**
+     * @param  array<string, mixed>  $state
+     * @param  array<string, mixed>  $subField
+     */
+    private function resolveRepeaterItemLabelValue(array $state, array $subField): ?string
+    {
+        $path = $subField['path'] ?? null;
+        if (is_string($path) && $path !== '') {
+            $value = data_get($state, $path);
+        } else {
+            $key = $subField['key'] ?? null;
+            if (! is_string($key) || $key === '') {
+                return null;
+            }
+
+            $value = $state[$key] ?? null;
+        }
+
+        if (is_string($value) || is_numeric($value)) {
+            return (string) $value;
+        }
+
+        return null;
     }
 
     /**
