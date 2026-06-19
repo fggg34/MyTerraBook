@@ -282,6 +282,7 @@ export default function BookingModule({
           endDate={parseDateOnly(vehicleForm.dropoff_at)}
           minNights={minRentalDays}
           maxNights={rules.max_rental_days}
+          rateUnit="day"
           onChange={handleVehicleDates}
         />
       </div>
@@ -319,6 +320,7 @@ export default function BookingModule({
           startDate={parseDateOnly(guestForm.check_in)}
           endDate={parseDateOnly(guestForm.check_out)}
           minNights={1}
+          rateUnit="night"
           onChange={handleGuestDates}
         />
       </div>

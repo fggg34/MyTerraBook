@@ -181,6 +181,13 @@ export default function ListingTabPanels({
     startDate && endDate
       ? Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86400000))
       : 0
+  const selectedRateDurationLabel =
+    startDate && endDate
+      ? (() => {
+          const unit = typeConfig.rateUnit === 'night' ? 'night' : 'day'
+          return `${nights} ${nights === 1 ? unit : `${unit}s`}`
+        })()
+      : null
   const fallbackTotal = nights * priceFromAmount
   const displayTotal = quoteRental ?? (quoteLoading ? null : fallbackTotal)
   const hasExtraCharges = quoteTotal != null && displayTotal != null && quoteTotal > displayTotal
@@ -375,6 +382,7 @@ export default function ListingTabPanels({
               endLabel={typeConfig.dateEndLabel || 'Drop-off'}
               startDate={startDate}
               endDate={endDate}
+              rateUnit={typeConfig.rateUnit}
               totalAmount={startDate && endDate ? displayTotal : null}
               totalLoading={quoteLoading}
               formatTotal={price.format}
@@ -385,8 +393,8 @@ export default function ListingTabPanels({
           </div>
           <div className="rate-row">
             <span className="rl" id="rateL">
-              {startDate && endDate
-                ? `Rental · ${nights} night${nights > 1 ? 's' : ''}`
+              {selectedRateDurationLabel
+                ? `Rental · ${selectedRateDurationLabel}`
                 : typeConfig.rateLabelDefault}
             </span>
             <span className="rr" id="rateR">

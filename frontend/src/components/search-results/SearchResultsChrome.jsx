@@ -281,6 +281,7 @@ export default function SearchResultsChrome({
                     startDate={guestStartDate}
                     endDate={guestEndDate}
                     minNights={1}
+                    rateUnit="night"
                     onChange={handleGuestDates}
                   />
                 </div>
@@ -346,6 +347,7 @@ export default function SearchResultsChrome({
                     endDate={vehicleEndDate}
                     minNights={minRentalDays}
                     maxNights={maxRentalDays}
+                    rateUnit="day"
                     onChange={handleVehicleDates}
                   />
                 </div>

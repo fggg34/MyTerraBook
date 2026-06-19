@@ -41,6 +41,11 @@ function fmtDisplay(d, useFullMonth = false) {
   return `${d.getDate()} ${month}`
 }
 
+function formatRateDuration(count, rateUnit = 'night') {
+  const unit = rateUnit === 'night' ? 'night' : 'day'
+  return `${count} ${count === 1 ? unit : `${unit}s`}`
+}
+
 const CALENDAR_ICON = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
@@ -57,6 +62,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
     endLabel = 'Drop-off',
     minNights = 1,
     maxNights = null,
+    rateUnit = 'night',
     pricePerDay = null,
     totalAmount = null,
     totalLoading = false,
@@ -213,15 +219,14 @@ const DateRangePicker = forwardRef(function DateRangePicker(
 
   const nights =
     dStart && dEnd ? Math.max(1, Math.round((dEnd.getTime() - dStart.getTime()) / 86400000)) : 0
+  const durationLabel = formatRateDuration(nights, rateUnit)
 
   const footnote = (() => {
     if (dStart && dEnd) {
       if (totalLoading) {
         return (
           <>
-            <b>
-              {nights} night{nights > 1 ? 's' : ''}
-            </b>{' '}
+            <b>{durationLabel}</b>{' '}
             <span>· … total</span>
           </>
         )
@@ -229,9 +234,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
       if (totalAmount != null && formatTotal) {
         return (
           <>
-            <b>
-              {nights} night{nights > 1 ? 's' : ''}
-            </b>{' '}
+            <b>{durationLabel}</b>{' '}
             <span>· {formatTotal(totalAmount)} total</span>
           </>
         )
@@ -240,9 +243,7 @@ const DateRangePicker = forwardRef(function DateRangePicker(
         const total = nights * Number(pricePerDay)
         return (
           <>
-            <b>
-              {nights} night{nights > 1 ? 's' : ''}
-            </b>{' '}
+            <b>{durationLabel}</b>{' '}
             <span>· {formatTotal(total)} total</span>
           </>
         )
@@ -251,18 +252,12 @@ const DateRangePicker = forwardRef(function DateRangePicker(
         const total = nights * Number(pricePerDay)
         return (
           <>
-            <b>
-              {nights} night{nights > 1 ? 's' : ''}
-            </b>{' '}
+            <b>{durationLabel}</b>{' '}
             <span>· {total.toLocaleString()} total</span>
           </>
         )
       }
-      return (
-        <b>
-          {nights} night{nights > 1 ? 's' : ''}
-        </b>
-      )
+      return <b>{durationLabel}</b>
     }
     if (dStart) return <span>Choose your {endLabel.toLowerCase()} date</span>
     return <span>Select your dates</span>
