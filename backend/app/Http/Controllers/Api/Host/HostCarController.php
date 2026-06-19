@@ -848,8 +848,8 @@ class HostCarController extends Controller
     private function validatedData(Request $request, ?Car $car = null): array
     {
         $data = $request->validate([
-            'sub_category_id' => ['sometimes', 'exists:sub_categories,id'],
-            'category_id' => ['sometimes', 'exists:sub_categories,id'],
+            'sub_category_id' => ['nullable', 'integer', 'exists:sub_categories,id'],
+            'category_id' => ['nullable', 'integer', 'exists:sub_categories,id'],
             'name' => [$car ? 'sometimes' : 'required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('cars', 'slug')->ignore($car?->id)],
             'description' => ['nullable', 'string'],
@@ -886,8 +886,8 @@ class HostCarController extends Controller
 
         unset($data['category_id']);
 
-        if (! $car && ! isset($data['sub_category_id'])) {
-            abort(422, 'The sub category id field is required.');
+        if (array_key_exists('sub_category_id', $data) && empty($data['sub_category_id'])) {
+            $data['sub_category_id'] = null;
         }
 
         if (isset($data['sub_category_id'])) {

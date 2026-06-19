@@ -23,6 +23,12 @@ export function getPostLoginPath(user, { hostIntent = false } = {}) {
   return '/dashboard'
 }
 
+export function getDashboardLabel(role) {
+  if (role === 'host') return 'Host panel'
+  if (role === 'admin') return 'Admin'
+  return 'My account'
+}
+
 export function getLoginPathForRole(role) {
   if (role === 'host') return '/host/login'
   return '/login'

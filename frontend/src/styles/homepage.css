@@ -1256,6 +1256,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
       padding:24px 16px 20px;
       min-height:min(70vh, 520px);
       justify-content:flex-end;
+      gap:16px;
     }
     .hero-copy{
       margin-top:auto;
@@ -1269,7 +1270,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     .hero-copy h1:empty{display:none;}
     .hero-copy p{
       font-size:14px;
-      margin-top:6px;
+      margin-top:10px;
       margin-bottom:0;
       line-height:1.35;
     }
@@ -1279,7 +1280,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     .hero-subtitle--mobile{display:inline;}
     .hero-copy p:empty{display:none;}
     .hero-copy h1:empty + p{margin-top:0;}
-    .booking{margin-top:10px;}
+    .booking{margin-top:0;}
 
     .trust .wrap{
       display:block;padding:14px 16px;overflow:hidden;
@@ -1787,8 +1788,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     .hero{min-height:min(64vh, 480px);}
     .hero-inner{min-height:min(64vh, 480px);padding:20px 16px 18px;}
     .hero-copy h1{font-size:26px;}
-    .hero-copy p{font-size:13.5px;margin-top:5px;}
-    .booking{margin-top:8px;}
+    .hero-copy p{font-size:13.5px;margin-top:10px;}
     .booking-body{padding:13px 12px 11px;}
     .booking-body:has(.search-row--compact){padding:11px 12px 9px;}
     .booking-foot{padding:8px 12px 9px;font-size:12px;}
@@ -2956,6 +2956,12 @@ body.homepage-active { margin: 0; overflow-x: clip; }
 }
 .ftr-col a:hover,
 .ftr-host-links a:hover{color:var(--green);}
+.ftr-host-logout{
+  font-size:14px;color:var(--slate);font-weight:500;
+  background:none;border:none;padding:0;cursor:pointer;
+  transition:color .15s;
+}
+.ftr-host-logout:hover{color:var(--red);}
 .ftr-col a .new-pill{font-size:9.5px;font-weight:800;letter-spacing:.08em;color:#fff;background:var(--green);padding:2px 6px;border-radius:4px;}
 .ftr-host{display:flex;flex-direction:column;align-items:flex-start;}
 .ftr-host-cta{
@@ -3043,6 +3049,29 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     background:var(--navy);border-color:var(--navy);color:#fff;
   }
   .ftr-account-btn--solid:hover{background:var(--green-dark);border-color:var(--green-dark);color:#fff;}
+  .ftr-account-btn--logout{
+    border-color:rgba(226,55,68,.28);color:var(--red);cursor:pointer;font-family:inherit;
+  }
+  .ftr-account-btn--logout:hover{
+    border-color:var(--red);color:var(--red);background:rgba(226,55,68,.08);
+  }
+  .ftr-account-user{
+    display:flex;align-items:center;gap:12px;min-width:0;
+  }
+  .ftr-account-user .user-avatar{
+    flex:0 0 auto;width:40px;height:40px;border-radius:50%;
+    display:grid;place-items:center;
+    font-family:var(--serif);font-weight:700;font-size:16px;color:#fff;
+    background:var(--navy);
+  }
+  .ftr-account-user-meta{
+    display:flex;flex-direction:column;gap:2px;min-width:0;
+  }
+  .ftr-account-user-name{
+    font-family:var(--serif);font-weight:700;font-size:15px;color:var(--navy);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .ftr-account-user-role{font-size:12.5px;font-weight:600;color:var(--slate-light);}
   .ftr-account-host{
     display:flex;align-items:center;gap:14px;
     padding:14px 16px;border-radius:16px;

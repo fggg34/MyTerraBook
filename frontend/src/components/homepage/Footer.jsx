@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import SiteLogo from '../branding/SiteLogo'
+import { getDashboardLabel, getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
 import LangCurrencyMenu from './LangCurrencyMenu'
 import useMediaQuery from '../../hooks/useMediaQuery'
 
@@ -90,30 +91,62 @@ function FooterColumnToggle({ id, title, open, onToggle, children }) {
   )
 }
 
-function FooterAccountBlock({ accountLinks, hostCtaLabel, hostCtaHref }) {
+function FooterAccountBlock({
+  user,
+  dashboardPath,
+  dashboardLabel,
+  accountLinks,
+  hostCtaLabel,
+  hostCtaHref,
+  showHostCta,
+  onLogout,
+}) {
   const signInLink = accountLinks.find((link) => /sign in|log in/i.test(link.label)) ?? accountLinks[0]
   const registerLink =
     accountLinks.find((link) => /create account|register|sign up/i.test(link.label)) ??
     accountLinks.find((link) => link !== signInLink)
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || '?'
 
   return (
     <div className="ftr-account">
       <p className="ftr-account-label">Account</p>
 
-      <div className="ftr-account-actions">
-        {signInLink && (
-          <FooterLink href={signInLink.href} className="ftr-account-btn">
-            {signInLink.label}
-          </FooterLink>
-        )}
-        {registerLink && (
-          <FooterLink href={registerLink.href} className="ftr-account-btn ftr-account-btn--solid">
-            {registerLink.label}
-          </FooterLink>
-        )}
-      </div>
+      {user ? (
+        <>
+          <div className="ftr-account-user">
+            <span className="user-avatar" aria-hidden="true">
+              {userInitial}
+            </span>
+            <div className="ftr-account-user-meta">
+              <span className="ftr-account-user-name">{user.name}</span>
+              <span className="ftr-account-user-role">{dashboardLabel}</span>
+            </div>
+          </div>
+          <div className="ftr-account-actions">
+            <FooterLink href={dashboardPath} className="ftr-account-btn ftr-account-btn--solid">
+              {dashboardLabel}
+            </FooterLink>
+            <button type="button" className="ftr-account-btn ftr-account-btn--logout" onClick={onLogout}>
+              Log out
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="ftr-account-actions">
+          {signInLink && (
+            <FooterLink href={signInLink.href} className="ftr-account-btn">
+              {signInLink.label}
+            </FooterLink>
+          )}
+          {registerLink && (
+            <FooterLink href={registerLink.href} className="ftr-account-btn ftr-account-btn--solid">
+              {registerLink.label}
+            </FooterLink>
+          )}
+        </div>
+      )}
 
-      {hostCtaLabel && (
+      {showHostCta && hostCtaLabel && (
         <FooterLink href={hostCtaHref || '/become-a-host'} className="ftr-account-host">
           <span className="ftr-account-host-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -144,8 +177,20 @@ export default function Footer({
   hostCtaLabel,
   hostCtaHref,
 }) {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const isMobile = useMediaQuery('(max-width: 768px)')
   const [openSections, setOpenSections] = useState({ book: true, company: false })
+
+  const role = normalizeUserRole(user)
+  const dashboardPath = user ? getPostLoginPath(user) : null
+  const dashboardLabel = getDashboardLabel(role)
+  const showHostCta = !user || (role !== 'host' && role !== 'admin')
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
+  }
 
   const bookLinks = findColumnLinks(columns, ['book', 'menu']) ?? BOOK_LINKS
   const companyLinks = findColumnLinks(columns, ['company', 'pages', 'explore']) ?? COMPANY_LINKS
@@ -189,13 +234,39 @@ export default function Footer({
 
   const mobileAccountBlock = (
     <FooterAccountBlock
+      user={user}
+      dashboardPath={dashboardPath}
+      dashboardLabel={dashboardLabel}
       accountLinks={accountLinks}
       hostCtaLabel={hostCtaLabel}
       hostCtaHref={hostCtaHref}
+      showHostCta={showHostCta}
+      onLogout={handleLogout}
     />
   )
 
-  const desktopAccountBlock = (
+  const desktopAccountBlock = user ? (
+    <>
+      <ul className="ftr-host-links">
+        <li>
+          <FooterLink href={dashboardPath}>{dashboardLabel}</FooterLink>
+        </li>
+        <li>
+          <button type="button" className="ftr-host-logout" onClick={handleLogout}>
+            Log out
+          </button>
+        </li>
+      </ul>
+      {showHostCta && hostCtaLabel && (
+        <FooterLink href={hostCtaHref || '/become-a-host'} className="ftr-host-cta">
+          {hostCtaLabel}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </FooterLink>
+      )}
+    </>
+  ) : (
     <>
       <ul className="ftr-host-links">
         {accountLinks.map((link) => (

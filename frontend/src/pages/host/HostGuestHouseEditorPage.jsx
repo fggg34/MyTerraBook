@@ -28,6 +28,46 @@ import { formatDate, normalizeTimeString } from '../../utils/format'
 import { useMapsConfig } from '../../hooks/useMapsConfig'
 import { formatLocationLine } from '../../utils/parseGooglePlace'
 
+function optionalNumber(value) {
+  if (value === '' || value == null || Number.isNaN(Number(value))) return null
+  return Number(value)
+}
+
+function buildGuestHouseSavePayload(form, seasonalPrices, seasonalDraft) {
+  const seasonalPriceRows = buildSeasonalPriceRows(seasonalPrices, seasonalDraft)
+  const payload = {
+    name: form.name,
+    type: form.type,
+    description: form.description,
+    short_description: form.short_description,
+    address: form.address,
+    city: form.city,
+    country: form.country,
+    latitude: form.latitude === '' ? null : optionalNumber(form.latitude),
+    longitude: form.longitude === '' ? null : optionalNumber(form.longitude),
+    max_guests: optionalNumber(form.max_guests),
+    bedrooms: optionalNumber(form.bedrooms),
+    bathrooms: optionalNumber(form.bathrooms),
+    beds: optionalNumber(form.beds),
+    min_nights: optionalNumber(form.min_nights),
+    max_nights: optionalNumber(form.max_nights),
+    check_in_time: form.check_in_time || null,
+    check_out_time: form.check_out_time || null,
+    cancellation_policy: form.cancellation_policy,
+    tax_rate_id: form.tax_rate_id,
+    cleaning_fee_euros: optionalNumber(form.cleaning_fee_euros),
+    security_deposit_euros: optionalNumber(form.security_deposit_euros),
+    amenity_ids: form.amenity_ids,
+    seasonal_prices: seasonalPriceRows,
+  }
+
+  if (form.base_price_per_night_euros !== '') {
+    payload.base_price_per_night_euros = optionalNumber(form.base_price_per_night_euros)
+  }
+
+  return payload
+}
+
 function buildSeasonalPriceRows(seasonalPrices, seasonalDraft) {
   const rows = [...seasonalPrices]
   const hasPendingDraft = seasonalDraft.name && seasonalDraft.date_from && seasonalDraft.date_to
@@ -161,20 +201,11 @@ export default function HostGuestHouseEditorPage() {
   const save = async () => {
     setSaving(true)
     try {
-      const seasonalPriceRows = buildSeasonalPriceRows(seasonalPrices, seasonalDraft)
-      const payload = {
-        ...form,
-        max_nights: form.max_nights ? Number(form.max_nights) : null,
-        latitude: form.latitude === '' ? null : Number(form.latitude),
-        longitude: form.longitude === '' ? null : Number(form.longitude),
-        amenity_ids: form.amenity_ids,
-        seasonal_prices: seasonalPriceRows,
-      }
-      delete payload.slug
+      const payload = buildGuestHouseSavePayload(form, seasonalPrices, seasonalDraft)
       if (recordId) {
         const res = await updateHostGuestHouse(recordId, payload)
         const saved = res.data.data
-        setSeasonalPrices(Array.isArray(saved?.seasonal_prices) ? saved.seasonal_prices : seasonalPriceRows)
+        setSeasonalPrices(Array.isArray(saved?.seasonal_prices) ? saved.seasonal_prices : payload.seasonal_prices)
         if (seasonalDraft.name && seasonalDraft.date_from && seasonalDraft.date_to) {
           setSeasonalDraft(emptySeasonalDraft)
         }
@@ -186,7 +217,7 @@ export default function HostGuestHouseEditorPage() {
       const newId = res.data.data.id
       setRecordId(newId)
       setStatus(res.data.data.status)
-      setSeasonalPrices(Array.isArray(res.data.data?.seasonal_prices) ? res.data.data.seasonal_prices : seasonalPriceRows)
+      setSeasonalPrices(Array.isArray(res.data.data?.seasonal_prices) ? res.data.data.seasonal_prices : payload.seasonal_prices)
       if (seasonalDraft.name && seasonalDraft.date_from && seasonalDraft.date_to) {
         setSeasonalDraft(emptySeasonalDraft)
       }
@@ -194,7 +225,9 @@ export default function HostGuestHouseEditorPage() {
       navigate(`/host/guesthouses/${newId}/edit`, { replace: true })
       return newId
     } catch (err) {
-      toast(err.response?.data?.message || 'Could not save', 'error')
+      const validation = err.response?.data?.errors
+      const firstError = validation && Object.values(validation).flat()[0]
+      toast(firstError || err.response?.data?.message || 'Could not save', 'error')
       return null
     } finally {
       setSaving(false)
@@ -338,7 +371,7 @@ export default function HostGuestHouseEditorPage() {
       <div className="host-form-card">
         {step === 0 && (
           <>
-            <p className="host-step-note">Name, address and a cover photo are required to publish. Save first to enable photo uploads.</p>
+            <p className="host-step-note">You can save a draft at any time. Name, address and a cover photo are required before submit. Save first to enable photo uploads.</p>
             <div className="host-field" id="host-gh-name"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="host-field"><label>Type</label>
               <HostSelect
@@ -388,12 +421,12 @@ export default function HostGuestHouseEditorPage() {
         )}
         {step === 1 && (
           <>
-            <p className="host-step-note">Max guests, bedrooms, bathrooms and city appear on product cards and are required before submit.</p>
+            <p className="host-step-note">You can save a draft at any time. Max guests, bedrooms, bathrooms and city are required before submit.</p>
             <div className="host-field"><label>Full description</label><textarea rows={6} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="host-field" id="host-gh-max-guests"><label>Max guests</label><input type="number" min={1} required value={form.max_guests} onChange={(e) => setForm({ ...form, max_guests: Number(e.target.value) })} /></div>
-              <div className="host-field" id="host-gh-bedrooms"><label>Bedrooms</label><input type="number" min={0} required value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: Number(e.target.value) })} /></div>
-              <div className="host-field" id="host-gh-bathrooms"><label>Bathrooms</label><input type="number" min={1} required value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: Number(e.target.value) })} /></div>
+              <div className="host-field" id="host-gh-max-guests"><label>Max guests</label><input type="number" min={1} value={form.max_guests} onChange={(e) => setForm({ ...form, max_guests: Number(e.target.value) })} /></div>
+              <div className="host-field" id="host-gh-bedrooms"><label>Bedrooms</label><input type="number" min={0} value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: Number(e.target.value) })} /></div>
+              <div className="host-field" id="host-gh-bathrooms"><label>Bathrooms</label><input type="number" min={1} value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Total beds</label><input type="number" value={form.beds} onChange={(e) => setForm({ ...form, beds: Number(e.target.value) })} /></div>
             </div>
             <div className="host-field" id="host-gh-amenities"><label>Amenities</label>

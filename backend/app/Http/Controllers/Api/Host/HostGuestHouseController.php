@@ -325,12 +325,12 @@ class HostGuestHouseController extends Controller
             'country' => ['nullable', 'string', 'max:255'],
             'latitude' => ['nullable', 'numeric'],
             'longitude' => ['nullable', 'numeric'],
-            'max_guests' => ['nullable', 'integer', 'min:1'],
+            'max_guests' => ['nullable', 'integer', 'min:0'],
             'bedrooms' => ['nullable', 'integer', 'min:0'],
-            'bathrooms' => ['nullable', 'integer', 'min:1'],
-            'beds' => ['nullable', 'integer', 'min:1'],
-            'min_nights' => ['nullable', 'integer', 'min:1'],
-            'max_nights' => ['nullable', 'integer', 'min:1'],
+            'bathrooms' => ['nullable', 'integer', 'min:0'],
+            'beds' => ['nullable', 'integer', 'min:0'],
+            'min_nights' => ['nullable', 'integer', 'min:0'],
+            'max_nights' => ['nullable', 'integer', 'min:0'],
             'base_price_per_night_euros' => ['nullable', 'numeric', 'min:0'],
             'cleaning_fee_euros' => ['nullable', 'numeric', 'min:0'],
             'security_deposit_euros' => ['nullable', 'numeric', 'min:0'],
@@ -349,8 +349,10 @@ class HostGuestHouseController extends Controller
             'seasonal_prices.*.minimum_nights' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        if (isset($data['base_price_per_night_euros'])) {
-            $data['base_price_per_night'] = (int) round($data['base_price_per_night_euros'] * 100);
+        if (array_key_exists('base_price_per_night_euros', $data)) {
+            $data['base_price_per_night'] = $data['base_price_per_night_euros'] === null
+                ? 0
+                : (int) round($data['base_price_per_night_euros'] * 100);
             unset($data['base_price_per_night_euros']);
         }
         if (isset($data['cleaning_fee_euros'])) {

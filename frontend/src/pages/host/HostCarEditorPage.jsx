@@ -356,16 +356,15 @@ export default function HostCarEditorPage() {
 
       const payload = {
         name: form.name,
-        sub_category_id: Number(form.sub_category_id),
+        sub_category_id: form.sub_category_id ? Number(form.sub_category_id) : null,
         description: form.description,
-        transmission: form.transmission,
-        fuel_type: form.fuel_type,
-        drive_type: form.drive_type,
-        seats: form.seats,
-        sleeps: campervanSave ? form.sleeps : 0,
-        bags: form.bags,
+        transmission: form.transmission || null,
+        fuel_type: form.fuel_type || null,
+        drive_type: form.drive_type || null,
+        seats: form.seats ?? null,
+        sleeps: campervanSave ? (form.sleeps ?? null) : 0,
+        bags: form.bags ?? null,
         year: form.year ? Number(form.year) : null,
-        units_available: form.units_available,
         pickup_time_from: form.pickup_time_from || null,
         pickup_time_to: form.pickup_time_to || null,
         dropoff_time_from: form.dropoff_time_from || null,
@@ -1063,7 +1062,7 @@ export default function HostCarEditorPage() {
         )}
         {step === 1 && (
           <>
-            <p className="host-step-note">Transmission, fuel, drive system, seats and bags are required for all vehicles. Campervans also need sleeps (berths). Use characteristics for what is included, optional extras for paid add-ons, and rental conditions for booking rules.</p>
+            <p className="host-step-note">You can save a draft at any time. Transmission, fuel, drive system, seats and bags are required before submit. Campervans also need sleeps (berths).</p>
             <div className="host-field" id="host-car-transmission"><label>Transmission</label>
               <HostSelect
                 value={form.transmission}
@@ -1100,7 +1099,6 @@ export default function HostCarEditorPage() {
                     type="number"
                     min={1}
                     max={50}
-                    required
                     value={form.seats}
                     onChange={(e) => setCapacity('seats', e.target.value, 50)}
                   />
@@ -1115,7 +1113,6 @@ export default function HostCarEditorPage() {
                       type="number"
                       min={1}
                       max={20}
-                      required
                       value={form.sleeps}
                       onChange={(e) => setCapacity('sleeps', e.target.value, 20)}
                     />
@@ -1130,7 +1127,6 @@ export default function HostCarEditorPage() {
                     type="number"
                     min={1}
                     max={50}
-                    required
                     value={form.bags}
                     onChange={(e) => setCapacity('bags', e.target.value, 50)}
                   />

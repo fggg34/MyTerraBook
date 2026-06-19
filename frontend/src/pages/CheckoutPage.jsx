@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
-import { Link, useOutletContext, useSearchParams } from 'react-router-dom'
+import { useOutletContext, useSearchParams } from 'react-router-dom'
 import '../styles/request-to-book.css'
 import useRequestToBook from '../hooks/useRequestToBook'
+import CheckoutEmptyState from '../components/request-to-book/CheckoutEmptyState'
 import RequestToBookSubbar from '../components/request-to-book/RequestToBookSubbar'
 import RequestToBookStepper from '../components/request-to-book/RequestToBookStepper'
 import BookingSummarySidebar from '../components/request-to-book/BookingSummarySidebar'
@@ -38,12 +39,7 @@ function CheckoutPageBody() {
     return (
       <>
         <PageHead {...seo} />
-        <div className="mx-auto max-w-lg px-4 py-16 text-center">
-        <p className="text-slate-600">No booking in progress.</p>
-        <Link to="/" className="btn-primary mt-4 inline-flex">
-          Browse listings
-        </Link>
-        </div>
+        <CheckoutEmptyState />
       </>
     )
   }

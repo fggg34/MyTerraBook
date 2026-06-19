@@ -69,22 +69,22 @@ class HostCarResource extends JsonResource
             ])->values()->all()),
             'rental_condition_ids' => $this->whenLoaded('rentalConditions', fn () => $this->rentalConditions->pluck('id')->all()),
             'main_category_id' => $this->whenLoaded('subCategory', fn () => $this->subCategory?->main_category_id),
-            'sub_category' => $this->whenLoaded('subCategory', fn () => [
+            'sub_category' => $this->whenLoaded('subCategory', fn () => $this->subCategory ? [
                 'id' => $this->subCategory->id,
                 'name' => $this->subCategory->name,
                 'slug' => $this->subCategory->slug,
                 'main_category_id' => $this->subCategory->main_category_id,
-            ]),
+            ] : null),
             'main_category' => $this->whenLoaded('subCategory.mainCategory', fn () => $this->subCategory?->mainCategory ? [
                 'id' => $this->subCategory->mainCategory->id,
                 'name' => $this->subCategory->mainCategory->name,
                 'slug' => $this->subCategory->mainCategory->slug,
             ] : null),
-            'category' => $this->whenLoaded('subCategory', fn () => [
+            'category' => $this->whenLoaded('subCategory', fn () => $this->subCategory ? [
                 'id' => $this->subCategory->id,
                 'name' => $this->subCategory->name,
                 'slug' => $this->subCategory->slug,
-            ]),
+            ] : null),
             'units_count' => $this->whenCounted('carUnits'),
             'location_fees' => HostLocationFeeResource::collection($this->whenLoaded('locationFees')),
             'out_of_hours_fees' => HostOutOfHoursFeeResource::collection($this->whenLoaded('outOfHoursFees')),

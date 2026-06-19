@@ -2,14 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import SiteLogo from '../branding/SiteLogo'
-import { getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
+import { getDashboardLabel, getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
 import LangCurrencyMenu from './LangCurrencyMenu'
-
-function getDashboardLabel(role) {
-  if (role === 'host') return 'Host panel'
-  if (role === 'admin') return 'Admin'
-  return 'My account'
-}
 
 function NavLink({ href, children, onClick, className = '' }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {

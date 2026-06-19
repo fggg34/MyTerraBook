@@ -1511,6 +1511,134 @@
 .rtb-page .confirm-wrap.show {
   display: block;
 }
+.rtb-page .rtb-empty {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 8px 0 24px;
+}
+.rtb-page .rtb-empty-card {
+  border: 1px solid var(--rtb-line);
+  border-radius: 18px;
+  background: #fff;
+  padding: 36px 32px 30px;
+  text-align: center;
+  box-shadow: 0 18px 40px -28px rgba(15, 32, 54, 0.12);
+}
+.rtb-page .rtb-empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--rtb-blue-soft);
+  color: var(--rtb-blue);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 20px;
+}
+.rtb-page .rtb-empty-icon svg {
+  width: 32px;
+  height: 32px;
+}
+.rtb-page .rtb-empty-kick {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rtb-blue);
+}
+.rtb-page .rtb-empty h1 {
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.rtb-page .rtb-empty-lead {
+  font-size: 15px;
+  color: var(--rtb-slate);
+  line-height: 1.6;
+  margin: 0 auto 22px;
+  max-width: 44ch;
+}
+.rtb-page .rtb-empty-steps {
+  list-style: none;
+  margin: 0 0 26px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--rtb-bg);
+  border: 1px solid var(--rtb-line);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+.rtb-page .rtb-empty-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--rtb-ink);
+  line-height: 1.45;
+}
+.rtb-page .rtb-empty-step-num {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--rtb-line);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rtb-blue);
+  display: grid;
+  place-items: center;
+  margin-top: 1px;
+}
+.rtb-page .rtb-empty-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+}
+.rtb-page .rtb-empty-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 13px;
+  padding: 15px 24px;
+  background: var(--rtb-red);
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  box-shadow: 0 14px 30px -16px rgba(226, 55, 68, 0.8);
+  transition: background 0.15s, transform 0.06s;
+}
+.rtb-page .rtb-empty-primary:hover {
+  background: #c9303c;
+}
+.rtb-page .rtb-empty-primary svg {
+  width: 18px;
+  height: 18px;
+}
+.rtb-page .rtb-empty-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+}
+.rtb-page .rtb-empty-link {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--rtb-blue);
+  text-decoration: none;
+}
+.rtb-page .rtb-empty-link:hover {
+  color: var(--rtb-navy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .rtb-page .confirm-hero {
   text-align: center;
   padding: 44px 0 30px;
@@ -1928,13 +2056,24 @@
   }
   .rtb-page .scard-foot {
     padding: 14px 16px;
-    text-align: center;
+    text-align: left;
   }
   .rtb-page .scard-foot .ff {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    text-align: left;
+  }
+  .rtb-page .scard-foot .ff .fl {
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    text-align: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--rtb-navy);
+  }
+  .rtb-page .scard-foot .ff .fv {
+    color: var(--rtb-slate);
+    line-height: 1.4;
   }
   .rtb-page .prepay-block {
     text-align: center;
@@ -1961,11 +2100,47 @@
     margin-inline: auto;
   }
   .rtb-page .reassure {
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
   }
   .rtb-page .reassure .ra {
-    justify-content: center;
-    text-align: center;
+    justify-content: flex-start;
+    text-align: left;
+    line-height: 1.45;
+  }
+  .rtb-page .reassure .ric {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    color: var(--rtb-green-dark);
+  }
+  .rtb-page .reassure .ric svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Location names are enough on narrow screens; drop redundant address lines */
+  .rtb-page .opt .od {
+    display: none;
+  }
+  .rtb-page .opt {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .rtb-page .opt .oic svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .rtb-page .rtb-empty-card {
+    padding: 28px 20px 24px;
+  }
+  .rtb-page .rtb-empty h1 {
+    font-size: 24px;
+  }
+  .rtb-page .rtb-empty-lead {
+    font-size: 14px;
+  }
+  .rtb-page .rtb-empty-steps {
+    padding: 14px 16px;
   }
 }
