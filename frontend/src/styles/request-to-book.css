@@ -1905,12 +1905,20 @@
 }
 
 .rtb-checkout-ftr {
+  --rtb-maxw: 1320px;
+  --rtb-line: #e2e7ef;
+  --rtb-slate: #5a6b82;
+  --rtb-navy: #0f2036;
+  --rtb-green: #45a06a;
   border-top: 1px solid var(--rtb-line);
   background: #fff;
   padding: 26px 0;
   margin-top: 30px;
 }
 .rtb-checkout-ftr .rtb-wrap {
+  max-width: var(--rtb-maxw);
+  margin: 0 auto;
+  padding: 0 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1956,7 +1964,8 @@
   }
 }
 @media (max-width: 760px) {
-  .rtb-page .rtb-wrap {
+  .rtb-page .rtb-wrap,
+  .rtb-checkout-ftr .rtb-wrap {
     padding: 0 20px;
   }
   .rtb-page .stp .stx {
