@@ -6,17 +6,20 @@ import {
 } from '../data/defaultSiteContentData'
 import { mergePageContent } from '../utils/mergePageContent'
 import { getBootstrappedSiteContent, mergeBranding } from '../utils/siteBootstrap'
+import { preloadSiteAssets, readSiteContentCache, writeSiteContentCache } from '../utils/siteContentCache'
 
 const SiteContentContext = createContext(null)
 
 const bootstrappedPages = getBootstrappedSiteContent()
-const hasBootstrappedPages = bootstrappedPages != null
+const cachedPages = readSiteContentCache()
+const initialPages = bootstrappedPages ?? cachedPages ?? {}
+const hasInstantContent = Boolean(bootstrappedPages ?? cachedPages)
 
 export function SiteContentProvider({ children }) {
-  const [pages, setPages] = useState(() => bootstrappedPages ?? {})
-  const [loading, setLoading] = useState(!hasBootstrappedPages)
+  const [pages, setPages] = useState(initialPages)
+  const [loading, setLoading] = useState(!hasInstantContent)
   const [useDefaults, setUseDefaults] = useState(false)
-  const bootstrappedRef = useRef(hasBootstrappedPages)
+  const hadInstantContentRef = useRef(hasInstantContent)
 
   useEffect(() => {
     let cancelled = false
@@ -27,10 +30,12 @@ export function SiteContentProvider({ children }) {
         if (cancelled) return
         const apiPages = res.data?.data ?? res.data ?? {}
         setPages(apiPages)
+        writeSiteContentCache(apiPages)
+        preloadSiteAssets(apiPages, null)
       })
       .catch(() => {
         if (cancelled) return
-        if (bootstrappedRef.current) return
+        if (hadInstantContentRef.current) return
         setPages(defaultSiteContentData)
         setUseDefaults(true)
       })
@@ -97,6 +102,7 @@ export function SiteContentProvider({ children }) {
       getPage,
       getSection,
       branding,
+      hasInstantContent: hadInstantContentRef.current,
     }),
     [pages, siteData, global, branding, loading, useDefaults, getPage, getSection],
   )
@@ -115,12 +121,12 @@ export function useSiteContent() {
 export function usePageContent(pageKey, fallback = {}) {
   const { getPage, loading, useDefaults } = useSiteContent()
   const page = useMemo(() => {
-    if (loading) return {}
     const apiPage = getPage(pageKey)
+    if (loading && !Object.keys(apiPage).length) return {}
     if (useDefaults) {
       return mergePageContent(fallback, apiPage)
     }
     return { ...fallback, ...apiPage }
   }, [fallback, getPage, pageKey, loading, useDefaults])
-  return { page, loading }
+  return { page, loading: loading && !Object.keys(page).length }
 }

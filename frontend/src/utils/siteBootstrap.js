@@ -25,6 +25,14 @@ export function getBootstrappedHomepage() {
   return homepage
 }
 
+export function getInitialSiteContent(getCached = () => null) {
+  return getBootstrappedSiteContent() ?? getCached()
+}
+
+export function getInitialHomepage(getCached = () => null) {
+  return getBootstrappedHomepage() ?? getCached()
+}
+
 export function getBootstrappedBranding() {
   const pages = getBootstrappedSiteContent()
   const branding = pages?.global?.branding

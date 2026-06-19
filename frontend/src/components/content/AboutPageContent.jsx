@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { api, resolveCmsImage } from '../../api'
+import { resolveCmsImage } from '../../api'
 import CmsImage from '../cms/CmsImage'
 import { useSiteLayout } from '../../context/SiteLayoutContext'
 import { usePageContent, useSiteContent } from '../../context/SiteContentContext'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
+import useHomepageData from '../../hooks/useHomepageData'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useSectionReveal from '../../hooks/useSectionReveal'
@@ -69,36 +70,18 @@ function CarouselNav({ direction, disabled, onClick, label }) {
 export default function AboutPageContent() {
   const { page, loading: pageLoading } = usePageContent('about')
   const { siteData } = useSiteLayout()
-  const { loading: siteLoading, useDefaults } = useSiteContent()
+  const { loading: siteLoading, useDefaults, hasInstantContent } = useSiteContent()
+  const { homepageData, homepageLoading, hasInstantHomepage } = useHomepageData()
   const priceFormatter = useFormatPrice()
-  const [homepageData, setHomepageData] = useState(null)
-  const [homepageLoading, setHomepageLoading] = useState(true)
   const storyRef = useRef(null)
   const statsRef = useRef(null)
   const valuesRef = useRef(null)
   const offerRef = useRef(null)
 
-  useEffect(() => {
-    let cancelled = false
-
-    api
-      .get('/homepage')
-      .then((res) => {
-        if (!cancelled) setHomepageData(res.data || null)
-      })
-      .catch(() => {
-        if (!cancelled) setHomepageData(null)
-      })
-      .finally(() => {
-        if (!cancelled) setHomepageLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  const contentReady = !pageLoading && !siteLoading && !homepageLoading
+  const contentReady =
+    !pageLoading
+    && (hasInstantContent || !siteLoading)
+    && (hasInstantHomepage || !homepageLoading)
 
   const rentSection = useMemo(() => {
     if (!contentReady) return {}

@@ -1,12 +1,15 @@
 import { useMemo } from 'react'
-import { buildSiteDataFromContent } from '../data/defaultSiteContentData'
 import { useSiteContent } from '../context/SiteContentContext'
+import { buildSiteDataFromContent } from '../data/defaultSiteContentData'
 import { getBootstrappedSiteContent } from '../utils/siteBootstrap'
+import { readSiteContentCache } from '../utils/siteContentCache'
 
 const bootstrappedPages = getBootstrappedSiteContent()
+const cachedPages = readSiteContentCache()
+const instantPages = bootstrappedPages ?? cachedPages
 
 /**
- * Site chrome (header, footer, topbar) from bootstrap first, then live CMS data.
+ * Site chrome (header, footer, topbar) from bootstrap/cache first, then live CMS data.
  * Avoids empty/static defaults flashing before the API responds.
  */
 export default function useSiteChromeData() {
@@ -14,8 +17,8 @@ export default function useSiteChromeData() {
 
   return useMemo(() => {
     if (!loading) return siteData
-    if (bootstrappedPages) {
-      return buildSiteDataFromContent(bootstrappedPages, { useDefaults: false })
+    if (instantPages) {
+      return buildSiteDataFromContent(instantPages, { useDefaults: false })
     }
     return {}
   }, [siteData, loading, useDefaults])

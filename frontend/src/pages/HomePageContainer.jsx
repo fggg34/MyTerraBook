@@ -1,21 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '../api'
+import { useMemo } from 'react'
 import { useSiteContent } from '../context/SiteContentContext'
 import useSiteChromeData from '../hooks/useSiteChromeData'
+import useHomepageData from '../hooks/useHomepageData'
 import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
 import { mergeHomepageData } from '../utils/mergeHomepageData'
-import { getBootstrappedHomepage } from '../utils/siteBootstrap'
 import HomePage from './HomePage'
-
-const bootstrappedHomepage = getBootstrappedHomepage()
-const hasBootstrappedHomepage = bootstrappedHomepage != null
 
 export default function HomePageContainer() {
   const siteData = useSiteChromeData()
-  const { loading: siteLoading, useDefaults } = useSiteContent()
-  const [homepageData, setHomepageData] = useState(bootstrappedHomepage)
-  const [homepageLoading, setHomepageLoading] = useState(!hasBootstrappedHomepage)
+  const { loading: siteLoading, useDefaults, hasInstantContent } = useSiteContent()
+  const { homepageData, homepageLoading, hasInstantHomepage } = useHomepageData()
 
   const seo = usePageSeo('home', {
     source: {
@@ -25,27 +20,8 @@ export default function HomePageContainer() {
     },
   })
 
-  useEffect(() => {
-    let cancelled = false
-
-    api
-      .get('/homepage')
-      .then((res) => {
-        if (!cancelled) setHomepageData(res.data || null)
-      })
-      .catch(() => {
-        if (!cancelled && !hasBootstrappedHomepage) setHomepageData(null)
-      })
-      .finally(() => {
-        if (!cancelled) setHomepageLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  const contentReady = !siteLoading && !homepageLoading
+  const contentReady =
+    (hasInstantContent || !siteLoading) && (hasInstantHomepage || !homepageLoading)
 
   const pageData = useMemo(() => {
     if (!contentReady) {
