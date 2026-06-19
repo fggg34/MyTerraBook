@@ -1,6 +1,5 @@
 import BookingModule from './BookingModule'
-
-const HERO_FALLBACK = '/images/homepage/hero.jpg'
+import CmsImage from '../cms/CmsImage'
 
 export default function HeroSection(props) {
   const {
@@ -13,21 +12,28 @@ export default function HeroSection(props) {
     ...bookingProps
   } = props
 
-  const desktopImage = backgroundImage || HERO_FALLBACK
+  const desktopImage = backgroundImage || null
   const mobileImage = mobileBackgroundImage || desktopImage
 
   return (
     <section className="hero">
-      <picture className="hero-bg-wrap">
-        {mobileBackgroundImage && mobileImage !== desktopImage && (
-          <source media="(max-width: 768px)" srcSet={mobileImage} />
+      <div className="hero-bg-wrap">
+        {desktopImage ? (
+          <picture>
+            {mobileBackgroundImage && mobileImage !== desktopImage && (
+              <source media="(max-width: 768px)" srcSet={mobileImage} />
+            )}
+            <CmsImage
+              className="hero-bg"
+              src={desktopImage}
+              alt="Campervan parked beneath Icelandic mountains"
+              loading="eager"
+            />
+          </picture>
+        ) : (
+          <div className="hero-bg hero-bg--placeholder" aria-hidden="true" />
         )}
-        <img
-          className="hero-bg"
-          src={desktopImage}
-          alt="Campervan parked beneath Icelandic mountains"
-        />
-      </picture>
+      </div>
       <div className="hero-inner">
         <div className="hero-copy">
           {(heading || mobileHeading) && (

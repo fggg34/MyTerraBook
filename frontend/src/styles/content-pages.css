@@ -1971,7 +1971,8 @@
   box-shadow: 0 20px 50px -28px rgba(15, 32, 54, 0.2);
 }
 
-.about-chapter-media img {
+.about-chapter-media img,
+.about-chapter-media-placeholder {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1981,7 +1982,12 @@
   transition-delay: 0.08s;
 }
 
-.about-chapter.is-revealed .about-chapter-media img {
+.about-chapter-media-placeholder {
+  background: linear-gradient(145deg, #e3eaf4, #eef2f8);
+}
+
+.about-chapter.is-revealed .about-chapter-media img,
+.about-chapter.is-revealed .about-chapter-media-placeholder {
   transform: scale(1);
 }
 
@@ -2525,6 +2531,10 @@
   height: 100%;
   object-fit: cover;
   object-position: center 40%;
+}
+
+.host-landing-hero-bg:not(img) {
+  background: linear-gradient(145deg, #dfe7f1, #eef2f8);
 }
 
 .host-landing-hero-scrim {

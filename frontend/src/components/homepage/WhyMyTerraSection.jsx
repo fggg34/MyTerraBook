@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { Car, Caravan, HandCoins, Home, Phone, ShieldCheck } from 'lucide-react'
+import CmsImage from '../cms/CmsImage'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useSectionReveal from '../../hooks/useSectionReveal'
 
@@ -84,7 +85,7 @@ function WhyMobileStory({ features, photo, badge = {} }) {
   return (
     <div className="why-mobile-story">
       <div className="why-mobile-story__photo">
-        <img src={photo || '/images/homepage/why-photo.jpg'} alt="" />
+        <CmsImage src={photo} alt="" />
         {(badge.rating || badge.reviewBold) && (
           <div className="badge">
             {badge.rating && <span className="num">{badge.rating}</span>}
@@ -141,7 +142,7 @@ export default function WhyMyTerraSection({
             </div>
 
             <div className="why-photo">
-              <img src={photo || '/images/homepage/why-photo.jpg'} alt="A MyTerra campervan beneath Icelandic mountains" />
+              <CmsImage src={photo} alt="A MyTerra campervan beneath Icelandic mountains" />
               {(badge.rating || badge.reviewBold) && (
                 <div className="badge">
                   {badge.rating && <span className="num">{badge.rating}</span>}

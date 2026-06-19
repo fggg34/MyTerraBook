@@ -1,12 +1,15 @@
 import { Fragment, useRef } from 'react'
-import { resolveCmsImage } from '../../api'
+import CmsImage from '../cms/CmsImage'
 import useHowStepsEffects from '../../hooks/useHowStepsEffects'
 
-const STEP_IMAGE_FALLBACKS = [
-  '/images/homepage/stay-hofn.jpg',
-  '/images/homepage/why-photo.jpg',
-  '/images/homepage/hero.jpg',
-]
+function StepMedia({ step }) {
+  return (
+    <CmsImage
+      src={step.image}
+      alt={step.imageAlt || step.title}
+    />
+  )
+}
 
 export default function HowItWorksSection({ heading, steps = [] }) {
   const wrapRef = useRef(null)
@@ -32,10 +35,7 @@ export default function HowItWorksSection({ heading, steps = [] }) {
               <div className="hstep-body">
                 <p className="hstep-desc">{step.description}</p>
                 <div className="hstep-media">
-                  <img
-                    src={resolveCmsImage(step.image, STEP_IMAGE_FALLBACKS[index])}
-                    alt={step.imageAlt || step.title}
-                  />
+                  <StepMedia step={step} />
                 </div>
                 <div className="hstep-tags">
                   {[...new Set(step.tags?.filter(Boolean) ?? [])].map((tag, i) => (

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import CmsImage from '../cms/CmsImage'
 import PhoneField from '../forms/PhoneField'
 import { getPostLoginPath, useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
@@ -28,7 +29,7 @@ export default function HostLandingHero({ hero = {} }) {
   const lead = hero.lead ?? 'Join 1,800+ Iceland hosts. Free to list, you keep 85%.'
   const submitLabel = hero.submitLabel ?? 'Start hosting'
   const earnAmount = hero.earnAmount ?? '€1,900'
-  const bgImage = hero.image ?? '/images/homepage/host-van.jpg'
+  const bgImage = hero.image || null
 
   const handleSignup = async (e) => {
     e.preventDefault()
@@ -57,7 +58,7 @@ export default function HostLandingHero({ hero = {} }) {
 
   return (
     <section className="host-landing-hero" id="signup">
-      <img className="host-landing-hero-bg" src={bgImage} alt="" aria-hidden="true" />
+      <CmsImage className="host-landing-hero-bg" src={bgImage} alt="" aria-hidden="true" loading="eager" />
       <div className="host-landing-hero-scrim" aria-hidden="true">
         <div className="host-landing-hero-aurora" />
       </div>

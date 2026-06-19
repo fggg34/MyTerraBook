@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api'
-import { useSiteLayout } from '../context/SiteLayoutContext'
+import { useSiteContent } from '../context/SiteContentContext'
 import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
 import { mergeHomepageData } from '../utils/mergeHomepageData'
@@ -8,9 +8,13 @@ import { getBootstrappedHomepage } from '../utils/siteBootstrap'
 import HomePage from './HomePage'
 
 const bootstrappedHomepage = getBootstrappedHomepage()
+const hasBootstrappedHomepage = bootstrappedHomepage != null
 
 export default function HomePageContainer() {
-  const { siteData } = useSiteLayout()
+  const { siteData, loading: siteLoading, useDefaults } = useSiteContent()
+  const [homepageData, setHomepageData] = useState(bootstrappedHomepage)
+  const [homepageLoading, setHomepageLoading] = useState(!hasBootstrappedHomepage)
+
   const seo = usePageSeo('home', {
     source: {
       heading: siteData?.hero?.heading,
@@ -18,7 +22,6 @@ export default function HomePageContainer() {
       backgroundImage: siteData?.hero?.backgroundImage,
     },
   })
-  const [homepageData, setHomepageData] = useState(bootstrappedHomepage)
 
   useEffect(() => {
     let cancelled = false
@@ -29,7 +32,10 @@ export default function HomePageContainer() {
         if (!cancelled) setHomepageData(res.data || null)
       })
       .catch(() => {
-        if (!cancelled && !bootstrappedHomepage) setHomepageData(null)
+        if (!cancelled && !hasBootstrappedHomepage) setHomepageData(null)
+      })
+      .finally(() => {
+        if (!cancelled) setHomepageLoading(false)
       })
 
     return () => {
@@ -37,14 +43,23 @@ export default function HomePageContainer() {
     }
   }, [])
 
+  const contentReady = !siteLoading && !homepageLoading
+
   const pageData = useMemo(() => {
-    return mergeHomepageData({ ...siteData, ...homepageData })
-  }, [siteData, homepageData])
+    if (!contentReady) {
+      return mergeHomepageData({}, { useImageFallbacks: false })
+    }
+
+    return mergeHomepageData(
+      { ...siteData, ...homepageData },
+      { useImageFallbacks: useDefaults },
+    )
+  }, [siteData, homepageData, contentReady, useDefaults])
 
   return (
     <>
       <PageHead {...seo} />
-      <HomePage pageData={pageData} />
+      <HomePage pageData={pageData} contentReady={contentReady} />
     </>
   )
 }

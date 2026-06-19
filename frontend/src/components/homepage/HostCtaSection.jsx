@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
+import CmsImage from '../cms/CmsImage'
 import useHostCtaEffects from '../../hooks/useHostCtaEffects'
 
 export default function HostCtaSection({
@@ -26,11 +27,11 @@ export default function HostCtaSection({
           <div className="host-stage">
             <div className="host-photo">
               <div className="ph-zoom">
-                <img src={houseImage || '/images/homepage/host-van.jpg'} alt="A guesthouse you could list on MyTerra" />
+                <CmsImage src={houseImage} alt="A guesthouse you could list on MyTerra" />
               </div>
             </div>
             <div className="host-van">
-              <img src={vanImage || '/images/homepage/why-photo.jpg'} alt="A campervan parked outside the guesthouse" />
+              <CmsImage src={vanImage} alt="A campervan parked outside the guesthouse" />
               <span className="van-tag">
                 <span className="vt-dot" />
                 Parked &amp; earning

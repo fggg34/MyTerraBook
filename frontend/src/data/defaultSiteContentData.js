@@ -13,9 +13,9 @@ export function getDefaultPageContent(pageKey) {
 /**
  * Build legacy homepage-shaped siteData from global + home page content.
  */
-export function buildSiteDataFromContent(pages = {}) {
-  const global = pages.global ?? defaultSiteContentData.global ?? {}
-  const home = pages.home ?? defaultSiteContentData.home ?? {}
+export function buildSiteDataFromContent(pages = {}, { useDefaults = false } = {}) {
+  const global = pages.global ?? (useDefaults ? defaultSiteContentData.global : {}) ?? {}
+  const home = pages.home ?? (useDefaults ? defaultSiteContentData.home : {}) ?? {}
 
   const apiShape = {
     topbar: global.topbar,
@@ -36,7 +36,7 @@ export function buildSiteDataFromContent(pages = {}) {
     guestHousesHighlight: home.guestHousesHighlight,
   }
 
-  return mergeHomepageData(apiShape)
+  return mergeHomepageData(apiShape, { useImageFallbacks: useDefaults })
 }
 
 export function mergeAllSiteContent(apiPages = {}) {

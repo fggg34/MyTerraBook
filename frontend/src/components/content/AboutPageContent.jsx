@@ -1,21 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, resolveCmsImage } from '../../api'
+import CmsImage from '../cms/CmsImage'
 import { useSiteLayout } from '../../context/SiteLayoutContext'
-import { usePageContent } from '../../context/SiteContentContext'
+import { usePageContent, useSiteContent } from '../../context/SiteContentContext'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useSectionReveal from '../../hooks/useSectionReveal'
 import { formatRentListingStats } from '../../utils/formatRentListingStats'
 import { mergeHomepageData } from '../../utils/mergeHomepageData'
-
-const FALLBACK_IMAGES = {
-  hero: '/images/homepage/why-photo.jpg',
-  camper: '/images/homepage/cardcamper.jpg',
-  car: '/images/homepage/cardcar.jpg',
-  house: '/images/homepage/cardhouse.jpg',
-}
 
 function parseParagraphs(html) {
   if (!html) return []
@@ -73,33 +67,49 @@ function CarouselNav({ direction, disabled, onClick, label }) {
 }
 
 export default function AboutPageContent() {
-  const { page } = usePageContent('about')
+  const { page, loading: pageLoading } = usePageContent('about')
   const { siteData } = useSiteLayout()
+  const { loading: siteLoading, useDefaults } = useSiteContent()
   const priceFormatter = useFormatPrice()
   const [homepageData, setHomepageData] = useState(null)
+  const [homepageLoading, setHomepageLoading] = useState(true)
   const storyRef = useRef(null)
   const statsRef = useRef(null)
   const valuesRef = useRef(null)
   const offerRef = useRef(null)
 
   useEffect(() => {
+    let cancelled = false
+
     api
       .get('/homepage')
-      .then((res) => setHomepageData(res.data || null))
-      .catch(() => setHomepageData(null))
+      .then((res) => {
+        if (!cancelled) setHomepageData(res.data || null)
+      })
+      .catch(() => {
+        if (!cancelled) setHomepageData(null)
+      })
+      .finally(() => {
+        if (!cancelled) setHomepageLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  const rentSection = useMemo(
-    () => mergeHomepageData({ ...siteData, ...homepageData }).rentSection ?? {},
-    [siteData, homepageData],
-  )
+  const contentReady = !pageLoading && !siteLoading && !homepageLoading
+
+  const rentSection = useMemo(() => {
+    if (!contentReady) return {}
+    return mergeHomepageData({ ...siteData, ...homepageData }, { useImageFallbacks: useDefaults }).rentSection ?? {}
+  }, [siteData, homepageData, contentReady, useDefaults])
 
   const offerCards = useMemo(() => {
     const cards = rentSection.cards ?? []
-    const fallbacks = [FALLBACK_IMAGES.camper, FALLBACK_IMAGES.car, FALLBACK_IMAGES.house]
-    return cards.map((card, index) => ({
+    return cards.map((card) => ({
       href: card.href,
-      image: resolveCmsImage(card.image, fallbacks[index % fallbacks.length]),
+      image: resolveCmsImage(card.image, null),
       label: card.name,
       tag: card.tagline,
       listingLabel: card.listingStats
@@ -116,8 +126,7 @@ export default function AboutPageContent() {
   const pillars = page.pillars ?? []
   const cta = page.cta ?? {}
   const paragraphs = parseParagraphs(page.body)
-  const chapterImages = [FALLBACK_IMAGES.camper, FALLBACK_IMAGES.car, FALLBACK_IMAGES.house]
-  const heroImage = hero.image || FALLBACK_IMAGES.hero
+  const heroImage = hero.image || null
   const isMobile = useMediaQuery('(max-width: 959px)')
   const showOfferCarousel = isMobile && offerCards.length > 1
   const { trackRef: offerTrackRef, scroll: scrollOffers, atStart: offersAtStart, atEnd: offersAtEnd } = useHorizontalCarousel({
@@ -210,7 +219,7 @@ export default function AboutPageContent() {
           </div>
           <div className="about-hero-visual">
             <div className="about-hero-frame">
-              <img src={heroImage} alt="Iceland landscape seen from the road" />
+              <CmsImage src={heroImage} alt="Iceland landscape seen from the road" loading="eager" />
             </div>
             {(hero.pinTitle || hero.pinSubtitle) && (
               <div className="about-hero-pin">
@@ -258,11 +267,7 @@ export default function AboutPageContent() {
                   className={`about-chapter about-chapter--${index % 2 === 0 ? 'left' : 'right'}`}
                 >
                   <div className="about-chapter-media">
-                    <img
-                      src={chapterImages[index % chapterImages.length]}
-                      alt=""
-                      loading="lazy"
-                    />
+                    <div className="about-chapter-media-placeholder" aria-hidden="true" />
                   </div>
                   <div className="about-chapter-body">
                     <p>{text}</p>
@@ -317,7 +322,7 @@ export default function AboutPageContent() {
                   style={{ '--d': `${0.06 + index * 0.08}s` }}
                 >
                   <div className="about-offer-media">
-                    <img src={item.image} alt="" loading="lazy" />
+                    <CmsImage src={item.image} alt="" />
                   </div>
                   <div className="about-offer-body">
                     {item.listingLabel && (

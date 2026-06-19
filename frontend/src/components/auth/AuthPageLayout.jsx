@@ -1,4 +1,5 @@
 import SiteLogo from '../branding/SiteLogo'
+import CmsImage from '../cms/CmsImage'
 
 const DEFAULT_FEATURES = [
   {
@@ -33,9 +34,9 @@ const DEFAULT_FEATURES = [
 ]
 
 const DEFAULT_HERO_IMAGES = {
-  login: '/images/homepage/hero.jpg',
-  register: '/images/homepage/hero.jpg',
-  'host-register': '/images/homepage/host-van.jpg',
+  login: null,
+  register: null,
+  'host-register': null,
 }
 
 export default function AuthPageLayout({
@@ -59,7 +60,7 @@ export default function AuthPageLayout({
   return (
     <div className={`auth-layout auth-layout--${variant}`}>
       <aside className="auth-layout__hero" aria-hidden="true">
-        <img className="auth-layout__hero-img" src={resolvedHeroImage} alt="" />
+        <CmsImage className="auth-layout__hero-img" src={resolvedHeroImage} alt="" />
         <div className="auth-layout__hero-overlay" />
         <div className="auth-layout__hero-content">
           <h2 className="auth-layout__hero-title">{title}</h2>

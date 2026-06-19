@@ -231,6 +231,13 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   .hero-bg{
     position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%;display:block;
   }
+  .hero-bg-wrap picture,
+  .hero-bg-wrap .hero-bg{
+    position:absolute;inset:0;width:100%;height:100%;display:block;
+  }
+  .hero-bg-wrap .hero-bg:not(img){
+    background:linear-gradient(145deg,#dfe7f1,#eef2f8);
+  }
   .hero-bg-wrap{
     position:absolute;inset:0;width:100%;height:100%;display:block;
   }

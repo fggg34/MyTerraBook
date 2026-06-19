@@ -10,9 +10,9 @@ import HostCtaSection from '../components/homepage/HostCtaSection'
 import GuestHousesHighlight from '../components/guest-houses/GuestHousesHighlight'
 import ReviewsSection from '../components/homepage/ReviewsSection'
 
-export default function HomePage({ pageData = {} }) {
+export default function HomePage({ pageData = {}, contentReady = true }) {
   return (
-    <main>
+    <main className={contentReady ? undefined : 'homepage--loading'}>
       <HeroSection {...(pageData.hero || {})} />
       <TrustStrip items={pageData.trustItems || []} />
       <WhatWeRentSection {...(pageData.rentSection || {})} />

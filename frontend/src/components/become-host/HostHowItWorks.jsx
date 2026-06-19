@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import CmsImage from '../cms/CmsImage'
 import useSectionReveal from '../../hooks/useSectionReveal'
 
 const HOW_DUR = 6000
@@ -76,7 +77,7 @@ export default function HostHowItWorks({
         >
           {howTabs.map((tab, index) => (
             <div key={tab.title} className={`host-how-slide ${index === active ? 'active' : ''}`}>
-              <img src={tab.image} alt={tab.imageAlt ?? tab.title} />
+              <CmsImage src={tab.image} alt={tab.imageAlt ?? tab.title} />
               <div className="host-how-cap">
                 {tab.caption}
                 <span className="host-how-cap-muted">{tab.muted}</span>

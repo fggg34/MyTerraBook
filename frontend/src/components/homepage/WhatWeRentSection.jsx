@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { resolveCmsImage } from '../../api'
+import CmsImage from '../cms/CmsImage'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
@@ -21,19 +21,11 @@ function CardLink({ href, className, children }) {
   )
 }
 
-const CARD_IMAGE_FALLBACKS = [
-  '/images/homepage/cardcamper.jpg',
-  '/images/homepage/cardcar.jpg',
-  '/images/homepage/cardhouse.jpg',
-]
 
-function RentCard({ card, index }) {
+function RentCard({ card }) {
   return (
     <CardLink href={card.href} className="rcard">
-      <img
-        src={resolveCmsImage(card.image, CARD_IMAGE_FALLBACKS[index])}
-        alt={card.alt || card.name}
-      />
+      <CmsImage src={card.image} alt={card.alt || card.name} />
       <div className="meta">
         {card.listingLabel && <span className="listings">{card.listingLabel}</span>}
         <h3>{card.name}</h3>

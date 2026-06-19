@@ -10,7 +10,7 @@ import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
 
 export default function BecomeHostPage() {
-  const { page } = usePageContent('become-a-host')
+  const { page, loading } = usePageContent('become-a-host')
   const seo = usePageSeo('become-a-host', {
     source: {
       title: page.hero?.title,
@@ -18,6 +18,14 @@ export default function BecomeHostPage() {
       hero: page.hero,
     },
   })
+
+  if (loading) {
+    return (
+      <main className="content-page become-host-page become-host-page--loading">
+        <PageHead {...seo} />
+      </main>
+    )
+  }
 
   return (
     <main className="content-page become-host-page">

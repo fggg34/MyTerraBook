@@ -3,7 +3,6 @@ import { api } from '../api'
 import {
   buildSiteDataFromContent,
   defaultSiteContentData,
-  mergeAllSiteContent,
 } from '../data/defaultSiteContentData'
 import { mergePageContent } from '../utils/mergePageContent'
 import { getBootstrappedSiteContent } from '../utils/siteBootstrap'
@@ -11,12 +10,13 @@ import { getBootstrappedSiteContent } from '../utils/siteBootstrap'
 const SiteContentContext = createContext(null)
 
 const bootstrappedPages = getBootstrappedSiteContent()
-const initialPages = bootstrappedPages ? mergeAllSiteContent(bootstrappedPages) : null
+const hasBootstrappedPages = bootstrappedPages != null
 
 export function SiteContentProvider({ children }) {
-  const [pages, setPages] = useState(initialPages ?? defaultSiteContentData)
-  const [loading, setLoading] = useState(initialPages == null)
-  const bootstrappedRef = useRef(initialPages != null)
+  const [pages, setPages] = useState(() => bootstrappedPages ?? {})
+  const [loading, setLoading] = useState(!hasBootstrappedPages)
+  const [useDefaults, setUseDefaults] = useState(false)
+  const bootstrappedRef = useRef(hasBootstrappedPages)
 
   useEffect(() => {
     let cancelled = false
@@ -26,11 +26,13 @@ export function SiteContentProvider({ children }) {
       .then((res) => {
         if (cancelled) return
         const apiPages = res.data?.data ?? res.data ?? {}
-        setPages(mergeAllSiteContent(apiPages))
+        setPages(apiPages)
       })
       .catch(() => {
-        if (cancelled || bootstrappedRef.current) return
+        if (cancelled) return
+        if (bootstrappedRef.current) return
         setPages(defaultSiteContentData)
+        setUseDefaults(true)
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -41,7 +43,10 @@ export function SiteContentProvider({ children }) {
     }
   }, [])
 
-  const siteData = useMemo(() => buildSiteDataFromContent(pages), [pages])
+  const siteData = useMemo(
+    () => buildSiteDataFromContent(pages, { useDefaults }),
+    [pages, useDefaults],
+  )
 
   const getPage = useCallback((pageKey) => pages[pageKey] ?? {}, [pages])
 
@@ -53,7 +58,10 @@ export function SiteContentProvider({ children }) {
     [pages],
   )
 
-  const global = useMemo(() => pages.global ?? defaultSiteContentData.global ?? {}, [pages])
+  const global = useMemo(
+    () => pages.global ?? (useDefaults ? defaultSiteContentData.global : {}) ?? {},
+    [pages, useDefaults],
+  )
 
   const branding = useMemo(() => global.branding ?? {}, [global])
 
@@ -85,11 +93,12 @@ export function SiteContentProvider({ children }) {
       siteData,
       global,
       loading,
+      useDefaults,
       getPage,
       getSection,
       branding,
     }),
-    [pages, siteData, global, branding, loading, getPage, getSection],
+    [pages, siteData, global, branding, loading, useDefaults, getPage, getSection],
   )
 
   return <SiteContentContext.Provider value={value}>{children}</SiteContentContext.Provider>
@@ -104,10 +113,14 @@ export function useSiteContent() {
 }
 
 export function usePageContent(pageKey, fallback = {}) {
-  const { getPage, loading } = useSiteContent()
-  const page = useMemo(
-    () => mergePageContent(fallback, getPage(pageKey)),
-    [fallback, getPage, pageKey],
-  )
+  const { getPage, loading, useDefaults } = useSiteContent()
+  const page = useMemo(() => {
+    if (loading) return {}
+    const apiPage = getPage(pageKey)
+    if (useDefaults) {
+      return mergePageContent(fallback, apiPage)
+    }
+    return { ...fallback, ...apiPage }
+  }, [fallback, getPage, pageKey, loading, useDefaults])
   return { page, loading }
 }

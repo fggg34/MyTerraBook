@@ -3,9 +3,8 @@ import { api } from '../api'
 import { getDefaultSitePage } from '../data/defaultSitePageData'
 
 export default function useSitePage(slug) {
-  const fallback = slug ? getDefaultSitePage(slug) : null
-  const [page, setPage] = useState(fallback)
-  const [loading, setLoading] = useState(!fallback)
+  const [page, setPage] = useState(null)
+  const [loading, setLoading] = useState(Boolean(slug))
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -14,11 +13,8 @@ export default function useSitePage(slug) {
     let cancelled = false
     const defaultPage = getDefaultSitePage(slug)
 
-    if (!defaultPage) {
-      setLoading(true)
-      setError(null)
-      setPage(null)
-    }
+    setLoading(true)
+    setError(null)
 
     api
       .get(`/site-pages/${slug}`)

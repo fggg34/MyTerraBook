@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../api'
+import CmsImage from '../cms/CmsImage'
 import { useToast } from '../../context/ToastContext'
 
 export default function NewsSection({
@@ -41,9 +42,9 @@ export default function NewsSection({
 
   return (
     <section className="news">
-      <img
+      <CmsImage
         className="news-bg"
-        src={backgroundImage || '/images/homepage/hero.jpg'}
+        src={backgroundImage}
         alt="Iceland terrain, campervan beneath dramatic peaks"
       />
       <div className="news-aurora" aria-hidden="true" />
