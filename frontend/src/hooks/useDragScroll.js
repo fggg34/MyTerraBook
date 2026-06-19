@@ -119,7 +119,7 @@ export default function useDragScroll(ref, { enabled = true, convertAnimationFro
     const onPointerDown = (e) => {
       if (e.pointerType === 'touch') return
       if (e.pointerType === 'mouse' && e.button !== 0) return
-      if (e.target.closest(INTERACTIVE) && !e.target.closest('.pcard-stretch-link, a.rcard')) return
+      if (e.target.closest(INTERACTIVE) && !e.target.closest('.pcard-stretch-link, .rv-card-open, a.rcard')) return
 
       moved = false
       startX = e.pageX

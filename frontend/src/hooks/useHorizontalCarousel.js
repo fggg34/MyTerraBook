@@ -6,33 +6,57 @@ function easeOutCubic(t) {
 }
 
 function animateScrollLeft(el, targetLeft, duration) {
+  const previousBehavior = el.style.scrollBehavior
+  el.style.scrollBehavior = 'auto'
+
   const startLeft = el.scrollLeft
   const distance = targetLeft - startLeft
-  if (distance === 0) return
+  if (distance === 0) {
+    el.style.scrollBehavior = previousBehavior
+    return () => {}
+  }
 
   const startTime = performance.now()
   let frameId = 0
+  let cancelled = false
+
+  const finish = () => {
+    if (cancelled) return
+    el.style.scrollBehavior = previousBehavior
+  }
 
   const step = (now) => {
+    if (cancelled) return
     const progress = Math.min((now - startTime) / duration, 1)
     el.scrollLeft = startLeft + distance * easeOutCubic(progress)
     if (progress < 1) {
       frameId = requestAnimationFrame(step)
+    } else {
+      finish()
     }
   }
 
   frameId = requestAnimationFrame(step)
-  return () => cancelAnimationFrame(frameId)
+
+  return () => {
+    cancelled = true
+    cancelAnimationFrame(frameId)
+    finish()
+  }
 }
 
 export default function useHorizontalCarousel({
+  trackRef: externalTrackRef,
   gap = 24,
   cardSelector = '.pcard',
   itemCount = 0,
   enabled = true,
-  scrollDurationMs = 280,
+  scrollDurationMs = 260,
+  dragScroll = true,
 } = {}) {
-  const trackRef = useRef(null)
+  const internalTrackRef = useRef(null)
+  const trackRef = externalTrackRef ?? internalTrackRef
+  const cancelAnimRef = useRef(null)
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
 
@@ -42,7 +66,7 @@ export default function useHorizontalCarousel({
     const max = track.scrollWidth - track.clientWidth - 2
     setAtStart(track.scrollLeft <= 2)
     setAtEnd(track.scrollLeft >= max)
-  }, [])
+  }, [trackRef])
 
   useEffect(() => {
     if (!enabled) return undefined
@@ -66,8 +90,9 @@ export default function useHorizontalCarousel({
       track.removeEventListener('scroll', updateNav)
       window.removeEventListener('resize', updateNav)
       resizeObserver?.disconnect()
+      cancelAnimRef.current?.()
     }
-  }, [enabled, itemCount, updateNav])
+  }, [enabled, itemCount, updateNav, trackRef])
 
   const scroll = useCallback(
     (direction) => {
@@ -78,16 +103,20 @@ export default function useHorizontalCarousel({
       const targetLeft = track.scrollLeft + direction * step
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+      cancelAnimRef.current?.()
+
       if (scrollDurationMs > 0 && !prefersReducedMotion) {
-        animateScrollLeft(track, targetLeft, scrollDurationMs)
+        cancelAnimRef.current = animateScrollLeft(track, targetLeft, scrollDurationMs)
+        window.setTimeout(updateNav, scrollDurationMs + 32)
       } else {
-        track.scrollBy({ left: direction * step, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+        track.scrollTo({ left: targetLeft, behavior: 'auto' })
+        updateNav()
       }
     },
-    [gap, cardSelector, scrollDurationMs],
+    [gap, cardSelector, scrollDurationMs, trackRef, updateNav],
   )
 
-  useDragScroll(trackRef, { enabled })
+  useDragScroll(trackRef, { enabled: enabled && dragScroll })
 
   return { trackRef, scroll, atStart, atEnd }
 }

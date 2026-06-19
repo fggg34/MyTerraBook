@@ -1,7 +1,10 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
+import useCarouselScrollGuard from '../../hooks/useCarouselScrollGuard'
+import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useReviewsMarquee from '../../hooks/useReviewsMarquee'
 import useSectionReveal from '../../hooks/useSectionReveal'
+import ReviewDetailDialog from './ReviewDetailDialog'
 
 const AVATAR_FILLS = ['#a9d4e6', '#bcdcab', '#f1d79a', '#cdbbea', '#a4ddcd', '#f4c1a4']
 
@@ -37,9 +40,46 @@ function ReviewAvatar({ name, fill, avatarUrl }) {
   )
 }
 
-function ReviewCard({ review, reviewerLabel, duplicate = false, style }) {
+function CarouselNav({ direction, disabled, onClick, label }) {
+  return (
+    <button
+      className={`carousel-nav ${direction}`}
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        {direction === 'prev' ? <path d="M15 6l-6 6 6 6" /> : <path d="M9 6l6 6-6 6" />}
+      </svg>
+    </button>
+  )
+}
+
+function ReviewCard({
+  review,
+  reviewerLabel,
+  duplicate = false,
+  style,
+  onOpen,
+  scrollGuardRef,
+}) {
+  const handleOpen = () => {
+    if (duplicate || !onOpen) return
+    if (scrollGuardRef?.current) return
+    onOpen(review)
+  }
+
   return (
     <article className="rv-card" aria-hidden={duplicate || undefined} style={style}>
+      {!duplicate && onOpen && (
+        <button
+          type="button"
+          className="rv-card-open"
+          onClick={handleOpen}
+          aria-label={`Read full review from ${review.name}`}
+        />
+      )}
       <div className="rv-card-top">
         <StarRow count={review.stars ?? 5} className="rv-card-stars" />
         {review.relativeTime && <time className="rv-card-time">{review.relativeTime}</time>}
@@ -85,10 +125,22 @@ export default function ReviewsSection({
 }) {
   const sectionRef = useRef(null)
   const trackWrapRef = useRef(null)
+  const [activeReview, setActiveReview] = useState(null)
   const isMobile = useMediaQuery('(max-width: 768px)')
+  const showMobileCarousel = isMobile && reviews.length > 1
   const showMarquee = reviews.length > 1
+  const scrollGuardRef = useCarouselScrollGuard(trackWrapRef, { enabled: showMobileCarousel })
+
   useSectionReveal(sectionRef, { revealDoneMs: 1800 })
-  useReviewsMarquee(trackWrapRef, { enabled: showMarquee })
+  const { pause, resume } = useReviewsMarquee(trackWrapRef, { enabled: showMarquee })
+  const { scroll } = useHorizontalCarousel({
+    trackRef: trackWrapRef,
+    itemCount: reviews.length,
+    cardSelector: '.rv-card:not([aria-hidden="true"])',
+    gap: 12,
+    enabled: showMobileCarousel,
+    dragScroll: false,
+  })
 
   const ratingValue = useMemo(() => {
     const match = String(rating ?? '').match(/[\d.]+/)
@@ -100,9 +152,25 @@ export default function ReviewsSection({
   const resolvedCtaLabel = ctaLabel || (source === 'google' && !isDemo ? 'Leave a Google Review' : null)
 
   const trackReviews = useMemo(() => {
-    if (!showMarquee) return reviews
-    return [...reviews, ...reviews]
+    if (showMarquee) return [...reviews, ...reviews]
+    return reviews
   }, [reviews, showMarquee])
+
+  const openReview = (review) => {
+    pause()
+    setActiveReview(review)
+  }
+
+  const closeReview = () => {
+    setActiveReview(null)
+    resume()
+  }
+
+  const stepCarousel = (direction) => {
+    pause()
+    scroll(direction)
+    window.setTimeout(resume, 280)
+  }
 
   if (!reviews.length) return null
 
@@ -160,29 +228,52 @@ export default function ReviewsSection({
         </div>
       </div>
 
-      {showMarquee ? (
+      {reviews.length > 1 ? (
         <div className="rv-carousel-panel">
-          <div className="rv-track-wrap" ref={trackWrapRef}>
-            <div className={`rv-track rv-track--marquee${isMobile ? ' rv-track--carousel' : ''}`}>
+          <div
+            className={`rv-track-wrap${showMobileCarousel ? ' rv-track-wrap--carousel' : ''}`}
+            ref={trackWrapRef}
+          >
+            <div className={`rv-track rv-track--marquee${showMobileCarousel ? ' rv-track--carousel' : ''}`}>
               {trackReviews.map((review, index) => (
                 <ReviewCard
                   key={`${review.name}-${index}${index >= reviews.length ? '-dup' : ''}`}
                   review={review}
                   reviewerLabel={reviewerLabel}
-                  duplicate={index >= reviews.length}
+                  duplicate={showMarquee && index >= reviews.length}
                   style={{ '--i': index % reviews.length }}
+                  onOpen={openReview}
+                  scrollGuardRef={scrollGuardRef}
                 />
               ))}
             </div>
           </div>
+          {showMobileCarousel && (
+            <div className="reviews-carousel-controls product-carousel-controls">
+              <CarouselNav direction="prev" label="Previous review" onClick={() => stepCarousel(-1)} />
+              <CarouselNav direction="next" label="Next review" onClick={() => stepCarousel(1)} />
+            </div>
+          )}
         </div>
       ) : (
         <div className="wrap">
           <div className="rv-track rv-track--single">
-            <ReviewCard review={reviews[0]} reviewerLabel={reviewerLabel} style={{ '--i': 0 }} />
+            <ReviewCard
+              review={reviews[0]}
+              reviewerLabel={reviewerLabel}
+              style={{ '--i': 0 }}
+              onOpen={openReview}
+            />
           </div>
         </div>
       )}
+
+      <ReviewDetailDialog
+        open={Boolean(activeReview)}
+        review={activeReview}
+        reviewerLabel={reviewerLabel}
+        onClose={closeReview}
+      />
     </section>
   )
 }
