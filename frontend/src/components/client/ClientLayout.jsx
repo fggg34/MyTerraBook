@@ -42,18 +42,18 @@ export default function ClientLayout() {
   return (
     <>
       <PageHead {...seo} />
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
+      <div className="host-panel-page mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="host-panel-topbar">
+          <div className="host-panel-topbar__intro">
             <p className="text-sm font-semibold text-slate-500">{copy.eyebrow ?? 'My account'}</p>
             <h1 className="text-2xl font-bold text-brand-950">Welcome back, {firstName}</h1>
             <p className="mt-1 text-sm text-slate-500">
               {copy.heroText ?? 'Your cars, campervans and guesthouse stays, all in one place.'}
             </p>
           </div>
-          <button type="button" className="host-btn secondary" onClick={handleLogout}>
-            <LogOut size={16} className="mr-2 inline" />
-            {copy.signOutLabel ?? 'Sign out'}
+          <button type="button" className="host-btn secondary host-panel-topbar__signout" onClick={handleLogout}>
+            <LogOut size={16} />
+            <span>{copy.signOutLabel ?? 'Sign out'}</span>
           </button>
         </div>
         <div className="host-shell">

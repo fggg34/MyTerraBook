@@ -54,11 +54,11 @@ export default function HostBookingsPage() {
             <tbody>
               {loading || carOrders.length === 0 ? <tr><td colSpan={6}>No car orders yet.</td></tr> : carOrders.map((o) => (
                 <tr key={o.id}>
-                  <td>{o.reference}</td>
-                  <td>{o.car?.name}</td>
-                  <td>{formatDate(o.pickup_at)} – {formatDate(o.dropoff_at)}</td>
-                  <td><StatusBadge status={o.order_status} /></td>
-                  <td>{formatCurrency(o.total_cents / 100, o.currency)}</td>
+                  <td data-label="Reference">{o.reference}</td>
+                  <td data-label="Vehicle">{o.car?.name}</td>
+                  <td data-label="Dates">{formatDate(o.pickup_at)} – {formatDate(o.dropoff_at)}</td>
+                  <td data-label="Status"><StatusBadge status={o.order_status} /></td>
+                  <td data-label="Total">{formatCurrency(o.total_cents / 100, o.currency)}</td>
                   <td className="host-actions">
                     <div className="host-table-actions">
                       {o.order_status === 'confirmed' && (
@@ -78,11 +78,11 @@ export default function HostBookingsPage() {
             <tbody>
               {loading || guestBookings.length === 0 ? <tr><td colSpan={6}>No guesthouse bookings yet.</td></tr> : guestBookings.map((b) => (
                 <tr key={b.id}>
-                  <td>{b.booking_reference}</td>
-                  <td>{b.guest_house?.name}</td>
-                  <td>{formatDate(b.check_in)} – {formatDate(b.check_out)}</td>
-                  <td><StatusBadge status={b.status} /></td>
-                  <td>{formatCurrency(b.total_amount / 100)}</td>
+                  <td data-label="Reference">{b.booking_reference}</td>
+                  <td data-label="Property">{b.guest_house?.name}</td>
+                  <td data-label="Stay">{formatDate(b.check_in)} – {formatDate(b.check_out)}</td>
+                  <td data-label="Status"><StatusBadge status={b.status} /></td>
+                  <td data-label="Total">{formatCurrency(b.total_amount / 100)}</td>
                   <td className="host-actions">
                     <div className="host-table-actions">
                       {['confirmed', 'completed'].includes(b.status) && (

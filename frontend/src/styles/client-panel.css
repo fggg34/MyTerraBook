@@ -660,3 +660,46 @@
     min-width: 0;
   }
 }
+
+/* ============================================================
+   Phone polish — guest account
+   ============================================================ */
+@media (max-width: 720px) {
+  .client-page-head h2 {
+    font-size: 1.3rem;
+  }
+
+  .client-export-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .client-stat {
+    padding: 13px 14px;
+  }
+
+  .client-stat__value {
+    font-size: 1.3rem;
+  }
+
+  .client-settings-section {
+    padding: 18px 16px;
+  }
+
+  /* Comfortable, full-width tap targets for card actions */
+  .client-history-card__actions {
+    width: 100%;
+  }
+
+  .client-history-card__actions .client-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 420px) {
+  /* Promote the lonely 5th stat tile to full width */
+  .client-stat--guesthouse {
+    grid-column: 1 / -1;
+  }
+}

@@ -65,11 +65,11 @@ export default function HostCarsPage() {
                 const needsSetup = ['draft', 'rejected'].includes(item.listing_status)
                 return (
                 <tr key={item.id}>
-                  <td>{item.name}</td>
-                  <td>{item.main_category?.name || '-'}</td>
-                  <td>{item.sub_category?.name || item.category?.name || '-'}</td>
-                  <td><ListingStatusBadge status={item.listing_status} /></td>
-                  <td>{item.units_count ?? item.units_available}</td>
+                  <td data-label="Name">{item.name}</td>
+                  <td data-label="Main category">{item.main_category?.name || '-'}</td>
+                  <td data-label="Sub category">{item.sub_category?.name || item.category?.name || '-'}</td>
+                  <td data-label="Status"><ListingStatusBadge status={item.listing_status} /></td>
+                  <td data-label="Units">{item.units_count ?? item.units_available}</td>
                   <td className="host-actions">
                     <div className="host-table-actions">
                       <Link to={`/host/cars/${item.id}/edit`} className={`host-btn ${needsSetup ? 'primary' : 'secondary'}`}>{needsSetup ? 'Finish setup' : 'Edit'}</Link>
