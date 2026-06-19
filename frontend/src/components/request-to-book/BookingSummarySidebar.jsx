@@ -291,7 +291,7 @@ export default function BookingSummarySidebar({
         <div className="scard-foot">
           <div className="ff">
             <span className="fl"><CalendarCheck aria-hidden />Cancellation</span>
-            <span className="fv flex">Free until 48h before</span>
+            <span className="fv">Free until 48h before</span>
           </div>
           {isVehicle && (
             <div className="ff">
