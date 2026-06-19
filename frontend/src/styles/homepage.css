@@ -2499,9 +2499,9 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   .faq-ctext{font-size:17px;color:var(--navy);font-weight:600;transition:color .15s;}
   .faq-contact:hover .faq-ctext{color:var(--green);}
 
-  .faq-list{display:flex;flex-direction:column;gap:16px;}
+  .faq-list{display:flex;flex-direction:column;gap:16px;border-top:none;}
   .faq-item{
-    background:#fff;border-radius:16px;overflow:hidden;
+    background:#fff;border-radius:16px;overflow:hidden;border-bottom:none;
     box-shadow:0 14px 32px -22px rgba(15,32,54,.45);
     transition:box-shadow .3s ease;
   }
@@ -2572,7 +2572,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     }
     .faq-contacts{margin-top:24px;gap:14px;}
     .faq-contact{align-items:center;min-width:0;}
-    .faq-cic svg{width:18px;height:18px;}
+    .faq-cic svg{width:22px;height:22px;}
     .faq-ctext{font-size:15px;line-height:1.45;overflow-wrap:anywhere;}
     .faq-watermark{
       font-size:72px;
@@ -3015,7 +3015,7 @@ body.homepage-active .faq .faq-box{
 }
 body.homepage-active .faq .faq-grid{display:grid;grid-template-columns:0.82fr 1.18fr;gap:76px;align-items:start;}
 body.homepage-active .faq .faq-l h2{font-family:var(--serif);font-weight:700;font-size:46px;color:var(--navy);margin:0;}
-body.homepage-active .faq .faq-item{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 14px 32px -22px rgba(15,32,54,.45);}
+body.homepage-active .faq .faq-item{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 14px 32px -22px rgba(15,32,54,.45);border-bottom:none;}
 body.homepage-active .faq .faq-q{
   appearance:none;-webkit-appearance:none;
   width:100%;display:flex;align-items:center;gap:22px;padding:23px 26px;
@@ -3156,7 +3156,8 @@ body.homepage-active .why-split.reveal-done .why-photo{transform:scale(1) !impor
   }
   body.homepage-active .faq .faq-contacts{margin-top:24px;gap:14px;}
   body.homepage-active .faq .faq-contact{align-items:center;min-width:0;}
-  body.homepage-active .faq .faq-cic svg{width:18px;height:18px;}
+  body.homepage-active .faq .faq-cic svg{width:22px;height:22px;}
+  body.homepage-active .faq .faq-list{border-top:none;}
   body.homepage-active .faq .faq-ctext{font-size:15px;line-height:1.45;overflow-wrap:anywhere;}
   body.homepage-active .faq .faq-watermark{
     font-size:72px;top:6px;right:10px;left:auto;bottom:auto;opacity:.35;line-height:.85;max-width:38%;overflow:hidden;
