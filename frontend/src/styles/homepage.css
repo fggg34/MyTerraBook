@@ -15,6 +15,7 @@
   --maxw: 1280px;
   --serif: 'Quicksand', sans-serif;
   --sans: 'Open Sans', sans-serif;
+  --nav-h: 74px;
 }
 
 body.homepage-active { margin: 0; overflow-x: clip; }
@@ -880,6 +881,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     .wrap{padding:0 28px;}
   }
   @media(max-width:768px){
+    :root{--nav-h:64px;}
     header.nav .wrap{
       display:grid;
       grid-template-columns:1fr auto 1fr;
@@ -924,7 +926,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     .mobile-menu-backdrop{
       display:block;
       position:fixed;
-      top:var(--nav-h);
+      top:var(--nav-h, 64px);
       left:0;
       right:0;
       bottom:0;
@@ -950,12 +952,12 @@ body.homepage-active { margin: 0; overflow-x: clip; }
       display:flex;
       flex-direction:column;
       position:fixed;
-      top:var(--nav-h);
+      top:var(--nav-h, 64px);
       left:0;
       right:0;
       z-index:10001;
-      height:calc(100dvh - var(--nav-h));
-      max-height:calc(100dvh - var(--nav-h));
+      height:calc(100dvh - var(--nav-h, 64px));
+      max-height:calc(100dvh - var(--nav-h, 64px));
       overflow:hidden;
       background:#fff;
       box-shadow:none;

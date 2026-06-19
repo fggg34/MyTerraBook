@@ -61,7 +61,9 @@ export default function Header({
   useEffect(() => {
     if (!mobileOpen) return undefined
 
-    mobileMenuScrollRef.current?.scrollTo(0, 0)
+    const resetScroll = requestAnimationFrame(() => {
+      mobileMenuScrollRef.current?.scrollTo(0, 0)
+    })
 
     const scrollY = window.scrollY
     const body = document.body
@@ -83,6 +85,7 @@ export default function Header({
     html.style.overflow = 'hidden'
 
     return () => {
+      cancelAnimationFrame(resetScroll)
       body.style.overflow = prevBody.overflow
       body.style.position = prevBody.position
       body.style.top = prevBody.top
@@ -302,7 +305,7 @@ export default function Header({
         </div>
       </div>
 
-      {mobileOpen && createPortal(mobileMenuLayer, document.body)}
+      {mobileOpen && createPortal(mobileMenuLayer, document.documentElement)}
     </header>
   )
 }
