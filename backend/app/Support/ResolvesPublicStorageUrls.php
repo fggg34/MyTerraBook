@@ -142,7 +142,7 @@ trait ResolvesPublicStorageUrls
             }
         }
 
-        foreach (['howTabs', 'features', 'storyBlocks', 'photos'] as $listKey) {
+        foreach (['howTabs', 'features', 'storyBlocks', 'photos', 'offerings'] as $listKey) {
             if (isset($content[$listKey]) && is_array($content[$listKey])) {
                 $content[$listKey] = $this->resolveListImages($content[$listKey], 'image');
             }

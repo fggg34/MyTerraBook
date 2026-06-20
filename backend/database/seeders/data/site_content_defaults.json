@@ -1029,6 +1029,29 @@
       "tag": "Three ways to explore",
       "heading": "Everything you need for the Ring Road, and the roads off it."
     },
+    "offerings": [
+      {
+        "href": "/campervans",
+        "image": "/images/homepage/cardcamper.jpg",
+        "label": "Campervans",
+        "tag": "Ring Road ready",
+        "linkLabel": "Browse listings"
+      },
+      {
+        "href": "/cars",
+        "image": "/images/homepage/cardcar.jpg",
+        "label": "Cars & 4×4",
+        "tag": "F-road capable",
+        "linkLabel": "Browse listings"
+      },
+      {
+        "href": "/guesthouses",
+        "image": "/images/homepage/cardhouse.jpg",
+        "label": "Guesthouses",
+        "tag": "Warm beds between drives",
+        "linkLabel": "Browse listings"
+      }
+    ],
     "cta": {
       "title": "Planning a trip? We're in Reykjavík when you need us.",
       "subtitle": "",

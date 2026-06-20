@@ -2078,113 +2078,75 @@
   color: var(--slate, #5a6b82);
 }
 
-.about-offer-grid {
-  display: grid;
-  gap: 20px;
-}
-
 .about-offerings {
   background: #e7eef8;
+  padding: 72px 0 88px;
 }
 
-.about-offer-panel {
+.about-offerings .about-section-head {
+  margin-bottom: 48px;
+}
+
+.about-offerings .rent-panel {
   position: relative;
 }
 
-@media (min-width: 900px) {
-  .about-offer-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+.about-offerings .wrap {
+  overflow: visible;
+}
+
+@media (max-width: 768px) {
+  .about-offerings .rent-panel {
+    padding-inline: 0;
+    overflow: visible;
   }
-}
 
-.about-offer-card {
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  border: 1px solid var(--line, #e2e7ef);
-  border-radius: var(--card-radius, 22px);
-  overflow: hidden;
-  text-decoration: none;
-  color: inherit;
-  box-shadow: 0 16px 40px -28px rgba(15, 32, 54, 0.14);
-  transition: transform 0.28s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.28s ease;
-}
+  .about-offerings .cards.cards--carousel {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin: 0 -20px;
+    padding: 0 20px;
+    scroll-padding-inline: 20px;
+    max-width: none;
+  }
 
-.about-offer-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 28px 56px -22px rgba(15, 32, 54, 0.22);
-}
+  .about-offerings .cards.cards--carousel::-webkit-scrollbar {
+    display: none;
+  }
 
-.about-offer-media {
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-}
+  .about-offerings .cards.cards--carousel .rcard {
+    flex: 0 0 calc(100vw - 56px);
+    width: calc(100vw - 56px);
+    scroll-snap-align: start;
+    aspect-ratio: 4 / 5;
+    box-shadow: none;
+  }
 
-.about-offer-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.45s cubic-bezier(0.33, 1, 0.68, 1);
-}
+  .about-offerings .cards.cards--carousel .rcard .meta {
+    padding: 24px;
+  }
 
-.about-offer-card:hover .about-offer-media img {
-  transform: scale(1.04);
-}
+  .about-offerings .cards.cards--carousel .rcard h3 {
+    font-size: 28px;
+  }
 
-.about-offer-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 22px 24px 24px;
-}
+  .about-offerings .cards.cards--carousel .rcard .tag {
+    font-size: 16px;
+    margin-top: 6px;
+  }
 
-.about-offer-listings {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--blue, #346298);
-  letter-spacing: 0.02em;
-  margin-bottom: 6px;
-}
-
-.about-offer-tag {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--green, #45a06a);
-  margin-top: 8px;
-}
-
-.about-offer-body h3 {
-  margin: 0;
-  font-family: var(--serif, 'Quicksand', sans-serif);
-  font-size: 1.25rem;
-  color: var(--navy, #0f2036);
-}
-
-.about-offer-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 14px;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--slate, #5a6b82);
-  transition: color 0.15s, gap 0.2s;
-}
-
-.about-offer-link svg {
-  width: 14px;
-  height: 14px;
-}
-
-.about-offer-card:hover .about-offer-link {
-  color: var(--green, #45a06a);
-  gap: 10px;
+  .about-offerings .cards.cards--carousel .rcard .go {
+    width: 48px;
+    height: 48px;
+    right: 22px;
+    bottom: 24px;
+  }
 }
 
 .about-cta {
@@ -2369,92 +2331,9 @@
     overflow: visible;
   }
 
-  .about-offer-panel {
+  .about-offerings .rent-panel {
     padding-inline: 0;
     overflow: visible;
-  }
-
-  .about-offer-grid.about-offer-grid--carousel {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    margin: 0 -20px;
-    padding: 0 20px 2px;
-    scroll-padding-inline: 20px;
-    max-width: none;
-    touch-action: pan-x pan-y;
-  }
-
-  .about-offer-grid.about-offer-grid--carousel::-webkit-scrollbar {
-    display: none;
-  }
-
-  .about-offer-grid.about-offer-grid--carousel .about-offer-card {
-    flex: 0 0 calc((100vw - 52px) / 1.25);
-    width: calc((100vw - 52px) / 1.25);
-    scroll-snap-align: start;
-    box-shadow: 0 16px 40px -28px rgba(15, 32, 54, 0.14);
-  }
-
-  .about-offer-grid.about-offer-grid--carousel .about-offer-card:hover {
-    transform: none;
-  }
-
-  .about-offer-carousel-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 14px;
-    margin-top: 20px;
-    position: relative;
-    z-index: 2;
-  }
-
-  .about-offer-carousel-controls .carousel-nav {
-    display: grid;
-    place-items: center;
-    position: static;
-    transform: none;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border-radius: 50%;
-    background: var(--bg, #fbfcfe);
-    color: var(--blue, #34629e);
-    border: 1px solid var(--line, #e2e7ef);
-    box-shadow: none;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-  }
-
-  .about-offer-carousel-controls .carousel-nav svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .about-offer-carousel-controls .carousel-nav:hover:not(:disabled) {
-    background: var(--blue, #34629e);
-    border-color: var(--blue, #34629e);
-    color: #fff;
-  }
-
-  .about-offer-carousel-controls .carousel-nav:disabled {
-    opacity: 0.4;
-    cursor: default;
-    background: var(--bg, #fbfcfe);
-    color: var(--blue, #34629e);
-    border-color: var(--line, #e2e7ef);
-  }
-
-  .about-offer-carousel-controls .carousel-nav:disabled:hover {
-    background: var(--bg, #fbfcfe);
-    border-color: var(--line, #e2e7ef);
-    color: var(--blue, #34629e);
   }
 
   .about-cta {
@@ -2483,8 +2362,7 @@
 
   .about-rise,
   .about-pillar,
-  .about-offer-card,
-  .about-offer-media img,
+  .about-offerings .rcard img,
   .about-chapter-media,
   .about-chapter-body,
   .about-chapter-media img {
@@ -2503,7 +2381,7 @@
   }
 
   .about-pillar:hover,
-  .about-offer-card:hover {
+  .about-offerings .rcard:hover {
     transform: none;
   }
 }

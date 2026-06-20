@@ -408,4 +408,160 @@ class SiteContentApiTest extends TestCase
         $this->assertStringContainsString('/storage/'.$path, (string) $response->json('data.become-a-host.features.0.image'));
         $this->assertStringContainsString('/storage/'.$path, (string) $response->json('data.become-a-host.cta.patternImage'));
     }
+
+    public function test_about_offerings_include_live_listing_stats(): void
+    {
+        SiteContentPage::query()->create([
+            'page_key' => 'about',
+            'label' => 'About',
+            'content' => SiteContentDefaults::forPage('about'),
+            'is_published' => true,
+            'sort_order' => 2,
+        ]);
+
+        $camperMain = \App\Models\MainCategory::query()->firstOrCreate(
+            ['slug' => 'campervan'],
+            ['name' => 'Campervan', 'is_active' => true],
+        );
+        $camperSub = \App\Models\SubCategory::query()->create([
+            'main_category_id' => $camperMain->id,
+            'name' => 'Camper',
+            'is_active' => true,
+            'is_search_filter' => true,
+        ]);
+        $camper = \App\Models\Car::query()->create([
+            'name' => 'Ring Road Camper',
+            'slug' => 'ring-road-camper-about-offer',
+            'sub_category_id' => $camperSub->id,
+            'is_active' => true,
+        ]);
+        \App\Models\DailyFare::query()->create([
+            'car_id' => $camper->id,
+            'price_type_id' => \App\Models\PriceType::factory()->create()->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 8900,
+        ]);
+
+        $response = $this->getJson('/api/site-content');
+
+        $response->assertOk();
+        $response->assertJsonPath('data.about.offerings.0.label', 'Campervans');
+        $response->assertJsonPath('data.about.offerings.0.tag', 'Ring Road ready');
+        $response->assertJsonPath('data.about.offerings.0.listingStats.count', 1);
+        $response->assertJsonPath('data.about.offerings.0.listingStats.minPriceCents', 8900);
+        $response->assertJsonPath('data.about.offerings.0.listingStats.priceUnit', 'day');
+    }
+
+    public function test_home_rent_section_ignores_non_standard_fare_tiers_for_min_price(): void
+    {
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => SiteContentDefaults::forPage('home'),
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $standardPriceType = \App\Models\PriceType::query()->create([
+            'name' => 'Basic',
+            'slug' => 'basic',
+            'is_active' => true,
+        ]);
+        $protectionPriceType = \App\Models\PriceType::query()->create([
+            'name' => 'Protection',
+            'slug' => 'protection',
+            'is_active' => true,
+        ]);
+
+        $camperMain = \App\Models\MainCategory::query()->firstOrCreate(
+            ['slug' => 'campervan'],
+            ['name' => 'Campervan', 'is_active' => true],
+        );
+        $camperSub = \App\Models\SubCategory::query()->create([
+            'main_category_id' => $camperMain->id,
+            'name' => 'Camper',
+            'is_active' => true,
+            'is_search_filter' => true,
+        ]);
+        $camper = \App\Models\Car::query()->create([
+            'name' => 'Budget Camper',
+            'slug' => 'budget-camper',
+            'sub_category_id' => $camperSub->id,
+            'is_active' => true,
+        ]);
+
+        \App\Models\DailyFare::query()->create([
+            'car_id' => $camper->id,
+            'price_type_id' => $standardPriceType->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 8900,
+        ]);
+        \App\Models\DailyFare::query()->create([
+            'car_id' => $camper->id,
+            'price_type_id' => $protectionPriceType->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 67,
+        ]);
+
+        $response = $this->getJson('/api/homepage');
+
+        $response->assertOk();
+        $response->assertJsonPath('rentSection.cards.0.listingStats.minPriceCents', 8900);
+    }
+
+    public function test_site_content_home_rent_section_returns_live_listing_stats(): void
+    {
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => SiteContentDefaults::forPage('home'),
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $camperMain = \App\Models\MainCategory::query()->firstOrCreate(
+            ['slug' => 'campervan'],
+            ['name' => 'Campervan', 'is_active' => true],
+        );
+        $camperSub = \App\Models\SubCategory::query()->create([
+            'main_category_id' => $camperMain->id,
+            'name' => 'Camper',
+            'is_active' => true,
+            'is_search_filter' => true,
+        ]);
+        $camper = \App\Models\Car::query()->create([
+            'name' => 'Site Content Camper',
+            'slug' => 'site-content-camper',
+            'sub_category_id' => $camperSub->id,
+            'is_active' => true,
+        ]);
+        \App\Models\DailyFare::query()->create([
+            'car_id' => $camper->id,
+            'price_type_id' => \App\Models\PriceType::query()->create([
+                'name' => 'Basic',
+                'slug' => 'basic',
+                'is_active' => true,
+            ])->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 12500,
+        ]);
+
+        $response = $this->getJson('/api/site-content');
+
+        $response->assertOk();
+        $response->assertJsonPath('data.home.rentSection.cards.0.listingStats.count', 1);
+        $response->assertJsonPath('data.home.rentSection.cards.0.listingStats.minPriceCents', 12500);
+    }
 }

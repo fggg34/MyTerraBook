@@ -499,6 +499,15 @@ return [
                     ]],
                 ]],
                 'offeringsSection' => ['label' => 'Offerings section header', 'fields' => $sectionHeaderFields],
+                'offerings' => ['label' => 'Offerings cards', 'fields' => [
+                    ['key' => 'offerings', 'type' => 'repeater', 'label' => 'Cards', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+                        ['key' => 'label', 'type' => 'text', 'label' => 'Title'],
+                        ['key' => 'tag', 'type' => 'text', 'label' => 'Tagline'],
+                        ['key' => 'href', 'type' => 'text', 'label' => 'Link'],
+                        ['key' => 'linkLabel', 'type' => 'text', 'label' => 'Button label', 'helperText' => 'Defaults to “Browse listings”.'],
+                        ['key' => 'image', 'type' => 'image', 'label' => 'Image'],
+                    ]],
+                ]],
                 'cta' => ['label' => 'Bottom CTA', 'fields' => $ctaFields],
                 'seo' => $pageSeoSection,
             ],

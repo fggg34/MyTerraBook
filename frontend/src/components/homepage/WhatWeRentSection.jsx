@@ -1,44 +1,9 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import CmsImage from '../cms/CmsImage'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import { formatRentListingStats } from '../../utils/formatRentListingStats'
-
-function CardLink({ href, className, children }) {
-  if (href?.startsWith('/') && !href.startsWith('//')) {
-    return (
-      <Link to={href} className={className}>
-        {children}
-      </Link>
-    )
-  }
-  return (
-    <a href={href || '#'} className={className}>
-      {children}
-    </a>
-  )
-}
-
-
-function RentCard({ card }) {
-  return (
-    <CardLink href={card.href} className="rcard">
-      <CmsImage src={card.image} alt={card.alt || card.name} />
-      <div className="meta">
-        {card.listingLabel && <span className="listings">{card.listingLabel}</span>}
-        <h3>{card.name}</h3>
-        {card.tagline && <span className="tag">{card.tagline}</span>}
-      </div>
-      <span className="go">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 17 17 7M9 7h8v8" />
-        </svg>
-      </span>
-    </CardLink>
-  )
-}
+import RentCategoryCard from './RentCategoryCard'
 
 export default function WhatWeRentSection({ heading, subtitle, cards = [] }) {
   const priceFormatter = useFormatPrice()
@@ -68,8 +33,8 @@ export default function WhatWeRentSection({ heading, subtitle, cards = [] }) {
         </div>
         <div className="rent-panel">
           <div className={`cards${showCarousel ? ' cards--carousel' : ''}`} ref={showCarousel ? trackRef : undefined}>
-            {enrichedCards.map((card, index) => (
-              <RentCard key={card.name} card={card} index={index} />
+            {enrichedCards.map((card) => (
+              <RentCategoryCard key={card.name} card={card} />
             ))}
           </div>
         </div>

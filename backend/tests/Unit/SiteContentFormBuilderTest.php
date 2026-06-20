@@ -55,6 +55,7 @@ class SiteContentFormBuilderTest extends TestCase
         $this->assertArrayHasKey('storyBlocks', $sections);
         $this->assertSame('image', $this->findFieldType($sections['hero']['fields'] ?? [], 'image'));
         $this->assertSame('image', $this->findFieldType($sections['storyBlocks']['fields'][0]['fields'] ?? [], 'image'));
+        $this->assertSame('image', $this->findFieldType($sections['offerings']['fields'][0]['fields'] ?? [], 'image'));
         $this->assertSame('richtext', $this->findFieldType($sections['storyBody']['fields'] ?? [], 'body'));
     }
 

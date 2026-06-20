@@ -2,16 +2,13 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { resolveCmsImage } from '../../api'
 import CmsImage from '../cms/CmsImage'
-import { useSiteLayout } from '../../context/SiteLayoutContext'
-import { usePageContent, useSiteContent } from '../../context/SiteContentContext'
+import RentCategoryCard from '../homepage/RentCategoryCard'
+import { usePageContent } from '../../context/SiteContentContext'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
-import useHomepageData from '../../hooks/useHomepageData'
-import { getInstantHomepage } from '../../utils/siteBootstrap'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import useSectionReveal from '../../hooks/useSectionReveal'
 import { formatRentListingStats } from '../../utils/formatRentListingStats'
-import { mergeHomepageData } from '../../utils/mergeHomepageData'
 
 function parseParagraphs(html) {
   if (!html) return []
@@ -69,42 +66,26 @@ function CarouselNav({ direction, disabled, onClick, label }) {
 }
 
 export default function AboutPageContent() {
-  const { page, loading: pageLoading } = usePageContent('about')
-  const { siteData } = useSiteLayout()
-  const { loading: siteLoading, useDefaults, hasInstantContent } = useSiteContent()
-  const { homepageData, homepageLoading, hasInstantHomepage } = useHomepageData()
+  const { page } = usePageContent('about')
   const priceFormatter = useFormatPrice()
   const storyRef = useRef(null)
   const statsRef = useRef(null)
   const valuesRef = useRef(null)
   const offerRef = useRef(null)
 
-  const instantHomepage = getInstantHomepage()
-  const contentReady =
-    !pageLoading
-    && (hasInstantContent || !siteLoading)
-    && (hasInstantHomepage || Boolean(instantHomepage) || !homepageLoading)
-
-  const rentSection = useMemo(() => {
-    if (!contentReady) return {}
-    return mergeHomepageData(
-      { ...siteData, ...(homepageData ?? instantHomepage ?? {}) },
-      { useImageFallbacks: useDefaults },
-    ).rentSection ?? {}
-  }, [siteData, homepageData, instantHomepage, contentReady, useDefaults])
-
   const offerCards = useMemo(() => {
-    const cards = rentSection.cards ?? []
-    return cards.map((card) => ({
-      href: card.href,
-      image: resolveCmsImage(card.image, null),
-      label: card.name,
-      tag: card.tagline,
-      listingLabel: card.listingStats
-        ? formatRentListingStats(card.listingStats, priceFormatter)
+    const offerings = (page.offerings ?? []).filter((item) => item?.label || item?.href)
+    return offerings.map((item) => ({
+      href: item.href,
+      image: resolveCmsImage(item.image, null),
+      name: item.label,
+      tagline: item.tag,
+      alt: item.label,
+      listingLabel: item.listingStats
+        ? formatRentListingStats(item.listingStats, priceFormatter)
         : null,
     }))
-  }, [rentSection.cards, priceFormatter])
+  }, [page.offerings, priceFormatter])
 
   const hero = page.hero ?? {}
   const storySection = page.storySection ?? {}
@@ -119,11 +100,11 @@ export default function AboutPageContent() {
     ? storyBlocks
     : paragraphs.map((text) => ({ text, image: null, imageAlt: '' }))
   const heroImage = hero.image || null
-  const isMobile = useMediaQuery('(max-width: 959px)')
+  const isMobile = useMediaQuery('(max-width: 768px)')
   const showOfferCarousel = isMobile && offerCards.length > 1
   const { trackRef: offerTrackRef, scroll: scrollOffers, atStart: offersAtStart, atEnd: offersAtEnd } = useHorizontalCarousel({
     itemCount: offerCards.length,
-    cardSelector: '.about-offer-card',
+    cardSelector: '.rcard',
     gap: 12,
     enabled: showOfferCarousel,
   })
@@ -305,40 +286,23 @@ export default function AboutPageContent() {
             {offeringsSection.tag && <span className="about-section-tag">{offeringsSection.tag}</span>}
             {offeringsSection.heading && <h2>{offeringsSection.heading}</h2>}
           </header>
-          <div className="about-offer-panel">
+          <div className="rent-panel about-offer-panel">
             <div
-              className={`about-offer-grid${showOfferCarousel ? ' about-offer-grid--carousel' : ''}`}
+              className={`cards${showOfferCarousel ? ' cards--carousel' : ''}`}
               ref={showOfferCarousel ? offerTrackRef : undefined}
             >
               {offerCards.map((item, index) => (
-                <Link
-                  key={item.href || item.label}
-                  to={item.href}
-                  className="about-offer-card about-rise"
+                <RentCategoryCard
+                  key={item.href || item.name}
+                  card={item}
+                  className="rcard about-rise"
                   style={{ '--d': `${0.06 + index * 0.08}s` }}
-                >
-                  <div className="about-offer-media">
-                    <CmsImage src={item.image} alt="" />
-                  </div>
-                  <div className="about-offer-body">
-                    {item.listingLabel && (
-                      <span className="about-offer-listings">{item.listingLabel}</span>
-                    )}
-                    <h3>{item.label}</h3>
-                    {item.tag && <span className="about-offer-tag">{item.tag}</span>}
-                    <span className="about-offer-link">
-                      Browse listings
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M5 12h14M13 6l6 6-6 6" />
-                      </svg>
-                    </span>
-                  </div>
-                </Link>
+                />
               ))}
             </div>
           </div>
           {showOfferCarousel && (
-            <div className="about-offer-carousel-controls product-carousel-controls">
+            <div className="rent-carousel-controls about-offer-carousel-controls">
               <CarouselNav direction="prev" label="Previous listing category" disabled={offersAtStart} onClick={() => scrollOffers(-1)} />
               <CarouselNav direction="next" label="Next listing category" disabled={offersAtEnd} onClick={() => scrollOffers(1)} />
             </div>

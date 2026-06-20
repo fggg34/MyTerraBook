@@ -5,12 +5,14 @@ namespace App\Providers;
 use App\Http\Responses\FilamentLoginResponse;
 use App\Models\BlogPost;
 use App\Models\Car;
+use App\Models\DailyFare;
 use App\Models\GuestHouse;
 use App\Models\GuestHouseBooking;
 use App\Models\Order;
 use App\Observers\BlogPostObserver;
 use App\Observers\GuestHouseBookingObserver;
 use App\Observers\OrderObserver;
+use App\Observers\SiteContentListingStatsObserver;
 use App\Policies\CarPolicy;
 use App\Policies\GuestHouseBookingPolicy;
 use App\Policies\GuestHousePolicy;
@@ -44,6 +46,11 @@ class AppServiceProvider extends ServiceProvider
         Order::observe(OrderObserver::class);
         GuestHouseBooking::observe(GuestHouseBookingObserver::class);
         BlogPost::observe(BlogPostObserver::class);
+
+        $listingStatsObserver = SiteContentListingStatsObserver::class;
+        Car::observe($listingStatsObserver);
+        DailyFare::observe($listingStatsObserver);
+        GuestHouse::observe($listingStatsObserver);
 
         $this->app->bind(FilamentLoginResponseContract::class, FilamentLoginResponse::class);
 

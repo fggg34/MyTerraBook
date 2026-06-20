@@ -54,12 +54,16 @@ class SiteContentServiceTest extends TestCase
 
         $normalized = $service->normalizePageContent('about', [
             'body' => ['body' => '<p>Nested body</p>'],
+            'offerings' => [
+                ['label' => 'Campervans', 'image' => ['site-content/about/card.jpg']],
+            ],
             'storyBlocks' => [
                 ['text' => 'Chapter one', 'image' => ['site-content/about/chapter.jpg']],
             ],
         ]);
 
         $this->assertSame('<p>Nested body</p>', $normalized['body']);
+        $this->assertSame('site-content/about/card.jpg', $normalized['offerings'][0]['image']);
         $this->assertSame('site-content/about/chapter.jpg', $normalized['storyBlocks'][0]['image']);
     }
 

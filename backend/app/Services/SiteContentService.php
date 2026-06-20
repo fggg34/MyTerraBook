@@ -6,15 +6,14 @@ use App\Data\SiteContentDefaults;
 use App\Http\Resources\Api\BlogPostResource;
 use App\Models\BlogPost;
 use App\Models\Car;
-use App\Models\DailyFare;
 use App\Models\GuestHouse;
 use App\Models\SiteContentPage;
 use App\Models\SitePage;
+use App\Support\DailyFarePricing;
 use App\Support\ResolvesPublicStorageUrls;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class SiteContentService
 {
@@ -43,7 +42,17 @@ class SiteContentService
         $defaults = SiteContentDefaults::forPage($pageKey);
         $merged = array_replace_recursive($defaults, $page?->content ?? []);
 
-        return $this->resolveContentImages($this->normalizePageContent($pageKey, $merged));
+        $normalized = $this->normalizePageContent($pageKey, $merged);
+
+        if ($pageKey === 'home') {
+            $normalized['rentSection'] = $this->resolveRentSection($normalized['rentSection'] ?? []);
+        }
+
+        if ($pageKey === 'about') {
+            $normalized = $this->resolveAboutOfferings($normalized);
+        }
+
+        return $this->resolveContentImages($normalized);
     }
 
     /**
@@ -417,7 +426,7 @@ class SiteContentService
             $content = $this->normalizeNestedUploadField($content, $section, $listKey, $fieldKey);
         }
 
-        foreach (['storyBlocks', 'howTabs', 'features', 'photos'] as $listKey) {
+        foreach (['storyBlocks', 'howTabs', 'features', 'photos', 'offerings'] as $listKey) {
             if (! isset($content[$listKey]) || ! is_array($content[$listKey])) {
                 continue;
             }
@@ -714,6 +723,7 @@ class SiteContentService
             'about' => [
                 'stats',
                 'pillars',
+                'offerings',
                 'storyBlocks',
             ],
             'campsite-map' => [
@@ -789,18 +799,47 @@ class SiteContentService
     }
 
     /**
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function resolveAboutOfferings(array $content): array
+    {
+        $offerings = $content['offerings'] ?? [];
+
+        if (! is_array($offerings) || $offerings === []) {
+            return $content;
+        }
+
+        $stats = $this->rentCatalogStats();
+
+        $content['offerings'] = array_map(function (array $item) use ($stats): array {
+            $key = $this->rentCardStatsKey($item['href'] ?? null);
+
+            if ($key !== null && isset($stats[$key])) {
+                $item['listingStats'] = $stats[$key];
+            }
+
+            return $item;
+        }, $offerings);
+
+        return $content;
+    }
+
+    /**
      * @return array<string, array{count: int, minPriceCents: ?int, priceUnit: string}>
      */
     private function rentCatalogStats(): array
     {
-        $guestHouseMinPrice = GuestHouse::query()->active()->min('base_price_per_night');
+        $guestHouseQuery = GuestHouse::query()->active();
 
         return [
             'campervan' => $this->vehicleRentStats('campervan'),
             'car' => $this->vehicleRentStats('car'),
             'guesthouse' => [
-                'count' => GuestHouse::query()->active()->count(),
-                'minPriceCents' => $guestHouseMinPrice !== null ? (int) $guestHouseMinPrice : null,
+                'count' => (clone $guestHouseQuery)->count(),
+                'minPriceCents' => $this->nullablePositiveInt(
+                    (clone $guestHouseQuery)->where('base_price_per_night', '>', 0)->min('base_price_per_night'),
+                ),
                 'priceUnit' => 'night',
             ],
         ];
@@ -811,9 +850,7 @@ class SiteContentService
      */
     private function vehicleRentStats(string $mainCategorySlug): array
     {
-        $minPrices = DailyFare::query()
-            ->select('car_id', DB::raw('MIN(price_per_day_cents) as min_daily_price_cents'))
-            ->groupBy('car_id');
+        $minPrices = DailyFarePricing::cheapestFareListSubquery();
 
         $base = Car::query()
             ->publiclyVisible()
@@ -822,14 +859,26 @@ class SiteContentService
         $count = (clone $base)->count();
 
         $minPrice = (clone $base)
-            ->leftJoinSub($minPrices, 'min_fares', 'min_fares.car_id', '=', 'cars.id')
+            ->joinSub($minPrices, 'min_fares', 'min_fares.car_id', '=', 'cars.id')
+            ->where('min_fares.min_daily_price_cents', '>', 0)
             ->min('min_fares.min_daily_price_cents');
 
         return [
             'count' => $count,
-            'minPriceCents' => $minPrice !== null ? (int) $minPrice : null,
+            'minPriceCents' => $this->nullablePositiveInt($minPrice),
             'priceUnit' => 'day',
         ];
+    }
+
+    private function nullablePositiveInt(mixed $value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $intValue = (int) $value;
+
+        return $intValue > 0 ? $intValue : null;
     }
 
     private function rentCardStatsKey(?string $href): ?string
