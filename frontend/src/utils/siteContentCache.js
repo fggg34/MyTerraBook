@@ -1,4 +1,4 @@
-const CACHE_VERSION = 2
+const CACHE_VERSION = 4
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
 const KEYS = {

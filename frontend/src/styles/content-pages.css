@@ -2134,6 +2134,9 @@
 }
 
 .about-offer-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   padding: 22px 24px 24px;
 }
 
@@ -2147,7 +2150,7 @@
 }
 
 .about-offer-tag {
-  display: inline-block;
+  display: block;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -3572,10 +3575,15 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  opacity: 0.45;
-  background-image:
-    radial-gradient(circle at 20% 30%, transparent 38%, rgba(255, 255, 255, 0.12) 39%, rgba(255, 255, 255, 0.12) 40%, transparent 41%),
-    radial-gradient(circle at 78% 62%, transparent 30%, rgba(255, 255, 255, 0.1) 31%, rgba(255, 255, 255, 0.1) 32%, transparent 33%);
+  pointer-events: none;
+  opacity: 0.14;
+  filter: brightness(0) invert(1);
+}
+
+.host-bottom-cta-topo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .host-bottom-cta-inner {
@@ -3826,6 +3834,55 @@
   padding: 40px 0 88px;
 }
 
+.campsite-map-hero-photo {
+  margin: 0 0 28px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line, #e2e7ef);
+  box-shadow: 0 10px 36px rgba(15, 32, 54, 0.08);
+}
+
+.campsite-map-hero-photo img {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+}
+
+.campsite-map-gallery {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+@media (min-width: 768px) {
+  .campsite-map-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.campsite-map-gallery-item {
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line, #e2e7ef);
+  background: #fff;
+}
+
+.campsite-map-gallery-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.campsite-map-gallery-item figcaption {
+  padding: 12px 14px 14px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--slate, #5a6b82);
+}
+
 .campsite-map-embed {
   width: 100%;
   border-radius: 16px;
@@ -3841,6 +3898,12 @@
   height: min(78vh, 720px);
   min-height: 420px;
   border: 0;
+}
+
+.campsite-map-embed img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .campsite-map-note {

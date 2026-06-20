@@ -54,17 +54,51 @@ class SiteContentServiceTest extends TestCase
 
         $normalized = $service->normalizePageContent('about', [
             'body' => ['body' => '<p>Nested body</p>'],
-            'offerings' => [
-                ['label' => 'Campervans', 'image' => ['site-content/about/card.jpg']],
-            ],
             'storyBlocks' => [
                 ['text' => 'Chapter one', 'image' => ['site-content/about/chapter.jpg']],
             ],
         ]);
 
         $this->assertSame('<p>Nested body</p>', $normalized['body']);
-        $this->assertSame('site-content/about/card.jpg', $normalized['offerings'][0]['image']);
         $this->assertSame('site-content/about/chapter.jpg', $normalized['storyBlocks'][0]['image']);
+    }
+
+    public function test_normalize_become_a_host_root_lists_preserve_repeater_items(): void
+    {
+        $service = new SiteContentService;
+
+        $normalized = $service->normalizePageContent('become-a-host', [
+            'howTabs' => [
+                ['title' => 'List it', 'image' => ['site-content/become-a-host/tab.jpg']],
+            ],
+            'features' => [
+                ['title' => 'Insurance', 'image' => ['site-content/become-a-host/feature.jpg']],
+            ],
+            'cta' => [
+                'patternImage' => ['site-content/become-a-host/pattern.png'],
+            ],
+        ]);
+
+        $this->assertSame('List it', $normalized['howTabs'][0]['title']);
+        $this->assertSame('site-content/become-a-host/tab.jpg', $normalized['howTabs'][0]['image']);
+        $this->assertSame('Insurance', $normalized['features'][0]['title']);
+        $this->assertSame('site-content/become-a-host/feature.jpg', $normalized['features'][0]['image']);
+        $this->assertSame('site-content/become-a-host/pattern.png', $normalized['cta']['patternImage']);
+        $this->assertArrayNotHasKey('image', $normalized['howTabs']);
+        $this->assertArrayNotHasKey('image', $normalized['features']);
+    }
+
+    public function test_page_content_normalization_for_become_a_host_does_not_corrupt_lists(): void
+    {
+        $service = new SiteContentService;
+        $defaults = \App\Data\SiteContentDefaults::forPage('become-a-host');
+
+        $normalized = $service->normalizePageContent('become-a-host', $defaults);
+
+        $this->assertTrue(array_is_list($normalized['howTabs']));
+        $this->assertTrue(array_is_list($normalized['features']));
+        $this->assertArrayNotHasKey('image', $normalized['howTabs']);
+        $this->assertArrayNotHasKey('image', $normalized['features']);
     }
 
     public function test_prepare_form_upload_state_wraps_storage_paths_for_file_upload(): void

@@ -253,7 +253,6 @@ class SiteContentService
                 'show_form' => $content['show_form'] ?? null,
                 'stats' => $content['stats'] ?? null,
                 'pillars' => $content['pillars'] ?? null,
-                'offerings' => $content['offerings'] ?? null,
                 'categories' => $content['categories'] ?? null,
                 'quickLinks' => $content['quickLinks'] ?? null,
                 'cta' => $content['cta'] ?? null,
@@ -379,7 +378,10 @@ class SiteContentService
         $uploadKeys = [
             'branding' => ['logoImage', 'favicon'],
             'hero' => ['backgroundImage', 'mobileBackgroundImage', 'image'],
+            'header' => ['image'],
+            'map' => ['image'],
             'newsSection' => ['backgroundImage'],
+            'cta' => ['patternImage'],
         ];
 
         foreach ($uploadKeys as $section => $keys) {
@@ -411,13 +413,11 @@ class SiteContentService
             ['hostCtaSection', null, 'houseImage'],
             ['hostCtaSection', null, 'vanImage'],
             ['whySection', null, 'photo'],
-            ['howTabs', null, 'image'],
-            ['features', null, 'image'],
         ] as [$section, $listKey, $fieldKey]) {
             $content = $this->normalizeNestedUploadField($content, $section, $listKey, $fieldKey);
         }
 
-        foreach (['offerings', 'storyBlocks'] as $listKey) {
+        foreach (['storyBlocks', 'howTabs', 'features', 'photos'] as $listKey) {
             if (! isset($content[$listKey]) || ! is_array($content[$listKey])) {
                 continue;
             }
@@ -714,8 +714,10 @@ class SiteContentService
             'about' => [
                 'stats',
                 'pillars',
-                'offerings',
                 'storyBlocks',
+            ],
+            'campsite-map' => [
+                'photos',
             ],
             default => [],
         };

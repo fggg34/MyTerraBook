@@ -94,17 +94,6 @@ export default function AboutPageContent() {
   }, [siteData, homepageData, instantHomepage, contentReady, useDefaults])
 
   const offerCards = useMemo(() => {
-    const cmsOfferings = (page.offerings ?? []).filter((item) => item?.label || item?.href)
-    if (cmsOfferings.length > 0) {
-      return cmsOfferings.map((item) => ({
-        href: item.href,
-        image: resolveCmsImage(item.image, null),
-        label: item.label,
-        tag: item.tag,
-        listingLabel: null,
-      }))
-    }
-
     const cards = rentSection.cards ?? []
     return cards.map((card) => ({
       href: card.href,
@@ -115,7 +104,7 @@ export default function AboutPageContent() {
         ? formatRentListingStats(card.listingStats, priceFormatter)
         : null,
     }))
-  }, [page.offerings, rentSection.cards, priceFormatter])
+  }, [rentSection.cards, priceFormatter])
 
   const hero = page.hero ?? {}
   const storySection = page.storySection ?? {}

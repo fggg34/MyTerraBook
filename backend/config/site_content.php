@@ -499,14 +499,6 @@ return [
                     ]],
                 ]],
                 'offeringsSection' => ['label' => 'Offerings section header', 'fields' => $sectionHeaderFields],
-                'offerings' => ['label' => 'Offerings cards', 'fields' => [
-                    ['key' => 'offerings', 'type' => 'repeater', 'label' => 'Cards', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
-                        ['key' => 'label', 'type' => 'text', 'label' => 'Title'],
-                        ['key' => 'tag', 'type' => 'text', 'label' => 'Tagline'],
-                        ['key' => 'href', 'type' => 'text', 'label' => 'Link'],
-                        ['key' => 'image', 'type' => 'image', 'label' => 'Image'],
-                    ]],
-                ]],
                 'cta' => ['label' => 'Bottom CTA', 'fields' => $ctaFields],
                 'seo' => $pageSeoSection,
             ],
@@ -670,9 +662,11 @@ return [
                 'faqItems' => ['label' => 'FAQ', 'fields' => [
                     ['key' => 'faqItems', 'type' => 'repeater', 'label' => 'FAQ items', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $faqItemRepeater],
                 ]],
-                'cta' => ['label' => 'CTA', 'fields' => [
+                'cta' => ['label' => 'Bottom CTA', 'fields' => [
                     ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
+                    ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
                     ['key' => 'submitLabel', 'type' => 'text', 'label' => 'Submit label'],
+                    ['key' => 'patternImage', 'type' => 'image', 'label' => 'Background pattern icon', 'helperText' => 'Repeating watermark behind the green CTA box. Leave empty to use the default MyTerraBook mark.'],
                 ]],
                 'footer' => ['label' => 'Footer', 'fields' => [
                     ['key' => 'tagline', 'type' => 'text', 'label' => 'Tagline'],
@@ -685,11 +679,41 @@ return [
             'label' => 'Good to Know',
             'group' => 'Marketing',
             'preview_route' => '/good-to-know',
+            'sort_order' => 10,
+            'sections' => [
+                'header' => ['label' => 'Page header', 'fields' => [
+                    ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
+                    ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+                ]],
+                'seo' => $pageSeoSection,
+            ],
+        ],
+        'campsite-map' => [
+            'label' => 'Campsite map',
+            'group' => 'Marketing',
+            'preview_route' => '/campsite-map',
             'sort_order' => 9,
             'sections' => [
                 'header' => ['label' => 'Page header', 'fields' => [
                     ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
                     ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+                    ['key' => 'image', 'type' => 'image', 'label' => 'Header photo'],
+                    ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Header photo alt text'],
+                ]],
+                'map' => ['label' => 'Map', 'fields' => [
+                    ['key' => 'embedUrl', 'type' => 'text', 'label' => 'Google Maps embed URL', 'columnSpanFull' => true, 'helperText' => 'Paste the full iframe src URL from Google My Maps.'],
+                    ['key' => 'image', 'type' => 'image', 'label' => 'Static map image', 'helperText' => 'Optional fallback image when no embed URL is set.'],
+                    ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Map image alt text'],
+                ]],
+                'footnote' => ['label' => 'Footnote', 'isRootSection' => true, 'fields' => [
+                    ['key' => 'note', 'type' => 'textarea', 'label' => 'Note below map', 'columnSpanFull' => true],
+                ]],
+                'photos' => ['label' => 'Photo gallery', 'fields' => [
+                    ['key' => 'photos', 'type' => 'repeater', 'label' => 'Photos', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+                        ['key' => 'image', 'type' => 'image', 'label' => 'Photo'],
+                        ['key' => 'alt', 'type' => 'text', 'label' => 'Alt text'],
+                        ['key' => 'caption', 'type' => 'textarea', 'label' => 'Caption', 'columnSpanFull' => true],
+                    ]],
                 ]],
                 'seo' => $pageSeoSection,
             ],

@@ -27,8 +27,8 @@ const BOOK_LINKS = [
 ]
 
 const COMPANY_LINKS = [
-  { label: 'Good to Know', href: '/good-to-know' },
   { label: 'Campsite Map', href: '/campsite-map' },
+  { label: 'Good to Know', href: '/good-to-know' },
   { label: 'About us', href: '/about' },
   { label: 'FAQs', href: '/faq' },
   { label: 'Contact', href: '/contact' },

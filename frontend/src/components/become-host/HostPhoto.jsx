@@ -1,7 +1,12 @@
+import { resolveStorageUrl } from '../../api'
+
 export default function HostPhoto({ src, alt = '', className = '', style = {} }) {
-  if (src) {
-    return <img src={src} alt={alt} className={className} style={style} loading="lazy" />
+  const resolvedSrc = resolveStorageUrl(src)
+
+  if (resolvedSrc) {
+    return <img src={resolvedSrc} alt={alt} className={className} style={style} loading="lazy" />
   }
+
   return (
     <div
       className={className}

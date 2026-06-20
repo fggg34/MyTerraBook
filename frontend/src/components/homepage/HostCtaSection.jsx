@@ -21,7 +21,6 @@ export default function HostCtaSection({
 
   return (
     <section className="hostcta" id="host" ref={sectionRef}>
-      <div className="host-aurora" />
       <div className="wrap">
         <div className="host-grid">
           <div className="host-stage">

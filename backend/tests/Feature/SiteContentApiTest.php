@@ -24,6 +24,8 @@ class SiteContentApiTest extends TestCase
         $this->assertArrayHasKey('global', $data);
         $this->assertArrayHasKey('home', $data);
         $this->assertArrayHasKey('about', $data);
+        $this->assertArrayHasKey('become-a-host', $data);
+        $this->assertArrayHasKey('campsite-map', $data);
         $this->assertArrayHasKey('checkout', $data);
         $this->assertArrayHasKey('host-panel', $data);
     }
@@ -196,6 +198,7 @@ class SiteContentApiTest extends TestCase
         $this->assertArrayHasKey('title', $data['home']['seo']);
         $this->assertArrayHasKey('description', $data['home']['seo']);
         $this->assertSame('index', $data['about']['seo']['robots']);
+        $this->assertSame('Campsite Map of Iceland', $data['campsite-map']['header']['title']);
         $this->assertSame('noindex', $data['auth-login']['seo']['robots']);
     }
 
@@ -373,5 +376,36 @@ class SiteContentApiTest extends TestCase
                 $this->assertGreaterThanOrEqual(1000, $minPriceCents);
             }
         }
+    }
+
+    public function test_become_a_host_page_images_resolve_from_storage(): void
+    {
+        $path = 'site-content/become-a-host/tab.jpg';
+        \Illuminate\Support\Facades\Storage::disk('public')->put($path, 'fake-jpg');
+
+        SiteContentPage::query()->create([
+            'page_key' => 'become-a-host',
+            'label' => 'Become a host',
+            'content' => array_replace_recursive(SiteContentDefaults::forPage('become-a-host'), [
+                'howTabs' => [
+                    array_replace(SiteContentDefaults::forPage('become-a-host')['howTabs'][0], ['image' => $path]),
+                ],
+                'features' => [
+                    array_replace(SiteContentDefaults::forPage('become-a-host')['features'][0], ['image' => $path]),
+                ],
+                'cta' => [
+                    'patternImage' => $path,
+                ],
+            ]),
+            'is_published' => true,
+            'sort_order' => 8,
+        ]);
+
+        $response = $this->getJson('/api/site-content');
+
+        $response->assertOk();
+        $this->assertStringContainsString('/storage/'.$path, (string) $response->json('data.become-a-host.howTabs.0.image'));
+        $this->assertStringContainsString('/storage/'.$path, (string) $response->json('data.become-a-host.features.0.image'));
+        $this->assertStringContainsString('/storage/'.$path, (string) $response->json('data.become-a-host.cta.patternImage'));
     }
 }

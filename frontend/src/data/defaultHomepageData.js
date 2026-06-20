@@ -520,6 +520,7 @@ export const defaultHomepageData = {
       {
         title: 'Company',
         links: [
+          { label: 'Campsite Map', href: '/campsite-map' },
           { label: 'Good to Know', href: '/good-to-know' },
           { label: 'About us', href: '/about' },
           { label: 'FAQs', href: '/faq' },

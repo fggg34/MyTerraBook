@@ -104,12 +104,15 @@ trait ResolvesPublicStorageUrls
         $imageSectionKeys = [
             'branding' => ['logoImage', 'favicon'],
             'hero' => ['backgroundImage', 'mobileBackgroundImage', 'image'],
+            'header' => ['image'],
+            'map' => ['image'],
             'rentSection' => [],
             'whySection' => ['photo'],
             'howSection' => [],
             'staySection' => [],
             'hostCtaSection' => ['houseImage', 'vanImage'],
             'newsSection' => ['backgroundImage'],
+            'cta' => ['patternImage'],
         ];
 
         foreach ($imageSectionKeys as $section => $keys) {
@@ -139,7 +142,7 @@ trait ResolvesPublicStorageUrls
             }
         }
 
-        foreach (['offerings', 'howTabs', 'storyBlocks'] as $listKey) {
+        foreach (['howTabs', 'features', 'storyBlocks', 'photos'] as $listKey) {
             if (isset($content[$listKey]) && is_array($content[$listKey])) {
                 $content[$listKey] = $this->resolveListImages($content[$listKey], 'image');
             }
@@ -209,6 +212,6 @@ trait ResolvesPublicStorageUrls
             }
 
             return $item;
-        }, $items);
+        }, array_values(array_filter($items, fn (mixed $item): bool => is_array($item))));
     }
 }
