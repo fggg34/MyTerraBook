@@ -9,6 +9,7 @@ export default function ClientSettingsPage() {
       </div>
       <AccountSettingsForms
         requirePhone
+        showBecomeHost
         profileDescription="Keep your contact details up to date for booking confirmations and trip support."
       />
     </div>

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Me\UpdatePasswordRequest;
+use App\Http\Requests\Me\UpdateProfilePhotoRequest;
 use App\Http\Requests\Me\UpdateProfileRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 class MeProfileController extends Controller
 {
@@ -31,5 +33,41 @@ class MeProfileController extends Controller
         ]);
 
         return response()->json(['message' => 'Password updated.']);
+    }
+
+    public function updatePhoto(UpdateProfilePhotoRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $previousPath = $user->profile_photo_path;
+
+        $path = $request->file('photo')->store('profile-photos', 'public');
+        $user->update(['profile_photo_path' => $path]);
+
+        if ($previousPath && Storage::disk('public')->exists($previousPath)) {
+            Storage::disk('public')->delete($previousPath);
+        }
+
+        return response()->json([
+            'message' => 'Profile photo updated.',
+            'user' => $user->fresh(),
+        ]);
+    }
+
+    public function deletePhoto(): JsonResponse
+    {
+        $user = auth()->user();
+        $previousPath = $user->profile_photo_path;
+
+        if ($previousPath) {
+            if (Storage::disk('public')->exists($previousPath)) {
+                Storage::disk('public')->delete($previousPath);
+            }
+            $user->update(['profile_photo_path' => null]);
+        }
+
+        return response()->json([
+            'message' => 'Profile photo removed.',
+            'user' => $user->fresh(),
+        ]);
     }
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import SiteLogo from '../branding/SiteLogo'
+import UserAvatar from '../account/UserAvatar'
 import { getDashboardLabel, getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
 import LangCurrencyMenu from './LangCurrencyMenu'
 import useMediaQuery from '../../hooks/useMediaQuery'
@@ -106,7 +107,6 @@ function FooterAccountBlock({
   const registerLink =
     accountLinks.find((link) => /create account|register|sign up/i.test(link.label)) ??
     accountLinks.find((link) => link !== signInLink)
-  const userInitial = user?.name?.charAt(0)?.toUpperCase() || '?'
 
   return (
     <div className="ftr-account">
@@ -115,9 +115,7 @@ function FooterAccountBlock({
       {user ? (
         <>
           <div className="ftr-account-user">
-            <span className="user-avatar" aria-hidden="true">
-              {userInitial}
-            </span>
+            <UserAvatar user={user} />
             <div className="ftr-account-user-meta">
               <span className="ftr-account-user-name">{user.name}</span>
               <span className="ftr-account-user-role">{dashboardLabel}</span>

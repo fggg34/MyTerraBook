@@ -656,11 +656,15 @@ return [
                         ['key' => 'muted', 'type' => 'textarea', 'label' => 'Muted caption', 'columnSpanFull' => true],
                     ]],
                 ]],
+                'featuresSection' => ['label' => 'Earn more section', 'fields' => [
+                    ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'columnSpanFull' => true, 'path' => 'featuresSection.heading'],
+                    ['key' => 'subheading', 'type' => 'textarea', 'label' => 'Subheading', 'columnSpanFull' => true, 'path' => 'featuresSection.subheading'],
+                ]],
                 'features' => ['label' => 'Feature bento', 'fields' => [
                     ['key' => 'features', 'type' => 'repeater', 'label' => 'Features', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
                         ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
                         ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
-                        ['key' => 'image', 'type' => 'image', 'label' => 'Photo', 'helperText' => 'Optional. Cards 2–4 show a photo; card 1 uses the map widget.'],
+                        ['key' => 'image', 'type' => 'image', 'label' => 'Photo', 'helperText' => 'Optional on every card. Card 1 shows the map widget when empty; upload a photo to replace it. Cards 2–4 use photo layouts.'],
                         ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Photo alt text'],
                     ]],
                 ]],

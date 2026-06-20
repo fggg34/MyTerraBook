@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -149,6 +151,85 @@ class MeProfileTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $host->id,
             'currency' => 'USD',
+        ]);
+    }
+
+    public function test_customer_can_upload_profile_photo(): void
+    {
+        Storage::fake('public');
+
+        $customer = User::factory()->customer()->create();
+        Sanctum::actingAs($customer);
+
+        $this->postJson('/api/me/profile-photo', [
+            'photo' => UploadedFile::fake()->image('avatar.jpg'),
+        ])
+            ->assertOk()
+            ->assertJsonPath('user.profile_photo_url', fn ($url) => is_string($url) && $url !== '');
+
+        $customer->refresh();
+        $this->assertNotNull($customer->profile_photo_path);
+        Storage::disk('public')->assertExists($customer->profile_photo_path);
+    }
+
+    public function test_customer_can_remove_profile_photo(): void
+    {
+        Storage::fake('public');
+
+        $path = UploadedFile::fake()->image('avatar.jpg')->store('profile-photos', 'public');
+        $customer = User::factory()->customer()->create([
+            'profile_photo_path' => $path,
+        ]);
+
+        Sanctum::actingAs($customer);
+
+        $this->deleteJson('/api/me/profile-photo')
+            ->assertOk()
+            ->assertJsonPath('user.profile_photo_url', null);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $customer->id,
+            'profile_photo_path' => null,
+        ]);
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_profile_photo_upload_replaces_previous_file(): void
+    {
+        Storage::fake('public');
+
+        $oldPath = UploadedFile::fake()->image('old.jpg')->store('profile-photos', 'public');
+        $customer = User::factory()->customer()->create([
+            'profile_photo_path' => $oldPath,
+        ]);
+
+        Sanctum::actingAs($customer);
+
+        $this->postJson('/api/me/profile-photo', [
+            'photo' => UploadedFile::fake()->image('new.jpg'),
+        ])->assertOk();
+
+        Storage::disk('public')->assertMissing($oldPath);
+        $customer->refresh();
+        $this->assertNotSame($oldPath, $customer->profile_photo_path);
+        Storage::disk('public')->assertExists($customer->profile_photo_path);
+    }
+
+    public function test_customer_can_apply_as_host(): void
+    {
+        $customer = User::factory()->customer()->create([
+            'phone' => '+354 555 0100',
+        ]);
+
+        Sanctum::actingAs($customer);
+
+        $this->postJson('/api/host/apply')
+            ->assertOk()
+            ->assertJsonPath('user.role', UserRole::Host->value);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $customer->id,
+            'role' => UserRole::Host->value,
         ]);
     }
 }

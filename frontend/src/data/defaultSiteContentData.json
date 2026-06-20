@@ -1376,6 +1376,10 @@
         "muted": "you keep 85% of every booking, with no hidden fees."
       }
     ],
+    "featuresSection": {
+      "heading": "Everything you need to earn more.",
+      "subheading": "We bring the travellers, the tools and the protection. You bring the van, the car or the spare room."
+    },
     "features": [
       {
         "title": "Reach travellers",

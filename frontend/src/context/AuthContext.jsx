@@ -101,6 +101,16 @@ export function AuthProvider({ children }) {
     return response.data.user
   }, [bumpAuthEpoch])
 
+  const applyAsHost = useCallback(async () => {
+    const response = await api.post('/host/apply')
+    const nextUser = response.data.user
+    bumpAuthEpoch()
+    const token = getStoredToken()
+    if (token) storeAuth(token, nextUser)
+    setUser(nextUser)
+    return nextUser
+  }, [bumpAuthEpoch])
+
   const requestPasswordReset = useCallback(async (email) => {
     const response = await api.post('/auth/forgot-password', { email })
     return response.data.message
@@ -133,12 +143,13 @@ export function AuthProvider({ children }) {
       loginWithCredentials,
       registerAccount,
       registerAsHost,
+      applyAsHost,
       requestPasswordReset,
       resetPassword,
       logout,
       setUser,
     }),
-    [user, loginWithCredentials, registerAccount, registerAsHost, requestPasswordReset, resetPassword, logout],
+    [user, loginWithCredentials, registerAccount, registerAsHost, applyAsHost, requestPasswordReset, resetPassword, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

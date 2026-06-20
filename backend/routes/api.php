@@ -140,6 +140,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me/guest-house-bookings/{ref}/contract.pdf', [MeGuestHouseBookingPdfController::class, 'show'])
         ->name('api.me.guest-house-bookings.contract-pdf');
     Route::patch('/me/profile', [MeProfileController::class, 'update']);
+    Route::post('/me/profile-photo', [MeProfileController::class, 'updatePhoto']);
+    Route::delete('/me/profile-photo', [MeProfileController::class, 'deletePhoto']);
     Route::patch('/me/password', [MeProfileController::class, 'updatePassword']);
 });
 

@@ -123,4 +123,82 @@ class SiteContentServiceTest extends TestCase
         $this->assertSame(['site-content/home/card.jpg'], $prepared['rentSection']['cards'][0]['image']);
         $this->assertSame('/images/homepage/hero.jpg', $prepared['hero']['backgroundImage']);
     }
+
+    public function test_merge_saved_list_drops_removed_repeater_items(): void
+    {
+        $service = new SiteContentService;
+
+        $existing = [
+            'howTabs' => [
+                ['title' => '1. List it', 'body' => 'First'],
+                ['title' => '2. Get discovered', 'body' => 'Second'],
+                ['title' => '3. Welcome travellers', 'body' => 'Third'],
+                ['title' => '4. Get paid', 'body' => 'Fourth'],
+            ],
+        ];
+
+        $incoming = [
+            'howTabs' => [
+                ['title' => '1. List it', 'body' => 'First updated'],
+                ['title' => '2. Get discovered', 'body' => 'Second'],
+            ],
+        ];
+
+        $merged = $service->mergeSavedPageContent($existing, $incoming);
+
+        $this->assertCount(2, $merged['howTabs']);
+        $this->assertSame('First updated', $merged['howTabs'][0]['body']);
+        $this->assertSame('2. Get discovered', $merged['howTabs'][1]['title']);
+    }
+
+    public function test_merge_saved_list_preserves_existing_when_incoming_repeater_is_blank(): void
+    {
+        $service = new SiteContentService;
+
+        $existing = [
+            'howTabs' => [
+                ['title' => '1. List it', 'body' => 'First'],
+                ['title' => '2. Get discovered', 'body' => 'Second'],
+            ],
+        ];
+
+        $merged = $service->mergeSavedPageContent($existing, ['howTabs' => []]);
+
+        $this->assertCount(2, $merged['howTabs']);
+    }
+
+    public function test_merge_persists_become_a_host_features_and_section_heading(): void
+    {
+        $service = new SiteContentService;
+        $defaults = \App\Data\SiteContentDefaults::forPage('become-a-host');
+
+        $baseline = $service->normalizePageContent('become-a-host', $defaults);
+
+        $incoming = $service->normalizePageContent('become-a-host', [
+            'featuresSection' => [
+                'heading' => 'Tools that grow your bookings',
+                'subheading' => 'Updated support copy.',
+            ],
+            'features' => [
+                array_replace($defaults['features'][0], [
+                    'title' => 'Reach more travellers',
+                    'text' => 'Updated card copy.',
+                    'image' => 'site-content/become-a-host/feature-one.jpg',
+                    'imageAlt' => 'Marketing reach',
+                ]),
+                $defaults['features'][1],
+                $defaults['features'][2],
+                $defaults['features'][3],
+            ],
+        ]);
+
+        $merged = $service->mergeSavedPageContent($baseline, $incoming);
+        $normalized = $service->normalizePageContent('become-a-host', $merged);
+
+        $this->assertSame('Tools that grow your bookings', $normalized['featuresSection']['heading']);
+        $this->assertSame('Updated support copy.', $normalized['featuresSection']['subheading']);
+        $this->assertSame('Reach more travellers', $normalized['features'][0]['title']);
+        $this->assertSame('Updated card copy.', $normalized['features'][0]['text']);
+        $this->assertSame('site-content/become-a-host/feature-one.jpg', $normalized['features'][0]['image']);
+    }
 }

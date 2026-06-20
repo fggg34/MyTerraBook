@@ -33,7 +33,11 @@ export default function BecomeHostPage() {
       <HostLandingHero hero={page.hero} />
       <HostProofMarquee stats={page.proof?.stats} />
       <HostHowItWorks howTabs={page.howTabs} />
-      <HostFeaturesSection features={page.features} />
+      <HostFeaturesSection
+        features={page.features}
+        heading={page.featuresSection?.heading}
+        subheading={page.featuresSection?.subheading}
+      />
       <HostReviewsSection reviews={page.reviews} />
       <HostFaqSection faqItems={page.faqItems} />
       <HostBottomCta cta={page.cta} />

@@ -247,4 +247,32 @@ class SiteContentHubSaveTest extends TestCase
         $this->assertSame($path, $saved['storyBlocks'][0]['image'] ?? null);
         $this->assertSame('Team photo', $saved['storyBlocks'][0]['imageAlt'] ?? null);
     }
+
+    public function test_save_persists_removed_become_a_host_how_tabs(): void
+    {
+        $service = app(SiteContentService::class);
+        $defaults = SiteContentDefaults::forPage('become-a-host');
+
+        $baseline = $service->normalizePageContent('become-a-host', array_replace_recursive($defaults, [
+            'howTabs' => [
+                array_replace($defaults['howTabs'][0], ['title' => '1. List it']),
+                array_replace($defaults['howTabs'][1], ['title' => '2. Get discovered']),
+                array_replace($defaults['howTabs'][2], ['title' => '3. Welcome travellers']),
+                array_replace($defaults['howTabs'][3], ['title' => '4. Get paid']),
+                ['title' => '5. Extra tab', 'caption' => 'Remove me', 'muted' => '', 'image' => null, 'imageAlt' => ''],
+                ['title' => '6. Extra tab', 'caption' => 'Remove me', 'muted' => '', 'image' => null, 'imageAlt' => ''],
+                ['title' => '7. Extra tab', 'caption' => 'Remove me', 'muted' => '', 'image' => null, 'imageAlt' => ''],
+            ],
+        ]));
+
+        $incoming = $service->normalizePageContent('become-a-host', [
+            'howTabs' => array_slice($defaults['howTabs'], 0, 4),
+        ]);
+
+        $merged = $service->mergeSavedPageContent($baseline, $incoming);
+        $savedTabs = $service->normalizePageContent('become-a-host', $merged)['howTabs'] ?? [];
+
+        $this->assertCount(4, $savedTabs);
+        $this->assertSame('Get paid', $savedTabs[3]['title'] ?? null);
+    }
 }

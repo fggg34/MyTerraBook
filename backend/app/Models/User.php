@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements FilamentUser
@@ -24,6 +25,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'role',
         'phone',
+        'profile_photo_path',
         'locale',
         'currency',
     ];
@@ -31,6 +33,11 @@ class User extends Authenticatable implements FilamentUser
     protected $hidden = [
         'password',
         'remember_token',
+        'profile_photo_path',
+    ];
+
+    protected $appends = [
+        'profile_photo_url',
     ];
 
     protected function casts(): array
@@ -95,6 +102,15 @@ class User extends Authenticatable implements FilamentUser
     public function isHost(): bool
     {
         return $this->role === UserRole::Host || $this->role === UserRole::Admin;
+    }
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if (! $this->profile_photo_path) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->profile_photo_path);
     }
 
     public function pricingCurrency(): string

@@ -43,3 +43,19 @@ export function updateProfile(payload) {
 export function updatePassword(payload) {
   return api.patch('/me/password', payload)
 }
+
+export function uploadProfilePhoto(file) {
+  const formData = new FormData()
+  formData.append('photo', file)
+  return api.post('/me/profile-photo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+export function removeProfilePhoto() {
+  return api.delete('/me/profile-photo')
+}
+
+export function applyAsHost() {
+  return api.post('/host/apply')
+}

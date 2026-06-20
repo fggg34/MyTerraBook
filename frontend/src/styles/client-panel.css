@@ -515,6 +515,138 @@
   gap: 16px;
 }
 
+.client-profile-photo {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid #e2e7ef;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.client-profile-photo__preview {
+  flex-shrink: 0;
+}
+
+.client-profile-photo__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  font-size: 1.75rem;
+}
+
+.client-profile-photo__avatar.user-avatar--photo,
+img.client-profile-photo__avatar {
+  object-fit: cover;
+  display: block;
+}
+
+.client-profile-photo__actions {
+  flex: 1;
+  min-width: 0;
+}
+
+.client-profile-photo__label {
+  margin: 0 0 4px;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #0f2036;
+}
+
+.client-profile-photo__hint {
+  margin: 0 0 12px;
+  font-size: 0.8125rem;
+  color: #5a6b82;
+}
+
+.client-profile-photo__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.client-profile-photo__input {
+  display: none;
+}
+
+.client-settings-section--host {
+  grid-column: 1 / -1;
+}
+
+.client-become-host {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .client-become-host {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.client-become-host__points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.client-become-host__points li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.client-become-host__points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #45a06a;
+}
+
+.client-become-host__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.client-become-host__btn {
+  white-space: nowrap;
+}
+
+.client-become-host__link {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #2563eb;
+  text-align: center;
+}
+
+.client-become-host__link:hover {
+  text-decoration: underline;
+}
+
+.client-btn.ghost {
+  background: transparent;
+  color: #5a6b82;
+  border: 1px solid #dbe3ee;
+}
+
+.client-btn.ghost:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #0f2036;
+}
+
 .client-field label {
   display: block;
   font-size: 0.8125rem;

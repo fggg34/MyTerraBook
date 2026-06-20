@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import SiteLogo from '../branding/SiteLogo'
+import UserAvatar from '../account/UserAvatar'
 import { getDashboardLabel, getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
 import useScrollLock from '../../hooks/useScrollLock'
 import LangCurrencyMenu from './LangCurrencyMenu'
@@ -46,7 +47,6 @@ export default function Header({
   const dashboardPath = user ? getPostLoginPath(user) : null
   const dashboardLabel = getDashboardLabel(role)
   const showHostCta = !user || (role !== 'host' && role !== 'admin')
-  const userInitial = user?.name?.charAt(0)?.toUpperCase() || '?'
   const mobileNavLinks = navLinks
 
   const closeMobile = () => {
@@ -126,9 +126,7 @@ export default function Header({
           {user ? (
             <>
               <div className="mobile-menu-account-head">
-                <span className="user-avatar" aria-hidden>
-                  {userInitial}
-                </span>
+                <UserAvatar user={user} />
                 <div className="mobile-menu-account-meta">
                   <span className="mobile-menu-account-name">{user.name}</span>
                   <span className="mobile-menu-account-label">{dashboardLabel}</span>
@@ -241,9 +239,7 @@ export default function Header({
                 aria-haspopup="menu"
                 onClick={() => setUserMenuOpen((open) => !open)}
               >
-                <span className="user-avatar" aria-hidden>
-                  {userInitial}
-                </span>
+                <UserAvatar user={user} />
                 <span className="user-name">{user.name}</span>
                 <svg className="user-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="m6 9 6 6 6-6" />

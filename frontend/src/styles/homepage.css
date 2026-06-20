@@ -157,6 +157,9 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     color:#fff;font-size:14px;font-weight:700;
     display:grid;place-items:center;flex:0 0 auto;
   }
+  .user-avatar--photo{
+    object-fit:cover;display:block;background:none;
+  }
   .user-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;}
   .user-caret{width:16px;height:16px;color:var(--slate);flex:0 0 auto;}
   .user-menu-btn.open .user-caret{color:var(--green);}

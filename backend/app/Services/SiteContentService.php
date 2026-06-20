@@ -592,20 +592,14 @@ class SiteContentService
      */
     private function mergeSavedList(array $existing, array $incoming): array
     {
+        if ($this->isBlankRepeaterList($incoming)) {
+            return $existing;
+        }
+
         $result = [];
-        $count = max(count($existing), count($incoming));
 
-        for ($index = 0; $index < $count; $index++) {
+        foreach ($incoming as $index => $patch) {
             $base = $existing[$index] ?? null;
-            $patch = $incoming[$index] ?? null;
-
-            if ($patch === null) {
-                if ($base !== null) {
-                    $result[] = $base;
-                }
-
-                continue;
-            }
 
             if (! is_array($patch)) {
                 $result[] = $patch;

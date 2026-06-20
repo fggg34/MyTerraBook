@@ -67,6 +67,8 @@ class SiteContentFormBuilderTest extends TestCase
         $this->assertSame('image', $this->findFieldType($sections['howTabs']['fields'][0]['fields'] ?? [], 'image'));
         $this->assertSame('image', $this->findFieldType($sections['features']['fields'][0]['fields'] ?? [], 'image'));
         $this->assertSame('image', $this->findFieldType($sections['cta']['fields'] ?? [], 'patternImage'));
+        $this->assertSame('text', $this->findFieldType($sections['featuresSection']['fields'] ?? [], 'heading'));
+        $this->assertSame('textarea', $this->findFieldType($sections['featuresSection']['fields'] ?? [], 'subheading'));
         $this->assertSame('image', $this->findFieldType($sections['proof']['fields'][2]['fields'] ?? [], 'tall_image'));
     }
 
