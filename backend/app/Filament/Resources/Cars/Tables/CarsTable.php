@@ -6,13 +6,15 @@ use App\Enums\ListingApprovalStatus;
 use App\Filament\Pages\ListingReviewPage;
 use App\Filament\Resources\Cars\CarResource;
 use App\Models\Car;
+use App\Services\CarDuplicationService;
 use App\Support\AdminTableBadgeColors;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Textarea;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -127,36 +129,27 @@ class CarsTable
                     ->label('Duplicate')
                     ->icon(Heroicon::OutlinedSquare2Stack)
                     ->color('gray')
-                    ->requiresConfirmation()
-                    ->modalHeading('Duplicate this vehicle?')
-                    ->modalDescription('Creates a copy with the same category, specs, characteristics, add-ons, and locations. Daily prices are not copied.')
-                    ->action(function (Car $record): void {
-                        $record->loadMissing(['characteristics', 'rentalOptions', 'rentalConditions', 'locations']);
-
-                        $replica = $record->replicate([
-                            'id',
-                            'slug',
-                            'created_at',
-                            'updated_at',
-                        ]);
-                        $replica->name = $record->name.' (copy)';
-                        $replica->slug = null;
-                        $replica->save();
-
-                        $replica->characteristics()->sync($record->characteristics->pluck('id')->all());
-                        $replica->rentalOptions()->sync($record->rentalOptions->pluck('id')->all());
-                        $replica->rentalConditions()->sync($record->rentalConditions->pluck('id')->all());
-
-                        $pivotRows = [];
-                        foreach ($record->locations as $location) {
-                            $pivotRows[$location->id] = [
-                                'allows_pickup' => (bool) $location->pivot->allows_pickup,
-                                'allows_dropoff' => (bool) $location->pivot->allows_dropoff,
-                            ];
-                        }
-                        $replica->locations()->sync($pivotRows);
+                    ->modalHeading('Duplicate this vehicle')
+                    ->modalDescription('Creates copies with the same category, specs, characteristics, add-ons, locations, and pricing.')
+                    ->form([
+                        TextInput::make('copies')
+                            ->label('Number of copies')
+                            ->numeric()
+                            ->default(1)
+                            ->minValue(1)
+                            ->maxValue(50)
+                            ->required(),
+                    ])
+                    ->action(function (Car $record, array $data, CarDuplicationService $duplicationService): void {
+                        $duplicationService->duplicate($record, (int) $data['copies']);
                     })
-                    ->successNotificationTitle('Vehicle duplicated'),
+                    ->successNotificationTitle(function (array $data): string {
+                        $count = max(1, (int) ($data['copies'] ?? 1));
+
+                        return $count === 1
+                            ? 'Vehicle duplicated'
+                            : "{$count} vehicles duplicated";
+                    }),
                 DeleteAction::make(),
             ])
             ->defaultSort('submitted_at', 'desc')

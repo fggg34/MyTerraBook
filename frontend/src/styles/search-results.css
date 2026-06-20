@@ -254,7 +254,8 @@ nav.main a.nav-collapsible{
 .fb-right{display:flex;align-items:center;gap:18px;flex:0 0 auto;margin-left:14px;}
 .result-count{font-size:14px;color:var(--slate);font-weight:600;white-space:nowrap;}
 .result-count b{color:var(--navy);font-weight:700;}
-.sortwrap{position:relative;}
+.sortwrap{position:relative;z-index:1;}
+.sortwrap:has(.sortmenu.show){z-index:75;}
 .sortbtn{
   display:inline-flex;align-items:center;gap:8px;cursor:pointer;
   background:#fff;border:1.5px solid var(--line);border-radius:999px;
@@ -706,7 +707,7 @@ body.search-results-active .chrome{
 }
 body.search-results-active .chrome.stuck{box-shadow:0 14px 30px -22px rgba(15,32,54,.5);}
 body.search-results-active .search-chrome-bar{position:relative;padding-top:14px;}
-body.search-results-active .filterbar{position:relative;min-width:0;overflow:hidden;}
+body.search-results-active .filterbar{position:relative;min-width:0;overflow:visible;}
 body.search-results-active .search-results-page .wrap,
 body.search-results-active header.nav .wrap,
 body.search-results-active .chrome .wrap,

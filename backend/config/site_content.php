@@ -472,8 +472,15 @@ return [
                     ['key' => 'pinSubtitle', 'type' => 'text', 'label' => 'Location pin subtitle'],
                 ])],
                 'storySection' => ['label' => 'Story section header', 'fields' => $sectionHeaderFields],
-                'body' => ['label' => 'Story body', 'fields' => [
-                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
+                'storyBlocks' => ['label' => 'Story chapters', 'fields' => [
+                    ['key' => 'storyBlocks', 'type' => 'repeater', 'label' => 'Chapters', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+                        ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
+                        ['key' => 'image', 'type' => 'image', 'label' => 'Photo'],
+                        ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Photo alt text'],
+                    ]],
+                ]],
+                'storyBody' => ['label' => 'Story body (rich text)', 'fields' => [
+                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true, 'helperText' => 'Optional. When story chapters are empty, paragraph text from this field is used instead.'],
                 ]],
                 'stats' => ['label' => 'Stats', 'fields' => [
                     ['key' => 'stats', 'type' => 'repeater', 'label' => 'Stats', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
@@ -629,6 +636,9 @@ return [
                 'hero' => ['label' => 'Hero', 'fields' => [
                     ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
                     ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+                    ['key' => 'earnAmount', 'type' => 'text', 'label' => 'Average earnings amount'],
+                    ['key' => 'image', 'type' => 'image', 'label' => 'Background photo'],
+                    ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Background photo alt text'],
                     ['key' => 'submitLabel', 'type' => 'text', 'label' => 'Submit label'],
                 ]],
                 'proof' => ['label' => 'Social proof marquee', 'fields' => [
@@ -649,6 +659,8 @@ return [
                     ['key' => 'features', 'type' => 'repeater', 'label' => 'Features', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
                         ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
                         ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
+                        ['key' => 'image', 'type' => 'image', 'label' => 'Photo', 'helperText' => 'Optional. Cards 2–4 show a photo; card 1 uses the map widget.'],
+                        ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Photo alt text'],
                     ]],
                 ]],
                 'reviews' => ['label' => 'Host reviews', 'fields' => [

@@ -117,7 +117,10 @@ class SiteContentFormBuilder
 
         $component = match ($type) {
             'textarea' => Textarea::make($statePath)->rows(3),
-            'richtext' => RichEditor::make($statePath),
+            'richtext' => RichEditor::make($statePath)
+                ->fileAttachmentsDisk('public')
+                ->fileAttachmentsDirectory("site-content/{$pageKey}/attachments")
+                ->fileAttachmentsVisibility('public'),
             'toggle' => Toggle::make($statePath),
             'image' => $this->buildImageUpload($statePath, $pageKey, $field),
             'file' => $this->buildFileUpload($statePath, $pageKey, $field),

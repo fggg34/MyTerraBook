@@ -43,4 +43,50 @@ class SiteContentFormBuilderTest extends TestCase
 
         $this->assertNotEmpty($builder->buildSectionsForPage('become-a-host'));
     }
+
+    public function test_build_sections_for_about_page_includes_story_and_media_fields(): void
+    {
+        $builder = new SiteContentFormBuilder;
+
+        $this->assertNotEmpty($builder->buildSectionsForPage('about'));
+
+        $sections = config('site_content.pages.about.sections', []);
+
+        $this->assertArrayHasKey('storyBlocks', $sections);
+        $this->assertSame('image', $this->findFieldType($sections['hero']['fields'] ?? [], 'image'));
+        $this->assertSame('image', $this->findFieldType($sections['storyBlocks']['fields'][0]['fields'] ?? [], 'image'));
+        $this->assertSame('image', $this->findFieldType($sections['offerings']['fields'][0]['fields'] ?? [], 'image'));
+        $this->assertSame('richtext', $this->findFieldType($sections['storyBody']['fields'] ?? [], 'body'));
+    }
+
+    public function test_become_a_host_form_includes_photo_upload_fields(): void
+    {
+        $sections = config('site_content.pages.become-a-host.sections', []);
+
+        $this->assertSame('image', $this->findFieldType($sections['hero']['fields'] ?? [], 'image'));
+        $this->assertSame('image', $this->findFieldType($sections['howTabs']['fields'][0]['fields'] ?? [], 'image'));
+        $this->assertSame('image', $this->findFieldType($sections['features']['fields'][0]['fields'] ?? [], 'image'));
+        $this->assertSame('image', $this->findFieldType($sections['proof']['fields'][2]['fields'] ?? [], 'tall_image'));
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $fields
+     */
+    private function findFieldType(array $fields, string $key): ?string
+    {
+        foreach ($fields as $field) {
+            if (($field['key'] ?? null) === $key) {
+                return $field['type'] ?? null;
+            }
+
+            if (($field['type'] ?? '') === 'repeater') {
+                $nested = $this->findFieldType($field['fields'] ?? [], $key);
+                if ($nested !== null) {
+                    return $nested;
+                }
+            }
+        }
+
+        return null;
+    }
 }

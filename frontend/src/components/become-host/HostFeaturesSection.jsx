@@ -30,7 +30,7 @@ export default function HostFeaturesSection({
         <div className="host-feat-grid">
           {features.slice(0, 4).map((feature, index) => {
             const layout = CARD_LAYOUT[index] ?? CARD_LAYOUT[0]
-            const imgSrc = layout.image ? becomeHostImages[layout.image] : null
+            const imgSrc = feature.image || (layout.image ? becomeHostImages[layout.image] : null)
 
             if (layout.layout === 'widget') {
               return (

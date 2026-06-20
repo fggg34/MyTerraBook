@@ -220,4 +220,31 @@ class SiteContentHubSaveTest extends TestCase
 
         $this->assertSame('site-content/home/existing.jpg', $normalized['howSection']['steps'][0]['image'] ?? null);
     }
+
+    public function test_save_persists_about_story_block_image_and_text(): void
+    {
+        Storage::fake('public');
+
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+
+        $this->actingAs($admin);
+
+        $path = 'site-content/about/story-chapter.jpg';
+        Storage::disk('public')->put($path, 'fake-jpg');
+
+        Livewire::test(SiteContentHub::class, ['activePageKey' => 'about'])
+            ->set('data.storyBlocks', [[
+                'text' => 'A new chapter',
+                'image' => [$path],
+                'imageAlt' => 'Team photo',
+            ]])
+            ->call('save')
+            ->assertNotified();
+
+        $saved = SiteContentPage::query()->where('page_key', 'about')->first()?->content ?? [];
+
+        $this->assertSame('A new chapter', $saved['storyBlocks'][0]['text'] ?? null);
+        $this->assertSame($path, $saved['storyBlocks'][0]['image'] ?? null);
+        $this->assertSame('Team photo', $saved['storyBlocks'][0]['imageAlt'] ?? null);
+    }
 }

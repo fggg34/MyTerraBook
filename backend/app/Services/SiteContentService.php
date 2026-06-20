@@ -11,6 +11,7 @@ use App\Models\GuestHouse;
 use App\Models\SiteContentPage;
 use App\Models\SitePage;
 use App\Support\ResolvesPublicStorageUrls;
+use Filament\Forms\Components\RichEditor\RichContentRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +77,7 @@ class SiteContentService
         $global = $this->pageContent('global');
         $home = $this->pageContent('home');
 
-        $featuredBlogPosts = \App\Models\BlogPost::query()
+        $featuredBlogPosts = BlogPost::query()
             ->published()
             ->orderBy('sort_order')
             ->orderByDesc('published_at')
@@ -100,7 +101,7 @@ class SiteContentService
             'newsSection' => $global['newsSection'] ?? [],
             'footer' => $global['footer'] ?? [],
             'guestHousesHighlight' => $home['guestHousesHighlight'] ?? [],
-            'featuredBlogPosts' => \App\Http\Resources\Api\BlogPostResource::collection($featuredBlogPosts)->resolve(),
+            'featuredBlogPosts' => BlogPostResource::collection($featuredBlogPosts)->resolve(),
         ];
     }
 
@@ -316,6 +317,10 @@ class SiteContentService
             unset($content['details']);
         }
 
+        if (in_array($pageKey, ['about', 'terms', 'privacy', 'cookies'], true)) {
+            $content = $this->flattenRootRichtextBody($content);
+        }
+
         $content = $this->normalizeUploadFields($content);
         $content = $this->stripEmptyArrayKeys($content);
 
@@ -406,8 +411,48 @@ class SiteContentService
             ['hostCtaSection', null, 'houseImage'],
             ['hostCtaSection', null, 'vanImage'],
             ['whySection', null, 'photo'],
+            ['howTabs', null, 'image'],
+            ['features', null, 'image'],
         ] as [$section, $listKey, $fieldKey]) {
             $content = $this->normalizeNestedUploadField($content, $section, $listKey, $fieldKey);
+        }
+
+        foreach (['offerings', 'storyBlocks'] as $listKey) {
+            if (! isset($content[$listKey]) || ! is_array($content[$listKey])) {
+                continue;
+            }
+
+            foreach ($content[$listKey] as $index => $item) {
+                if (! is_array($item) || ! array_key_exists('image', $item)) {
+                    continue;
+                }
+
+                $content[$listKey][$index]['image'] = $this->normalizeUploadValue($item['image']);
+            }
+        }
+
+        if (isset($content['proof']['stats']) && is_array($content['proof']['stats'])) {
+            foreach ($content['proof']['stats'] as $index => $stat) {
+                if (! is_array($stat)) {
+                    continue;
+                }
+
+                if (isset($stat['tall']['image'])) {
+                    $content['proof']['stats'][$index]['tall']['image'] = $this->normalizeUploadValue($stat['tall']['image']);
+                }
+
+                if (! isset($stat['stack']) || ! is_array($stat['stack'])) {
+                    continue;
+                }
+
+                foreach ($stat['stack'] as $stackIndex => $stackItem) {
+                    if (! is_array($stackItem) || ! array_key_exists('image', $stackItem)) {
+                        continue;
+                    }
+
+                    $content['proof']['stats'][$index]['stack'][$stackIndex]['image'] = $this->normalizeUploadValue($stackItem['image']);
+                }
+            }
         }
 
         return $content;
@@ -658,6 +703,20 @@ class SiteContentService
                 'footer.legal',
                 'footer.social',
             ],
+            'become-a-host' => [
+                'howTabs',
+                'features',
+                'proof.stats',
+                'reviews.up',
+                'reviews.down',
+                'faqItems',
+            ],
+            'about' => [
+                'stats',
+                'pillars',
+                'offerings',
+                'storyBlocks',
+            ],
             default => [],
         };
 
@@ -668,6 +727,31 @@ class SiteContentService
             if (empty($current) && ! empty($fallback) && is_array($fallback)) {
                 data_set($content, $path, $fallback);
             }
+        }
+
+        return $content;
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function flattenRootRichtextBody(array $content): array
+    {
+        if (! isset($content['body']) || ! is_array($content['body'])) {
+            return $content;
+        }
+
+        $body = $content['body'];
+
+        if (isset($body['body']) && is_string($body['body'])) {
+            $content['body'] = $body['body'];
+
+            return $content;
+        }
+
+        if (($body['type'] ?? null) === 'doc') {
+            $content['body'] = RichContentRenderer::make($body)->toHtml();
         }
 
         return $content;

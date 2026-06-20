@@ -94,6 +94,17 @@ export default function AboutPageContent() {
   }, [siteData, homepageData, instantHomepage, contentReady, useDefaults])
 
   const offerCards = useMemo(() => {
+    const cmsOfferings = (page.offerings ?? []).filter((item) => item?.label || item?.href)
+    if (cmsOfferings.length > 0) {
+      return cmsOfferings.map((item) => ({
+        href: item.href,
+        image: resolveCmsImage(item.image, null),
+        label: item.label,
+        tag: item.tag,
+        listingLabel: null,
+      }))
+    }
+
     const cards = rentSection.cards ?? []
     return cards.map((card) => ({
       href: card.href,
@@ -104,7 +115,7 @@ export default function AboutPageContent() {
         ? formatRentListingStats(card.listingStats, priceFormatter)
         : null,
     }))
-  }, [rentSection.cards, priceFormatter])
+  }, [page.offerings, rentSection.cards, priceFormatter])
 
   const hero = page.hero ?? {}
   const storySection = page.storySection ?? {}
@@ -113,7 +124,11 @@ export default function AboutPageContent() {
   const stats = page.stats ?? []
   const pillars = page.pillars ?? []
   const cta = page.cta ?? {}
+  const storyBlocks = page.storyBlocks ?? []
   const paragraphs = parseParagraphs(page.body)
+  const storyChapters = storyBlocks.length > 0
+    ? storyBlocks
+    : paragraphs.map((text) => ({ text, image: null, imageAlt: '' }))
   const heroImage = hero.image || null
   const isMobile = useMediaQuery('(max-width: 959px)')
   const showOfferCarousel = isMobile && offerCards.length > 1
@@ -124,14 +139,14 @@ export default function AboutPageContent() {
     enabled: showOfferCarousel,
   })
 
-  useSectionReveal(storyRef, { revealDoneMs: 1400, threshold: 0.1, watch: paragraphs.length > 0 })
+  useSectionReveal(storyRef, { revealDoneMs: 1400, threshold: 0.1, watch: storyChapters.length > 0 })
   useSectionReveal(statsRef, { revealDoneMs: 1000, threshold: 0.15, watch: stats.length > 0 })
   useSectionReveal(valuesRef, { revealDoneMs: 1200, threshold: 0.12, watch: pillars.length > 0 })
   useSectionReveal(offerRef, { revealDoneMs: 1200, threshold: 0.12, watch: offerCards.length > 0 })
 
   useEffect(() => {
     const root = storyRef.current
-    if (!root || !paragraphs.length) return undefined
+    if (!root || !storyChapters.length) return undefined
 
     const chapters = root.querySelectorAll('.about-chapter')
     if (!chapters.length) return undefined
@@ -174,7 +189,7 @@ export default function AboutPageContent() {
     })
 
     return () => io.disconnect()
-  }, [paragraphs.length])
+  }, [storyChapters.length])
 
   return (
     <div className="content-page about-page">
@@ -240,7 +255,7 @@ export default function AboutPageContent() {
         </div>
       </section>
 
-      {paragraphs.length > 0 && (
+      {(storyChapters.length > 0 || storySection.heading) && (
         <section ref={storyRef} className="about-story">
           <div className="wrap">
             {storySection.heading && (
@@ -249,16 +264,20 @@ export default function AboutPageContent() {
               </header>
             )}
             <div className="about-chapters">
-              {paragraphs.map((text, index) => (
+              {storyChapters.map((chapter, index) => (
                 <article
-                  key={text.slice(0, 24)}
+                  key={`${chapter.text?.slice(0, 24) ?? 'chapter'}-${index}`}
                   className={`about-chapter about-chapter--${index % 2 === 0 ? 'left' : 'right'}`}
                 >
                   <div className="about-chapter-media">
-                    <div className="about-chapter-media-placeholder" aria-hidden="true" />
+                    {chapter.image ? (
+                      <CmsImage src={chapter.image} alt={chapter.imageAlt || ''} />
+                    ) : (
+                      <div className="about-chapter-media-placeholder" aria-hidden="true" />
+                    )}
                   </div>
                   <div className="about-chapter-body">
-                    <p>{text}</p>
+                    <p>{chapter.text}</p>
                   </div>
                 </article>
               ))}

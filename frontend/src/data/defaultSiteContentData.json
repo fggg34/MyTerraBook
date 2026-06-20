@@ -952,6 +952,23 @@
     "storySection": {
       "heading": "Built for travellers who want the whole island, not just a rental counter."
     },
+    "storyBlocks": [
+      {
+        "text": "MyTerraBook started with a simple idea: travellers should be able to plan an entire Iceland trip in one place, with real people on the other end of the phone when the weather turns.",
+        "image": null,
+        "imageAlt": ""
+      },
+      {
+        "text": "We are a Reykjavík-based team working with trusted local hosts and fleet partners across the island. Every listing is hand-checked, every price is transparent, and every booking comes with gravel protection, local support, and clear cancellation terms.",
+        "image": null,
+        "imageAlt": ""
+      },
+      {
+        "text": "Whether you are driving the Ring Road in a campervan, adding a 4×4 for the highlands, or booking a guesthouse between adventures, we are here to make it straightforward.",
+        "image": null,
+        "imageAlt": ""
+      }
+    ],
     "body": "<p>MyTerraBook started with a simple idea: travellers should be able to plan an entire Iceland trip in one place, with real people on the other end of the phone when the weather turns.</p>\n<p>We are a Reykjavík-based team working with trusted local hosts and fleet partners across the island. Every listing is hand-checked, every price is transparent, and every booking comes with gravel protection, local support, and clear cancellation terms.</p>\n<p>Whether you are driving the Ring Road in a campervan, adding a 4×4 for the highlands, or booking a guesthouse between adventures, we are here to make it straightforward.</p>",
     "stats": [
       {
@@ -1227,7 +1244,10 @@
     "hero": {
       "title": "Earn from your van or guesthouse",
       "lead": "Join 1,800+ Iceland hosts. Free to list, you keep 85%.",
-      "submitLabel": "Start hosting"
+      "submitLabel": "Start hosting",
+      "earnAmount": "€1,900",
+      "image": "/images/homepage/host-van.jpg",
+      "imageAlt": "A campervan on an Iceland road"
     },
     "proof": {
       "chipAmount": "€2.4M+",
@@ -1356,15 +1376,21 @@
       },
       {
         "title": "Marketing included",
-        "text": "We promote your listing on search, email and social."
+        "text": "We promote your listing on search, email and social.",
+        "image": "/images/homepage/cardhouse.jpg",
+        "imageAlt": "Search results preview"
       },
       {
         "title": "Quality guests",
-        "text": "Identity-verified travellers with insurance built in."
+        "text": "Identity-verified travellers with insurance built in.",
+        "image": "/images/homepage/why-photo.jpg",
+        "imageAlt": "Verified guest profile"
       },
       {
         "title": "Earnings dashboard",
-        "text": "Track bookings, payouts and calendar in one place."
+        "text": "Track bookings, payouts and calendar in one place.",
+        "image": "/images/homepage/cardcar.jpg",
+        "imageAlt": "Earnings dashboard"
       }
     ],
     "reviews": {
