@@ -896,6 +896,156 @@ a.host-overview-card:hover .host-overview-card-link {
   cursor: not-allowed;
 }
 
+.host-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.host-form-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.host-wizard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.host-wizard-head h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f2036;
+}
+
+.host-alert--error {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #b42318;
+}
+
+.host-muted {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.host-stack-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.host-stack-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e2e7ef;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  color: #334e68;
+}
+
+.host-stack-list__item-main {
+  min-width: 0;
+}
+
+.host-section-title {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f2036;
+}
+
+.host-room-details__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.host-room-detail-card {
+  border: 1px solid #e2e7ef;
+  border-radius: 14px;
+  padding: 18px;
+  background: #fbfcfe;
+}
+
+.host-room-detail-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.host-room-detail-card__title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f2036;
+}
+
+.host-room-detail-card__fields .host-field {
+  margin-bottom: 14px;
+}
+
+.host-room-detail-card__fields .host-field:last-child {
+  margin-bottom: 0;
+}
+
+.host-room-detail-card__photo {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f7;
+}
+
+.host-room-detail-card__photo .host-image-dropzone__empty {
+  min-height: 150px;
+}
+
+.host-room-details__add {
+  margin-top: 14px;
+}
+
+.host-review-summary {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: #334e68;
+}
+
+.host-review-summary li strong {
+  color: #0f2036;
+}
+
+.host-image-dropzone--compact .host-image-dropzone__empty {
+  min-height: 150px;
+}
+
+.host-image-dropzone--compact .host-image-dropzone__preview img {
+  max-height: 220px;
+}
+
 /* Collapsible advanced / optional sections */
 .host-disclosure {
   border: 1px solid #e3e9f1;
@@ -2348,7 +2498,8 @@ a.host-overview-card:hover .host-overview-card-link {
 
   /* Dashboard + editor grids collapse to a single column */
   .host-overview-metrics,
-  .host-capacity-grid {
+  .host-capacity-grid,
+  .host-form-grid--3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2466,7 +2617,9 @@ a.host-overview-card:hover .host-overview-card-link {
 
 @media (max-width: 460px) {
   .host-overview-metrics,
-  .host-capacity-grid {
+  .host-capacity-grid,
+  .host-form-grid,
+  .host-form-grid--3 {
     grid-template-columns: 1fr;
   }
 }

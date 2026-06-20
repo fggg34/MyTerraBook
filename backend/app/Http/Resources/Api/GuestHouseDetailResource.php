@@ -66,6 +66,13 @@ class GuestHouseDetailResource extends JsonResource
                 'caption' => $img->caption,
                 'sort_order' => $img->sort_order,
             ]),
+            'room_details' => $this->whenLoaded('roomDetails', fn () => $this->roomDetails->map(fn ($detail) => [
+                'title' => $detail->title,
+                'text' => $detail->text,
+                'dim' => $detail->dim,
+                'image_path' => $detail->image_path,
+                'sort_order' => $detail->sort_order,
+            ])),
             'amenities' => $amenities,
             'seasonal_prices' => $this->seasonalPrices->map(fn ($sp) => [
                 'name' => $sp->name,

@@ -52,6 +52,14 @@ class HostGuestHouseResource extends JsonResource
                 'caption' => $img->caption,
                 'sort_order' => $img->sort_order,
             ])),
+            'room_details' => $this->whenLoaded('roomDetails', fn () => $this->roomDetails->map(fn ($detail) => [
+                'id' => $detail->id,
+                'title' => $detail->title,
+                'text' => $detail->text,
+                'dim' => $detail->dim,
+                'image_path' => $detail->image_path,
+                'sort_order' => $detail->sort_order,
+            ])),
             'seasonal_prices' => $this->whenLoaded('seasonalPrices', fn () => $this->seasonalPrices->map(fn ($sp) => [
                 'id' => $sp->id,
                 'name' => $sp->name,

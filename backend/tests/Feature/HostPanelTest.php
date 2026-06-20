@@ -11,6 +11,7 @@ use App\Models\MainCategory;
 use App\Models\SubCategory;
 use App\Models\GuestHouse;
 use App\Models\GuestHouseAmenity;
+use App\Models\GuestHouseImage;
 use App\Models\Location;
 use App\Models\LocationFee;
 use App\Models\OutOfHoursFee;
@@ -110,6 +111,14 @@ class HostPanelTest extends TestCase
             'group' => 'Essentials',
         ]);
         $house->amenities()->attach($amenity->id);
+
+        foreach (range(1, 5) as $index) {
+            GuestHouseImage::query()->create([
+                'guest_house_id' => $house->id,
+                'path' => "guesthouses/gallery/test-{$index}.jpg",
+                'sort_order' => $index - 1,
+            ]);
+        }
 
         Sanctum::actingAs($host);
 
@@ -315,6 +324,66 @@ class HostPanelTest extends TestCase
             'name' => 'Winter',
             'price_per_night' => 15000,
         ]);
+    }
+
+    public function test_host_guesthouse_room_details_sync_and_image_upload(): void
+    {
+        $host = User::factory()->host()->create();
+
+        $house = GuestHouse::query()->create([
+            'user_id' => $host->id,
+            'name' => 'Room Detail House',
+            'slug' => 'room-detail-house',
+            'type' => GuestHouseType::Apartment,
+            'status' => GuestHouseStatus::Draft,
+            'city' => 'Reykjavík',
+            'max_guests' => 2,
+            'bedrooms' => 1,
+            'bathrooms' => 1,
+            'beds' => 1,
+            'min_nights' => 1,
+            'base_price_per_night' => 10000,
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->patchJson("/api/host/guest-houses/{$house->id}", [
+            'room_details' => [
+                [
+                    'title' => 'Master bedroom',
+                    'text' => 'Queen bed with mountain view.',
+                    'dim' => 'Queen bed · Sleeps 2',
+                ],
+                [
+                    'title' => 'Bathroom',
+                    'text' => 'En-suite shower room.',
+                    'dim' => 'Fresh linen included',
+                ],
+            ],
+        ])->assertOk()
+            ->assertJsonPath('data.room_details.0.title', 'Master bedroom')
+            ->assertJsonPath('data.room_details.1.title', 'Bathroom');
+
+        $detailId = $house->fresh()->roomDetails()->first()->id;
+
+        $this->postJson("/api/host/guest-houses/{$house->id}/images", [
+            'room_detail_id' => $detailId,
+            'room_detail_image' => \Illuminate\Http\UploadedFile::fake()->image('bedroom.jpg'),
+        ])->assertOk()
+            ->assertJsonPath('data.room_details.0.image_path', fn ($path) => is_string($path) && str_contains($path, 'guesthouses/room-details'));
+
+        $this->patchJson("/api/host/guest-houses/{$house->id}", [
+            'room_details' => [
+                [
+                    'id' => $detailId,
+                    'title' => 'Updated bedroom',
+                    'text' => 'Updated copy.',
+                    'dim' => 'King bed',
+                ],
+            ],
+        ])->assertOk()
+            ->assertJsonCount(1, 'data.room_details')
+            ->assertJsonPath('data.room_details.0.title', 'Updated bedroom');
     }
 
     public function test_host_car_special_price_persists_and_lists(): void

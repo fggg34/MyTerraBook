@@ -110,6 +110,20 @@ function buildConditions(house) {
 
 function buildSleeping(house) {
   const maxGuests = house.max_guests || 1
+  const customDetails = (house.room_details || []).filter((row) => row?.title)
+
+  if (customDetails.length) {
+    return {
+      kicker: `Sleeps up to ${maxGuests} guest${maxGuests === 1 ? '' : 's'}`,
+      beds: customDetails.map((row) => ({
+        title: row.title,
+        text: row.text || '',
+        dim: row.dim || '',
+        image: resolveStorageUrl(row.image_path) || resolveStorageUrl(house.thumbnail) || '/images/homepage/cardhouse.jpg',
+      })),
+    }
+  }
+
   const bedrooms = house.bedrooms || 1
   const beds = house.beds || bedrooms
   const bedsList = []

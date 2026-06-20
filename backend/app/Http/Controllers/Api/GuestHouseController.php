@@ -79,6 +79,7 @@ class GuestHouseController extends Controller
             })
             ->with([
                 'images',
+                'roomDetails',
                 'amenities',
                 'seasonalPrices',
                 'listingReviews' => fn ($q) => $q->approved()->latest()->limit(50),

@@ -21,6 +21,7 @@ import HostIconMultiSelect from '../../components/host/HostIconMultiSelect'
 import HostReadinessChecklist from '../../components/host/HostReadinessChecklist'
 import HostSelect from '../../components/host/HostSelect'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
+import { HOST_IMAGE_FORMAT_HINT, HOST_MIN_DETAIL_IMAGES, HostImageDropzone, HostImageGallery } from '../../components/host/HostImageUpload'
 import { useToast } from '../../context/ToastContext'
 import { useHostCurrency } from '../../hooks/useHostCurrency'
 import { dateRangesOverlap } from '../../utils/hostCarPricingUtils'
@@ -33,7 +34,7 @@ function optionalNumber(value) {
   return Number(value)
 }
 
-function buildGuestHouseSavePayload(form, seasonalPrices, seasonalDraft) {
+function buildGuestHouseSavePayload(form, seasonalPrices, seasonalDraft, roomDetails) {
   const seasonalPriceRows = buildSeasonalPriceRows(seasonalPrices, seasonalDraft)
   const payload = {
     name: form.name,
@@ -59,6 +60,14 @@ function buildGuestHouseSavePayload(form, seasonalPrices, seasonalDraft) {
     security_deposit_euros: optionalNumber(form.security_deposit_euros),
     amenity_ids: form.amenity_ids,
     seasonal_prices: seasonalPriceRows,
+    room_details: (roomDetails || [])
+      .filter((row) => String(row.title || '').trim())
+      .map(({ id, title, text, dim }) => ({
+        id: id || null,
+        title: String(title).trim(),
+        text: String(text || '').trim() || null,
+        dim: String(dim || '').trim() || null,
+      })),
   }
 
   if (form.base_price_per_night_euros !== '') {
@@ -85,6 +94,35 @@ function buildSeasonalPriceRows(seasonalPrices, seasonalDraft) {
 }
 
 const STEPS = ['Basics', 'Details', 'Pricing', 'Rules', 'Availability', 'Review']
+
+function makeLocalRoomDetailId() {
+  return `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
+function emptyRoomDetail(overrides = {}) {
+  return {
+    localId: makeLocalRoomDetailId(),
+    id: null,
+    title: '',
+    text: '',
+    dim: '',
+    image_path: null,
+    pendingPreview: null,
+    pendingFile: null,
+    ...overrides,
+  }
+}
+
+function mapRoomDetailsFromApi(rows = []) {
+  return rows.map((row) => emptyRoomDetail({
+    localId: `existing-${row.id}`,
+    id: row.id,
+    title: row.title || '',
+    text: row.text || '',
+    dim: row.dim || '',
+    image_path: row.image_path || null,
+  }))
+}
 
 const emptyForm = {
   name: '',
@@ -132,6 +170,10 @@ export default function HostGuestHouseEditorPage() {
   const [taxRates, setTaxRates] = useState([])
   const [thumbnail, setThumbnail] = useState(null)
   const [gallery, setGallery] = useState([])
+  const [pendingMainFile, setPendingMainFile] = useState(null)
+  const [pendingMainPreview, setPendingMainPreview] = useState(null)
+  const [pendingGallery, setPendingGallery] = useState([])
+  const [roomDetails, setRoomDetails] = useState([])
   const [seasonalPrices, setSeasonalPrices] = useState([])
   const [seasonalDraft, setSeasonalDraft] = useState(emptySeasonalDraft)
   const [availability, setAvailability] = useState([])
@@ -176,6 +218,7 @@ export default function HostGuestHouseEditorPage() {
     })
     setThumbnail(data.thumbnail || null)
     setGallery(data.images || [])
+    setRoomDetails(mapRoomDetailsFromApi(data.room_details))
     setSeasonalPrices(Array.isArray(data.seasonal_prices) ? data.seasonal_prices : [])
   }
 
@@ -198,13 +241,49 @@ export default function HostGuestHouseEditorPage() {
     getHostGuestHouse(houseId).then((res) => hydrate(res.data.data))
   }
 
+  const flushPendingRoomImages = async (houseId, savedRoomDetails, pendingRows) => {
+    if (!pendingRows.length) return
+
+    for (const pending of pendingRows) {
+      const match = savedRoomDetails.find((row) => (
+        pending.id ? row.id === pending.id : row.title === pending.title
+      ))
+      if (!match?.id || !pending.file) continue
+
+      const fd = new FormData()
+      fd.append('room_detail_id', match.id)
+      fd.append('room_detail_image', pending.file)
+      await uploadHostGuestHouseImages(houseId, fd)
+    }
+
+    pendingRows.forEach((row) => {
+      if (row.previewUrl) URL.revokeObjectURL(row.previewUrl)
+    })
+  }
+
   const save = async () => {
     setSaving(true)
     try {
-      const payload = buildGuestHouseSavePayload(form, seasonalPrices, seasonalDraft)
+      const pendingRoomUploads = roomDetails
+        .filter((row) => row.pendingFile)
+        .map((row) => ({
+          id: row.id,
+          title: String(row.title || '').trim(),
+          file: row.pendingFile,
+          previewUrl: row.pendingPreview,
+        }))
+      const payload = buildGuestHouseSavePayload(form, seasonalPrices, seasonalDraft, roomDetails)
       if (recordId) {
         const res = await updateHostGuestHouse(recordId, payload)
         const saved = res.data.data
+        await flushPendingRoomImages(recordId, saved?.room_details || [], pendingRoomUploads)
+        try {
+          await flushPendingImages(recordId)
+        } catch {
+          toast('Saved, but some photos could not upload. Try saving again.', 'error')
+          return recordId
+        }
+        reload(recordId)
         setSeasonalPrices(Array.isArray(saved?.seasonal_prices) ? saved.seasonal_prices : payload.seasonal_prices)
         if (seasonalDraft.name && seasonalDraft.date_from && seasonalDraft.date_to) {
           setSeasonalDraft(emptySeasonalDraft)
@@ -215,8 +294,19 @@ export default function HostGuestHouseEditorPage() {
 
       const res = await createHostGuestHouse({ ...payload, name: form.name || 'New guesthouse' })
       const newId = res.data.data.id
+      try {
+        await flushPendingImages(newId)
+      } catch {
+        toast('Guesthouse created, but some photos could not upload. Try saving again.', 'error')
+        setRecordId(newId)
+        setStatus(res.data.data.status)
+        navigate(`/host/guesthouses/${newId}/edit`, { replace: true })
+        return newId
+      }
+      await flushPendingRoomImages(newId, res.data.data?.room_details || [], pendingRoomUploads)
       setRecordId(newId)
       setStatus(res.data.data.status)
+      reload(newId)
       setSeasonalPrices(Array.isArray(res.data.data?.seasonal_prices) ? res.data.data.seasonal_prices : payload.seasonal_prices)
       if (seasonalDraft.name && seasonalDraft.date_from && seasonalDraft.date_to) {
         setSeasonalDraft(emptySeasonalDraft)
@@ -246,31 +336,110 @@ export default function HostGuestHouseEditorPage() {
     }
   }
 
-  const handleThumbnail = async (event) => {
-    if (!recordId || !event.target.files?.[0]) return
+  const toastInvalidImageFiles = (files) => {
+    const names = files.map((file) => file.name).filter(Boolean)
+    const suffix = names.length ? ` (${names.join(', ')})` : ''
+    toast(`Unsupported photo format${suffix}. ${HOST_IMAGE_FORMAT_HINT}`, 'error')
+  }
+
+  const handleMainImage = async (file) => {
+    if (!file) return
+
+    if (!recordId) {
+      if (pendingMainPreview) URL.revokeObjectURL(pendingMainPreview)
+      setPendingMainFile(file)
+      setPendingMainPreview(URL.createObjectURL(file))
+      return
+    }
+
     const fd = new FormData()
-    fd.append('thumbnail', event.target.files[0])
+    fd.append('thumbnail', file)
     try {
       await uploadHostGuestHouseImages(recordId, fd)
+      if (pendingMainPreview) URL.revokeObjectURL(pendingMainPreview)
+      setPendingMainFile(null)
+      setPendingMainPreview(null)
       reload(recordId)
-      toast('Cover photo uploaded', 'success')
+      toast('Image uploaded', 'success')
     } catch {
       toast('Upload failed', 'error')
     }
   }
 
-  const handleGallery = async (event) => {
-    if (!recordId || !event.target.files?.length) return
+  const clearMainImage = () => {
+    if (!pendingMainPreview) return
+    URL.revokeObjectURL(pendingMainPreview)
+    setPendingMainFile(null)
+    setPendingMainPreview(null)
+  }
+
+  const handleGalleryImages = async (files) => {
+    if (!files.length) return
+
+    if (!recordId) {
+      setPendingGallery((prev) => [
+        ...prev,
+        ...files.map((file) => ({
+          id: `${Date.now()}-${file.name}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        })),
+      ])
+      return
+    }
+
     const fd = new FormData()
-    Array.from(event.target.files).forEach((file) => fd.append('gallery[]', file))
+    files.forEach((file) => fd.append('gallery[]', file))
     try {
       await uploadHostGuestHouseImages(recordId, fd)
       reload(recordId)
-      toast('Gallery photos uploaded', 'success')
+      toast('Images uploaded', 'success')
     } catch {
       toast('Upload failed', 'error')
     }
   }
+
+  const removePendingGalleryImage = (id) => {
+    setPendingGallery((prev) => {
+      const item = prev.find((p) => p.id === id)
+      if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl)
+      return prev.filter((p) => p.id !== id)
+    })
+  }
+
+  const flushPendingImages = async (houseId) => {
+    let uploaded = false
+
+    if (pendingMainFile) {
+      const fd = new FormData()
+      fd.append('thumbnail', pendingMainFile)
+      await uploadHostGuestHouseImages(houseId, fd)
+      if (pendingMainPreview) URL.revokeObjectURL(pendingMainPreview)
+      setPendingMainFile(null)
+      setPendingMainPreview(null)
+      uploaded = true
+    }
+
+    if (pendingGallery.length > 0) {
+      const fd = new FormData()
+      pendingGallery.forEach((item) => fd.append('gallery[]', item.file))
+      await uploadHostGuestHouseImages(houseId, fd)
+      pendingGallery.forEach((item) => {
+        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl)
+      })
+      setPendingGallery([])
+      uploaded = true
+    }
+
+    if (uploaded) reload(houseId)
+  }
+
+  useEffect(() => () => {
+    if (pendingMainPreview) URL.revokeObjectURL(pendingMainPreview)
+    pendingGallery.forEach((item) => {
+      if (item.previewUrl) URL.revokeObjectURL(item.previewUrl)
+    })
+  }, [pendingMainPreview, pendingGallery])
 
   const removeGalleryImage = async (imageId) => {
     if (!recordId) return
@@ -282,6 +451,68 @@ export default function HostGuestHouseEditorPage() {
       toast('Could not remove image', 'error')
     }
   }
+
+  const updateRoomDetail = (localId, patch) => {
+    setRoomDetails((prev) => prev.map((row) => (row.localId === localId ? { ...row, ...patch } : row)))
+  }
+
+  const removeRoomDetail = (localId) => {
+    setRoomDetails((prev) => {
+      const row = prev.find((item) => item.localId === localId)
+      if (row?.pendingPreview) URL.revokeObjectURL(row.pendingPreview)
+      return prev.filter((item) => item.localId !== localId)
+    })
+  }
+
+  const clearRoomDetailImage = (localId) => {
+    setRoomDetails((prev) => prev.map((row) => {
+      if (row.localId !== localId) return row
+      if (row.pendingPreview) URL.revokeObjectURL(row.pendingPreview)
+      return { ...row, pendingFile: null, pendingPreview: null }
+    }))
+  }
+
+  const handleRoomDetailImage = async (localId, file) => {
+    if (!file) return
+
+    const row = roomDetails.find((item) => item.localId === localId)
+    if (!row) return
+
+    if (!recordId || !row.id) {
+      setRoomDetails((prev) => prev.map((item) => {
+        if (item.localId !== localId) return item
+        if (item.pendingPreview) URL.revokeObjectURL(item.pendingPreview)
+        return {
+          ...item,
+          pendingFile: file,
+          pendingPreview: URL.createObjectURL(file),
+        }
+      }))
+      if (!recordId) {
+        toast('Save the guesthouse first, then save again to upload room photos.', 'info')
+      } else {
+        toast('Save to attach this room photo.', 'info')
+      }
+      return
+    }
+
+    const fd = new FormData()
+    fd.append('room_detail_id', row.id)
+    fd.append('room_detail_image', file)
+    try {
+      await uploadHostGuestHouseImages(recordId, fd)
+      reload(recordId)
+      toast('Room photo uploaded', 'success')
+    } catch {
+      toast('Upload failed', 'error')
+    }
+  }
+
+  useEffect(() => () => {
+    roomDetails.forEach((row) => {
+      if (row.pendingPreview) URL.revokeObjectURL(row.pendingPreview)
+    })
+  }, [roomDetails])
 
   const toggleAmenity = (amenityId, checked) => {
     setForm((prev) => ({
@@ -300,13 +531,25 @@ export default function HostGuestHouseEditorPage() {
       step: 0,
       focusId: 'host-gh-address',
     },
+    {
+      label: 'Main image uploaded',
+      done: !!(thumbnail || pendingMainFile),
+      step: 0,
+      focusId: 'host-gh-main-image',
+    },
+    {
+      label: `At least ${HOST_MIN_DETAIL_IMAGES} detail photos`,
+      done: gallery.length + pendingGallery.length >= HOST_MIN_DETAIL_IMAGES,
+      step: 0,
+      focusId: 'host-gh-detail-images',
+    },
     { label: 'Max guests set', done: Number(form.max_guests) > 0, step: 1, focusId: 'host-gh-max-guests' },
     { label: 'Bedrooms set', done: form.bedrooms != null && Number(form.bedrooms) >= 0, step: 1, focusId: 'host-gh-bedrooms' },
     { label: 'Bathrooms set', done: Number(form.bathrooms) > 0, step: 1, focusId: 'host-gh-bathrooms' },
     { label: 'Nightly price above zero', done: Number(form.base_price_per_night_euros) > 0, step: 2, focusId: 'host-gh-nightly-price' },
-    { label: 'At least one photo (cover or gallery)', done: !!thumbnail || gallery.length > 0, step: 0, focusId: 'host-gh-photos' },
     { label: 'At least one amenity', done: (form.amenity_ids || []).length > 0, step: 1, focusId: 'host-gh-amenities' },
   ]
+  const mainImagePreview = thumbnail ? resolveStorageUrl(thumbnail) : pendingMainPreview
   const isReady = readinessItems.every((i) => i.done)
   const missingReadinessLabels = readinessItems.filter((i) => !i.done).map((i) => i.label)
   const submitDisabledTitle = missingReadinessLabels.length > 0
@@ -352,15 +595,15 @@ export default function HostGuestHouseEditorPage() {
     }
   }
 
-  if (loading) return <p className="text-sm text-slate-500">Loading…</p>
+  if (loading) return <p className="host-muted">Loading…</p>
 
   return (
     <div className="host-wizard">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-brand-950">{isNew ? 'New guesthouse' : form.name}</h2>
+      <div className="host-wizard-head">
+        <h2>{isNew ? 'New guesthouse' : form.name}</h2>
         <ListingStatusBadge status={status} />
       </div>
-      {rejectionReason && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{rejectionReason}</p>}
+      {rejectionReason && <p className="host-alert--error">{rejectionReason}</p>}
       <div className="host-steps">
         {STEPS.map((label, index) => (
           <button key={label} type="button" className={`host-step-pill ${step === index ? 'active' : ''}`} onClick={() => setStep(index)}>
@@ -371,7 +614,7 @@ export default function HostGuestHouseEditorPage() {
       <div className="host-form-card">
         {step === 0 && (
           <>
-            <p className="host-step-note">You can save a draft at any time. Name, address and a cover photo are required before submit. Save first to enable photo uploads.</p>
+            <p className="host-step-note">You can save a draft at any time. Name, address, main image and detail photos are required before submit.</p>
             <div className="host-field" id="host-gh-name"><label>Name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="host-field"><label>Type</label>
               <HostSelect
@@ -394,36 +637,48 @@ export default function HostGuestHouseEditorPage() {
               />
             </div>
             <div className="host-field"><label>Short description</label><textarea rows={3} value={form.short_description} onChange={(e) => setForm({ ...form, short_description: e.target.value })} /></div>
-            {recordId ? (
-              <div id="host-gh-photos">
-                <div className="host-field"><label>Cover photo</label>
-                  <p className="host-capacity-hint">Used on search cards and browse results only, not shown in the listing photo gallery.</p>
-                  {thumbnail && <img src={resolveStorageUrl(thumbnail)} alt="Cover" className="mb-2 h-24 w-auto rounded-lg object-cover" />}
-                  <input type="file" accept="image/*" onChange={handleThumbnail} />
-                </div>
-                <div className="host-field"><label>Gallery photos</label>
-                  <p className="host-capacity-hint">Shown in the listing page gallery. Add photos of rooms, amenities, and the property exterior.</p>
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    {gallery.map((img) => (
-                      <div key={img.id} className="relative">
-                        <img src={resolveStorageUrl(img.path)} alt="Gallery" className="h-20 w-28 rounded-lg object-cover" />
-                        <button type="button" className="host-btn danger mt-1 w-full" onClick={() => removeGalleryImage(img.id)}>Remove</button>
-                      </div>
-                    ))}
-                  </div>
-                  <input type="file" accept="image/*" multiple onChange={handleGallery} />
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500">Save the guesthouse first to upload photos.</p>
-            )}
+            <div className="host-images-section" id="host-gh-photos">
+              {!recordId && (pendingMainPreview || pendingGallery.length > 0) && (
+                <p className="host-capacity-hint">Photos are previewed locally and upload when you save the guesthouse.</p>
+              )}
+              <HostImageDropzone
+                fieldId="host-gh-main-image"
+                label="Main image"
+                hint={`Used on search cards and browse results only, not shown in the listing photo gallery. ${HOST_IMAGE_FORMAT_HINT}`}
+                previewSrc={mainImagePreview}
+                emptyLabel="Upload main photo"
+                onSelect={handleMainImage}
+                onInvalid={toastInvalidImageFiles}
+                onClear={pendingMainPreview ? clearMainImage : undefined}
+              />
+              <HostImageGallery
+                fieldId="host-gh-detail-images"
+                label="Detail images"
+                hint={`Shown in the listing page gallery. Add at least ${HOST_MIN_DETAIL_IMAGES} photos of rooms, amenities, and the property exterior so guests can browse your listing. ${HOST_IMAGE_FORMAT_HINT}`}
+                minCount={HOST_MIN_DETAIL_IMAGES}
+                items={[
+                  ...gallery.map((img) => ({
+                    key: String(img.id),
+                    src: resolveStorageUrl(img.path),
+                    onRemove: () => removeGalleryImage(img.id),
+                  })),
+                  ...pendingGallery.map((item) => ({
+                    key: item.id,
+                    src: item.previewUrl,
+                    onRemove: () => removePendingGalleryImage(item.id),
+                  })),
+                ]}
+                onSelect={handleGalleryImages}
+                onInvalid={toastInvalidImageFiles}
+              />
+            </div>
           </>
         )}
         {step === 1 && (
           <>
             <p className="host-step-note">You can save a draft at any time. Max guests, bedrooms, bathrooms and city are required before submit.</p>
             <div className="host-field"><label>Full description</label><textarea rows={6} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="host-form-grid">
               <div className="host-field" id="host-gh-max-guests"><label>Max guests</label><input type="number" min={1} value={form.max_guests} onChange={(e) => setForm({ ...form, max_guests: Number(e.target.value) })} /></div>
               <div className="host-field" id="host-gh-bedrooms"><label>Bedrooms</label><input type="number" min={0} value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: Number(e.target.value) })} /></div>
               <div className="host-field" id="host-gh-bathrooms"><label>Bathrooms</label><input type="number" min={1} value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: Number(e.target.value) })} /></div>
@@ -438,12 +693,85 @@ export default function HostGuestHouseEditorPage() {
                 emptyLabel="No amenities match your search."
               />
             </div>
+
+            <div id="host-gh-room-details" className="host-room-details">
+            <HostDisclosure
+              title="Room details"
+              hint="Add sleeping arrangements and room layout cards with photos. These appear in the Room details section on your listing page."
+              count={roomDetails.length}
+              defaultOpen={roomDetails.length > 0}
+            >
+              <p className="host-capacity-hint">
+                Add one card per bedroom, bathroom, or shared space. Each card needs a title; add a photo so guests can browse the layout.
+                {' '}
+                {HOST_IMAGE_FORMAT_HINT}
+              </p>
+              <div className="host-room-details__list">
+                {roomDetails.map((row, index) => {
+                  const previewSrc = row.pendingPreview || (row.image_path ? resolveStorageUrl(row.image_path) : null)
+                  return (
+                    <div key={row.localId} className="host-room-detail-card">
+                      <div className="host-room-detail-card__head">
+                        <span className="host-room-detail-card__title">Room {index + 1}</span>
+                        <button type="button" className="host-btn danger" onClick={() => removeRoomDetail(row.localId)}>Remove</button>
+                      </div>
+                      <div className="host-room-detail-card__fields">
+                        <div className="host-field">
+                          <label>Title</label>
+                          <input
+                            value={row.title}
+                            placeholder="e.g. Master bedroom"
+                            onChange={(e) => updateRoomDetail(row.localId, { title: e.target.value })}
+                          />
+                        </div>
+                        <div className="host-field">
+                          <label>Description</label>
+                          <textarea
+                            rows={2}
+                            value={row.text}
+                            placeholder="Describe the bed type, view, or layout."
+                            onChange={(e) => updateRoomDetail(row.localId, { text: e.target.value })}
+                          />
+                        </div>
+                        <div className="host-field">
+                          <label>Short label</label>
+                          <input
+                            value={row.dim}
+                            placeholder="e.g. Queen bed · Sleeps 2"
+                            onChange={(e) => updateRoomDetail(row.localId, { dim: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="host-room-detail-card__photo">
+                        <HostImageDropzone
+                          label="Room photo"
+                          hint="Landscape photos work best in the room layout preview."
+                          previewSrc={previewSrc}
+                          emptyLabel="Upload room photo"
+                          onSelect={(file) => handleRoomDetailImage(row.localId, file)}
+                          onInvalid={toastInvalidImageFiles}
+                          onClear={row.pendingPreview ? () => clearRoomDetailImage(row.localId) : undefined}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <button
+                type="button"
+                className="host-btn-add host-room-details__add"
+                onClick={() => setRoomDetails((prev) => [...prev, emptyRoomDetail()])}
+              >
+                Add room
+              </button>
+            </HostDisclosure>
+            </div>
           </>
         )}
         {step === 2 && (
           <>
             <p className="host-step-note">Set a <strong>nightly price above zero</strong> to publish. Cleaning fee, deposit and seasonal prices are optional.</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="host-form-grid">
               <div className="host-field" id="host-gh-nightly-price"><label>Nightly price ({currency.code})</label><input type="number" placeholder={`e.g. ${currency.exampleAmounts.guesthouseNightly}`} value={form.base_price_per_night_euros} onChange={(e) => setForm({ ...form, base_price_per_night_euros: e.target.value === '' ? '' : Number(e.target.value) })} /></div>
               <div className="host-field"><label>Cleaning fee ({currency.code})</label><input type="number" value={form.cleaning_fee_euros} onChange={(e) => setForm({ ...form, cleaning_fee_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>Security deposit ({currency.code})</label><input type="number" value={form.security_deposit_euros} onChange={(e) => setForm({ ...form, security_deposit_euros: Number(e.target.value) })} /></div>
@@ -464,21 +792,21 @@ export default function HostGuestHouseEditorPage() {
               count={seasonalPrices.length}
               defaultOpen={seasonalPrices.length > 0}
             >
-            <div className="grid grid-cols-2 gap-3">
+            <div className="host-form-grid">
               <div className="host-field"><label>Name</label><input value={seasonalDraft.name} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, name: e.target.value })} /></div>
               <div className="host-field"><label>Price / night ({currency.code})</label><input type="number" placeholder={`e.g. ${currency.exampleAmounts.guesthouseNightly}`} value={seasonalDraft.price_per_night_euros} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, price_per_night_euros: Number(e.target.value) })} /></div>
               <div className="host-field"><label>From date</label><HostDatePicker value={seasonalDraft.date_from} onChange={(v) => setSeasonalDraft({ ...seasonalDraft, date_from: v })} /></div>
               <div className="host-field"><label>To date</label><HostDatePicker value={seasonalDraft.date_to} onChange={(v) => setSeasonalDraft({ ...seasonalDraft, date_to: v })} minDate={seasonalDraft.date_from ? new Date(seasonalDraft.date_from) : undefined} /></div>
               <div className="host-field"><label>Minimum nights</label><input type="number" value={seasonalDraft.minimum_nights} onChange={(e) => setSeasonalDraft({ ...seasonalDraft, minimum_nights: e.target.value })} /></div>
             </div>
-            <button type="button" className="host-btn secondary" disabled={!seasonalDraft.name || !seasonalDraft.date_from || !seasonalDraft.date_to} onClick={() => {
+            <button type="button" className="host-btn-add" disabled={!seasonalDraft.name || !seasonalDraft.date_from || !seasonalDraft.date_to} onClick={() => {
               setSeasonalPrices((prev) => [...prev, { ...seasonalDraft, id: null }])
               setSeasonalDraft(emptySeasonalDraft)
             }}>Add seasonal price</button>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="host-stack-list">
               {seasonalPrices.map((sp, index) => (
-                <li key={sp.id ?? `new-${index}`} className="flex justify-between">
-                  <span>{sp.name}: {currency.formatAmount(sp.price_per_night_euros)}/night ({formatDate(sp.date_from)} → {formatDate(sp.date_to)}){sp.minimum_nights ? `, min ${sp.minimum_nights} nights` : ''}</span>
+                <li key={sp.id ?? `new-${index}`} className="host-stack-list__item">
+                  <span className="host-stack-list__item-main">{sp.name}: {currency.formatAmount(sp.price_per_night_euros)}/night ({formatDate(sp.date_from)} → {formatDate(sp.date_to)}){sp.minimum_nights ? `, min ${sp.minimum_nights} nights` : ''}</span>
                   <button type="button" className="host-btn danger" onClick={() => setSeasonalPrices((prev) => prev.filter((_, i) => i !== index))}>Remove</button>
                 </li>
               ))}
@@ -488,7 +816,7 @@ export default function HostGuestHouseEditorPage() {
         )}
         {step === 3 && (
           <>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="host-form-grid">
               <div className="host-field"><label>Check-in</label><HostTimePicker value={form.check_in_time} onChange={(v) => setForm({ ...form, check_in_time: v })} placeholder="Select check-in time" ariaLabel="Check-in time" /></div>
               <div className="host-field"><label>Check-out</label><HostTimePicker value={form.check_out_time} onChange={(v) => setForm({ ...form, check_out_time: v })} placeholder="Select check-out time" ariaLabel="Check-out time" /></div>
               <div className="host-field"><label>Min nights</label><input type="number" value={form.min_nights} onChange={(e) => setForm({ ...form, min_nights: Number(e.target.value) })} /></div>
@@ -507,17 +835,17 @@ export default function HostGuestHouseEditorPage() {
         {step === 4 && (
           recordId ? (
             <>
-              <h3 className="mb-2 font-semibold text-brand-950">Availability blocks</h3>
-              <div className="grid grid-cols-3 gap-3">
+              <h3 className="host-section-title">Availability blocks</h3>
+              <div className="host-form-grid host-form-grid--3">
                 <div className="host-field"><label>From</label><HostDatePicker value={blockDraft.blocked_from} onChange={(v) => setBlockDraft({ ...blockDraft, blocked_from: v })} /></div>
                 <div className="host-field"><label>To</label><HostDatePicker value={blockDraft.blocked_to} onChange={(v) => setBlockDraft({ ...blockDraft, blocked_to: v })} minDate={blockDraft.blocked_from ? new Date(blockDraft.blocked_from) : undefined} /></div>
                 <div className="host-field"><label>Note</label><input value={blockDraft.note} onChange={(e) => setBlockDraft({ ...blockDraft, note: e.target.value })} /></div>
               </div>
-              <button type="button" className="host-btn secondary" disabled={!blockDraft.blocked_from || !blockDraft.blocked_to} onClick={addGuestBlock}>Add block</button>
-              <ul className="mt-3 space-y-2 text-sm">
+              <button type="button" className="host-btn-add" disabled={!blockDraft.blocked_from || !blockDraft.blocked_to} onClick={addGuestBlock}>Add block</button>
+              <ul className="host-stack-list">
                 {availability.map((b) => (
-                  <li key={b.id} className="flex justify-between">
-                    <span>{formatDate(b.blocked_from)} → {formatDate(b.blocked_to)} {b.source === 'manual' ? '' : `[${b.source}]`}</span>
+                  <li key={b.id} className="host-stack-list__item">
+                    <span className="host-stack-list__item-main">{formatDate(b.blocked_from)} → {formatDate(b.blocked_to)} {b.source === 'manual' ? '' : `[${b.source}]`}</span>
                     {b.source === 'manual' && <button type="button" className="host-btn danger" onClick={async () => {
                       await removeHostGuestHouseAvailability(recordId, b.id)
                       getHostGuestHouseAvailability(recordId).then((r) => setAvailability(r.data.data || []))
@@ -526,7 +854,7 @@ export default function HostGuestHouseEditorPage() {
                 ))}
               </ul>
             </>
-          ) : <p className="text-sm text-slate-500">Save the guesthouse first to manage availability.</p>
+          ) : <p className="host-muted">Save the guesthouse first to manage availability.</p>
         )}
         {step === 5 && (
           <div>
@@ -536,7 +864,7 @@ export default function HostGuestHouseEditorPage() {
                 : 'Complete the items below, then save and submit for admin approval.'}
             </p>
             <HostReadinessChecklist items={readinessItems} onGoTo={goToReadinessItem} />
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="host-review-summary">
               <li><strong>Name:</strong> {form.name || '-'}</li>
               <li><strong>Location:</strong> {formatLocationLine(form) || '-'}</li>
               <li><strong>Price:</strong> {currency.formatAmount(form.base_price_per_night_euros)}/night</li>

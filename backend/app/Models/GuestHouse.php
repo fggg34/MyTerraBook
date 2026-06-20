@@ -126,6 +126,11 @@ class GuestHouse extends Model
         return $this->hasMany(GuestHouseImage::class)->orderBy('sort_order');
     }
 
+    public function roomDetails(): HasMany
+    {
+        return $this->hasMany(GuestHouseRoomDetail::class)->orderBy('sort_order');
+    }
+
     public function amenities(): BelongsToMany
     {
         return $this->belongsToMany(GuestHouseAmenity::class, 'guest_house_amenity', 'guest_house_id', 'amenity_id');

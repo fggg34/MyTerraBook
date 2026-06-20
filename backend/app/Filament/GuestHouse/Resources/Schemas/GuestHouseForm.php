@@ -224,6 +224,7 @@ class GuestHouseForm
                     CheckboxList::make('amenities')
                         ->relationship('amenities', 'name')
                         ->options(fn () => GuestHouseAmenity::query()->orderBy('group')->orderBy('name')->pluck('name', 'id'))
+                        ->bulkToggleable()
                         ->columns(3),
                 ]),
 

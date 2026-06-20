@@ -10,6 +10,7 @@ use App\Http\Resources\Host\HostGuestHouseResource;
 use App\Models\GuestHouse;
 use App\Models\GuestHouseAvailabilityBlock;
 use App\Models\GuestHouseImage;
+use App\Models\GuestHouseRoomDetail;
 use App\Models\GuestHouseSeasonalPrice;
 use App\Support\HostPricingValidation;
 use App\Services\Email\EmailService;
@@ -70,8 +71,12 @@ class HostGuestHouseController extends Controller
             $this->syncSeasonalPrices($house, $request->input('seasonal_prices', []));
         }
 
+        if ($request->has('room_details')) {
+            $this->syncRoomDetails($house, $request->input('room_details', []));
+        }
+
         $seo->syncGuestHouse($house);
-        $house->load(['amenities', 'images', 'seasonalPrices']);
+        $house->load(['amenities', 'images', 'roomDetails', 'seasonalPrices']);
 
         return response()->json(['data' => new HostGuestHouseResource($house)], 201);
     }
@@ -80,7 +85,7 @@ class HostGuestHouseController extends Controller
     {
         $this->authorize('view', $guestHouse);
 
-        $guestHouse->load(['amenities', 'images', 'seasonalPrices']);
+        $guestHouse->load(['amenities', 'images', 'roomDetails', 'seasonalPrices']);
 
         return response()->json(['data' => new HostGuestHouseResource($guestHouse)]);
     }
@@ -90,7 +95,7 @@ class HostGuestHouseController extends Controller
         $this->authorize('update', $guestHouse);
 
         $data = $this->validatedData($request, $guestHouse);
-        unset($data['status'], $data['amenity_ids'], $data['seasonal_prices']);
+        unset($data['status'], $data['amenity_ids'], $data['seasonal_prices'], $data['room_details']);
         $guestHouse->update($data);
 
         if ($request->has('amenity_ids')) {
@@ -101,8 +106,12 @@ class HostGuestHouseController extends Controller
             $this->syncSeasonalPrices($guestHouse, $request->input('seasonal_prices', []));
         }
 
+        if ($request->has('room_details')) {
+            $this->syncRoomDetails($guestHouse, $request->input('room_details', []));
+        }
+
         $seo->syncGuestHouse($guestHouse);
-        $guestHouse->load(['amenities', 'images', 'seasonalPrices']);
+        $guestHouse->load(['amenities', 'images', 'roomDetails', 'seasonalPrices']);
 
         return response()->json(['data' => new HostGuestHouseResource($guestHouse)]);
     }
@@ -143,9 +152,13 @@ class HostGuestHouseController extends Controller
             return response()->json(['message' => 'Set a nightly price greater than zero before submitting for review.'], 422);
         }
 
-        $hasPhoto = trim((string) $guestHouse->thumbnail) !== '' || $guestHouse->images()->exists();
-        if (! $hasPhoto) {
-            return response()->json(['message' => 'Add at least one photo before submitting for review.'], 422);
+        $hasMainImage = trim((string) $guestHouse->thumbnail) !== '';
+        if (! $hasMainImage) {
+            return response()->json(['message' => 'A main image is required before submitting for review.'], 422);
+        }
+
+        if ($guestHouse->images()->count() < 5) {
+            return response()->json(['message' => 'At least 5 detail photos are required before submitting for review.'], 422);
         }
 
         if (! $guestHouse->amenities()->exists()) {
@@ -182,7 +195,7 @@ class HostGuestHouseController extends Controller
             ]);
         }
 
-        return response()->json(['data' => new HostGuestHouseResource($guestHouse->fresh(['amenities', 'images', 'seasonalPrices']))]);
+        return response()->json(['data' => new HostGuestHouseResource($guestHouse->fresh(['amenities', 'images', 'roomDetails', 'seasonalPrices']))]);
     }
 
     public function uploadImages(Request $request, GuestHouse $guestHouse, ListingSeoService $seo): JsonResponse
@@ -195,6 +208,8 @@ class HostGuestHouseController extends Controller
             'gallery.*' => ['image', 'max:8192'],
             'gallery_order' => ['nullable', 'array'],
             'gallery_order.*' => ['integer'],
+            'room_detail_id' => ['nullable', 'integer'],
+            'room_detail_image' => ['nullable', 'image', 'max:8192'],
         ]);
 
         if ($request->hasFile('thumbnail')) {
@@ -224,11 +239,29 @@ class HostGuestHouseController extends Controller
             }
         }
 
+        if ($request->hasFile('room_detail_image')) {
+            $request->validate([
+                'room_detail_id' => ['required', 'integer'],
+            ]);
+
+            $detail = GuestHouseRoomDetail::query()
+                ->where('guest_house_id', $guestHouse->id)
+                ->whereKey($request->integer('room_detail_id'))
+                ->firstOrFail();
+
+            if ($detail->image_path) {
+                Storage::disk('public')->delete($detail->image_path);
+            }
+
+            $path = $request->file('room_detail_image')->store('guesthouses/room-details', 'public');
+            $detail->update(['image_path' => $path]);
+        }
+
         if ($request->hasFile('thumbnail')) {
             $seo->syncGuestHouse($guestHouse);
         }
 
-        $guestHouse->load('images');
+        $guestHouse->load(['images', 'roomDetails']);
 
         return response()->json(['data' => new HostGuestHouseResource($guestHouse)]);
     }
@@ -347,6 +380,11 @@ class HostGuestHouseController extends Controller
             'seasonal_prices.*.date_to' => ['required', 'date'],
             'seasonal_prices.*.price_per_night_euros' => ['nullable', 'numeric', 'min:0'],
             'seasonal_prices.*.minimum_nights' => ['nullable', 'integer', 'min:1'],
+            'room_details' => ['nullable', 'array'],
+            'room_details.*.id' => ['nullable', 'integer'],
+            'room_details.*.title' => ['required', 'string', 'max:255'],
+            'room_details.*.text' => ['nullable', 'string', 'max:2000'],
+            'room_details.*.dim' => ['nullable', 'string', 'max:255'],
         ]);
 
         if (array_key_exists('base_price_per_night_euros', $data)) {
@@ -402,5 +440,51 @@ class HostGuestHouseController extends Controller
         }
 
         $guestHouse->seasonalPrices()->whereNotIn('id', $ids)->delete();
+    }
+
+    private function syncRoomDetails(GuestHouse $guestHouse, array $rows): void
+    {
+        $ids = [];
+
+        foreach ($rows as $index => $row) {
+            $title = trim((string) ($row['title'] ?? ''));
+            if ($title === '') {
+                continue;
+            }
+
+            $payload = [
+                'title' => $title,
+                'text' => filled($row['text'] ?? null) ? trim((string) $row['text']) : null,
+                'dim' => filled($row['dim'] ?? null) ? trim((string) $row['dim']) : null,
+                'sort_order' => $index,
+            ];
+
+            if (! empty($row['id'])) {
+                $detail = GuestHouseRoomDetail::query()
+                    ->where('guest_house_id', $guestHouse->id)
+                    ->whereKey($row['id'])
+                    ->first();
+
+                if ($detail) {
+                    $detail->update($payload);
+                    $ids[] = $detail->id;
+
+                    continue;
+                }
+            }
+
+            $created = $guestHouse->roomDetails()->create($payload);
+            $ids[] = $created->id;
+        }
+
+        $guestHouse->roomDetails()
+            ->whereNotIn('id', $ids)
+            ->get()
+            ->each(function (GuestHouseRoomDetail $detail): void {
+                if ($detail->image_path) {
+                    Storage::disk('public')->delete($detail->image_path);
+                }
+                $detail->delete();
+            });
     }
 }

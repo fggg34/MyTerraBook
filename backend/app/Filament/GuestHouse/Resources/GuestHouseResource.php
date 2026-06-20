@@ -11,11 +11,16 @@ use App\Filament\GuestHouse\Resources\GuestHouseResource\Pages\ListGuestHouses;
 use App\Filament\GuestHouse\Resources\Schemas\GuestHouseForm;
 use App\Filament\Pages\ListingReviewPage;
 use App\Models\GuestHouse;
+use App\Services\GuestHouseDuplicationService;
 use App\Support\AdminTableBadgeColors;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Support\Facades\FilamentView;
 use Filament\Schemas\Schema;
@@ -139,8 +144,39 @@ class GuestHouseResource extends Resource
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
                     }),
+                Action::make('duplicate')
+                    ->label('Duplicate')
+                    ->icon(Heroicon::OutlinedSquare2Stack)
+                    ->color('gray')
+                    ->modalHeading('Duplicate this guesthouse')
+                    ->modalDescription('Creates copies with the same details, amenities, photos, room layout cards, and seasonal prices.')
+                    ->form([
+                        TextInput::make('copies')
+                            ->label('Number of copies')
+                            ->numeric()
+                            ->default(1)
+                            ->minValue(1)
+                            ->maxValue(50)
+                            ->required(),
+                    ])
+                    ->action(function (GuestHouse $record, array $data, GuestHouseDuplicationService $duplicationService): void {
+                        $duplicationService->duplicate($record, (int) $data['copies']);
+                    })
+                    ->successNotificationTitle(function (array $data): string {
+                        $count = max(1, (int) ($data['copies'] ?? 1));
+
+                        return $count === 1
+                            ? 'Guesthouse duplicated'
+                            : "{$count} guesthouses duplicated";
+                    }),
+                DeleteAction::make(),
             ])
-            ->defaultSort('submitted_at', 'desc');
+            ->defaultSort('submitted_at', 'desc')
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getPages(): array
