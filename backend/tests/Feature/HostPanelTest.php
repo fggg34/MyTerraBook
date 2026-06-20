@@ -19,6 +19,7 @@ use App\Models\PriceType;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -324,6 +325,48 @@ class HostPanelTest extends TestCase
             'name' => 'Winter',
             'price_per_night' => 15000,
         ]);
+    }
+
+    public function test_host_can_reload_guesthouse_after_create(): void
+    {
+        Sanctum::actingAs(User::factory()->host()->create());
+
+        $created = $this->postJson('/api/host/guest-houses', [
+            'name' => 'Reload Test House',
+        ])->assertCreated()->json('data');
+
+        $this->getJson("/api/host/guest-houses/{$created['id']}")
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Reload Test House')
+            ->assertJsonPath('data.check_in_time', '15:00');
+    }
+
+    public function test_host_can_show_guesthouse_when_room_details_table_missing(): void
+    {
+        Schema::dropIfExists('guest_house_room_details');
+
+        $host = User::factory()->host()->create();
+        $house = GuestHouse::query()->create([
+            'user_id' => $host->id,
+            'name' => 'Legacy House',
+            'slug' => 'legacy-house',
+            'type' => GuestHouseType::Apartment,
+            'status' => GuestHouseStatus::Draft,
+            'city' => 'Reykjavík',
+            'max_guests' => 2,
+            'bedrooms' => 1,
+            'bathrooms' => 1,
+            'beds' => 1,
+            'min_nights' => 1,
+            'base_price_per_night' => 10000,
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->getJson("/api/host/guest-houses/{$house->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $house->id)
+            ->assertJsonMissingPath('data.room_details');
     }
 
     public function test_host_guesthouse_room_details_sync_and_image_upload(): void

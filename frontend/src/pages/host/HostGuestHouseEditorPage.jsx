@@ -114,6 +114,8 @@ function emptyRoomDetail(overrides = {}) {
 }
 
 function mapRoomDetailsFromApi(rows = []) {
+  if (!Array.isArray(rows)) return []
+
   return rows.map((row) => emptyRoomDetail({
     localId: `existing-${row.id}`,
     id: row.id,
@@ -205,6 +207,10 @@ export default function HostGuestHouseEditorPage() {
   }, [])
 
   const hydrate = (data) => {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid guesthouse response')
+    }
+
     setForm({
       ...emptyForm,
       ...data,
@@ -223,22 +229,56 @@ export default function HostGuestHouseEditorPage() {
   }
 
   useEffect(() => {
-    if (isNew) return
-    getHostGuestHouse(id)
+    if (isNew) {
+      setLoading(false)
+      return undefined
+    }
+
+    const houseId = String(id || '').trim()
+    if (!/^\d+$/.test(houseId)) {
+      toast('Could not load guesthouse', 'error')
+      setLoading(false)
+      return undefined
+    }
+
+    let cancelled = false
+    setLoading(true)
+
+    getHostGuestHouse(houseId)
       .then((res) => {
-        const data = res.data.data
+        if (cancelled) return undefined
+        const data = res.data?.data
         hydrate(data)
         setStatus(data.status)
         setRejectionReason(data.rejection_reason || '')
         setRecordId(data.id)
-        getHostGuestHouseAvailability(data.id).then((r) => setAvailability(r.data.data || []))
+        return getHostGuestHouseAvailability(data.id)
+          .then((r) => {
+            if (!cancelled) setAvailability(r.data?.data || [])
+          })
+          .catch(() => {
+            if (!cancelled) setAvailability([])
+          })
       })
-      .catch(() => toast('Could not load guesthouse', 'error'))
-      .finally(() => setLoading(false))
+      .catch((err) => {
+        if (cancelled) return
+        toast(err.response?.data?.message || err.message || 'Could not load guesthouse', 'error')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [id, isNew, toast])
 
   const reload = (houseId) => {
-    getHostGuestHouse(houseId).then((res) => hydrate(res.data.data))
+    getHostGuestHouse(houseId)
+      .then((res) => hydrate(res.data?.data))
+      .catch((err) => {
+        toast(err.response?.data?.message || err.message || 'Could not reload guesthouse', 'error')
+      })
   }
 
   const flushPendingRoomImages = async (houseId, savedRoomDetails, pendingRows) => {

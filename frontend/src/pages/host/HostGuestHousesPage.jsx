@@ -5,6 +5,12 @@ import ListingStatusBadge from '../../components/host/ListingStatusBadge'
 import { useToast } from '../../context/ToastContext'
 import { useHostCurrency } from '../../hooks/useHostCurrency'
 
+function unwrapGuestHouseList(payload) {
+  if (Array.isArray(payload)) return payload
+  if (payload && Array.isArray(payload.data)) return payload.data
+  return []
+}
+
 export default function HostGuestHousesPage() {
   const { toast } = useToast()
   const currency = useHostCurrency()
@@ -14,7 +20,7 @@ export default function HostGuestHousesPage() {
   const load = () => {
     setLoading(true)
     listHostGuestHouses()
-      .then((res) => setItems(res.data.data || []))
+      .then((res) => setItems(unwrapGuestHouseList(res.data?.data)))
       .catch(() => setItems([]))
       .finally(() => setLoading(false))
   }

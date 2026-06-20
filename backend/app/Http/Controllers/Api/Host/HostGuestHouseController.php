@@ -17,6 +17,7 @@ use App\Services\Email\EmailService;
 use App\Services\ListingSeoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -76,7 +77,7 @@ class HostGuestHouseController extends Controller
         }
 
         $seo->syncGuestHouse($house);
-        $house->load(['amenities', 'images', 'roomDetails', 'seasonalPrices']);
+        $this->loadHostRelations($house);
 
         return response()->json(['data' => new HostGuestHouseResource($house)], 201);
     }
@@ -85,7 +86,7 @@ class HostGuestHouseController extends Controller
     {
         $this->authorize('view', $guestHouse);
 
-        $guestHouse->load(['amenities', 'images', 'roomDetails', 'seasonalPrices']);
+        $this->loadHostRelations($guestHouse);
 
         return response()->json(['data' => new HostGuestHouseResource($guestHouse)]);
     }
@@ -111,7 +112,7 @@ class HostGuestHouseController extends Controller
         }
 
         $seo->syncGuestHouse($guestHouse);
-        $guestHouse->load(['amenities', 'images', 'roomDetails', 'seasonalPrices']);
+        $this->loadHostRelations($guestHouse);
 
         return response()->json(['data' => new HostGuestHouseResource($guestHouse)]);
     }
@@ -195,7 +196,10 @@ class HostGuestHouseController extends Controller
             ]);
         }
 
-        return response()->json(['data' => new HostGuestHouseResource($guestHouse->fresh(['amenities', 'images', 'roomDetails', 'seasonalPrices']))]);
+        $guestHouse = $guestHouse->fresh();
+        $this->loadHostRelations($guestHouse);
+
+        return response()->json(['data' => new HostGuestHouseResource($guestHouse)]);
     }
 
     public function uploadImages(Request $request, GuestHouse $guestHouse, ListingSeoService $seo): JsonResponse
@@ -240,6 +244,10 @@ class HostGuestHouseController extends Controller
         }
 
         if ($request->hasFile('room_detail_image')) {
+            if (! Schema::hasTable('guest_house_room_details')) {
+                return response()->json(['message' => 'Room details are unavailable until database migrations have been applied.'], 503);
+            }
+
             $request->validate([
                 'room_detail_id' => ['required', 'integer'],
             ]);
@@ -261,7 +269,7 @@ class HostGuestHouseController extends Controller
             $seo->syncGuestHouse($guestHouse);
         }
 
-        $guestHouse->load(['images', 'roomDetails']);
+        $this->loadHostMediaRelations($guestHouse);
 
         return response()->json(['data' => new HostGuestHouseResource($guestHouse)]);
     }
@@ -442,8 +450,39 @@ class HostGuestHouseController extends Controller
         $guestHouse->seasonalPrices()->whereNotIn('id', $ids)->delete();
     }
 
+    private function hostRelations(): array
+    {
+        $relations = ['amenities', 'images', 'seasonalPrices'];
+
+        if (Schema::hasTable('guest_house_room_details')) {
+            $relations[] = 'roomDetails';
+        }
+
+        return $relations;
+    }
+
+    private function loadHostRelations(GuestHouse $guestHouse): void
+    {
+        $guestHouse->load($this->hostRelations());
+    }
+
+    private function loadHostMediaRelations(GuestHouse $guestHouse): void
+    {
+        $relations = ['images'];
+
+        if (Schema::hasTable('guest_house_room_details')) {
+            $relations[] = 'roomDetails';
+        }
+
+        $guestHouse->load($relations);
+    }
+
     private function syncRoomDetails(GuestHouse $guestHouse, array $rows): void
     {
+        if (! Schema::hasTable('guest_house_room_details')) {
+            return;
+        }
+
         $ids = [];
 
         foreach ($rows as $index => $row) {

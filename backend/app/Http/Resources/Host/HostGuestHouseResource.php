@@ -29,13 +29,13 @@ class HostGuestHouseResource extends JsonResource
             'min_nights' => $this->min_nights,
             'max_nights' => $this->max_nights,
             'base_price_per_night' => $this->base_price_per_night,
-            'base_price_per_night_euros' => round($this->base_price_per_night / 100, 2),
+            'base_price_per_night_euros' => $this->centsToEuros($this->base_price_per_night),
             'cleaning_fee' => $this->cleaning_fee,
-            'cleaning_fee_euros' => $this->cleaning_fee ? round($this->cleaning_fee / 100, 2) : null,
+            'cleaning_fee_euros' => $this->centsToEuros($this->cleaning_fee),
             'security_deposit' => $this->security_deposit,
-            'security_deposit_euros' => $this->security_deposit ? round($this->security_deposit / 100, 2) : null,
-            'check_in_time' => $this->check_in_time,
-            'check_out_time' => $this->check_out_time,
+            'security_deposit_euros' => $this->centsToEuros($this->security_deposit),
+            'check_in_time' => $this->formatTime($this->check_in_time),
+            'check_out_time' => $this->formatTime($this->check_out_time),
             'cancellation_policy' => $this->cancellation_policy?->value,
             'thumbnail' => $this->thumbnail,
             'og_image' => $this->og_image,
@@ -66,11 +66,34 @@ class HostGuestHouseResource extends JsonResource
                 'date_from' => $sp->date_from?->toDateString(),
                 'date_to' => $sp->date_to?->toDateString(),
                 'price_per_night' => $sp->price_per_night,
-                'price_per_night_euros' => round($sp->price_per_night / 100, 2),
+                'price_per_night_euros' => $this->centsToEuros($sp->price_per_night),
                 'minimum_nights' => $sp->minimum_nights,
             ])),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
+    }
+
+    private function centsToEuros(mixed $cents): ?float
+    {
+        if ($cents === null || $cents === '') {
+            return null;
+        }
+
+        return round(((int) $cents) / 100, 2);
+    }
+
+    private function formatTime(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $str = (string) $value;
+        if (preg_match('/^(\d{1,2}):(\d{2})/', $str, $matches)) {
+            return sprintf('%02d:%02d', (int) $matches[1], (int) $matches[2]);
+        }
+
+        return null;
     }
 }
