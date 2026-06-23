@@ -25,9 +25,18 @@ const DEFAULT_NAV = [
   { to: '/host/settings', label: 'Settings' },
 ]
 
+function resolveNavItems(cmsItems, defaults) {
+  if (!cmsItems?.length) return defaults
+  const labelByTo = new Map(cmsItems.map((item) => [item.to, item.label]))
+  return defaults.map((item) => ({
+    ...item,
+    label: labelByTo.get(item.to) ?? item.label,
+  }))
+}
+
 export default function HostLayout() {
   const { page: copy } = usePageContent('host-panel')
-  const navItems = (copy.navItems?.length ? copy.navItems : DEFAULT_NAV).map((item) => ({
+  const navItems = resolveNavItems(copy.navItems, DEFAULT_NAV).map((item) => ({
     ...item,
     icon: ICONS[item.to] ?? LayoutDashboard,
     end: item.to === '/host',
