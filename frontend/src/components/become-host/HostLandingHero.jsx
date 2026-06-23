@@ -23,6 +23,7 @@ export default function HostLandingHero({ hero = {} }) {
     password: '',
     password_confirmation: '',
   })
+  const [hostAccountType, setHostAccountType] = useState(null)
   const [signupLoading, setSignupLoading] = useState(false)
 
   const title = hero.title ?? 'Earn from your van or guesthouse'
@@ -46,6 +47,7 @@ export default function HostLandingHero({ hero = {} }) {
         phone: formatPhoneForApi(signup.phone),
         password: signup.password,
         password_confirmation: signup.password_confirmation,
+        host_account_type: hostAccountType,
       })
       toast('Host account created', 'success')
       navigate(getPostLoginPath(user, { hostIntent: true }), { replace: true })
@@ -83,6 +85,28 @@ export default function HostLandingHero({ hero = {} }) {
         </div>
         <div className="host-landing-signup">
           <h2>Create your host account</h2>
+          <div className="host-landing-type-tabs" role="tablist" aria-label="Host account type">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={hostAccountType === 'individual'}
+              className={`host-landing-type-tab${hostAccountType === 'individual' ? ' active' : ''}`}
+              onClick={() => setHostAccountType('individual')}
+            >
+              Individual
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={hostAccountType === 'business'}
+              className={`host-landing-type-tab${hostAccountType === 'business' ? ' active' : ''}`}
+              onClick={() => setHostAccountType('business')}
+            >
+              Business
+            </button>
+          </div>
+          {hostAccountType && (
+            <>
           <p className="host-landing-signup-sub">Free to list. No commitment. Earn on your own schedule.</p>
           <form onSubmit={handleSignup}>
             <div className="host-landing-field">
@@ -158,6 +182,8 @@ export default function HostLandingHero({ hero = {} }) {
             {' · '}
             <Link to="/host/forgot-password">Forgot your password?</Link>
           </p>
+            </>
+          )}
         </div>
       </div>
     </section>

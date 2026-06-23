@@ -68,6 +68,7 @@ class EmailSystemTest extends TestCase
             'name' => 'Jordan Host',
             'email' => 'jordan@example.com',
             'phone' => '+354 555 9876',
+            'host_account_type' => 'individual',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ])->assertCreated();

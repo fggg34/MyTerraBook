@@ -22,6 +22,7 @@ const PHOTO_ACCEPT = 'image/jpeg,image/png,image/webp'
 export default function AccountSettingsForms({
   requirePhone = false,
   showCurrency = false,
+  showKennitala = false,
   showBecomeHost = false,
   profileDescription = 'Update your account details.',
 }) {
@@ -34,6 +35,7 @@ export default function AccountSettingsForms({
   const [profile, setProfile] = useState({
     name: '',
     email: '',
+    kennitala: '',
     phone: '',
     currency: baseCurrency || 'EUR',
     current_password: '',
@@ -60,6 +62,7 @@ export default function AccountSettingsForms({
     setProfile({
       name: user.name || '',
       email: user.email || '',
+      kennitala: user.kennitala || '',
       phone: user.phone || '',
       currency: user.currency || baseCurrency || 'EUR',
       current_password: '',
@@ -174,6 +177,9 @@ export default function AccountSettingsForms({
         name: profile.name.trim(),
         email: profile.email.trim(),
         phone: formatPhoneForApi(profile.phone),
+      }
+      if (showKennitala) {
+        payload.kennitala = profile.kennitala.trim() || null
       }
       if (showCurrency) {
         payload.currency = profile.currency
@@ -302,6 +308,19 @@ export default function AccountSettingsForms({
             />
             {profileErrors.email && <p className="client-field-error">{profileErrors.email}</p>}
           </div>
+          {showKennitala && (
+            <div className="client-field">
+              <label htmlFor="settings-kennitala">Kennitala ID number</label>
+              <input
+                id="settings-kennitala"
+                type="text"
+                placeholder="591284-0119"
+                value={profile.kennitala}
+                onChange={(e) => setProfile({ ...profile, kennitala: e.target.value })}
+              />
+              {profileErrors.kennitala && <p className="client-field-error">{profileErrors.kennitala}</p>}
+            </div>
+          )}
           <div className="client-field">
             <PhoneField
               id="settings-phone"

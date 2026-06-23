@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\HostAccountType;
 use App\Enums\UserRole;
 use App\Support\PricingCurrency;
 use Database\Factories\UserFactory;
@@ -24,7 +25,9 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'role',
+        'host_account_type',
         'phone',
+        'kennitala',
         'profile_photo_path',
         'locale',
         'currency',
@@ -46,6 +49,7 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'host_account_type' => HostAccountType::class,
         ];
     }
 

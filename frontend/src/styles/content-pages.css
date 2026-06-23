@@ -2557,6 +2557,39 @@
   color: var(--slate, #5a6b82);
 }
 
+.host-landing-type-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0 12px;
+  padding: 3px;
+  border-radius: 10px;
+  background: #f4f7fb;
+}
+
+.host-landing-type-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: var(--sans, 'Open Sans', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate, #5a6b82);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.host-landing-type-tab:hover {
+  color: var(--navy, #0f2036);
+}
+
+.host-landing-type-tab.active {
+  background: #fff;
+  color: var(--navy, #0f2036);
+  box-shadow: 0 1px 3px rgba(15, 32, 54, 0.08);
+}
+
 .host-landing-field {
   margin-bottom: 8px;
 }

@@ -17,6 +17,7 @@ class MeProfileController extends Controller
         $fields = ['name', 'email', 'phone'];
         if ($user->isHost()) {
             $fields[] = 'currency';
+            $fields[] = 'kennitala';
         }
         $user->update($request->safe()->only($fields));
 

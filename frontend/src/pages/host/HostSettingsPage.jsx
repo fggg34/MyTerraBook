@@ -5,6 +5,7 @@ export default function HostSettingsPage() {
     <AccountSettingsForms
       requirePhone
       showCurrency
+      showKennitala
       profileDescription="Update your contact details and the currency used for your listing prices."
     />
   )

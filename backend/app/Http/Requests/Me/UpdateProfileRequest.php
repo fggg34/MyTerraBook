@@ -29,6 +29,7 @@ class UpdateProfileRequest extends FormRequest
 
         if ($user->isHost()) {
             $rules['currency'] = ['required', 'string', 'size:3', PricingCurrency::validationRule()];
+            $rules['kennitala'] = ['nullable', 'string', 'max:20'];
         }
 
         return $rules;

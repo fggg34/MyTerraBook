@@ -45,6 +45,7 @@ class HostPanelTest extends TestCase
             'name' => 'Host User',
             'email' => 'host@example.test',
             'phone' => '+354 555 1234',
+            'host_account_type' => 'individual',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
@@ -810,6 +811,7 @@ class HostPanelTest extends TestCase
             'name' => 'Fresh Host',
             'email' => 'fresh-host@example.test',
             'phone' => '+354 555 9999',
+            'host_account_type' => 'business',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ])->assertCreated();

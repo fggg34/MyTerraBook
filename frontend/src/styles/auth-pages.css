@@ -211,6 +211,39 @@
   color: var(--auth-slate);
 }
 
+.auth-host-type-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 3px;
+  border-radius: 10px;
+  background: #f4f7fb;
+}
+
+.auth-host-type-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: var(--auth-sans);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--auth-slate);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.auth-host-type-tab:hover {
+  color: var(--auth-navy);
+}
+
+.auth-host-type-tab.active {
+  background: #fff;
+  color: var(--auth-navy);
+  box-shadow: 0 1px 3px rgba(15, 32, 54, 0.08);
+}
+
 .auth-form {
   display: grid;
   gap: 18px;

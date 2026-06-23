@@ -55,6 +55,7 @@ export default function HostRegisterPage() {
   const { toast } = useToast()
   const { baseCurrency } = useShopConfig()
   const navigate = useNavigate()
+  const [hostAccountType, setHostAccountType] = useState(null)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -74,6 +75,7 @@ export default function HostRegisterPage() {
     const phoneError = validatePhone(form.phone)
     if (phoneError) e2.phone = phoneError
     if (!form.currency) e2.currency = 'Pricing currency is required'
+    if (!hostAccountType) e2.host_account_type = 'Select individual or business'
     if (!form.password) e2.password = 'Password is required'
     else if (form.password.length < 8) e2.password = 'At least 8 characters'
     if (form.password !== form.password_confirmation) {
@@ -87,6 +89,7 @@ export default function HostRegisterPage() {
       const user = await registerAsHost({
         ...form,
         phone: formatPhoneForApi(form.phone),
+        host_account_type: hostAccountType,
       })
       toast('Host account created', 'success')
       navigate(getPostLoginPath(user, { hostIntent: true }), { replace: true })
@@ -128,6 +131,31 @@ export default function HostRegisterPage() {
           <p>{copy.subtitle ?? 'List your van or guesthouse. Free to start, no commitment.'}</p>
         </div>
 
+        <div className="auth-host-type-tabs" role="tablist" aria-label="Host account type">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={hostAccountType === 'individual'}
+            className={`auth-host-type-tab${hostAccountType === 'individual' ? ' active' : ''}`}
+            onClick={() => setHostAccountType('individual')}
+          >
+            Individual
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={hostAccountType === 'business'}
+            className={`auth-host-type-tab${hostAccountType === 'business' ? ' active' : ''}`}
+            onClick={() => setHostAccountType('business')}
+          >
+            Business
+          </button>
+        </div>
+        {errors.host_account_type && (
+          <p className="auth-field-error" role="alert">{errors.host_account_type}</p>
+        )}
+
+        {hostAccountType && (
         <form onSubmit={handleSubmit} className="auth-form auth-form--register">
           {errors.form && <div className="auth-form-error" role="alert">{errors.form}</div>}
 
@@ -220,6 +248,7 @@ export default function HostRegisterPage() {
             {loading ? 'Creating account…' : (copy.submitLabel ?? 'Start hosting')}
           </button>
         </form>
+        )}
 
         <footer className="auth-layout__footer">
           <p className="auth-switch">
