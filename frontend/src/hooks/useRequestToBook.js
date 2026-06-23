@@ -45,7 +45,6 @@ const DEFAULT_FORM = {
   cardCvc: '',
   billingStreet: '',
   billingCity: '',
-  billingZip: '',
   billingCountry: '',
   agreed: false,
   coupon_code: '',

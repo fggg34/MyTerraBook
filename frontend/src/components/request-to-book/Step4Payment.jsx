@@ -192,14 +192,10 @@ export default function Step4Payment({
             />
           </div>
         </div>
-        <div className="frow tri">
+        <div className="frow">
           <div className="field">
             <label>City <span className="req">*</span></label>
             <input className="inp" placeholder="City" value={form.billingCity} onChange={(e) => updateForm({ billingCity: e.target.value })} />
-          </div>
-          <div className="field">
-            <label>Postcode <span className="req">*</span></label>
-            <input className="inp" placeholder="Postcode" value={form.billingZip} onChange={(e) => updateForm({ billingZip: e.target.value })} />
           </div>
           <div className="field">
             <label>Country <span className="req">*</span></label>
