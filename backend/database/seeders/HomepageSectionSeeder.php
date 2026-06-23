@@ -17,6 +17,7 @@ class HomepageSectionSeeder extends Seeder
                     'text' => 'Become a Host and start earning money!',
                     'mobileText' => 'Become a Host — start earning today!',
                     'linkLabel' => 'List your van or guesthouse',
+                    'mobileLinkLabel' => 'List your van',
                     'linkHref' => '/become-a-host',
                     'isVisible' => true,
                 ],

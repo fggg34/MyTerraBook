@@ -12,7 +12,11 @@
         <input type="text" name="content[linkLabel]" value="{{ $content['linkLabel'] ?? '' }}">
     </div>
     <div class="field">
-        <label>Link URL</label>
-        <input type="text" name="content[linkHref]" value="{{ $content['linkHref'] ?? '' }}">
+        <label>Link label (mobile)</label>
+        <input type="text" name="content[mobileLinkLabel]" value="{{ $content['mobileLinkLabel'] ?? '' }}" placeholder="Shorter link text for small screens">
     </div>
+</div>
+<div class="field">
+    <label>Link URL</label>
+    <input type="text" name="content[linkHref]" value="{{ $content['linkHref'] ?? '' }}">
 </div>

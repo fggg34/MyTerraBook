@@ -242,6 +242,7 @@ return [
                         ['key' => 'text', 'type' => 'text', 'label' => 'Banner text (desktop)', 'columnSpanFull' => true],
                         ['key' => 'mobileText', 'type' => 'text', 'label' => 'Banner text (mobile)', 'helperText' => 'Shorter copy for small screens. Uses desktop text if empty.', 'columnSpanFull' => true],
                         ['key' => 'linkLabel', 'type' => 'text', 'label' => 'Link label'],
+                        ['key' => 'mobileLinkLabel', 'type' => 'text', 'label' => 'Link label (mobile)', 'helperText' => 'Shorter link text for small screens. Uses desktop link label if empty.'],
                         ['key' => 'linkHref', 'type' => 'text', 'label' => 'Link URL'],
                     ],
                 ],
