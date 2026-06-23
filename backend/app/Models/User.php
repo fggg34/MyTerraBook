@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements FilamentUser
@@ -31,12 +32,14 @@ class User extends Authenticatable implements FilamentUser
         'profile_photo_path',
         'locale',
         'currency',
+        'integration_token',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
         'profile_photo_path',
+        'integration_token',
     ];
 
     protected $appends = [
@@ -120,6 +123,23 @@ class User extends Authenticatable implements FilamentUser
     public function pricingCurrency(): string
     {
         return PricingCurrency::forUser($this);
+    }
+
+    public function ensureIntegrationToken(): string
+    {
+        if (! $this->integration_token) {
+            $this->regenerateIntegrationToken();
+        }
+
+        return $this->integration_token;
+    }
+
+    public function regenerateIntegrationToken(): string
+    {
+        $token = Str::random(48);
+        $this->forceFill(['integration_token' => $token])->save();
+
+        return $token;
     }
 
     /**

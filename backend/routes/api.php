@@ -111,7 +111,7 @@ Route::get('/cars/{car}', [CatalogController::class, 'car']);
 Route::get('/cars/{car}/reviews', [ListingReviewController::class, 'indexCar']);
 Route::post('/cars/{car}/reviews', [ListingReviewController::class, 'storeCar']);
 Route::get('/cars/{car}/availability-calendar', [CatalogController::class, 'availabilityCalendar']);
-Route::get('/integrations/cars/{car}/blocked-days', [IntegrationController::class, 'blockedDays']);
+Route::get('/integrations/blocked-days', [IntegrationController::class, 'blockedDays']);
 
 Route::post('/orders/quote', [PublicOrderController::class, 'quote']);
 Route::post('/orders', [PublicOrderController::class, 'store']);
@@ -215,8 +215,8 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
     Route::post('cars/{car}/out-of-hours-fees', [HostCarController::class, 'storeOutOfHoursFee']);
     Route::patch('cars/{car}/out-of-hours-fees/{outOfHoursFee}', [HostCarController::class, 'updateOutOfHoursFee']);
     Route::delete('cars/{car}/out-of-hours-fees/{outOfHoursFee}', [HostCarController::class, 'destroyOutOfHoursFee']);
-    Route::get('integrations', [HostIntegrationController::class, 'index']);
-    Route::post('cars/{car}/integration-token/regenerate', [HostIntegrationController::class, 'regenerateToken']);
+    Route::get('integrations', [HostIntegrationController::class, 'show']);
+    Route::post('integration-token/regenerate', [HostIntegrationController::class, 'regenerateToken']);
 
     Route::get('bookings/cars', [HostBookingController::class, 'carOrders']);
     Route::get('bookings/guest-houses', [HostBookingController::class, 'guestHouseBookings']);

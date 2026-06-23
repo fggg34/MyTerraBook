@@ -3307,6 +3307,35 @@ a.host-overview-card:hover .host-overview-card-link {
   margin: 0 0 6px;
 }
 
+.host-integration-vehicles {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.host-integration-vehicles li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f4f7fb;
+  border: 1px solid #e2e7ef;
+  font-size: 13px;
+}
+
+.host-integration-vehicles strong {
+  color: #0f2036;
+}
+
+.host-integration-vehicles span {
+  color: #5a6b82;
+  white-space: nowrap;
+}
+
 /* ============================================================
    Host account — uniform 14px headings & buttons on mobile
    ============================================================ */
