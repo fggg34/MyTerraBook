@@ -2399,7 +2399,7 @@
 /* Hero */
 .host-landing-hero {
   position: relative;
-  min-height: 640px;
+  min-height: 760px;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -2464,7 +2464,7 @@
   grid-template-columns: 1.1fr 0.9fr;
   gap: 48px;
   align-items: center;
-  padding: 56px 40px 64px;
+  padding: 64px 40px 72px;
 }
 
 .host-landing-hero-copy h1 {
@@ -3605,7 +3605,7 @@
   }
 
   .host-landing-hero {
-    min-height: unset;
+    min-height: 680px;
   }
 
   .host-how-tabs {

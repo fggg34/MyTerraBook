@@ -23,7 +23,7 @@ export default function HostLandingHero({ hero = {} }) {
     password: '',
     password_confirmation: '',
   })
-  const [hostAccountType, setHostAccountType] = useState(null)
+  const [hostAccountType, setHostAccountType] = useState('individual')
   const [signupLoading, setSignupLoading] = useState(false)
 
   const title = hero.title ?? 'Earn from your van or guesthouse'
@@ -34,6 +34,10 @@ export default function HostLandingHero({ hero = {} }) {
 
   const handleSignup = async (e) => {
     e.preventDefault()
+    if (!hostAccountType) {
+      toast('Select individual or business', 'error')
+      return
+    }
     if (signup.password !== signup.password_confirmation) {
       toast('Passwords do not match', 'error')
       return
@@ -105,8 +109,6 @@ export default function HostLandingHero({ hero = {} }) {
               Business
             </button>
           </div>
-          {hostAccountType && (
-            <>
           <p className="host-landing-signup-sub">Free to list. No commitment. Earn on your own schedule.</p>
           <form onSubmit={handleSignup}>
             <div className="host-landing-field">
@@ -182,8 +184,6 @@ export default function HostLandingHero({ hero = {} }) {
             {' · '}
             <Link to="/host/forgot-password">Forgot your password?</Link>
           </p>
-            </>
-          )}
         </div>
       </div>
     </section>
