@@ -38,6 +38,7 @@ class Car extends Model
         'details_image_paths',
         'units_available',
         'ical_import_url',
+        'integration_token',
         'pickup_time_from',
         'pickup_time_to',
         'dropoff_time_from',
@@ -203,5 +204,22 @@ class Car extends Model
     public function locationFees(): HasMany
     {
         return $this->hasMany(LocationFee::class);
+    }
+
+    public function ensureIntegrationToken(): string
+    {
+        if (! $this->integration_token) {
+            $this->regenerateIntegrationToken();
+        }
+
+        return $this->integration_token;
+    }
+
+    public function regenerateIntegrationToken(): string
+    {
+        $token = Str::random(48);
+        $this->forceFill(['integration_token' => $token])->save();
+
+        return $token;
     }
 }

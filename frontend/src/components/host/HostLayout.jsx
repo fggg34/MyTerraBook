@@ -1,4 +1,4 @@
-import { Car, Calendar, Home, LayoutDashboard, LogOut, Settings } from 'lucide-react'
+import { Car, Calendar, Home, LayoutDashboard, LogOut, Plug, Settings } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { usePageContent } from '../../context/SiteContentContext'
@@ -12,6 +12,7 @@ const ICONS = {
   '/host/guesthouses': Home,
   '/host/cars': Car,
   '/host/bookings': Calendar,
+  '/host/integrations': Plug,
   '/host/settings': Settings,
 }
 
@@ -20,6 +21,7 @@ const DEFAULT_NAV = [
   { to: '/host/cars', label: 'Cars & vans' },
   { to: '/host/guesthouses', label: 'Guesthouses' },
   { to: '/host/bookings', label: 'Bookings' },
+  { to: '/host/integrations', label: 'API connections' },
   { to: '/host/settings', label: 'Settings' },
 ]
 

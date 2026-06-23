@@ -230,3 +230,18 @@ export function getHostCarBookings(params) {
 export function getHostGuestHouseBookings(params) {
   return api.get('/host/bookings/guest-houses', { params })
 }
+
+export function getHostIntegrations() {
+  return api.get('/host/integrations')
+}
+
+export function regenerateHostCarIntegrationToken(carId) {
+  return api.post(`/host/cars/${carId}/integration-token/regenerate`)
+}
+
+export function fetchCarBlockedDays(carId, token, params = {}) {
+  return api.get(`/integrations/cars/${carId}/blocked-days`, {
+    params,
+    headers: { 'X-Integration-Token': token },
+  })
+}

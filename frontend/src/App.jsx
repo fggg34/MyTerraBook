@@ -36,6 +36,7 @@ import HostCarsPage from './pages/host/HostCarsPage'
 import HostCarEditorPage from './pages/host/HostCarEditorPage'
 import HostBookingsPage from './pages/host/HostBookingsPage'
 import HostSettingsPage from './pages/host/HostSettingsPage'
+import HostIntegrationsPage from './pages/host/HostIntegrationsPage'
 import HostRegisterPage from './pages/host/HostRegisterPage'
 import GuestHouseCheckoutPage from './pages/guest-houses/GuestHouseCheckoutPage'
 import SitePagePage from './pages/SitePagePage'
@@ -148,6 +149,7 @@ function AppRoutes() {
           <Route path="cars/new" element={<HostCarEditorPage />} />
           <Route path="cars/:id/edit" element={<HostCarEditorPage />} />
           <Route path="bookings" element={<HostBookingsPage />} />
+          <Route path="integrations" element={<HostIntegrationsPage />} />
           <Route path="settings" element={<HostSettingsPage />} />
         </Route>
         <Route path="/guest-houses" element={<Navigate to="/guesthouses" replace />} />

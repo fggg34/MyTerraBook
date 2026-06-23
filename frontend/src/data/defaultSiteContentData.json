@@ -1956,6 +1956,10 @@
         "label": "Bookings"
       },
       {
+        "to": "/host/integrations",
+        "label": "API connections"
+      },
+      {
         "to": "/host/settings",
         "label": "Settings"
       }

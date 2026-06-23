@@ -23,6 +23,7 @@ use App\Services\ListingSeoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class HostCarController extends Controller
@@ -62,6 +63,7 @@ class HostCarController extends Controller
             'is_active' => false,
             'listing_status' => ListingApprovalStatus::Draft,
             'units_available' => 1,
+            'integration_token' => Str::random(48),
         ]);
 
         $this->ensureAtLeastOneUnit($car);
