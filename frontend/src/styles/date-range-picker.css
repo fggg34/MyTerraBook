@@ -98,6 +98,7 @@
 /* ~25% shorter, homepage hero search fields */
 .date-range-picker.compact .date-field {
   gap: 9px;
+  background: transparent;
 }
 
 .date-range-picker.compact .date-field svg {
