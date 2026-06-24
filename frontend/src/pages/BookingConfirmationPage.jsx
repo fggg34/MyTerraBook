@@ -69,9 +69,6 @@ function buildPropsFromPayload(data, prepayPercent) {
     dropoffAt: data.dropoff_at,
     host: data.host,
     confirmationToken: data.confirmation_token,
-    confirmationPath: data.confirmation_token
-      ? `/booking/confirmation/${data.confirmation_token}`
-      : null,
   }
 }
 

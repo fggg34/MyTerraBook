@@ -1,5 +1,4 @@
 import { api } from '../api'
-import { fmtDisplayDate } from './requestToBookUtils'
 
 async function downloadBlob(url, filename) {
   const res = await api.get(url, { responseType: 'blob' })
@@ -15,37 +14,6 @@ export function hostMemberLabel(host) {
   if (!host?.member_since) return 'Verified host'
   const year = String(host.member_since).slice(0, 4)
   return year ? `Member since ${year}` : 'Verified host'
-}
-
-export function buildConfirmationEmailHref({
-  reference,
-  itemName,
-  total,
-  startLabel,
-  endLabel,
-  startDate,
-  endDate,
-  customerEmail,
-  confirmationPath,
-}) {
-  const lines = [
-    `Booking reference: ${reference}`,
-    `Listing: ${itemName}`,
-    `Total: ${total}`,
-  ]
-  if (startDate) lines.push(`${startLabel}: ${fmtDisplayDate(startDate)}`)
-  if (endDate) lines.push(`${endLabel}: ${fmtDisplayDate(endDate)}`)
-  if (confirmationPath) {
-    lines.push('', `View online: ${window.location.origin}${confirmationPath}`)
-  }
-
-  const params = new URLSearchParams({
-    subject: `Your booking ${reference}`,
-    body: lines.join('\n'),
-  })
-
-  const recipient = customerEmail ? encodeURIComponent(customerEmail) : ''
-  return `mailto:${recipient}?${params.toString()}`
 }
 
 export function buildHostMessageHref({ hostName, reference, itemName }) {

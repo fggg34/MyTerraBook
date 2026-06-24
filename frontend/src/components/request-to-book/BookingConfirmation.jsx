@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Calendar, Check, Globe, Mail, MessageCircle } from 'lucide-react'
+import { Calendar, Check, Globe, MessageCircle } from 'lucide-react'
 import BookingModificationSection from '../booking/BookingModificationSection'
 import { useToast } from '../../context/ToastContext'
 import { getProtectionPresentation } from '../../data/requestToBookConfig'
 import {
-  buildConfirmationEmailHref,
   buildHostMessageHref,
   downloadConfirmationCalendar,
   hostMemberLabel,
@@ -26,7 +25,6 @@ export default function BookingConfirmation({
   dropoffAt,
   host,
   confirmationToken,
-  confirmationPath,
 }) {
   const { toast } = useToast()
   const [calendarLoading, setCalendarLoading] = useState(false)
@@ -40,18 +38,6 @@ export default function BookingConfirmation({
   const protectionSummary = isVehicle && selectedPriceType
     ? `${selectedPriceType.name} protection · ${selectedPriceType.attribute_value_per_day || getProtectionPresentation(selectedPriceType).deposit}`
     : null
-
-  const emailHref = buildConfirmationEmailHref({
-    reference: confirmed.reference,
-    itemName: item?.name || 'your booking',
-    total: confirmed.total,
-    startLabel: config.step1.dateStartLabel,
-    endLabel: config.step1.dateEndLabel,
-    startDate: form.startDate,
-    endDate: form.endDate,
-    customerEmail: confirmed.customerEmail || form.customer_email,
-    confirmationPath,
-  })
 
   const hostMessageHref = buildHostMessageHref({
     hostName,
@@ -193,10 +179,6 @@ export default function BookingConfirmation({
               <Calendar aria-hidden />
               {calendarLoading ? 'Preparing calendar…' : 'Add trip to calendar'}
             </button>
-            <a href={emailHref} className="ca-ghost">
-              <Mail aria-hidden />
-              Email me the details
-            </a>
             <Link to={listingPath} className="ca-ghost">
               <Globe aria-hidden />
               Back to listing
