@@ -12,9 +12,10 @@ use App\Models\SubCategory;
 use App\Models\GuestHouse;
 use App\Models\GuestHouseAmenity;
 use App\Models\GuestHouseImage;
+use App\Enums\OrderStatus;
+use App\Models\Order;
 use App\Models\Location;
 use App\Models\LocationFee;
-use App\Models\OutOfHoursFee;
 use App\Models\PriceType;
 use App\Models\Setting;
 use App\Models\User;
@@ -822,5 +823,56 @@ class HostPanelTest extends TestCase
             ->getJson('/api/host/dashboard')
             ->assertOk()
             ->assertJsonPath('data.guest_houses.live', 0);
+    }
+
+    public function test_host_can_view_own_car_order_detail(): void
+    {
+        $host = User::factory()->host()->create();
+        $otherHost = User::factory()->host()->create();
+
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Eco', 'is_active' => true, 'is_search_filter' => true]);
+
+        $car = Car::query()->create([
+            'user_id' => $host->id,
+            'sub_category_id' => $category->id,
+            'name' => 'Host Van',
+            'units_available' => 1,
+            'is_active' => true,
+        ]);
+
+        $pickup = Location::query()->create(['name' => 'Pickup', 'is_active' => true]);
+        $dropoff = Location::query()->create(['name' => 'Dropoff', 'is_active' => true]);
+        $priceType = PriceType::query()->create(['name' => 'Basic', 'is_active' => true]);
+
+        $order = Order::query()->create([
+            'reference' => 'ORD-HOST-001',
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => now()->addDay(),
+            'dropoff_at' => now()->addDays(3),
+            'customer_name' => 'Guest',
+            'customer_email' => 'guest@example.com',
+            'order_status' => OrderStatus::Confirmed,
+            'base_rental_cents' => 10000,
+            'extras_cents' => 0,
+            'fees_cents' => 0,
+            'discount_cents' => 0,
+            'tax_cents' => 0,
+            'total_cents' => 10000,
+            'currency' => 'EUR',
+        ]);
+
+        Sanctum::actingAs($host);
+        $this->getJson("/api/host/bookings/cars/{$order->id}")
+            ->assertOk()
+            ->assertJsonPath('data.reference', 'ORD-HOST-001')
+            ->assertJsonPath('data.customer_email', 'guest@example.com');
+
+        Sanctum::actingAs($otherHost);
+        $this->getJson("/api/host/bookings/cars/{$order->id}")
+            ->assertForbidden();
     }
 }

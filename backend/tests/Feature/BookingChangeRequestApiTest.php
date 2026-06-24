@@ -128,4 +128,87 @@ class BookingChangeRequestApiTest extends TestCase
         $this->assertTrue($order->dropoff_at->equalTo($newDropoff));
         $this->assertGreaterThan(15000, (int) $order->total_cents);
     }
+
+    public function test_host_can_apply_modification_request_for_own_vehicle(): void
+    {
+        $host = User::factory()->host()->create();
+        $otherHost = User::factory()->host()->create();
+
+        Setting::putValue('shop.currency', ['code' => 'EUR']);
+        Setting::putValue('shop.default_tax', ['basis_points' => 0]);
+
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'car'], ['name' => 'Car', 'is_active' => true]);
+        $category = SubCategory::query()->create(['main_category_id' => $main->id, 'name' => 'Eco', 'is_active' => true, 'is_search_filter' => true]);
+        $car = Car::query()->create([
+            'user_id' => $host->id,
+            'sub_category_id' => $category->id,
+            'name' => 'Host Vehicle',
+            'units_available' => 1,
+            'is_active' => true,
+        ]);
+        $pickup = Location::query()->create(['name' => 'P1', 'is_active' => true]);
+        $dropoff = Location::query()->create(['name' => 'D1', 'is_active' => true]);
+        $car->locations()->attach([
+            $pickup->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+            $dropoff->id => ['allows_pickup' => true, 'allows_dropoff' => true],
+        ]);
+        $priceType = PriceType::query()->create(['name' => 'Basic', 'is_active' => true]);
+        DailyFare::query()->create([
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 5000,
+        ]);
+
+        $pickupAt = now()->addDays(10);
+        $dropoffAt = now()->addDays(13);
+        $newDropoff = $dropoffAt->copy()->addDays(2);
+
+        $order = Order::query()->create([
+            'reference' => 'TB-HOST-001',
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $dropoff->id,
+            'pickup_at' => $pickupAt,
+            'dropoff_at' => $dropoffAt,
+            'customer_name' => 'Alex Guest',
+            'customer_email' => 'alex@example.com',
+            'order_status' => OrderStatus::Confirmed,
+            'base_rental_cents' => 15000,
+            'extras_cents' => 0,
+            'fees_cents' => 0,
+            'discount_cents' => 0,
+            'tax_cents' => 0,
+            'total_cents' => 15000,
+            'currency' => 'EUR',
+        ]);
+
+        $changeRequest = BookingChangeRequest::query()->create([
+            'bookable_type' => Order::class,
+            'bookable_id' => $order->id,
+            'type' => 'modification',
+            'status' => BookingChangeRequestStatus::Pending,
+            'customer_message' => 'Extend rental by 2 days',
+            'requested_changes' => [
+                'dropoff_at' => $newDropoff->toDateTimeString(),
+            ],
+            'pricing_before' => ['total_cents' => 15000],
+            'price_delta_cents' => 10000,
+        ]);
+
+        $this->actingAs($host, 'sanctum')
+            ->postJson("/api/host/booking-change-requests/{$changeRequest->id}/apply", [
+                'admin_response' => 'Approved by host.',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.status', BookingChangeRequestStatus::Applied->value);
+
+        $this->actingAs($otherHost, 'sanctum')
+            ->postJson("/api/host/booking-change-requests/{$changeRequest->id}/reject", [
+                'admin_response' => 'Not your booking.',
+            ])
+            ->assertForbidden();
+    }
 }

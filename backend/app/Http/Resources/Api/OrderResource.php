@@ -28,7 +28,9 @@ class OrderResource extends JsonResource
             'discount' => Money::formatDecimalFromCents((int) $this->discount_cents),
             'tax' => Money::formatDecimalFromCents((int) $this->tax_cents),
             'total' => Money::formatDecimalFromCents((int) $this->total_cents),
+            'total_cents' => (int) $this->total_cents,
             'currency' => $this->currency,
+            'confirmation_url' => $this->confirmation_url,
             'created_at' => $this->created_at?->toIso8601String(),
             'pickup_location' => $this->whenLoaded('pickupLocation', fn () => $this->pickupLocation ? [
                 'id' => $this->pickupLocation->id,

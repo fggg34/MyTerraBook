@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\GuestHouseController;
 use App\Http\Controllers\Api\ListingReviewController;
 use App\Http\Controllers\Api\GuestHouseQuoteController;
 use App\Http\Controllers\Api\Host\HostBookingController;
+use App\Http\Controllers\Api\Host\HostBookingChangeRequestController;
 use App\Http\Controllers\Api\Host\HostCarController;
 use App\Http\Controllers\Api\Host\HostIntegrationController;
 use App\Http\Controllers\Api\Host\HostCatalogController;
@@ -226,10 +227,12 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
     Route::post('integration-token/regenerate', [HostIntegrationController::class, 'regenerateToken']);
 
     Route::get('bookings/cars', [HostBookingController::class, 'carOrders']);
+    Route::get('bookings/cars/{order}', [HostBookingController::class, 'showCarOrder']);
     Route::get('bookings/guest-houses', [HostBookingController::class, 'guestHouseBookings']);
-    // Bookings are instant-confirmed on payment, so hosts do not accept/decline.
-    // Status changes are admin-only (Filament); the host status-update endpoints
-    // were intentionally removed.
+    Route::get('bookings/guest-houses/{booking}', [HostBookingController::class, 'showGuestHouseBooking']);
+    Route::post('booking-change-requests/{bookingChangeRequest}/apply', [HostBookingChangeRequestController::class, 'apply']);
+    Route::post('booking-change-requests/{bookingChangeRequest}/reject', [HostBookingChangeRequestController::class, 'reject']);
+    // Bookings are instant-confirmed on payment. Hosts can approve guest modification requests.
     Route::get('bookings/cars/{order}/contract.pdf', [HostBookingController::class, 'carContractPdf']);
     Route::get('bookings/guest-houses/{booking}/contract.pdf', [HostBookingController::class, 'guestHouseContractPdf']);
 });

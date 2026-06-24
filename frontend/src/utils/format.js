@@ -74,6 +74,19 @@ export function formatDate(iso) {
   })
 }
 
+export function formatDateTime(iso) {
+  if (!iso) return '-'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '-'
+  return d.toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 export function formatDateTimeLocal(iso) {
   if (!iso) return ''
   const d = iso instanceof Date ? iso : new Date(iso)

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../../api'
 import { getHostCarBookings, getHostGuestHouseBookings } from '../../api/host'
 import StatusBadge from '../../components/ui/StatusBadge'
@@ -61,6 +62,7 @@ export default function HostBookingsPage() {
                   <td data-label="Total">{formatCurrency(o.total_cents / 100, o.currency)}</td>
                   <td className="host-actions">
                     <div className="host-table-actions">
+                      <Link to={`/host/bookings/cars/${o.id}`} className="host-btn secondary">View</Link>
                       {o.order_status === 'confirmed' && (
                         <button type="button" className="host-btn secondary" onClick={() => openPdf(`/host/bookings/cars/${o.id}/contract.pdf`, `contract-${o.reference}.pdf`)}>PDF</button>
                       )}
@@ -85,6 +87,7 @@ export default function HostBookingsPage() {
                   <td data-label="Total">{formatCurrency(b.total_amount / 100)}</td>
                   <td className="host-actions">
                     <div className="host-table-actions">
+                      <Link to={`/host/bookings/guest-houses/${b.id}`} className="host-btn secondary">View</Link>
                       {['confirmed', 'completed'].includes(b.status) && (
                         <button type="button" className="host-btn secondary" onClick={() => openPdf(`/host/bookings/guest-houses/${b.id}/contract.pdf`, `contract-${b.booking_reference}.pdf`)}>PDF</button>
                       )}

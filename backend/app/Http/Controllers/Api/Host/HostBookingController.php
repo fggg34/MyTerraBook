@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\Admin\GuestHouseBookingPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\GuestHouseBookingResource;
+use App\Http\Resources\Api\Host\HostGuestHouseBookingDetailResource;
+use App\Http\Resources\Api\Host\HostOrderDetailResource;
 use App\Http\Resources\Api\OrderResource;
 use App\Models\Car;
 use App\Models\GuestHouse;
@@ -40,6 +42,39 @@ class HostBookingController extends Controller
                 'last_page' => $orders->lastPage(),
                 'total' => $orders->total(),
             ],
+        ]);
+    }
+
+    public function showCarOrder(Request $request, Order $order): JsonResponse
+    {
+        $this->authorize('view', $order);
+
+        $order->load([
+            'car.subCategory',
+            'pickupLocation',
+            'dropoffLocation',
+            'priceType',
+            'lineItems',
+            'rentalOptions.rentalOption',
+            'changeRequests',
+        ]);
+
+        return response()->json([
+            'data' => new HostOrderDetailResource($order),
+        ]);
+    }
+
+    public function showGuestHouseBooking(Request $request, GuestHouseBooking $booking): JsonResponse
+    {
+        $this->authorize('view', $booking);
+
+        $booking->load([
+            'guestHouse',
+            'changeRequests',
+        ]);
+
+        return response()->json([
+            'data' => new HostGuestHouseBookingDetailResource($booking),
         ]);
     }
 

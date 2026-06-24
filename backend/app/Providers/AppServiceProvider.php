@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Http\Responses\FilamentLoginResponse;
 use App\Models\BlogPost;
+use App\Models\BookingChangeRequest;
 use App\Models\Car;
 use App\Models\DailyFare;
 use App\Models\GuestHouse;
@@ -13,6 +14,7 @@ use App\Observers\BlogPostObserver;
 use App\Observers\GuestHouseBookingObserver;
 use App\Observers\OrderObserver;
 use App\Observers\SiteContentListingStatsObserver;
+use App\Policies\BookingChangeRequestPolicy;
 use App\Policies\CarPolicy;
 use App\Policies\GuestHouseBookingPolicy;
 use App\Policies\GuestHousePolicy;
@@ -42,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Car::class, CarPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(GuestHouseBooking::class, GuestHouseBookingPolicy::class);
+        Gate::policy(BookingChangeRequest::class, BookingChangeRequestPolicy::class);
 
         Order::observe(OrderObserver::class);
         GuestHouseBooking::observe(GuestHouseBookingObserver::class);

@@ -227,8 +227,28 @@ export function getHostCarBookings(params) {
   return api.get('/host/bookings/cars', { params })
 }
 
+export function getHostCarBooking(id) {
+  return api.get(`/host/bookings/cars/${id}`)
+}
+
 export function getHostGuestHouseBookings(params) {
   return api.get('/host/bookings/guest-houses', { params })
+}
+
+export function getHostGuestHouseBooking(id) {
+  return api.get(`/host/bookings/guest-houses/${id}`)
+}
+
+export function applyHostBookingChangeRequest(id, adminResponse) {
+  return api.post(`/host/booking-change-requests/${id}/apply`, {
+    admin_response: adminResponse || undefined,
+  })
+}
+
+export function rejectHostBookingChangeRequest(id, adminResponse) {
+  return api.post(`/host/booking-change-requests/${id}/reject`, {
+    admin_response: adminResponse,
+  })
 }
 
 export function getHostIntegrations() {
