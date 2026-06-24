@@ -7,6 +7,7 @@ use App\Filament\Clusters\GuestHouseCluster;
 use App\Filament\GuestHouse\Resources\GuestHouseBookingResource\Pages\ListGuestHouseBookings;
 use App\Filament\GuestHouse\Resources\GuestHouseBookingResource\Pages\ViewGuestHouseBooking;
 use App\Models\GuestHouseBooking;
+use App\Support\BookingConfirmationUrl;
 use App\Support\AdminTableBadgeColors;
 use App\Support\Money;
 use BackedEnum;
@@ -47,6 +48,11 @@ class GuestHouseBookingResource extends Resource
         return $schema->components([
             Section::make('Booking')->schema([
                 TextEntry::make('booking_reference'),
+                TextEntry::make('confirmation_url')
+                    ->label('Confirmation page')
+                    ->url(fn (?string $state) => $state)
+                    ->openUrlInNewTab()
+                    ->columnSpanFull(),
                 TextEntry::make('status')->badge(),
                 TextEntry::make('guest_name'),
                 TextEntry::make('guest_email'),
@@ -117,6 +123,13 @@ class GuestHouseBookingResource extends Resource
                         'cancelled_at' => now(),
                         'cancellation_reason' => $data['cancellation_reason'],
                     ])),
+                Action::make('viewConfirmation')
+                    ->label('Confirmation page')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->url(fn (GuestHouseBooking $record) => $record->confirmation_url
+                        ?: ($record->confirmation_token ? BookingConfirmationUrl::forToken($record->confirmation_token) : null))
+                    ->openUrlInNewTab()
+                    ->visible(fn (GuestHouseBooking $record) => filled($record->confirmation_token) || filled($record->confirmation_url)),
                 Action::make('pdf')
                     ->label('PDF')
                     ->url(fn (GuestHouseBooking $record) => url('/api/admin/guest-house-bookings/'.$record->id.'/contract.pdf'))

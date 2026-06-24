@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\OrderCheckinPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingChangeRequestController;
+use App\Http\Controllers\Api\BookingConfirmationController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\HomepageController;
@@ -120,6 +121,7 @@ Route::post('/orders', [PublicOrderController::class, 'store']);
 Route::post('/booking-change-requests', [BookingChangeRequestController::class, 'store']);
 Route::get('/booking-change-requests', [BookingChangeRequestController::class, 'index']);
 Route::post('/booking-change-requests/preview', [BookingChangeRequestController::class, 'preview']);
+Route::get('/booking-confirmation/{token}', [BookingConfirmationController::class, 'show']);
 
 Route::prefix('guest-houses')->group(function () {
     Route::get('/', [GuestHouseController::class, 'index']);

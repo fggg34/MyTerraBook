@@ -80,7 +80,8 @@ class OrderFlowApiTest extends TestCase
         ]);
 
         $create->assertCreated()
-            ->assertJsonPath('data.order_status', OrderStatus::Confirmed->value);
+            ->assertJsonPath('data.order_status', OrderStatus::Confirmed->value)
+            ->assertJsonStructure(['data' => ['confirmation_token', 'confirmation_url']]);
 
         $this->assertDatabaseCount('orders', 1);
     }

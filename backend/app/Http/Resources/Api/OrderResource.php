@@ -14,6 +14,8 @@ class OrderResource extends JsonResource
         return [
             'id' => $this->id,
             'reference' => $this->reference,
+            'confirmation_token' => $this->confirmation_token,
+            'confirmation_url' => $this->confirmation_url,
             'order_status' => $this->order_status->value,
             'rental_status' => $this->rental_status?->value,
             'pickup_at' => $this->pickup_at->toIso8601String(),

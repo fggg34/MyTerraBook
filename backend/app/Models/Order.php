@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use App\Support\BookingConfirmationUrl;
 use Illuminate\Support\Str;
 
 class Order extends Model
@@ -17,6 +18,8 @@ class Order extends Model
 
     protected $fillable = [
         'reference',
+        'confirmation_token',
+        'confirmation_url',
         'user_id',
         'car_id',
         'car_unit_id',
@@ -72,6 +75,7 @@ class Order extends Model
             if ($order->reference === null || $order->reference === '') {
                 $order->reference = static::generateUniqueReference();
             }
+            BookingConfirmationUrl::assignToModel($order);
         });
     }
 

@@ -31,6 +31,12 @@ class OrderForm
                     ->disabled()
                     ->dehydrated(false)
                     ->visibleOn('edit'),
+                TextInput::make('confirmation_url')
+                    ->label('Confirmation page URL')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->visibleOn('edit')
+                    ->columnSpanFull(),
                 Grid::make([
                     'default' => 1,
                     'xl' => 12,

@@ -17,6 +17,8 @@ class GuestHouseBookingResource extends JsonResource
         return [
             'id' => $this->id,
             'booking_reference' => $this->booking_reference,
+            'confirmation_token' => $this->confirmation_token,
+            'confirmation_url' => $this->confirmation_url,
             'status' => $this->status->value,
             'guest_name' => $this->guest_name,
             'guest_email' => $this->guest_email,

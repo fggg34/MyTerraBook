@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api, resolveStorageUrl } from '../api'
 import { useAuth } from '../context/AuthContext'
 import { useShopConfig } from '../context/ShopConfigContext'
@@ -66,6 +66,7 @@ function parseInitialDates(params) {
 
 export default function useRequestToBook() {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { toast } = useToast()
   const bookingType = resolveBookingType(searchParams)
@@ -90,7 +91,6 @@ export default function useRequestToBook() {
   const [paymentMethods, setPaymentMethods] = useState([])
 
   const [step, setStep] = useState(1)
-  const [confirmed, setConfirmed] = useState(null)
   const [item, setItem] = useState(null)
   const [blockedDates, setBlockedDates] = useState([])
   const [loadState, setLoadState] = useState('loading')
@@ -501,13 +501,13 @@ export default function useRequestToBook() {
           special_requests: form.special_requests || form.notes || undefined,
           coupon_code: form.coupon_code.trim() || undefined,
         })
-        setConfirmed({
-          type: 'guesthouse',
-          reference: data?.data?.booking_reference,
-          total: data?.data?.total_formatted,
-          name: form.customer_name.split(' ')[0],
-          customerEmail: form.customer_email,
-        })
+        const confirmationUrl = data?.data?.confirmation_url
+        if (confirmationUrl) {
+          const path = confirmationUrl.replace(/^https?:\/\/[^/]+/, '')
+          navigate(path.startsWith('/') ? path : `/${path}`, { replace: true })
+        } else if (data?.data?.confirmation_token) {
+          navigate(`/booking/confirmation/${data.data.confirmation_token}`, { replace: true })
+        }
       } else {
         const { data } = await api.post('/orders', {
           car_id: Number(carId),
@@ -524,15 +524,13 @@ export default function useRequestToBook() {
           coupon_code: form.coupon_code.trim() || undefined,
           custom_field_values: form.custom_field_values,
         })
-        setConfirmed({
-          type: 'vehicle',
-          id: data?.data?.id,
-          reference: data?.data?.reference,
-          total: data?.data?.total,
-          currency: data?.data?.currency,
-          name: form.customer_name.split(' ')[0],
-          customerEmail: form.customer_email,
-        })
+        const confirmationUrl = data?.data?.confirmation_url
+        if (confirmationUrl) {
+          const path = confirmationUrl.replace(/^https?:\/\/[^/]+/, '')
+          navigate(path.startsWith('/') ? path : `/${path}`, { replace: true })
+        } else if (data?.data?.confirmation_token) {
+          navigate(`/booking/confirmation/${data.data.confirmation_token}`, { replace: true })
+        }
       }
       toast('Booking confirmed successfully', 'success')
     } catch (err) {
@@ -540,7 +538,7 @@ export default function useRequestToBook() {
     } finally {
       setSaving(false)
     }
-  }, [validateStep, form, quote, bookingType, slug, carId, dropoffLocationId, pickupAt, dropoffAt, toast])
+  }, [validateStep, form, quote, bookingType, slug, carId, dropoffLocationId, pickupAt, dropoffAt, toast, navigate])
 
   const itemImage = useMemo(() => {
     if (!item) return ''
@@ -617,7 +615,6 @@ export default function useRequestToBook() {
     goStep,
     nextStep,
     prevStep,
-    confirmed,
     item,
     itemImage,
     locations: pickupLocations,

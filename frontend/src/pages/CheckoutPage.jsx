@@ -10,7 +10,6 @@ import Step1TripTimes from '../components/request-to-book/Step1TripTimes'
 import Step2ExtrasCover from '../components/request-to-book/Step2ExtrasCover'
 import Step3YourDetails from '../components/request-to-book/Step3YourDetails'
 import Step4Payment from '../components/request-to-book/Step4Payment'
-import BookingConfirmation from '../components/request-to-book/BookingConfirmation'
 import PageHead from '../components/seo/PageHead'
 import { useToast } from '../context/ToastContext'
 import usePageSeo from '../hooks/usePageSeo'
@@ -49,34 +48,6 @@ function CheckoutPageBody() {
   const handleCoupon = (code, applyClick) => {
     rtb.updateForm({ coupon_code: code })
     if (applyClick && code.trim()) toast('Promo code applied', 'success')
-  }
-
-  if (rtb.confirmed) {
-    return (
-      <>
-        <PageHead {...seo} />
-        <div className="rtb-page">
-        <RequestToBookSubbar backHref={backHref} />
-        <div className="rtb-page-inner">
-          <div className="rtb-wrap">
-            <BookingConfirmation
-              confirmed={rtb.confirmed}
-              config={rtb.config}
-              item={rtb.item}
-              itemImage={rtb.itemImage}
-              form={rtb.form}
-              nights={rtb.nights}
-              bookingType={rtb.bookingType}
-              locationName={rtb.locationName}
-              selectedPriceType={rtb.selectedPriceType}
-              pickupAt={rtb.pickupAt}
-              dropoffAt={rtb.dropoffAt}
-            />
-          </div>
-        </div>
-      </div>
-      </>
-    )
   }
 
   const stepProps = {

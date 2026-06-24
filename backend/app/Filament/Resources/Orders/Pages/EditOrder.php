@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
 use App\Services\Email\OrderEmailNotifier;
+use App\Support\BookingConfirmationUrl;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -45,12 +46,21 @@ class EditOrder extends EditRecord
                 ->label('Edit Reservation')
                 ->color('primary'),
             Action::make('viewFrontSite')
-                ->label('View in front site')
+                ->label('View confirmation page')
                 ->url(function (): string {
-                    $frontend = rtrim((string) env('FRONTEND_URL', 'http://127.0.0.1:5173'), '/');
+                    if ($this->record->confirmation_url) {
+                        return $this->record->confirmation_url;
+                    }
+
+                    if ($this->record->confirmation_token) {
+                        return BookingConfirmationUrl::forToken($this->record->confirmation_token);
+                    }
+
+                    $frontend = rtrim((string) config('app.frontend_url', config('app.url')), '/');
 
                     return $frontend.'/orders?reference='.urlencode((string) $this->record->reference);
-                }, shouldOpenInNewTab: true),
+                }, shouldOpenInNewTab: true)
+                ->visible(fn () => filled($this->record->confirmation_token) || filled($this->record->confirmation_url)),
             Action::make('resendEmail')
                 ->label('Re-send eMail')
                 ->color('success')

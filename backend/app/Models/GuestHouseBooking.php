@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\GuestHouseBookingStatus;
+use App\Support\BookingConfirmationUrl;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,8 @@ class GuestHouseBooking extends Model
         'guest_house_id',
         'user_id',
         'booking_reference',
+        'confirmation_token',
+        'confirmation_url',
         'status',
         'guest_name',
         'guest_email',
@@ -73,6 +76,8 @@ class GuestHouseBooking extends Model
                     (int) Carbon::parse($booking->check_in)->diffInDays(Carbon::parse($booking->check_out)),
                 );
             }
+
+            BookingConfirmationUrl::assignToModel($booking);
         });
     }
 
