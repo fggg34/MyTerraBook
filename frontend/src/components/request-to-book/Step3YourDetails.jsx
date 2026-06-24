@@ -56,6 +56,7 @@ export default function Step3YourDetails({
               <label>Country of residence <span className="req">*</span></label>
               <CountrySelect
                 className="sel"
+                includeOther={false}
                 value={form.customer_country}
                 onChange={(e) => updateForm({ customer_country: e.target.value })}
                 placeholder="Select country"

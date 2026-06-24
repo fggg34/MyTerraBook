@@ -23,5 +23,13 @@ export function getCountryOptions({ includeOther = false } = {}) {
   return options
 }
 
-/** Country display names for legacy selects (values are names, not ISO codes). */
+/** Country display names for legacy selects that still store names. */
 export const COUNTRY_NAMES = getCountryOptions({ includeOther: true }).map((item) => item.name)
+
+/** Map a stored value (ISO code or legacy country name) to an option code. */
+export function resolveCountrySelectValue(value, options) {
+  if (!value) return ''
+  if (options.some((item) => item.code === value)) return value
+  const match = options.find((item) => item.name === value)
+  return match?.code ?? value
+}
