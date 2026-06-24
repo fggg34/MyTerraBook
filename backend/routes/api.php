@@ -228,6 +228,8 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
 
     Route::get('bookings/cars', [HostBookingController::class, 'carOrders']);
     Route::get('bookings/cars/{order}', [HostBookingController::class, 'showCarOrder']);
+    Route::post('bookings/cars/{order}/preview-modification', [HostBookingController::class, 'previewCarOrderModification']);
+    Route::patch('bookings/cars/{order}', [HostBookingController::class, 'updateCarOrder']);
     Route::get('bookings/guest-houses', [HostBookingController::class, 'guestHouseBookings']);
     Route::get('bookings/guest-houses/{booking}', [HostBookingController::class, 'showGuestHouseBooking']);
     Route::post('booking-change-requests/{bookingChangeRequest}/apply', [HostBookingChangeRequestController::class, 'apply']);

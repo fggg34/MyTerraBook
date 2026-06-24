@@ -3507,11 +3507,129 @@ a.host-overview-card:hover .host-overview-card-link {
   margin: 8px 0 0;
 }
 
-.host-booking-detail__change time {
-  display: block;
-  margin-top: 8px;
+.host-booking-options {
+  background: #fff;
+  border: 1px solid #e2e7ef;
+  border-radius: 14px;
+  padding: 18px;
+  grid-column: 1 / -1;
+}
+
+.host-booking-options h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f2036;
+}
+
+.host-booking-options__lead {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #5a6b82;
+}
+
+.host-booking-options--compact {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border-style: dashed;
+}
+
+.host-booking-options__block {
+  margin-bottom: 16px;
+}
+
+.host-booking-options__block h4 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f2036;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.host-booking-options__plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.host-booking-options__plan {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1.5px solid #e2e7ef;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.host-booking-options__plan.is-selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.host-booking-options__plan input {
+  margin-bottom: 4px;
+}
+
+.host-booking-options__plan-name {
+  font-weight: 700;
+  color: #0f2036;
+}
+
+.host-booking-options__plan-meta,
+.host-booking-options__plan-dep {
   font-size: 12px;
-  color: #8a97a8;
+  color: #5a6b82;
+}
+
+.host-booking-options__addons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.host-booking-options__addon {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e2e7ef;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.host-booking-options__addon.is-selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.host-booking-options__addon strong {
+  display: block;
+  font-size: 14px;
+}
+
+.host-booking-options__addon small {
+  display: block;
+  color: #5a6b82;
+  font-size: 12px;
+}
+
+.host-booking-options__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.host-booking-options__preview {
+  margin: 12px 0 0;
+  font-size: 14px;
 }
 
 .host-booking-detail__changes-lead {
@@ -3546,4 +3664,11 @@ a.host-overview-card:hover .host-overview-card-link {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.host-booking-detail__change time {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #8a97a8;
 }

@@ -26,4 +26,13 @@ class OrderPolicy
     {
         return $user->role === UserRole::Admin;
     }
+
+    public function update(User $user, Order $order): bool
+    {
+        if ($user->role === UserRole::Admin) {
+            return true;
+        }
+
+        return $order->car?->user_id === $user->id;
+    }
 }

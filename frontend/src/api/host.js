@@ -239,9 +239,10 @@ export function getHostGuestHouseBooking(id) {
   return api.get(`/host/bookings/guest-houses/${id}`)
 }
 
-export function applyHostBookingChangeRequest(id, adminResponse) {
+export function applyHostBookingChangeRequest(id, adminResponse, requestedChanges) {
   return api.post(`/host/booking-change-requests/${id}/apply`, {
     admin_response: adminResponse || undefined,
+    requested_changes: requestedChanges || undefined,
   })
 }
 
@@ -249,6 +250,14 @@ export function rejectHostBookingChangeRequest(id, adminResponse) {
   return api.post(`/host/booking-change-requests/${id}/reject`, {
     admin_response: adminResponse,
   })
+}
+
+export function previewHostCarOrderModification(orderId, changes) {
+  return api.post(`/host/bookings/cars/${orderId}/preview-modification`, changes)
+}
+
+export function updateHostCarOrder(orderId, changes) {
+  return api.patch(`/host/bookings/cars/${orderId}`, changes)
 }
 
 export function getHostIntegrations() {

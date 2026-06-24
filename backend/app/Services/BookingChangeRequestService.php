@@ -142,7 +142,7 @@ class BookingChangeRequestService
         ];
     }
 
-    public function apply(BookingChangeRequest $request, User $admin, ?string $adminResponse = null): BookingChangeRequest
+    public function apply(BookingChangeRequest $request, User $reviewer, ?string $adminResponse = null, ?array $requestedChangesOverride = null): BookingChangeRequest
     {
         if ($request->status !== BookingChangeRequestStatus::Pending) {
             throw new InvalidArgumentException('Only pending requests can be applied.');
@@ -153,17 +153,19 @@ class BookingChangeRequestService
             throw new InvalidArgumentException('Booking not found.');
         }
 
-        return DB::transaction(function () use ($request, $admin, $adminResponse, $bookable) {
+        $changes = $requestedChangesOverride ?? $request->requested_changes ?? [];
+
+        return DB::transaction(function () use ($request, $reviewer, $adminResponse, $bookable, $changes) {
             if ($request->type === BookingChangeRequestType::Cancellation) {
                 $this->applyCancellation($bookable);
             } else {
-                $this->applyModification($bookable, $request->requested_changes ?? []);
+                $this->applyModification($bookable, $changes);
             }
 
             $request->update([
                 'status' => BookingChangeRequestStatus::Applied,
                 'admin_response' => $adminResponse,
-                'reviewed_by_id' => $admin->id,
+                'reviewed_by_id' => $reviewer->id,
                 'reviewed_at' => now(),
                 'applied_at' => now(),
             ]);

@@ -6,8 +6,11 @@ import {
   applyHostBookingChangeRequest,
   getHostCarBooking,
   getHostGuestHouseBooking,
+  previewHostCarOrderModification,
   rejectHostBookingChangeRequest,
+  updateHostCarOrder,
 } from '../../api/host'
+import HostBookingOptionsEditor from '../../components/host/HostBookingOptionsEditor'
 import StatusBadge from '../../components/ui/StatusBadge'
 import { useToast } from '../../context/ToastContext'
 import { formatCurrency, formatDate, formatDateTime } from '../../utils/format'
@@ -36,11 +39,13 @@ function DetailGrid({ items }) {
 
 function ChangeRequestsList({
   requests,
+  booking,
   onApply,
   onReject,
   processingId,
 }) {
   const [notes, setNotes] = useState({})
+  const [optionOverrides, setOptionOverrides] = useState({})
 
   if (!requests?.length) return null
 
@@ -82,6 +87,19 @@ function ChangeRequestsList({
               {req.admin_response && <p className="host-booking-detail__change-admin">Your response: {req.admin_response}</p>}
               <time>{formatDateTime(req.created_at)}</time>
 
+              {isPending && booking?.can_modify_options && req.type === 'modification' && (
+                <HostBookingOptionsEditor
+                  compact
+                  showActions={false}
+                  booking={{
+                    ...booking,
+                    price_type_id: req.requested_changes?.price_type_id ?? booking.price_type_id,
+                    rental_option_ids: req.requested_changes?.rental_options ?? booking.rental_option_ids,
+                  }}
+                  onChange={(changes) => setOptionOverrides((prev) => ({ ...prev, [req.id]: changes }))}
+                />
+              )}
+
               {isPending && (
                 <div className="host-booking-detail__change-actions">
                   <label className="host-booking-detail__change-note">
@@ -100,7 +118,11 @@ function ChangeRequestsList({
                       type="button"
                       className="host-btn primary"
                       disabled={isProcessing}
-                      onClick={() => onApply(req.id, notes[req.id]?.trim() || undefined)}
+                      onClick={() => onApply(
+                        req.id,
+                        notes[req.id]?.trim() || undefined,
+                        optionOverrides[req.id],
+                      )}
                     >
                       {isProcessing ? 'Applying…' : req.type === 'cancellation' ? 'Approve cancellation' : 'Approve changes'}
                     </button>
@@ -130,7 +152,15 @@ function ChangeRequestsList({
   )
 }
 
-function CarBookingDetail({ booking, onPdf, onApplyChange, onRejectChange, processingId }) {
+function CarBookingDetail({
+  booking,
+  onPdf,
+  onApplyChange,
+  onRejectChange,
+  processingId,
+  onPreviewOptions,
+  onSaveOptions,
+}) {
   const reference = booking.reference
 
   return (
@@ -216,6 +246,12 @@ function CarBookingDetail({ booking, onPdf, onApplyChange, onRejectChange, proce
           )}
         </DetailSection>
 
+        <HostBookingOptionsEditor
+          booking={booking}
+          onPreview={onPreviewOptions}
+          onSave={onSaveOptions}
+        />
+
         {(booking.notes || booking.custom_field_values) && (
           <DetailSection title="Notes & extra details">
             {booking.notes && <p>{booking.notes}</p>}
@@ -230,6 +266,7 @@ function CarBookingDetail({ booking, onPdf, onApplyChange, onRejectChange, proce
 
         <ChangeRequestsList
           requests={booking.change_requests}
+          booking={booking}
           onApply={onApplyChange}
           onReject={onRejectChange}
           processingId={processingId}
@@ -321,6 +358,7 @@ function GuestHouseBookingDetail({ booking, onPdf, onApplyChange, onRejectChange
 
         <ChangeRequestsList
           requests={booking.change_requests}
+          booking={null}
           onApply={onApplyChange}
           onReject={onRejectChange}
           processingId={processingId}
@@ -374,10 +412,10 @@ export default function HostBookingDetailPage({ kind }) {
     }
   }
 
-  const handleApplyChange = async (changeId, note) => {
+  const handleApplyChange = async (changeId, note, requestedChanges) => {
     setProcessingId(changeId)
     try {
-      await applyHostBookingChangeRequest(changeId, note)
+      await applyHostBookingChangeRequest(changeId, note, requestedChanges)
       toast('Request approved and booking updated', 'success')
       load()
     } catch (err) {
@@ -404,11 +442,29 @@ export default function HostBookingDetailPage({ kind }) {
     }
   }
 
+  const handlePreviewOptions = async (changes) => {
+    const res = await previewHostCarOrderModification(booking.id, changes)
+    return res.data.data
+  }
+
+  const handleSaveOptions = async (changes) => {
+    try {
+      const res = await updateHostCarOrder(booking.id, changes)
+      setBooking(res.data.data)
+      toast('Booking options updated', 'success')
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not update booking', 'error')
+      throw err
+    }
+  }
+
   const detailProps = {
     onPdf: openPdf,
     onApplyChange: handleApplyChange,
     onRejectChange: handleRejectChange,
     processingId,
+    onPreviewOptions: handlePreviewOptions,
+    onSaveOptions: handleSaveOptions,
   }
 
   const backTo = kind === 'car' ? '/host/bookings' : '/host/bookings'

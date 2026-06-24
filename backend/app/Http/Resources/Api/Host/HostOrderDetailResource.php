@@ -3,6 +3,8 @@
 namespace App\Http\Resources\Api\Host;
 
 use App\Http\Resources\Api\BookingChangeRequestResource;
+use App\Enums\OrderStatus;
+use App\Services\Host\HostOrderModificationService;
 use App\Support\Money;
 use App\Support\VehicleType;
 use Illuminate\Http\Request;
@@ -13,6 +15,11 @@ class HostOrderDetailResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $modOptions = null;
+        if ($this->order_status === OrderStatus::Confirmed && $this->relationLoaded('car') && $this->car) {
+            $modOptions = app(HostOrderModificationService::class)->optionsContext($this->resource);
+        }
+
         return [
             'kind' => 'car',
             'id' => $this->id,
@@ -50,6 +57,12 @@ class HostOrderDetailResource extends JsonResource
                 'id' => $this->priceType->id,
                 'name' => $this->priceType->name,
             ] : null),
+            'price_type_id' => (int) $this->price_type_id,
+            'rental_option_ids' => $modOptions['rental_option_ids'] ?? [],
+            'available_price_types' => $modOptions['available_price_types'] ?? [],
+            'available_rental_options' => $modOptions['available_rental_options'] ?? [],
+            'rental_days' => $modOptions['rental_days'] ?? null,
+            'can_modify_options' => $modOptions !== null,
             'pickup_location' => $this->whenLoaded('pickupLocation', fn () => $this->pickupLocation ? [
                 'id' => $this->pickupLocation->id,
                 'name' => $this->pickupLocation->name,
@@ -66,6 +79,7 @@ class HostOrderDetailResource extends JsonResource
                 'quantity' => $item->quantity,
             ])),
             'rental_options' => $this->whenLoaded('rentalOptions', fn () => $this->rentalOptions->map(fn ($row) => [
+                'rental_option_id' => (int) $row->rental_option_id,
                 'name' => $row->relationLoaded('rentalOption') ? $row->rentalOption?->name : null,
                 'quantity' => $row->quantity,
                 'total_cents' => (int) $row->total_cents,
