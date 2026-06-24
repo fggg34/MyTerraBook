@@ -835,3 +835,15 @@ img.client-profile-photo__avatar {
     grid-column: 1 / -1;
   }
 }
+
+.client-history-card__mod {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--client-line, #e8e4df);
+}
+
+.client-history-card__mod .booking-mod-section {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}

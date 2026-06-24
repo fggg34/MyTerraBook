@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminBookingChangeRequestController;
 use App\Http\Controllers\Api\Admin\AdminOrdersCsvExportController;
 use App\Http\Controllers\Api\Admin\AdminReportsController;
 use App\Http\Controllers\Api\Admin\AdminStatsController;
@@ -7,7 +8,7 @@ use App\Http\Controllers\Api\Admin\CategoryApiController;
 use App\Http\Controllers\Api\Admin\OrderCheckinPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\BlogPostController;
+use App\Http\Controllers\Api\BookingChangeRequestController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\HomepageController;
@@ -115,6 +116,10 @@ Route::get('/integrations/blocked-days', [IntegrationController::class, 'blocked
 
 Route::post('/orders/quote', [PublicOrderController::class, 'quote']);
 Route::post('/orders', [PublicOrderController::class, 'store']);
+
+Route::post('/booking-change-requests', [BookingChangeRequestController::class, 'store']);
+Route::get('/booking-change-requests', [BookingChangeRequestController::class, 'index']);
+Route::post('/booking-change-requests/preview', [BookingChangeRequestController::class, 'preview']);
 
 Route::prefix('guest-houses')->group(function () {
     Route::get('/', [GuestHouseController::class, 'index']);
@@ -246,4 +251,6 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('guest-house-bookings', [AdminGuestHouseBookingController::class, 'index'])->name('api.admin.guest-house-bookings.index');
     Route::patch('guest-house-bookings/{booking}/status', [AdminGuestHouseBookingController::class, 'updateStatus'])->name('api.admin.guest-house-bookings.status');
     Route::get('guest-house-bookings/{booking}/contract.pdf', [GuestHouseBookingPdfController::class, 'show'])->name('api.admin.guest-house-bookings.contract-pdf');
+    Route::post('booking-change-requests/{bookingChangeRequest}/apply', [AdminBookingChangeRequestController::class, 'apply']);
+    Route::post('booking-change-requests/{bookingChangeRequest}/reject', [AdminBookingChangeRequestController::class, 'reject']);
 });

@@ -10,11 +10,12 @@ use Illuminate\Support\Collection;
 
 class OrderAvailabilityService
 {
-    public function confirmedUnitsBookedForCarInRange(int $carId, CarbonInterface $pickup, CarbonInterface $dropoff): int
+    public function confirmedUnitsBookedForCarInRange(int $carId, CarbonInterface $pickup, CarbonInterface $dropoff, ?int $excludeOrderId = null): int
     {
         return (int) Order::query()
             ->where('car_id', $carId)
             ->where('order_status', OrderStatus::Confirmed)
+            ->when($excludeOrderId, fn ($q) => $q->where('id', '!=', $excludeOrderId))
             ->where(function ($q) use ($pickup, $dropoff): void {
                 $q->where('pickup_at', '<', $dropoff)
                     ->where('dropoff_at', '>', $pickup);
@@ -75,9 +76,11 @@ class OrderAvailabilityService
             ->get(['id', 'pickup_at', 'dropoff_at', 'payment_lock_expires_at']);
     }
 
-    public function hasCapacity(int $carId, int $unitsAvailable, CarbonInterface $pickup, CarbonInterface $dropoff): bool
+    public function hasCapacity(int $carId, int $unitsAvailable, CarbonInterface $pickup, CarbonInterface $dropoff, ?int $excludeOrderId = null): bool
     {
-        $booked = $this->totalUnitsBlockedForCarInRange($carId, $pickup, $dropoff);
+        $booked = $this->confirmedUnitsBookedForCarInRange($carId, $pickup, $dropoff, $excludeOrderId)
+            + $this->lockedStandbyUnitsForCarInRange($carId, $pickup, $dropoff)
+            + $this->blockedUnitsForCarInRange($carId, $pickup, $dropoff);
 
         return $booked < $unitsAvailable;
     }

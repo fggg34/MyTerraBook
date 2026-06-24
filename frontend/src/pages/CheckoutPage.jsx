@@ -69,6 +69,8 @@ function CheckoutPageBody() {
               bookingType={rtb.bookingType}
               locationName={rtb.locationName}
               selectedPriceType={rtb.selectedPriceType}
+              pickupAt={rtb.pickupAt}
+              dropoffAt={rtb.dropoffAt}
             />
           </div>
         </div>

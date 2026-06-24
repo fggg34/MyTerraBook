@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { Calendar, Check, Globe, Mail } from 'lucide-react'
+import BookingModificationSection from '../booking/BookingModificationSection'
 import { getProtectionPresentation } from '../../data/requestToBookConfig'
-import { fmtDisplayDate } from '../../utils/requestToBookUtils'
+import { fmtDisplayDate, toDateOnlyString } from '../../utils/requestToBookUtils'
 
 export default function BookingConfirmation({
   confirmed,
@@ -14,6 +15,8 @@ export default function BookingConfirmation({
   bookingType,
   locationName,
   selectedPriceType,
+  pickupAt,
+  dropoffAt,
 }) {
   const timeline = config.confirmationTimeline
   const isVehicle = bookingType !== 'guesthouse'
@@ -112,6 +115,18 @@ export default function BookingConfirmation({
                 </div>
               ))}
             </div>
+
+            <BookingModificationSection
+              className="cdetail-mod"
+              bookableKind={isVehicle ? 'order' : 'guesthouse'}
+              reference={confirmed.reference}
+              customerEmail={confirmed.customerEmail || form.customer_email}
+              orderId={isVehicle ? confirmed.id : null}
+              isVehicle={isVehicle}
+              pickupAt={isVehicle ? pickupAt : (form.startDate ? `${toDateOnlyString(form.startDate)}T00:00:00` : null)}
+              dropoffAt={isVehicle ? dropoffAt : (form.endDate ? `${toDateOnlyString(form.endDate)}T00:00:00` : null)}
+              rentalOptionIds={form.rental_option_ids || []}
+            />
           </div>
         </div>
 

@@ -7,7 +7,9 @@ import {
   getMeOrderCalendarUrl,
   getMeOrderContractUrl,
 } from '../../api/me'
+import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
+import BookingModificationSection from '../booking/BookingModificationSection'
 import { getListingPath, TYPE_LABELS } from '../../utils/clientHistory'
 import { formatCurrency, formatDate } from '../../utils/format'
 import StatusBadge from '../ui/StatusBadge'
@@ -39,12 +41,17 @@ export default function ClientHistoryCard({
   cancelBookingLabel = 'Cancel booking',
 }) {
   const { toast } = useToast()
+  const { user } = useAuth()
   const TypeIcon = TYPE_ICONS[item.type] || Car
   const listingPath = getListingPath(item)
   const thumbnail = item.thumbnail ? resolveStorageUrl(item.thumbnail) : null
   const canCancel = item.kind === 'guesthouse'
     && CANCELLABLE.includes(item.status)
     && !item.cancelled_at
+
+  const canModify = CANCELLABLE.includes(item.status)
+    && !item.cancelled_at
+    && item.status !== 'cancelled'
 
   const handleCalendar = async () => {
     try {
@@ -157,6 +164,19 @@ export default function ClientHistoryCard({
             )}
           </div>
         </div>
+
+        {canModify && user?.email && (
+          <BookingModificationSection
+            className="client-history-card__mod"
+            bookableKind={item.kind === 'order' ? 'order' : 'guesthouse'}
+            reference={item.reference}
+            customerEmail={user.email}
+            orderId={item.kind === 'order' ? item.id : null}
+            isVehicle={item.kind === 'order'}
+            pickupAt={item.starts_at}
+            dropoffAt={item.ends_at}
+          />
+        )}
       </div>
     </article>
   )

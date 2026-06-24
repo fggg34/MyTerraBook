@@ -506,6 +506,7 @@ export default function useRequestToBook() {
           reference: data?.data?.booking_reference,
           total: data?.data?.total_formatted,
           name: form.customer_name.split(' ')[0],
+          customerEmail: form.customer_email,
         })
       } else {
         const { data } = await api.post('/orders', {
@@ -525,10 +526,12 @@ export default function useRequestToBook() {
         })
         setConfirmed({
           type: 'vehicle',
+          id: data?.data?.id,
           reference: data?.data?.reference,
           total: data?.data?.total,
           currency: data?.data?.currency,
           name: form.customer_name.split(' ')[0],
+          customerEmail: form.customer_email,
         })
       }
       toast('Booking confirmed successfully', 'success')
