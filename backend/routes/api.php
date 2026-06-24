@@ -123,6 +123,7 @@ Route::post('/booking-change-requests', [BookingChangeRequestController::class, 
 Route::get('/booking-change-requests', [BookingChangeRequestController::class, 'index']);
 Route::post('/booking-change-requests/preview', [BookingChangeRequestController::class, 'preview']);
 Route::get('/booking-confirmation/{token}', [BookingConfirmationController::class, 'show']);
+Route::get('/booking-confirmation/{token}/calendar.ics', [BookingConfirmationController::class, 'calendar']);
 
 Route::prefix('guest-houses')->group(function () {
     Route::get('/', [GuestHouseController::class, 'index']);

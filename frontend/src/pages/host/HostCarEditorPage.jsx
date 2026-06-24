@@ -307,7 +307,7 @@ export default function HostCarEditorPage() {
           rental_options: (data.rental_options?.length
             ? data.rental_options
             : (data.rental_option_ids || []).map((optionId) => ({ id: optionId, cost_euros: 0 }))
-          ).map((row) => normalizeHostRentalOptionFromApi(row)),
+          ).map((row) => normalizeHostRentalOptionFromApi(row, currency)),
           rental_condition_ids: data.rental_condition_ids || [],
         })
         setMainImage(data.main_image_path || null)
@@ -318,7 +318,7 @@ export default function HostCarEditorPage() {
       })
       .catch(() => toast('Could not load vehicle', 'error'))
       .finally(() => setLoading(false))
-  }, [id, isNew, toast])
+  }, [id, isNew, toast, currency])
 
   useEffect(() => {
     if (isNew || !recordId || status !== 'pending_review') return undefined
@@ -375,7 +375,7 @@ export default function HostCarEditorPage() {
         dropoff_location_ids: form.dropoff_location_ids,
         characteristic_ids: form.characteristic_ids,
         rental_options: form.rental_options.map((row) => (
-          buildHostRentalOptionSyncPayload(row, catalog.rentalOptions)
+          buildHostRentalOptionSyncPayload(row, catalog.rentalOptions, currency)
         )),
         rental_condition_ids: form.rental_condition_ids,
       }

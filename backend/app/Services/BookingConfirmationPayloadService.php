@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\GuestHouseBooking;
 use App\Models\Order;
+use App\Models\User;
 use App\Support\Money;
 use App\Support\VehicleType;
 
@@ -16,6 +17,7 @@ class BookingConfirmationPayloadService
     {
         $order->loadMissing([
             'car.subCategory.mainCategory',
+            'car.host',
             'pickupLocation',
             'dropoffLocation',
             'priceType',
@@ -66,6 +68,7 @@ class BookingConfirmationPayloadService
                 'transmission' => $car->transmission,
                 'category' => $car->subCategory ? ['name' => $car->subCategory->name] : null,
             ] : null,
+            'host' => $this->hostPayload($car?->host),
         ];
     }
 
@@ -74,7 +77,7 @@ class BookingConfirmationPayloadService
      */
     public function fromGuestHouseBooking(GuestHouseBooking $booking): array
     {
-        $booking->loadMissing('guestHouse');
+        $booking->loadMissing('guestHouse.host');
 
         $house = $booking->guestHouse;
 
@@ -103,6 +106,26 @@ class BookingConfirmationPayloadService
                 'check_in_time' => $house->check_in_time,
                 'check_out_time' => $house->check_out_time,
             ] : null,
+            'host' => $this->hostPayload($house?->host),
+        ];
+    }
+
+    /**
+     * @return array{name: string, member_since: ?string, initial: string}|null
+     */
+    private function hostPayload(?User $host): ?array
+    {
+        if ($host === null) {
+            return null;
+        }
+
+        $name = trim((string) $host->name);
+        $initial = strtoupper(substr($name, 0, 1) ?: 'H');
+
+        return [
+            'name' => $name !== '' ? $name : 'Your host',
+            'member_since' => $host->created_at?->toDateString(),
+            'initial' => $initial,
         ];
     }
 }

@@ -7,7 +7,7 @@ import {
   Sparkles,
   Wifi,
 } from 'lucide-react'
-import { formatCurrencyFromCents } from '../../utils/format'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { calculateRentalOptionTotalCents } from '../../utils/rentalOptionPricing'
 
 function addonIcon(name = '') {
@@ -23,9 +23,10 @@ function addonIcon(name = '') {
 export default function AddonRow({ option, selected, nights, onToggle }) {
   const [infoOpen, setInfoOpen] = useState(false)
   const dialogRef = useRef(null)
+  const priceFormatter = useFormatPrice()
   const unitCents = option.cost_cents || 0
   const totalCents = calculateRentalOptionTotalCents(unitCents, option.is_daily_cost, nights)
-  const price = formatCurrencyFromCents(totalCents)
+  const price = priceFormatter.formatCents(totalCents)
   const unitLabel = option.is_daily_cost ? `for trip` : 'per trip'
   const Icon = addonIcon(option.name)
   const hasInfo = Boolean(option.description) || (option.is_daily_cost && unitCents > 0)
@@ -121,7 +122,7 @@ export default function AddonRow({ option, selected, nights, onToggle }) {
             {option.description ? <p className="addon-info-dialog__text">{option.description}</p> : null}
             {option.is_daily_cost && unitCents > 0 ? (
               <p className="addon-info-dialog__price">
-                {formatCurrencyFromCents(unitCents)} / day × {nights} {nights === 1 ? 'night' : 'nights'}
+                {priceFormatter.formatCents(unitCents)} / day × {nights} {nights === 1 ? 'night' : 'nights'}
               </p>
             ) : null}
           </div>

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useAuth, normalizeUserRole } from '../context/AuthContext'
 import { useShopConfig } from '../context/ShopConfigContext'
 import { findCurrency } from '../data/localePreferences'
-import { formatCurrency, formatCurrencyFromCents } from '../utils/format'
+import { convertFromBase, convertToBase, createPriceFormatter, formatCurrency } from '../utils/format'
 
 const EXAMPLE_AMOUNTS_BY_CODE = {
   ISK: {
@@ -41,7 +41,7 @@ function exampleAmountsForCode(code) {
 
 export function useHostCurrency() {
   const { user } = useAuth()
-  const { baseCurrency } = useShopConfig()
+  const { baseCurrency, exchangeRates } = useShopConfig()
   const isHost = normalizeUserRole(user) === 'host'
 
   const code = useMemo(() => {
@@ -54,20 +54,34 @@ export function useHostCurrency() {
   const inputPrefix = currency.symbol || currency.code
   const exampleAmounts = useMemo(() => exampleAmountsForCode(currency.code), [currency.code])
 
-  return useMemo(() => ({
-    code: currency.code,
-    symbol: currency.symbol,
-    label: currency.label,
-    name: currency.name,
-    inputPrefix,
-    exampleAmounts,
-    formatAmount: (amount) => formatCurrency(amount, currency.code),
-    formatCents: (cents) => formatCurrencyFromCents(cents, currency.code),
-    amountLabel: (suffix = '') => {
-      const base = currency.symbol ? `${currency.symbol} (${currency.code})` : currency.code
-      return suffix ? `${base} ${suffix}` : base
-    },
-    fixedDiscountLabel: `${inputPrefix} per day discount`,
-    fixedSurchargeLabel: `${inputPrefix} per day surcharge`,
-  }), [currency, inputPrefix, exampleAmounts])
+  return useMemo(() => {
+    const priceFormatter = createPriceFormatter({
+      baseCurrency,
+      displayCurrency: currency.code,
+      exchangeRates,
+    })
+
+    return {
+      code: currency.code,
+      symbol: currency.symbol,
+      label: currency.label,
+      name: currency.name,
+      inputPrefix,
+      exampleAmounts,
+      /** Format an amount already entered in the host display currency. */
+      formatAmount: (amount) => formatCurrency(amount, currency.code),
+      /** Format shop-base cents in the host display currency. */
+      formatCents: (cents) => priceFormatter.formatCents(cents),
+      fromBaseAmount: (amountInBase) =>
+        convertFromBase(amountInBase, currency.code, exchangeRates, baseCurrency),
+      toBaseAmount: (amountInDisplay) =>
+        convertToBase(amountInDisplay, currency.code, exchangeRates, baseCurrency),
+      amountLabel: (suffix = '') => {
+        const base = currency.symbol ? `${currency.symbol} (${currency.code})` : currency.code
+        return suffix ? `${base} ${suffix}` : base
+      },
+      fixedDiscountLabel: `${inputPrefix} per day discount`,
+      fixedSurchargeLabel: `${inputPrefix} per day surcharge`,
+    }
+  }, [currency, inputPrefix, exampleAmounts, baseCurrency, exchangeRates])
 }

@@ -29,6 +29,17 @@ export function convertFromBase(amount, targetCurrency, exchangeRates = {}, base
   return base * targetRate
 }
 
+/** Convert a display-currency major-unit amount into shop base currency major units. */
+export function convertToBase(amount, displayCurrency, exchangeRates = {}, baseCurrency = 'EUR') {
+  const display = Number(amount)
+  if (Number.isNaN(display)) return 0
+  if (displayCurrency === baseCurrency) return display
+  const rates = exchangeRates || {}
+  const displayRate = rates[displayCurrency] ?? 1
+  if (displayRate <= 0) return display
+  return display / displayRate
+}
+
 export function createPriceFormatter({
   baseCurrency = 'EUR',
   displayCurrency = 'EUR',
@@ -61,6 +72,8 @@ export function createPriceFormatter({
     formatCents: (cents) => formatConverted(Number(cents) / 100),
     convertFromBase: (amountInBase) =>
       convertFromBase(amountInBase, displayCurrency, exchangeRates, baseCurrency),
+    convertToBase: (amountInDisplay) =>
+      convertToBase(amountInDisplay, displayCurrency, exchangeRates, baseCurrency),
     isConverted: displayCurrency !== baseCurrency,
   }
 }

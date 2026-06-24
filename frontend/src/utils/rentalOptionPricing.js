@@ -8,9 +8,18 @@ export function resolveRentalOptionIsDailyCost(hostRow, catalogOption) {
   return !!catalogOption?.is_daily_cost
 }
 
-export function defaultRentalOptionAmountEuros(catalogOption) {
-  return catalogOption?.cost_euros
-    ?? (catalogOption?.cost_cents ?? catalogOption?.default_cost_cents ?? 0) / 100
+function baseMajorUnitsFromRow(row) {
+  if (row?.cost_cents != null) return Number(row.cost_cents) / 100
+  if (row?.default_cost_cents != null) return Number(row.default_cost_cents) / 100
+  if (row?.cost_euros != null) return Number(row.cost_euros)
+  return 0
+}
+
+/** Suggested catalog amount in host display currency (major units). */
+export function defaultRentalOptionAmountEuros(catalogOption, currencyContext = null) {
+  const baseMajor = baseMajorUnitsFromRow(catalogOption)
+  if (!currencyContext?.fromBaseAmount) return baseMajor
+  return currencyContext.fromBaseAmount(baseMajor)
 }
 
 export function hostRentalOptionPriceSuffix(isDailyCost) {
@@ -27,19 +36,31 @@ export function calculateRentalOptionTotalCents(unitCents, isDailyCost, days, qu
   return isDailyCost ? unitCents * rentalDays * qty : unitCents * qty
 }
 
-export function normalizeHostRentalOptionFromApi(row) {
+/** Map API row (base currency) into host form state (display currency). */
+export function normalizeHostRentalOptionFromApi(row, currencyContext = null) {
+  const baseMajor = baseMajorUnitsFromRow(row)
+  const displayMajor = currencyContext?.fromBaseAmount
+    ? currencyContext.fromBaseAmount(baseMajor)
+    : baseMajor
+
   return {
     id: row.id,
-    cost_euros: row.cost_euros ?? (row.cost_cents ?? 0) / 100,
+    cost_euros: Math.round(displayMajor * 100) / 100,
     is_daily_cost: row.is_daily_cost != null ? !!row.is_daily_cost : undefined,
   }
 }
 
-export function buildHostRentalOptionSyncPayload(row, catalogOptions = []) {
+/** Map host form state (display currency) into API payload (base currency major units). */
+export function buildHostRentalOptionSyncPayload(row, catalogOptions = [], currencyContext = null) {
   const catalogOption = findCatalogRentalOption(catalogOptions, row.id)
+  const displayMajor = Number(row.cost_euros) || 0
+  const baseMajor = currencyContext?.toBaseAmount
+    ? currencyContext.toBaseAmount(displayMajor)
+    : displayMajor
+
   return {
     id: row.id,
-    cost_euros: Number(row.cost_euros) || 0,
+    cost_euros: Math.round(baseMajor * 100) / 100,
     is_daily_cost: resolveRentalOptionIsDailyCost(row, catalogOption),
   }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { formatCurrencyFromCents } from '../../utils/format'
+import { useHostCurrency } from '../../hooks/useHostCurrency'
 import { calculateRentalOptionTotalCents } from '../../utils/rentalOptionPricing'
 import { getProtectionPresentation } from '../../data/requestToBookConfig'
 
@@ -34,6 +34,7 @@ export default function HostBookingOptionsEditor({
   const rentalDays = booking.rental_days || 1
   const priceTypes = booking.available_price_types || []
   const addons = booking.available_rental_options || []
+  const currency = useHostCurrency()
 
   const hasChanges = useMemo(() => {
     const currentOptions = [...(booking.rental_option_ids || [])].map(Number).sort()
@@ -112,7 +113,7 @@ export default function HostBookingOptionsEditor({
                   <span className="host-booking-options__plan-name">{pt.name}</span>
                   <span className="host-booking-options__plan-meta">
                     {pt.from_price_per_day_cents > 0
-                      ? `${formatCurrencyFromCents(pt.from_price_per_day_cents)} / day`
+                      ? `${currency.formatCents(pt.from_price_per_day_cents)} / day`
                       : 'Included'}
                   </span>
                   <span className="host-booking-options__plan-dep">
@@ -145,7 +146,7 @@ export default function HostBookingOptionsEditor({
                       <strong>{opt.name}</strong>
                       {opt.description && <small>{opt.description}</small>}
                     </span>
-                    <span>{formatCurrencyFromCents(totalCents)}</span>
+                    <span>{currency.formatCents(totalCents)}</span>
                   </label>
                 </li>
               )
@@ -182,8 +183,8 @@ export default function HostBookingOptionsEditor({
           New total: <strong>{preview.total_formatted}</strong>
           {preview.price_delta_cents !== 0 && (
             <span>
-              {' '}({preview.price_delta_cents >= 0 ? '+' : '−'}
-              {formatCurrencyFromCents(Math.abs(preview.price_delta_cents))})
+              {' '}              ({preview.price_delta_cents >= 0 ? '+' : '−'}
+              {currency.formatCents(Math.abs(preview.price_delta_cents))})
             </span>
           )}
         </p>

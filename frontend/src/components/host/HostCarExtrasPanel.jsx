@@ -57,7 +57,7 @@ export default function HostCarExtrasPanel({
   }
 
   const enableOption = (option) => {
-    const amount = defaultRentalOptionAmountEuros(option)
+    const amount = defaultRentalOptionAmountEuros(option, currency)
     setPendingNewId(option.id)
     startEditing(option, amount, resolveRentalOptionIsDailyCost(null, option))
   }
@@ -122,7 +122,7 @@ export default function HostCarExtrasPanel({
             const isPendingNew = String(pendingNewId) === String(option.id)
             const isActive = Boolean(saved) || isPendingNew
             const isEditing = isActive && String(editingId) === String(option.id)
-            const suggested = defaultRentalOptionAmountEuros(option)
+            const suggested = defaultRentalOptionAmountEuros(option, currency)
             const isDailyCost = resolveRentalOptionIsDailyCost(saved, option)
             const chargeLabel = guestRentalOptionSubLabel(isDailyCost)
             const savedAmount = Number(saved?.cost_euros ?? 0)
