@@ -3725,12 +3725,17 @@
 
   .gtk-article-hero-bottom {
     margin: 0 -18px;
-    padding: 64px 18px 22px;
+    padding: 30px 18px 22px;
   }
 
   .gtk-article-hero-bottom h1 {
     max-width: none;
     font-size: clamp(1.5rem, 6vw, 1.85rem);
+  }
+
+  .gtk-article-content .content-prose h2 {
+    font-size: 20px;
+    line-height: 26px;
   }
 
   .gtk-article-header h1 {
