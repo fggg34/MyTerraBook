@@ -260,16 +260,41 @@ export default function Header({
               </div>
             </div>
           ) : (
-            signInLabel &&
-            (signInHref?.startsWith('/') ? (
-              <Link className="signin" to={signInHref}>
-                {signInLabel}
-              </Link>
-            ) : (
-              <button className="signin" type="button" onClick={() => (window.location.href = signInHref || '/login')}>
-                {signInLabel}
-              </button>
-            ))
+            <>
+              {signInLabel &&
+                (signInHref?.startsWith('/') ? (
+                  <Link className="signin" to={signInHref}>
+                    {signInLabel}
+                  </Link>
+                ) : (
+                  <button className="signin" type="button" onClick={() => (window.location.href = signInHref || '/login')}>
+                    {signInLabel}
+                  </button>
+                ))}
+              {signInHref?.startsWith('/') ? (
+                <Link
+                  className="nav-mobile-account-btn"
+                  to={signInHref || '/login'}
+                  aria-label={signInLabel || 'Sign in'}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M20 21a8 8 0 0 0-16 0" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </Link>
+              ) : (
+                <a
+                  className="nav-mobile-account-btn"
+                  href={signInHref || '/login'}
+                  aria-label={signInLabel || 'Sign in'}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M20 21a8 8 0 0 0-16 0" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </a>
+              )}
+            </>
           )}
         </div>
       </div>

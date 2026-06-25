@@ -162,6 +162,25 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   }
   .user-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;}
   .user-caret{width:16px;height:16px;color:var(--slate);flex:0 0 auto;}
+  .nav-mobile-account-btn{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:1.5px solid var(--line);
+    color:var(--navy);
+    background:#fff;
+    flex:0 0 auto;
+    transition:border-color .15s,color .15s,background .15s;
+  }
+  .nav-mobile-account-btn svg{width:22px;height:22px;}
+  .nav-mobile-account-btn:hover,
+  .nav-mobile-account-btn:active{
+    border-color:var(--green);
+    color:var(--green);
+  }
   .user-menu-btn.open .user-caret{color:var(--green);}
   .user-menu-panel{
     position:absolute;right:0;top:calc(100% + 10px);z-index:80;
@@ -926,7 +945,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
       grid-row:1;
       justify-self:center;
       z-index:2;
-      max-width:calc(100% - 120px);
+      max-width:calc(100% - 160px);
       pointer-events:auto;
     }
     .nav-right{
@@ -942,8 +961,8 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     header.nav .nav-right button.host,
     header.nav .nav-right .signin,
     header.nav .nav-right a.signin,
-    header.nav .nav-right button.signin,
-    header.nav .nav-right .user-menu-wrap{display:none;}
+    header.nav .nav-right button.signin{display:none;}
+    header.nav .nav-right .nav-mobile-account-btn{display:flex;}
     header.nav .lang-cur{display:none;}
     .hamburger{display:flex;}
     .mobile-menu-backdrop{

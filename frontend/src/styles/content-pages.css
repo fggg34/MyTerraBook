@@ -1219,6 +1219,10 @@
     grid-template-columns: 1fr;
     gap: 20px;
   }
+
+  .gtk-card-body {
+    padding: 20px !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
