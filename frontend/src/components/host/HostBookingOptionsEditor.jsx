@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useHostCurrency } from '../../hooks/useHostCurrency'
 import { calculateRentalOptionTotalCents } from '../../utils/rentalOptionPricing'
 import { getProtectionPresentation } from '../../data/requestToBookConfig'
+import { stripHtml } from '../../utils/resolveSeo'
 
 function buildChanges(priceTypeId, rentalOptionIds) {
   return {
@@ -133,6 +134,7 @@ export default function HostBookingOptionsEditor({
             {addons.map((opt) => {
               const selected = rentalOptionIds.includes(Number(opt.id))
               const totalCents = calculateRentalOptionTotalCents(opt.cost_cents, opt.is_daily_cost, rentalDays)
+              const descriptionText = stripHtml(opt.description || '')
               return (
                 <li key={opt.id}>
                   <label className={`host-booking-options__addon${selected ? ' is-selected' : ''}`}>
@@ -144,7 +146,7 @@ export default function HostBookingOptionsEditor({
                     />
                     <span>
                       <strong>{opt.name}</strong>
-                      {opt.description && <small>{opt.description}</small>}
+                      {descriptionText ? <small>{descriptionText}</small> : null}
                     </span>
                     <span>{currency.formatCents(totalCents)}</span>
                   </label>
