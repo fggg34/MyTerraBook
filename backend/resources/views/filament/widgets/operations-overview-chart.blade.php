@@ -134,5 +134,30 @@
         .dark .tb-chart-empty-copy {
             color: rgb(148 163 184);
         }
+
+        @media (max-width: 768px) {
+            .fi-wi-chart .fi-section-header {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .fi-wi-chart-canvas-ctn {
+                min-height: 14rem;
+            }
+
+            .fi-wi-chart canvas {
+                max-height: 14rem !important;
+            }
+
+            .tb-chart-empty {
+                min-height: 14rem;
+                padding: 1.25rem 1rem;
+            }
+
+            .tb-chart-empty-copy {
+                max-width: none;
+                font-size: 0.75rem;
+            }
+        }
     </style>
 </x-filament-widgets::widget>

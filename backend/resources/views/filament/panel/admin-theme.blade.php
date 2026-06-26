@@ -473,5 +473,43 @@
             max-width: calc(100vw - 1.5rem) !important;
             margin-inline: 0.75rem;
         }
+
+        /* Dashboard widgets */
+        .fi-wi-stats-overview-stat {
+            min-width: 0;
+        }
+
+        .fi-wi-stats-overview-stat-value {
+            font-size: 1.35rem;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .fi-wi-stats-overview-stat-description {
+            line-height: 1.35;
+        }
+
+        .fi-wi-chart .fi-section-content-ctn {
+            padding-inline: 0.75rem;
+        }
+
+        .fi-wi-table .fi-section-header {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .fi-wi-table .fi-ta-ctn {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .fi-wi-table .fi-ta-table {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .fi-page-header-widgets {
+            gap: 1rem;
+        }
     }
 </style>

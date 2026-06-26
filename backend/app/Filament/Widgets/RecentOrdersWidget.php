@@ -45,9 +45,11 @@ class RecentOrdersWidget extends TableWidget
                     ->label('Reference')
                     ->searchable(),
                 TextColumn::make('customer_name')
-                    ->label('Customer'),
+                    ->label('Customer')
+                    ->visibleFrom('md'),
                 TextColumn::make('car.name')
-                    ->label('Car'),
+                    ->label('Car')
+                    ->visibleFrom('lg'),
                 TextColumn::make('order_status')
                     ->label('Status')
                     ->badge()
@@ -59,7 +61,8 @@ class RecentOrdersWidget extends TableWidget
                 TextColumn::make('created_at')
                     ->label('Date')
                     ->date('j M Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('md'),
             ])
             ->recordUrl(fn (Order $record): string => OrderResource::getUrl('edit', ['record' => $record]));
     }

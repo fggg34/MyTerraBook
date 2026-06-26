@@ -67,6 +67,18 @@
             .tb-welcome-header {
                 flex-direction: column;
                 padding: 1.25rem;
+                gap: 1rem;
+            }
+
+            .tb-welcome-header-title {
+                font-size: 1.25rem;
+            }
+
+            .tb-welcome-header-date {
+                align-self: flex-start;
+                white-space: normal;
+                text-align: left;
+                line-height: 1.4;
             }
         }
     </style>

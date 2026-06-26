@@ -115,5 +115,15 @@
         .dark .tb-insights-empty {
             color: rgb(148 163 184);
         }
+
+        @media (max-width: 768px) {
+            .tb-insights-section {
+                padding: 0.875rem 1rem;
+            }
+
+            .tb-insights-country-meta {
+                word-break: break-word;
+            }
+        }
     </style>
 </x-filament-widgets::widget>

@@ -17,7 +17,11 @@ class DashboardOverviewStats extends StatsOverviewWidget
 
     protected int|string|array $columnSpan = 'full';
 
-    protected int|array|null $columns = 3;
+    protected int|array|null $columns = [
+        'default' => 1,
+        'sm' => 2,
+        'xl' => 3,
+    ];
 
     protected ?string $pollingInterval = '60s';
 
