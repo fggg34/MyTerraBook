@@ -59,6 +59,9 @@ class Dashboard extends BaseDashboard
      */
     public function getColumns(): int|array
     {
-        return 12;
+        return [
+            'default' => 1,
+            '@xl' => 12,
+        ];
     }
 }

@@ -19,7 +19,7 @@ class RecentOrdersWidget extends TableWidget
     protected static ?string $heading = 'Recent orders';
 
     protected int|string|array $columnSpan = [
-        'default' => 12,
+        'default' => 'full',
         '@xl' => 8,
     ];
 

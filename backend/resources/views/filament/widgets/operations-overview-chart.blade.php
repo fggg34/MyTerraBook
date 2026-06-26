@@ -142,15 +142,15 @@
             }
 
             .fi-wi-chart-canvas-ctn {
-                min-height: 14rem;
+                min-height: 16rem;
             }
 
             .fi-wi-chart canvas {
-                max-height: 14rem !important;
+                max-height: 16rem !important;
             }
 
             .tb-chart-empty {
-                min-height: 14rem;
+                min-height: 16rem;
                 padding: 1.25rem 1rem;
             }
 

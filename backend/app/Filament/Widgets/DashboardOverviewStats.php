@@ -15,7 +15,9 @@ class DashboardOverviewStats extends StatsOverviewWidget
 {
     protected static ?int $sort = 2;
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = [
+        'default' => 'full',
+    ];
 
     protected int|array|null $columns = [
         'default' => 1,

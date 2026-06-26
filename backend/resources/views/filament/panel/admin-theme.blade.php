@@ -475,22 +475,52 @@
         }
 
         /* Dashboard widgets */
-        .fi-wi-stats-overview-stat {
+        .fi-page-main .fi-wi-widget.fi-grid-col {
+            grid-column: 1 / -1;
+            width: 100%;
             min-width: 0;
         }
 
+        .fi-wi-stats-overview-stat {
+            min-width: 0;
+            padding: 1rem;
+        }
+
         .fi-wi-stats-overview-stat-value {
-            font-size: 1.35rem;
-            line-height: 1.2;
-            word-break: break-word;
+            font-size: 1.5rem;
+            line-height: 1.15;
+            white-space: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .fi-wi-stats-overview-stat-value::-webkit-scrollbar {
+            display: none;
         }
 
         .fi-wi-stats-overview-stat-description {
             line-height: 1.35;
+            flex-wrap: wrap;
+        }
+
+        .fi-wi-chart.fi-wi-widget {
+            overflow: hidden;
         }
 
         .fi-wi-chart .fi-section-content-ctn {
             padding-inline: 0.75rem;
+        }
+
+        .fi-wi-chart-canvas-ctn {
+            position: relative;
+            width: 100%;
+            min-height: 16rem;
+        }
+
+        .fi-wi-chart canvas {
+            width: 100% !important;
+            max-height: 16rem !important;
         }
 
         .fi-wi-table .fi-section-header {

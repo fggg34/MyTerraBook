@@ -8,7 +8,9 @@ class WelcomeHeaderWidget extends Widget
 {
     protected static ?int $sort = 1;
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = [
+        'default' => 'full',
+    ];
 
     protected string $view = 'filament.widgets.welcome-header';
 

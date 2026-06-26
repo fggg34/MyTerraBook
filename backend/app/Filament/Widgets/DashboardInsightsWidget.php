@@ -13,7 +13,7 @@ class DashboardInsightsWidget extends Widget
     protected static ?int $sort = 5;
 
     protected int|string|array $columnSpan = [
-        'default' => 12,
+        'default' => 'full',
         '@xl' => 4,
     ];
 
