@@ -41,6 +41,12 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
+            min-width: 32rem;
+        }
+
+        .ir-reports-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .ir-reports-table th {
@@ -134,6 +140,7 @@
             @if ($this->occupancyRanking === [])
                 <p class="ir-reports-empty">No occupancy data for the selected period.</p>
             @else
+                <div class="ir-reports-table-wrap">
                 <table class="ir-reports-table">
                     <thead>
                         <tr>
@@ -154,6 +161,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endif
         @elseif ($this->reportType === 'revenue')
             <div class="ir-reports-summary-grid">
@@ -174,6 +182,7 @@
             @if ($this->ratePlanRevenue === [])
                 <p class="ir-reports-empty">No rate plan revenue data for the selected period.</p>
             @else
+                <div class="ir-reports-table-wrap">
                 <table class="ir-reports-table">
                     <thead>
                         <tr>
@@ -192,11 +201,13 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endif
         @elseif ($this->reportType === 'top_countries')
             @if ($this->topCountries === [])
                 <p class="ir-reports-empty">No country revenue data for the selected period.</p>
             @else
+                <div class="ir-reports-table-wrap">
                 <table class="ir-reports-table">
                     <thead>
                         <tr>
@@ -215,6 +226,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endif
         @endif
     </section>

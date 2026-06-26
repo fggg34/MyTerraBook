@@ -183,6 +183,31 @@
             gap: 8px;
         }
 
+        .fo-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+            .fo-title {
+                font-size: 1.25rem;
+            }
+
+            .fo-car-picker {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .fo-refresh {
+                width: 100%;
+                min-height: 44px;
+            }
+
+            .fo-table .fo-day-num {
+                font-size: 1.25rem;
+            }
+        }
+
         @media (max-width: 1100px) {
             .fo-top-grid {
                 grid-template-columns: 1fr;

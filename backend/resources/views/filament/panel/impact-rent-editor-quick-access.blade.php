@@ -140,6 +140,30 @@
 
         return $link;
     }, $quickLinks));
+
+    $mobileNavOptions = [];
+    foreach ($quickLinks as $link) {
+        if (! empty($link['items'])) {
+            foreach ($link['items'] as $sub) {
+                if (empty($sub['url'])) {
+                    continue;
+                }
+                $mobileNavOptions[] = [
+                    'label' => $link['label'].' — '.$sub['label'],
+                    'url' => $sub['url'],
+                    'active' => (bool) ($sub['active'] ?? false),
+                ];
+            }
+        } elseif (! empty($link['url'])) {
+            $mobileNavOptions[] = [
+                'label' => $link['label'],
+                'url' => $link['url'],
+                'active' => (bool) ($link['active'] ?? false),
+            ];
+        }
+    }
+
+    $activeMobileUrl = collect($mobileNavOptions)->firstWhere('active', true)['url'] ?? '';
 @endphp
 
 @if ($inImpactRent)
@@ -349,7 +373,71 @@
             color: rgb(74 222 128);
         }
 
+        /* ── Mobile: compact section picker instead of horizontal tabs ── */
+        .ir-tabs-mobile {
+            display: none;
+            width: 100%;
+            padding: 0 0.25rem;
+        }
+
+        .ir-tabs-mobile__label {
+            display: block;
+            margin-bottom: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgb(107 114 128);
+        }
+
+        .ir-tabs-mobile__select {
+            width: 100%;
+            border: 1px solid var(--mtb-line);
+            border-radius: 0.65rem;
+            background: #fff;
+            color: rgb(31 41 55);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            padding: 0.65rem 2.25rem 0.65rem 0.85rem;
+            min-height: 44px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.65rem center;
+            background-size: 1.1rem;
+        }
+
+        .dark .ir-tabs-mobile__select {
+            background-color: rgb(17 24 39);
+            border-color: rgb(51 65 85);
+            color: rgb(229 231 235);
+        }
+
+        @media (max-width: 768px) {
+            .ir-tabs-outer {
+                display: none;
+            }
+
+            .ir-tabs-mobile {
+                display: block;
+            }
+        }
+
     </style>
+
+    <div class="ir-tabs-mobile" data-ir-quick-access>
+        <label class="ir-tabs-mobile__label" for="ir-tabs-mobile-select">Impact Rent section</label>
+        <select
+            id="ir-tabs-mobile-select"
+            class="ir-tabs-mobile__select"
+            aria-label="Impact Rent section"
+            onchange="if (this.value) window.location.href = this.value"
+        >
+            @foreach ($mobileNavOptions as $option)
+                <option value="{{ $option['url'] }}" @selected($option['url'] === $activeMobileUrl)>
+                    {{ $option['label'] }}
+                </option>
+            @endforeach
+        </select>
+    </div>
 
     <div class="ir-tabs-outer" data-ir-quick-access>
         <nav class="ir-tabs" aria-label="Impact Rent navigation">

@@ -407,4 +407,71 @@
         border-color: rgb(51 78 104 / 0.35);
         color: #93c5fd;
     }
+
+    /* ── Mobile admin UX ─────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+        .fi-main {
+            padding-inline: 0.75rem;
+        }
+
+        .fi-page-main {
+            gap: 1rem;
+        }
+
+        .fi-header-heading {
+            font-size: 1.125rem;
+            line-height: 1.35;
+        }
+
+        .fi-page-header-main-ctn {
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .fi-page-header-actions {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .fi-ac {
+            flex-wrap: wrap;
+        }
+
+        .fi-ta-ctn,
+        .fi-ta-content-ctn {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .fi-ta-table {
+            min-width: 36rem;
+        }
+
+        .fi-fo-field-wrp-label span {
+            font-size: 0.875rem;
+        }
+
+        .fi-form-actions {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+
+        .fi-form-actions .fi-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .fi-section-header {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .fi-modal-window {
+            width: calc(100vw - 1.5rem) !important;
+            max-width: calc(100vw - 1.5rem) !important;
+            margin-inline: 0.75rem;
+        }
+    }
 </style>

@@ -440,6 +440,37 @@
         cursor: not-allowed;
     }
 
+    @media (max-width: 768px) {
+        .ir-daily-fares-page .ir-fares-vehicle-strip {
+            grid-template-columns: 1fr;
+        }
+
+        .ir-daily-fares-page .ir-fares-car-image {
+            width: 100%;
+            max-width: 12rem;
+            height: auto;
+            aspect-ratio: 4 / 3;
+        }
+
+        .ir-daily-fares-page .ir-fares-fields-two {
+            grid-template-columns: 1fr;
+        }
+
+        .ir-daily-fares-page .ir-fares-pagination {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .ir-daily-fares-page .ir-fares-pagination-actions {
+            justify-content: space-between;
+        }
+
+        .ir-daily-fares-page .ir-fares-tab {
+            flex: 1 1 calc(50% - 0.5rem);
+            text-align: center;
+        }
+    }
+
     /* Lucide icon previews in catalog selects (characteristics, extras, amenities) */
     .tb-icon-catalog-svg {
         flex-shrink: 0;
