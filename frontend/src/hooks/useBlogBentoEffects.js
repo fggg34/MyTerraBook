@@ -19,17 +19,21 @@ export default function useBlogBentoEffects({ enabled = true, carousel = false }
       return undefined
     }
 
+    const dirs = [
+      { x: 90, y: -70, r: 4 },
+      { x: 120, y: -45, r: 5 },
+      { x: 75, y: 80, r: -4 },
+      { x: 120, y: 65, r: 4 },
+    ]
+
     const froms = carousel
       ? cards.map((_, i) => ({ y: 28 + (i % 3) * 6 }))
       : cards.map((card, i) => {
           if (card.classList.contains('featured')) return { x: -120, y: 60, r: -5 }
-          const dirs = [
-            { x: 90, y: -70, r: 4 },
-            { x: 120, y: -45, r: 5 },
-            { x: 75, y: 80, r: -4 },
-            { x: 120, y: 65, r: 4 },
-          ]
-          return dirs[(i - 1) % dirs.length]
+          const nonFeaturedIndex = cards
+            .slice(0, i)
+            .filter((c) => !c.classList.contains('featured')).length
+          return dirs[nonFeaturedIndex % dirs.length]
         })
 
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
@@ -47,6 +51,7 @@ export default function useBlogBentoEffects({ enabled = true, carousel = false }
         const lp = clamp((p - d) / (1 - d), 0, 1)
         const e = easeOutCubic(lp)
         const f = froms[i]
+        if (!f) return
 
         if (carousel) {
           const y = (f.y * (1 - e)).toFixed(1)
