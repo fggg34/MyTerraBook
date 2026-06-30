@@ -88,6 +88,7 @@ class SiteContentService
 
         $featuredBlogPosts = BlogPost::query()
             ->published()
+            ->orderByDesc('is_featured')
             ->orderBy('sort_order')
             ->orderByDesc('published_at')
             ->limit(5)
@@ -223,6 +224,7 @@ class SiteContentService
     {
         $posts = BlogPost::query()
             ->published()
+            ->orderByDesc('is_featured')
             ->orderBy('sort_order')
             ->orderByDesc('published_at')
             ->get();

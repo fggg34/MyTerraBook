@@ -45,8 +45,9 @@ function ArticleCard({ post, featured = false }) {
 export default function GoodToKnowSection({ posts }) {
   const { page } = usePageContent('good-to-know')
   const header = page.header ?? {}
-  const featured = posts.find((p) => p.is_featured)
-  const rest = posts.filter((p) => p !== featured)
+  const [hero, ...rest] = posts
+  const showHero = hero?.is_featured
+  const gridPosts = showHero ? rest : posts
 
   return (
     <section className="gtk-section" id="gtk-articles">
@@ -57,8 +58,8 @@ export default function GoodToKnowSection({ posts }) {
         </header>
 
         <div className="gtk-grid">
-          {featured && <ArticleCard post={featured} featured />}
-          {rest.map((post) => (
+          {showHero && <ArticleCard post={hero} featured />}
+          {gridPosts.map((post) => (
             <ArticleCard key={post.slug} post={post} />
           ))}
         </div>

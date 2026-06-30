@@ -13,7 +13,11 @@ class BlogPostController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection|JsonResponse
     {
-        $query = BlogPost::query()->published()->orderBy('sort_order')->orderByDesc('published_at');
+        $query = BlogPost::query()
+            ->published()
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->orderByDesc('published_at');
 
         if ($request->boolean('featured')) {
             $query->where('is_featured', true);

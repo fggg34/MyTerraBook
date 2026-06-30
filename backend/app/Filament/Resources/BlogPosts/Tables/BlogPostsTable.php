@@ -28,6 +28,7 @@ class BlogPostsTable
             ->recordActions([
                 EditAction::make(),
             ])
-            ->defaultSort('sort_order');
+            ->defaultSort('sort_order')
+            ->modifyQueryUsing(fn ($query) => $query->orderByDesc('is_featured'));
     }
 }

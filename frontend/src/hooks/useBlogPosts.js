@@ -10,9 +10,16 @@ import {
   writeBlogPostCache,
   writeBlogPostsCache,
 } from '../utils/siteContentCache'
+import { sortBlogPosts } from '../utils/sortBlogPosts'
 
 function getInstantBlogPosts() {
-  return getBootstrappedBlogPosts() ?? readBlogPostsCache() ?? []
+  return sortBlogPosts(getBootstrappedBlogPosts() ?? readBlogPostsCache() ?? [])
+}
+
+function normalizeBlogPostList(posts, { featured = false } = {}) {
+  const list = Array.isArray(posts) ? posts : []
+  const filtered = featured ? list.filter((post) => post?.is_featured) : list
+  return sortBlogPosts(filtered)
 }
 
 function getInstantBlogPost(slug) {
@@ -24,7 +31,7 @@ export default function useBlogPosts({ slug, featured = false } = {}) {
   const instantPosts = getInstantBlogPosts()
   const instantPost = slug ? getInstantBlogPost(slug) : null
   const instantList = featured
-    ? instantPosts.filter((post) => post?.is_featured)
+    ? normalizeBlogPostList(instantPosts, { featured: true })
     : instantPosts
 
   const [posts, setPosts] = useState(instantList)
@@ -36,9 +43,7 @@ export default function useBlogPosts({ slug, featured = false } = {}) {
     let cancelled = false
     const cachedPost = slug ? getInstantBlogPost(slug) : null
     const cachedPosts = getInstantBlogPosts()
-    const cachedList = featured
-      ? cachedPosts.filter((item) => item?.is_featured)
-      : cachedPosts
+    const cachedList = normalizeBlogPostList(cachedPosts, { featured })
 
     if (slug) {
       if (cachedPost) {
@@ -68,7 +73,10 @@ export default function useBlogPosts({ slug, featured = false } = {}) {
           if (data?.slug) writeBlogPostCache(data.slug, data)
         } else {
           const payload = res.data?.data ?? res.data
-          const list = Array.isArray(payload) ? payload : payload?.data ?? []
+          const list = normalizeBlogPostList(
+            Array.isArray(payload) ? payload : payload?.data ?? [],
+            { featured },
+          )
           setPosts(list)
           if (list.length) writeBlogPostsCache(list)
         }
