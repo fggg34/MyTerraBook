@@ -1321,14 +1321,14 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     .tab svg{width:18px;height:18px;}
 
     .hero{
-      min-height:min(70vh, 520px);
+      min-height:650px;
     }
     .hero-bg{
       object-position:center 30%;
     }
     .hero-inner{
       padding:24px 16px 20px;
-      min-height:min(70vh, 520px);
+      min-height:650px;
       justify-content:flex-end;
       gap:16px;
     }
@@ -1860,8 +1860,8 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   @media(max-width:560px){
     .wrap{padding:0 16px;}
     .topbar .wrap{padding:10px 16px;}
-    .hero{min-height:min(64vh, 480px);}
-    .hero-inner{min-height:min(64vh, 480px);padding:20px 16px 18px;}
+    .hero{min-height:650px;}
+    .hero-inner{min-height:650px;padding:20px 16px 18px;}
     .hero-copy h1{font-size:26px;}
     .hero-copy p{font-size:13.5px;margin-top:10px;}
     .booking-body{padding:13px 12px 11px;}
@@ -3156,6 +3156,11 @@ body.homepage-active { margin: 0; overflow-x: clip; }
 }
 
 /* Tailwind-safe overrides (homepage.css must load after index.css) */
+body.homepage-active .hero{min-height:650px;}
+@media (max-width:768px){
+  body.homepage-active .hero,
+  body.homepage-active .hero-inner{min-height:650px;}
+}
 body.homepage-active .blog .bento{display:grid;}
 body.homepage-active .blog .bcard{position:relative;overflow:hidden;background:#0e1c30;min-height:262px;}
 body.homepage-active .blog .bcard.featured{min-height:544px;}
