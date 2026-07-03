@@ -42,6 +42,14 @@ class GuestHouseBooking extends Model
         'cancellation_reason',
         'cancelled_at',
         'confirmed_at',
+        'total_price',
+        'platform_fee',
+        'cash_due_on_arrival',
+        'payment_status',
+        'payment_method',
+        'cash_received_at',
+        'rapyd_checkout_id',
+        'rapyd_payment_id',
     ];
 
     protected function casts(): array
@@ -60,6 +68,10 @@ class GuestHouseBooking extends Model
             'total_amount' => 'integer',
             'cancelled_at' => 'datetime',
             'confirmed_at' => 'datetime',
+            'total_price' => 'decimal:2',
+            'platform_fee' => 'decimal:2',
+            'cash_due_on_arrival' => 'decimal:2',
+            'cash_received_at' => 'datetime',
         ];
     }
 
@@ -108,6 +120,11 @@ class GuestHouseBooking extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(GuestHouseBookingPayment::class);
+    }
+
+    public function rapydPayments(): HasMany
+    {
+        return $this->hasMany(RapydPayment::class, 'order_id');
     }
 
     public function changeRequests(): MorphMany

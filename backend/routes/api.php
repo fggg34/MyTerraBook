@@ -41,6 +41,8 @@ use App\Http\Controllers\Api\MeGuestHouseBookingController;
 use App\Http\Controllers\Api\MeProfileController;
 use App\Http\Controllers\Api\CustomFieldController;
 use App\Http\Controllers\Api\PaymentMethodController;
+use App\Http\Controllers\Api\RapydPaymentController;
+use App\Http\Controllers\Admin\PaymentMethodController as AdminPaymentMethodController;
 use App\Http\Controllers\Api\PublicConfigController;
 use App\Http\Controllers\Api\PublicOrderController;
 use App\Http\Controllers\Api\SearchSuggestionsController;
@@ -81,6 +83,9 @@ Route::get('/health', function () {
 
 Route::get('/public-config', [PublicConfigController::class, 'show']);
 Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
+
+// Rapyd webhook — no auth, verified by HMAC signature inside the controller.
+Route::post('/rapyd/webhook', [RapydPaymentController::class, 'handleWebhook']);
 Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
 Route::get('/homepage', [HomepageController::class, 'show']);
@@ -155,6 +160,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/me/profile-photo', [MeProfileController::class, 'updatePhoto']);
     Route::delete('/me/profile-photo', [MeProfileController::class, 'deletePhoto']);
     Route::patch('/me/password', [MeProfileController::class, 'updatePassword']);
+
+    // Rapyd card checkout (guest pays the 20% platform fee online).
+    Route::post('/rapyd/initiate-checkout', [RapydPaymentController::class, 'initiateCheckout']);
+    Route::get('/rapyd/checkout-status/{checkoutId}', [RapydPaymentController::class, 'checkoutStatus']);
 });
 
 Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
@@ -238,6 +247,9 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
     // Bookings are instant-confirmed on payment. Hosts can approve guest modification requests.
     Route::get('bookings/cars/{order}/contract.pdf', [HostBookingController::class, 'carContractPdf']);
     Route::get('bookings/guest-houses/{booking}/contract.pdf', [HostBookingController::class, 'guestHouseContractPdf']);
+
+    // Host confirms the 80% cash balance was received from the guest on arrival.
+    Route::post('rapyd/confirm-cash/{orderId}', [RapydPaymentController::class, 'confirmCashReceived']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
@@ -261,4 +273,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('guest-house-bookings/{booking}/contract.pdf', [GuestHouseBookingPdfController::class, 'show'])->name('api.admin.guest-house-bookings.contract-pdf');
     Route::post('booking-change-requests/{bookingChangeRequest}/apply', [AdminBookingChangeRequestController::class, 'apply']);
     Route::post('booking-change-requests/{bookingChangeRequest}/reject', [AdminBookingChangeRequestController::class, 'reject']);
+
+    // Rapyd payments + payment method configuration (admin).
+    Route::get('rapyd/payments', [RapydPaymentController::class, 'listPayments'])->name('api.admin.rapyd.payments');
+    Route::get('payment-methods', [AdminPaymentMethodController::class, 'index'])->name('api.admin.payment-methods.index');
+    Route::post('payment-methods/rapyd', [AdminPaymentMethodController::class, 'store'])->name('api.admin.payment-methods.rapyd.store');
 });

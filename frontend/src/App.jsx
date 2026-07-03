@@ -20,6 +20,7 @@ import ListingPage from './pages/ListingPage'
 import SearchResultsPage from './pages/SearchResultsPage'
 import CheckoutPage from './pages/CheckoutPage'
 import BookingConfirmationPage from './pages/BookingConfirmationPage'
+import RapydCheckout from './pages/checkout/RapydCheckout'
 import HomePageContainer from './pages/HomePageContainer'
 import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -195,6 +196,8 @@ function AppRoutes() {
       >
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/booking/confirmation/:token" element={<BookingConfirmationPage />} />
+        <Route path="/booking/rapyd/success" element={<RapydCheckout outcome="success" />} />
+        <Route path="/booking/rapyd/failed" element={<RapydCheckout outcome="failed" />} />
         <Route path="/guest-houses/checkout" element={<GuestHouseCheckoutPage />} />
       </Route>
       <Route
