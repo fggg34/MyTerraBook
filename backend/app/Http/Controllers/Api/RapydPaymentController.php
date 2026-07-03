@@ -383,7 +383,7 @@ class RapydPaymentController extends Controller
             $attrs['rapyd_payment_id'] = $paymentId;
         }
 
-        $booking->forceFill($attrs)->save();
+        $booking->forceFill($attrs)->saveQuietly();
 
         // Guest houses use the 15%/85% paid-online / cash-on-arrival emails.
         // Sent synchronously so it works without a queue worker (matches the rest

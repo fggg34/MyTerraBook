@@ -42,13 +42,13 @@ class EmailService
 
         foreach ($this->normalizeRecipients($recipients) as $recipient) {
             try {
-                Mail::to($recipient)->send(new TemplatedMail($templateKey, $data, $attachments));
+                Mail::to($recipient)->sendNow(new TemplatedMail($templateKey, $data, $attachments));
 
                 EmailLog::query()->create([
                     'template_key' => $templateKey,
                     'recipient' => $recipient,
                     'subject' => $subject,
-                    'status' => 'queued',
+                    'status' => 'sent',
                     'sent_at' => now(),
                 ]);
 

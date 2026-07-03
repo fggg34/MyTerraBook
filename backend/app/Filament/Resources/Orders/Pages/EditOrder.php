@@ -68,10 +68,10 @@ class EditOrder extends EditRecord
                     $sent = $orderEmails->resendCustomerEmail($this->record->fresh(), false);
 
                     $notification = Notification::make()
-                        ->title($sent ? 'Re-send email queued' : 'Could not queue email')
+                        ->title($sent ? 'Email sent' : 'Could not send email')
                         ->body($sent
-                            ? 'The customer notification has been queued for delivery.'
-                            : 'No customer email address is available for this order.');
+                            ? 'The customer notification has been sent.'
+                            : 'No customer email address is available for this order, or the template is disabled.');
 
                     if ($sent) {
                         $notification->success()->send();
@@ -87,10 +87,10 @@ class EditOrder extends EditRecord
                     $sent = $orderEmails->resendCustomerEmail($this->record->fresh(), true);
 
                     $notification = Notification::make()
-                        ->title($sent ? 'Email + PDF queued' : 'Could not queue email')
+                        ->title($sent ? 'Email + PDF sent' : 'Could not send email')
                         ->body($sent
-                            ? 'The customer notification with contract PDF has been queued.'
-                            : 'Confirmed orders with a customer email are required for PDF delivery.');
+                            ? 'The customer notification with contract PDF has been sent.'
+                            : 'Confirmed orders with a customer email are required for PDF delivery, and the template must be enabled.');
 
                     if ($sent) {
                         $notification->success()->send();

@@ -142,7 +142,7 @@ class EmailSystemTest extends TestCase
         $this->assertDatabaseHas('email_logs', [
             'template_key' => 'customer_welcome',
             'recipient' => 'logme@example.com',
-            'status' => 'queued',
+            'status' => 'sent',
         ]);
     }
 

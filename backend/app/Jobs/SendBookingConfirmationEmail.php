@@ -7,7 +7,6 @@ use App\Mail\HostBookingNotification;
 use App\Models\GuestHouseBooking;
 use App\Models\RapydPayment;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -17,7 +16,7 @@ use Illuminate\Support\Facades\Mail;
  * Dispatched after Rapyd confirms the 20% platform fee payment. Sends two
  * separate emails describing the split: 20% paid online, 80% cash on arrival.
  */
-class SendBookingConfirmationEmail implements ShouldQueue
+class SendBookingConfirmationEmail
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -62,11 +61,11 @@ class SendBookingConfirmationEmail implements ShouldQueue
         ];
 
         if ($data['guest_email']) {
-            Mail::to($data['guest_email'])->send(new GuestBookingConfirmation($data));
+            Mail::to($data['guest_email'])->sendNow(new GuestBookingConfirmation($data));
         }
 
         if (! $this->notifyCashReceived && $data['host_email']) {
-            Mail::to($data['host_email'])->send(new HostBookingNotification($data));
+            Mail::to($data['host_email'])->sendNow(new HostBookingNotification($data));
         }
     }
 }
