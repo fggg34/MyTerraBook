@@ -6,6 +6,7 @@ use App\Mail\GuestBookingConfirmation;
 use App\Mail\HostBookingNotification;
 use App\Models\GuestHouseBooking;
 use App\Models\RapydPayment;
+use App\Support\PaymentEmailSummary;
 use Illuminate\Bus\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -40,17 +41,24 @@ class SendBookingConfirmationEmail
         $guestHouse = $booking?->guestHouse;
         $host = $guestHouse?->host;
 
-        $currency = $payment->currency ?: 'USD';
+        $summary = PaymentEmailSummary::fromAmounts(
+            (float) $payment->total_price,
+            (float) $payment->platform_fee,
+            (float) $payment->cash_due_on_arrival,
+        );
 
         $data = [
             'booking_reference' => $booking?->booking_reference ?? ('ORDER-'.$payment->order_id),
             'listing_name' => $guestHouse?->name ?? 'Your booking',
             'check_in' => optional($booking?->check_in)->toDateString(),
             'check_out' => optional($booking?->check_out)->toDateString(),
-            'currency' => $currency,
+            'currency' => 'ISK',
             'total_price' => (float) $payment->total_price,
             'platform_fee' => (float) $payment->platform_fee,
             'cash_due_on_arrival' => (float) $payment->cash_due_on_arrival,
+            'total_isk' => $summary['total_isk'],
+            'paid_online' => $summary['paid_online'],
+            'cash_due_on_arrival_formatted' => $summary['cash_due_on_arrival'],
             'guest_name' => $booking?->guest_name ?? $payment->user?->name ?? 'Guest',
             'guest_email' => $booking?->guest_email ?? $payment->user?->email,
             'guest_phone' => $booking?->guest_phone,

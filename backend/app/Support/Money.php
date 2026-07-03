@@ -14,4 +14,20 @@ final class Money
 
         return $sign.sprintf('%d.%0'.$decimals.'d', $major, $minor);
     }
+
+    /**
+     * Format an amount in Icelandic króna (zero-decimal currency).
+     */
+    public static function formatIsk(float|int $amount): string
+    {
+        return 'ISK '.number_format((int) round((float) $amount), 0, '.', ',');
+    }
+
+    /**
+     * Format stored "cents" value as whole ISK (major units).
+     */
+    public static function formatIskFromCents(int $cents): string
+    {
+        return self::formatIsk($cents / 100);
+    }
 }

@@ -3,7 +3,7 @@
 namespace App\Services\Email;
 
 use App\Models\Order;
-use App\Support\Money;
+use App\Support\PaymentEmailSummary;
 
 class OrderEmailPayload
 {
@@ -14,6 +14,8 @@ class OrderEmailPayload
     {
         $order->loadMissing('car');
 
+        $payment = PaymentEmailSummary::forOrder($order);
+
         return [
             'order_reference' => (string) $order->reference,
             'car_name' => (string) ($order->car?->name ?? 'Vehicle'),
@@ -21,7 +23,10 @@ class OrderEmailPayload
             'customer_email' => (string) $order->customer_email,
             'pickup_at' => $order->pickup_at?->format('D, d M Y H:i') ?? '',
             'dropoff_at' => $order->dropoff_at?->format('D, d M Y H:i') ?? '',
-            'total' => Money::formatDecimalFromCents((int) $order->total_cents).' '.strtoupper((string) $order->currency),
+            'total' => $payment['total'],
+            'total_isk' => $payment['total_isk'],
+            'paid_online' => $payment['paid_online'],
+            'cash_due_on_arrival' => $payment['cash_due_on_arrival'],
         ];
     }
 }

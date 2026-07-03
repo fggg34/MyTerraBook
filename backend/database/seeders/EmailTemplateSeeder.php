@@ -152,12 +152,15 @@ class EmailTemplateSeeder extends Seeder
                     .'<p><strong>Reference:</strong> {{order_reference}}<br>'
                     .'<strong>Vehicle:</strong> {{car_name}}<br>'
                     .'<strong>Pick-up:</strong> {{pickup_at}}<br>'
-                    .'<strong>Drop-off:</strong> {{dropoff_at}}<br>'
-                    .'<strong>Total:</strong> {{total}}</p>',
+                    .'<strong>Drop-off:</strong> {{dropoff_at}}</p>'
+                    .'<p><strong>Payment summary</strong><br>'
+                    .'<strong>Total booking value:</strong> {{total_isk}}<br>'
+                    .'<strong>Paid online (card):</strong> {{paid_online}}<br>'
+                    .'<strong>Due on arrival (cash):</strong> {{cash_due_on_arrival}}</p>',
                 'cta_label' => 'View my bookings',
                 'cta_url_template' => '{{frontend_url}}/account/bookings',
                 'footer_note' => 'We look forward to seeing you at pick-up.',
-                'available_variables' => ['customer_name', 'order_reference', 'car_name', 'pickup_at', 'dropoff_at', 'total', 'frontend_url'],
+                'available_variables' => ['customer_name', 'order_reference', 'car_name', 'pickup_at', 'dropoff_at', 'total', 'total_isk', 'paid_online', 'cash_due_on_arrival', 'frontend_url'],
                 'sort_order' => 60,
             ],
             [
@@ -214,12 +217,15 @@ class EmailTemplateSeeder extends Seeder
                 'body_html' => '<p>The booking <strong>{{order_reference}}</strong> for {{car_name}} has been confirmed.</p>'
                     .'<p><strong>Customer:</strong> {{customer_name}} ({{customer_email}})<br>'
                     .'<strong>Pick-up:</strong> {{pickup_at}}<br>'
-                    .'<strong>Drop-off:</strong> {{dropoff_at}}<br>'
-                    .'<strong>Total:</strong> {{total}}</p>',
+                    .'<strong>Drop-off:</strong> {{dropoff_at}}</p>'
+                    .'<p><strong>Payment summary</strong><br>'
+                    .'<strong>Total booking value:</strong> {{total_isk}}<br>'
+                    .'<strong>Paid online (card):</strong> {{paid_online}}<br>'
+                    .'<strong>Collect on arrival (cash):</strong> {{cash_due_on_arrival}}</p>',
                 'cta_label' => 'Open host bookings',
                 'cta_url_template' => '{{frontend_url}}/host/bookings',
                 'footer_note' => null,
-                'available_variables' => ['order_reference', 'car_name', 'customer_name', 'customer_email', 'pickup_at', 'dropoff_at', 'total', 'frontend_url'],
+                'available_variables' => ['order_reference', 'car_name', 'customer_name', 'customer_email', 'pickup_at', 'dropoff_at', 'total', 'total_isk', 'paid_online', 'cash_due_on_arrival', 'frontend_url'],
                 'sort_order' => 81,
             ],
             [
@@ -282,12 +288,15 @@ class EmailTemplateSeeder extends Seeder
                     .'<strong>Stay:</strong> {{listing_name}}<br>'
                     .'<strong>Check-in:</strong> {{check_in}}<br>'
                     .'<strong>Check-out:</strong> {{check_out}}<br>'
-                    .'<strong>Guests:</strong> {{guests_count}}<br>'
-                    .'<strong>Total:</strong> {{total}}</p>',
+                    .'<strong>Guests:</strong> {{guests_count}}</p>'
+                    .'<p><strong>Payment summary</strong><br>'
+                    .'<strong>Total booking value:</strong> {{total_isk}}<br>'
+                    .'<strong>Paid online (card):</strong> {{paid_online}}<br>'
+                    .'<strong>Due on arrival (cash):</strong> {{cash_due_on_arrival}}</p>',
                 'cta_label' => 'View my stays',
                 'cta_url_template' => '{{frontend_url}}/account/stays',
                 'footer_note' => 'We hope you enjoy your stay.',
-                'available_variables' => ['guest_name', 'booking_reference', 'listing_name', 'check_in', 'check_out', 'guests_count', 'total', 'frontend_url'],
+                'available_variables' => ['guest_name', 'booking_reference', 'listing_name', 'check_in', 'check_out', 'guests_count', 'total', 'total_isk', 'paid_online', 'cash_due_on_arrival', 'frontend_url'],
                 'sort_order' => 100,
             ],
             [
@@ -371,12 +380,15 @@ class EmailTemplateSeeder extends Seeder
                     .'<p><strong>Guest:</strong> {{guest_name}} ({{guest_email}})<br>'
                     .'<strong>Check-in:</strong> {{check_in}}<br>'
                     .'<strong>Check-out:</strong> {{check_out}}<br>'
-                    .'<strong>Guests:</strong> {{guests_count}}<br>'
-                    .'<strong>Total:</strong> {{total}}</p>',
+                    .'<strong>Guests:</strong> {{guests_count}}</p>'
+                    .'<p><strong>Payment summary</strong><br>'
+                    .'<strong>Total booking value:</strong> {{total_isk}}<br>'
+                    .'<strong>Paid online (card):</strong> {{paid_online}}<br>'
+                    .'<strong>Collect on arrival (cash):</strong> {{cash_due_on_arrival}}</p>',
                 'cta_label' => 'Open host bookings',
                 'cta_url_template' => '{{frontend_url}}/host/bookings',
                 'footer_note' => null,
-                'available_variables' => ['booking_reference', 'listing_name', 'guest_name', 'guest_email', 'check_in', 'check_out', 'guests_count', 'total', 'frontend_url'],
+                'available_variables' => ['booking_reference', 'listing_name', 'guest_name', 'guest_email', 'check_in', 'check_out', 'guests_count', 'total', 'total_isk', 'paid_online', 'cash_due_on_arrival', 'frontend_url'],
                 'sort_order' => 122,
             ],
             [

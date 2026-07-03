@@ -1,6 +1,6 @@
 @php
-    $currency = $d['currency'] ?? 'USD';
-    $fmt = fn ($amount) => $currency.' '.number_format((float) $amount, 2);
+    use App\Support\Money;
+    $fmt = fn ($amount) => Money::formatIsk((float) $amount);
     $cashReceived = $d['cash_received'] ?? false;
 @endphp
 <!DOCTYPE html>

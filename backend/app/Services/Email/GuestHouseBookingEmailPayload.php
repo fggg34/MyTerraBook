@@ -3,8 +3,7 @@
 namespace App\Services\Email;
 
 use App\Models\GuestHouseBooking;
-use App\Models\Setting;
-use App\Support\Money;
+use App\Support\PaymentEmailSummary;
 
 class GuestHouseBookingEmailPayload
 {
@@ -15,7 +14,7 @@ class GuestHouseBookingEmailPayload
     {
         $booking->loadMissing('guestHouse');
 
-        $symbol = (string) data_get(Setting::getValue('shop.currency', ['symbol' => '€']), 'symbol', '€');
+        $payment = PaymentEmailSummary::forGuestHouseBooking($booking);
 
         return [
             'booking_reference' => (string) $booking->booking_reference,
@@ -25,7 +24,10 @@ class GuestHouseBookingEmailPayload
             'check_in' => $booking->check_in?->format('d M Y') ?? '',
             'check_out' => $booking->check_out?->format('d M Y') ?? '',
             'guests_count' => (string) $booking->guests_count,
-            'total' => $symbol.Money::formatDecimalFromCents((int) $booking->total_amount),
+            'total' => $payment['total'],
+            'total_isk' => $payment['total_isk'],
+            'paid_online' => $payment['paid_online'],
+            'cash_due_on_arrival' => $payment['cash_due_on_arrival'],
             'reason' => (string) ($booking->cancellation_reason ?? ''),
         ];
     }
