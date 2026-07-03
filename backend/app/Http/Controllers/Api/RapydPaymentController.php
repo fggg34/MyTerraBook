@@ -58,6 +58,16 @@ class RapydPaymentController extends Controller
             'cash_due_on_arrival' => (string) $cashDueOnArrival,
         ];
 
+        // Rapyd does not substitute placeholders in the return URL, so we attach
+        // the identifiers we already know and let the SPA poll the status by them.
+        $returnQuery = http_build_query([
+            'order_id' => $validated['order_id'],
+            'order_type' => $orderType,
+        ]);
+        $frontendUrl = (string) config('rapyd.frontend_url');
+        $completeUrl = $frontendUrl.config('rapyd.success_path', '/booking/rapyd/success').'?'.$returnQuery;
+        $errorUrl = $frontendUrl.config('rapyd.error_path', '/booking/rapyd/failed').'?'.$returnQuery;
+
         try {
             $checkout = $this->rapyd->createCheckoutPage([
                 'amount' => $platformFee, // ONLY the platform fee is charged online.
@@ -65,6 +75,8 @@ class RapydPaymentController extends Controller
                 'country' => config('rapyd.country', 'US'),
                 'payment_method_types' => config('rapyd.payment_method_types'),
                 'merchant_reference_id' => (string) $validated['order_id'],
+                'complete_payment_url' => $completeUrl,
+                'error_payment_url' => $errorUrl,
                 'metadata' => $metadata,
             ]);
         } catch (Throwable $e) {
@@ -120,11 +132,52 @@ class RapydPaymentController extends Controller
     {
         $payment = RapydPayment::query()->where('checkout_id', $checkoutId)->first();
 
-        try {
-            $remote = $this->rapyd->getCheckoutStatus($checkoutId);
-        } catch (Throwable $e) {
-            Log::warning('Rapyd checkoutStatus failed', ['checkout_id' => $checkoutId, 'error' => $e->getMessage()]);
-            $remote = [];
+        return response()->json($this->buildStatusPayload($payment));
+    }
+
+    /**
+     * Status lookup by the order identifiers we control (used by the SPA return
+     * page, since Rapyd cannot echo the checkout id back in the redirect URL).
+     */
+    public function orderStatus(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'order_id' => ['required', 'integer'],
+            'order_type' => ['nullable', 'in:guesthouse,car'],
+        ]);
+
+        $orderType = $validated['order_type'] ?? 'guesthouse';
+
+        $payment = RapydPayment::query()
+            ->where('order_id', $validated['order_id'])
+            ->where(function ($q) use ($orderType) {
+                $q->whereNull('metadata->order_type')
+                    ->orWhere('metadata->order_type', $orderType);
+            })
+            ->latest()
+            ->first();
+
+        return response()->json($this->buildStatusPayload($payment));
+    }
+
+    /**
+     * Fetch the live Rapyd status for a payment, apply the webhook-fallback
+     * confirmation, and shape the JSON response consumed by the SPA.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildStatusPayload(?RapydPayment $payment): array
+    {
+        $remote = [];
+        if ($payment) {
+            try {
+                $remote = $this->rapyd->getCheckoutStatus($payment->checkout_id);
+            } catch (Throwable $e) {
+                Log::warning('Rapyd checkoutStatus failed', [
+                    'checkout_id' => $payment->checkout_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         $paymentStatus = data_get($remote, 'payment.status') ?? data_get($remote, 'status');
@@ -146,8 +199,8 @@ class RapydPaymentController extends Controller
             $payment->refresh();
         }
 
-        return response()->json([
-            'checkout_id' => $checkoutId,
+        return [
+            'checkout_id' => $payment?->checkout_id,
             'order_id' => $payment?->order_id,
             'status' => $payment?->status ?? 'pending',
             'rapyd_status' => $paymentStatus,
@@ -156,7 +209,7 @@ class RapydPaymentController extends Controller
             'cash_due_on_arrival' => $payment?->cash_due_on_arrival,
             'currency' => $payment?->currency,
             'paid_at' => $payment?->paid_at,
-        ]);
+        ];
     }
 
     /**

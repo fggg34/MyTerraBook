@@ -92,6 +92,7 @@ Route::post('/rapyd/webhook', [RapydPaymentController::class, 'handleWebhook']);
 // auth and ties everything to the booking/order id.
 Route::post('/rapyd/initiate-checkout', [RapydPaymentController::class, 'initiateCheckout']);
 Route::get('/rapyd/checkout-status/{checkoutId}', [RapydPaymentController::class, 'checkoutStatus']);
+Route::get('/rapyd/order-status', [RapydPaymentController::class, 'orderStatus']);
 Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
 Route::get('/homepage', [HomepageController::class, 'show']);

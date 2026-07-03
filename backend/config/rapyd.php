@@ -44,10 +44,12 @@ return [
     | Redirect URLs (frontend SPA)
     |--------------------------------------------------------------------------
     |
-    | Rapyd redirects the guest back to these URLs after the hosted checkout.
-    | {CHECKOUT_ID} is replaced with the real checkout id at runtime.
+    | Rapyd does NOT substitute placeholders in the redirect URL, so the
+    | controller appends our own order_id / order_type query params (which are
+    | known when the checkout is created) and the SPA polls the status by those.
     |
     */
-    'complete_payment_url' => env('RAPYD_COMPLETE_URL', env('FRONTEND_URL', 'http://127.0.0.1:5174').'/booking/rapyd/success?checkout_id={CHECKOUT_ID}'),
-    'error_payment_url' => env('RAPYD_ERROR_URL', env('FRONTEND_URL', 'http://127.0.0.1:5174').'/booking/rapyd/failed?checkout_id={CHECKOUT_ID}'),
+    'frontend_url' => rtrim((string) env('RAPYD_FRONTEND_URL', env('FRONTEND_URL', 'http://127.0.0.1:5174')), '/'),
+    'success_path' => env('RAPYD_SUCCESS_PATH', '/booking/rapyd/success'),
+    'error_path' => env('RAPYD_ERROR_PATH', '/booking/rapyd/failed'),
 ];

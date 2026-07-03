@@ -13,6 +13,14 @@ export function getRapydCheckoutStatus(checkoutId) {
   return api.get(`/rapyd/checkout-status/${checkoutId}`)
 }
 
+/**
+ * Poll payment status by the order we created (Rapyd cannot echo the checkout
+ * id back in its redirect URL, so we track by order_id/order_type instead).
+ */
+export function getRapydOrderStatus({ order_id, order_type = 'guesthouse' }) {
+  return api.get('/rapyd/order-status', { params: { order_id, order_type } })
+}
+
 /** Host confirms the cash balance was received on arrival. */
 export function confirmRapydCashReceived(orderId) {
   return api.post(`/host/rapyd/confirm-cash/${orderId}`)

@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { getRapydCheckoutStatus } from '../../api/rapyd'
+import { getRapydCheckoutStatus, getRapydOrderStatus } from '../../api/rapyd'
 import BookingConfirmation from './BookingConfirmation'
 
 /**
  * Rapyd return handler.
  *
- * Rapyd redirects the guest back to /booking/rapyd/success?checkout_id=...
- * (or /booking/rapyd/failed). This page polls the checkout status until the
- * webhook has marked the payment as paid, then renders the confirmation.
+ * Rapyd redirects the guest back to /booking/rapyd/success?order_id=&order_type=
+ * (or /booking/rapyd/failed). This page polls the payment status until it is
+ * marked as paid, then renders the confirmation. It falls back to checkout_id
+ * for backwards compatibility with older redirect URLs.
  *
  * Props:
  *  - outcome: 'success' | 'failed'
@@ -18,7 +19,11 @@ const POLL_INTERVAL_MS = 2000
 
 export default function RapydCheckout({ outcome = 'success' }) {
   const [params] = useSearchParams()
+  const orderId = params.get('order_id')
+  const orderType = params.get('order_type') || 'guesthouse'
   const checkoutId = params.get('checkout_id')
+  // Ignore the un-substituted placeholder from older/misconfigured redirects.
+  const validCheckoutId = checkoutId && !checkoutId.includes('{') ? checkoutId : null
 
   const [status, setStatus] = useState('loading') // loading | paid | pending | failed | error
   const [payment, setPayment] = useState(null)
@@ -26,12 +31,14 @@ export default function RapydCheckout({ outcome = 'success' }) {
   const timerRef = useRef(null)
 
   const poll = useCallback(async () => {
-    if (!checkoutId) {
+    if (!orderId && !validCheckoutId) {
       setStatus('error')
       return
     }
     try {
-      const { data } = await getRapydCheckoutStatus(checkoutId)
+      const { data } = orderId
+        ? await getRapydOrderStatus({ order_id: orderId, order_type: orderType })
+        : await getRapydCheckoutStatus(validCheckoutId)
       setPayment(data)
       if (data?.status === 'paid') {
         setStatus('paid')
@@ -50,7 +57,7 @@ export default function RapydCheckout({ outcome = 'success' }) {
     } catch {
       setStatus('error')
     }
-  }, [checkoutId])
+  }, [orderId, orderType, validCheckoutId])
 
   useEffect(() => {
     if (outcome === 'failed') {
