@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api, resolveStorageUrl } from '../api'
+import { initiateRapydCheckout } from '../api/rapyd'
 import { useAuth } from '../context/AuthContext'
 import { useShopConfig } from '../context/ShopConfigContext'
 import { useToast } from '../context/ToastContext'
@@ -169,8 +170,11 @@ export default function useRequestToBook() {
   })
 
   useEffect(() => {
-    if (bookingType === 'guesthouse') return undefined
-    api.get('/custom-fields').then((res) => setCustomFields(res.data?.data ?? [])).catch(() => setCustomFields([]))
+    // Custom fields only apply to car/campervan bookings.
+    if (bookingType !== 'guesthouse') {
+      api.get('/custom-fields').then((res) => setCustomFields(res.data?.data ?? [])).catch(() => setCustomFields([]))
+    }
+    // Payment methods (incl. Rapyd card) are offered for every booking type.
     api.get('/payment-methods').then((res) => {
       const methods = res.data?.data ?? []
       setPaymentMethods(methods)
@@ -489,6 +493,7 @@ export default function useRequestToBook() {
     }
     setSaving(true)
     try {
+      let created
       if (bookingType === 'guesthouse') {
         const { data } = await api.post('/guest-houses/bookings', {
           guest_house_slug: slug,
@@ -501,13 +506,7 @@ export default function useRequestToBook() {
           special_requests: form.special_requests || form.notes || undefined,
           coupon_code: form.coupon_code.trim() || undefined,
         })
-        const confirmationUrl = data?.data?.confirmation_url
-        if (confirmationUrl) {
-          const path = confirmationUrl.replace(/^https?:\/\/[^/]+/, '')
-          navigate(path.startsWith('/') ? path : `/${path}`, { replace: true })
-        } else if (data?.data?.confirmation_token) {
-          navigate(`/booking/confirmation/${data.data.confirmation_token}`, { replace: true })
-        }
+        created = data?.data
       } else {
         const { data } = await api.post('/orders', {
           car_id: Number(carId),
@@ -524,13 +523,35 @@ export default function useRequestToBook() {
           coupon_code: form.coupon_code.trim() || undefined,
           custom_field_values: form.custom_field_values,
         })
-        const confirmationUrl = data?.data?.confirmation_url
-        if (confirmationUrl) {
-          const path = confirmationUrl.replace(/^https?:\/\/[^/]+/, '')
-          navigate(path.startsWith('/') ? path : `/${path}`, { replace: true })
-        } else if (data?.data?.confirmation_token) {
-          navigate(`/booking/confirmation/${data.data.confirmation_token}`, { replace: true })
+        created = data?.data
+      }
+
+      // Rapyd card payment: charge the 20% platform fee on the hosted checkout,
+      // then Rapyd redirects the guest back to /booking/rapyd/success.
+      if (form.paymentMethod === 'rapyd_card' && created?.id) {
+        const totalCents =
+          created.total_amount_cents ?? created.total_cents ?? quote?.total_cents ?? 0
+        try {
+          const { data: rapyd } = await initiateRapydCheckout({
+            order_id: created.id,
+            total_price: Number(totalCents) / 100,
+          })
+          if (rapyd?.checkout_url) {
+            window.location.href = rapyd.checkout_url
+            return // keep `saving` true while the browser redirects
+          }
+          toast('Could not start the card payment. Please try again.', 'error')
+        } catch (err) {
+          toast(err.response?.data?.message || 'Could not start the card payment.', 'error')
         }
+      }
+
+      const confirmationUrl = created?.confirmation_url
+      if (confirmationUrl) {
+        const path = confirmationUrl.replace(/^https?:\/\/[^/]+/, '')
+        navigate(path.startsWith('/') ? path : `/${path}`, { replace: true })
+      } else if (created?.confirmation_token) {
+        navigate(`/booking/confirmation/${created.confirmation_token}`, { replace: true })
       }
       toast('Booking confirmed successfully', 'success')
     } catch (err) {

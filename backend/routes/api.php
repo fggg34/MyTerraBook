@@ -86,6 +86,12 @@ Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
 
 // Rapyd webhook — no auth, verified by HMAC signature inside the controller.
 Route::post('/rapyd/webhook', [RapydPaymentController::class, 'handleWebhook']);
+
+// Rapyd card checkout for the 20% platform fee. Public so guest checkouts
+// (which create bookings without login) can pay; the controller uses optional
+// auth and ties everything to the booking/order id.
+Route::post('/rapyd/initiate-checkout', [RapydPaymentController::class, 'initiateCheckout']);
+Route::get('/rapyd/checkout-status/{checkoutId}', [RapydPaymentController::class, 'checkoutStatus']);
 Route::get('/custom-fields', [CustomFieldController::class, 'index']);
 
 Route::get('/homepage', [HomepageController::class, 'show']);
@@ -160,10 +166,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/me/profile-photo', [MeProfileController::class, 'updatePhoto']);
     Route::delete('/me/profile-photo', [MeProfileController::class, 'deletePhoto']);
     Route::patch('/me/password', [MeProfileController::class, 'updatePassword']);
-
-    // Rapyd card checkout (guest pays the 20% platform fee online).
-    Route::post('/rapyd/initiate-checkout', [RapydPaymentController::class, 'initiateCheckout']);
-    Route::get('/rapyd/checkout-status/{checkoutId}', [RapydPaymentController::class, 'checkoutStatus']);
 });
 
 Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {

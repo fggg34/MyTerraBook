@@ -7,6 +7,11 @@ import { useFormatPrice } from '../../hooks/useFormatPrice'
 
 function buildPayNotes(prepayPercent) {
   return {
+    rapyd_card: (
+      <>
+        <b>Pay 20% now by card.</b> You&apos;ll be redirected to our secure card checkout to pay the 20% booking fee. The remaining 80% is paid in cash directly to the host on arrival.
+      </>
+    ),
     card: (
       <>
         <b>{prepayPercent}% prepayment on approval.</b> Once your host approves, we charge {prepayPercent}% to hold the booking. This prepayment is non-refundable. The remaining balance is paid on pick-up.
