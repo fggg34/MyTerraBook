@@ -35,6 +35,37 @@ class RapydService
     }
 
     /**
+     * ISO 4217 currencies that have no minor unit (amounts must be whole numbers).
+     *
+     * @var list<string>
+     */
+    private const ZERO_DECIMAL_CURRENCIES = [
+        'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW', 'PYG',
+        'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+    ];
+
+    /**
+     * Number of decimal places Rapyd expects for a currency's amount.
+     */
+    public static function decimalsFor(string $currency): int
+    {
+        return in_array(strtoupper($currency), self::ZERO_DECIMAL_CURRENCIES, true) ? 0 : 2;
+    }
+
+    /**
+     * Format an amount to the precision Rapyd expects for the given currency.
+     * Zero-decimal currencies (ISK, JPY, …) are returned as integers.
+     *
+     * @return int|float
+     */
+    public static function formatAmount(float $amount, string $currency)
+    {
+        $decimals = self::decimalsFor($currency);
+
+        return $decimals === 0 ? (int) round($amount) : round($amount, $decimals);
+    }
+
+    /**
      * Create a hosted checkout page for the platform fee (a percentage of the total).
      *
      * @param  array<string, mixed>  $data  Expects: amount (platform fee, major units),
@@ -43,21 +74,27 @@ class RapydService
      */
     public function createCheckoutPage(array $data): array
     {
-        $amountMajor = round((float) ($data['amount'] ?? 0), 2);
+        $currency = strtoupper((string) ($data['currency'] ?? config('rapyd.currency', 'ISK')));
 
         $payload = [
-            // Rapyd expects the amount in the currency's major unit for checkout,
-            // but we keep cents-precision by rounding to 2 decimals. For strict
-            // "smallest unit" APIs, multiply by 100 — Rapyd /v1/checkout uses major units.
-            'amount' => $amountMajor,
-            'currency' => $data['currency'] ?? config('rapyd.currency', 'USD'),
-            'country' => $data['country'] ?? config('rapyd.country', 'US'),
-            'payment_method_types' => $data['payment_method_types'] ?? config('rapyd.payment_method_types'),
+            // Rapyd expects the amount in the currency's standard unit (e.g. 10.50
+            // for USD, 3000 for ISK). Zero-decimal currencies such as ISK/JPY must
+            // NOT carry decimals, so we format the amount per the currency.
+            'amount' => self::formatAmount((float) ($data['amount'] ?? 0), $currency),
+            'currency' => $currency,
+            'country' => $data['country'] ?? config('rapyd.country', 'IS'),
             'merchant_reference_id' => (string) ($data['merchant_reference_id'] ?? ''),
             'complete_payment_url' => $data['complete_payment_url'] ?? config('rapyd.complete_payment_url'),
             'error_payment_url' => $data['error_payment_url'] ?? config('rapyd.error_payment_url'),
             'metadata' => $data['metadata'] ?? [],
         ];
+
+        // Only constrain the card brands when explicitly configured; otherwise let
+        // Rapyd offer every method valid for the country/currency.
+        $methodTypes = $data['payment_method_types'] ?? config('rapyd.payment_method_types');
+        if (is_array($methodTypes) && $methodTypes !== []) {
+            $payload['payment_method_types'] = array_values($methodTypes);
+        }
 
         $response = $this->request('post', '/v1/checkout', $payload);
         $body = $response->json();

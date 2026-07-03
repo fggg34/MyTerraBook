@@ -39,11 +39,15 @@ class RapydPaymentController extends Controller
             ? GuestHouseBooking::query()->find($validated['order_id'])
             : null;
 
+        $currency = strtoupper($validated['currency'] ?? (string) config('rapyd.currency', 'ISK'));
+        $decimals = RapydService::decimalsFor($currency);
+
         $commissionRate = (float) config('rapyd.commission_rate', 0.15);
-        $totalPrice = round((float) $validated['total_price'], 2);
-        $platformFee = round($totalPrice * $commissionRate, 2);
-        $cashDueOnArrival = round($totalPrice - $platformFee, 2);
-        $currency = strtoupper($validated['currency'] ?? (string) config('rapyd.currency', 'USD'));
+        $totalPrice = round((float) $validated['total_price'], $decimals);
+        // Round the online fee to the currency's precision so the amount charged
+        // matches what Rapyd accepts (e.g. whole krónur for ISK).
+        $platformFee = round($totalPrice * $commissionRate, $decimals);
+        $cashDueOnArrival = round($totalPrice - $platformFee, $decimals);
 
         $hostId = $validated['host_id'] ?? $booking?->guestHouse?->user_id;
         $userId = $request->user()?->id ?? $booking?->user_id;

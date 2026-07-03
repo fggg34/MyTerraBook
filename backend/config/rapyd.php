@@ -35,9 +35,19 @@ return [
     | Checkout defaults
     |--------------------------------------------------------------------------
     */
-    'currency' => env('RAPYD_CURRENCY', 'USD'),
-    'country' => env('RAPYD_COUNTRY', 'US'),
-    'payment_method_types' => ['us_visa_card', 'us_mastercard'],
+    'currency' => env('RAPYD_CURRENCY', 'ISK'),
+    'country' => env('RAPYD_COUNTRY', 'IS'),
+
+    /*
+    | Restrict the card brands offered on the hosted page. Leave empty (default)
+    | to let Rapyd present every card method valid for the country/currency —
+    | forcing US-only brands breaks non-US currencies such as ISK.
+    | Provide a comma-separated list via RAPYD_PAYMENT_METHOD_TYPES to override.
+    */
+    'payment_method_types' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('RAPYD_PAYMENT_METHOD_TYPES', ''))
+    ))),
 
     /*
     |--------------------------------------------------------------------------
