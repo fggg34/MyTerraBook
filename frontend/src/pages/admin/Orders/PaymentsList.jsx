@@ -44,8 +44,8 @@ export default function PaymentsList() {
                 <Th>Host</Th>
                 <Th>Listing</Th>
                 <Th className="text-right">Total</Th>
-                <Th className="text-right">Online (20%)</Th>
-                <Th className="text-right">Cash (80%)</Th>
+                <Th className="text-right">Online (15%)</Th>
+                <Th className="text-right">Cash (85%)</Th>
                 <Th>Online Status</Th>
                 <Th>Cash Status</Th>
                 <Th>Date</Th>

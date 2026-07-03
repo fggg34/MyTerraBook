@@ -24,6 +24,8 @@ export default function RapydConfigModal({ method, onClose, onSaved }) {
   }, [method])
 
   const webhookUrl = method?.webhook_url || `${window.location.origin}/api/rapyd/webhook`
+  const onlinePct = Math.round((Number(method?.commission_rate ?? 0.15)) * 100)
+  const cashPct = 100 - onlinePct
 
   async function handleSave() {
     setError('')
@@ -55,7 +57,7 @@ export default function RapydConfigModal({ method, onClose, onSaved }) {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-bold text-gray-900">Configure Rapyd Card Payment</h2>
-            <p className="text-sm text-gray-500">Platform collects 20% online • 80% cash on arrival</p>
+            <p className="text-sm text-gray-500">Platform collects {onlinePct}% online • {cashPct}% cash on arrival</p>
           </div>
           <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Close">
             ✕
@@ -103,8 +105,8 @@ export default function RapydConfigModal({ method, onClose, onSaved }) {
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <ReadOnlyField label="Platform Fee" value="20% (online)" />
-            <ReadOnlyField label="Cash on Arrival" value="80% (cash)" />
+            <ReadOnlyField label="Platform Fee" value={`${onlinePct}% (online)`} />
+            <ReadOnlyField label="Cash on Arrival" value={`${cashPct}% (cash)`} />
           </div>
 
           <Field label="Webhook URL">

@@ -25,10 +25,10 @@ return [
     | The remaining balance is paid in cash to the host on arrival and is never
     | processed by Rapyd.
     |
-    | commission_rate: fraction of the total charged online (0.20 = 20%).
+    | commission_rate: fraction of the total charged online (0.15 = 15%).
     |
     */
-    'commission_rate' => (float) env('RAPYD_COMMISSION_RATE', 0.20),
+    'commission_rate' => (float) env('RAPYD_COMMISSION_RATE', 0.15),
 
     /*
     |--------------------------------------------------------------------------

@@ -33,7 +33,7 @@ export default function PaymentMethodsPage() {
       code: 'rapyd_card',
       name: 'Rapyd Card Payment',
       is_active: false,
-      commission_label: 'Platform collects 20% online • 80% cash on arrival',
+      commission_label: 'Platform collects 15% online • 85% cash on arrival',
       environment: 'sandbox',
     }
 

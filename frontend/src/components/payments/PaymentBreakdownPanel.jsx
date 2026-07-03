@@ -25,6 +25,12 @@ export default function PaymentBreakdownPanel({
   const onlinePaid = onlineStatus === 'paid'
   const cashConfirmed = cashStatus === 'confirmed'
 
+  const total = Number(totalPrice) || 0
+  const onlinePct = total ? Math.round((Number(platformFee) / total) * 100) : null
+  const cashPct = onlinePct != null ? 100 - onlinePct : null
+  const onlinePctLabel = onlinePct != null ? ` (${onlinePct}%)` : ''
+  const cashPctLabel = cashPct != null ? ` (${cashPct}%)` : ''
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">Payment Breakdown</h3>
@@ -36,7 +42,7 @@ export default function PaymentBreakdownPanel({
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-emerald-700">✅ Platform Fee (20%){variant === 'host' ? ' — handled by platform' : ' — paid online'}</span>
+          <span className="text-emerald-700">✅ Platform Fee{onlinePctLabel}{variant === 'host' ? ' — handled by platform' : ' — paid online'}</span>
           <span className="font-semibold text-emerald-700">
             {formatMoney(platformFee, currency)}
             <StatusPill tone={onlinePaid ? 'green' : 'gray'}>{onlinePaid ? 'PAID' : onlineStatus.toUpperCase()}</StatusPill>
@@ -45,7 +51,7 @@ export default function PaymentBreakdownPanel({
 
         <div className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2">
           <span className="font-medium text-amber-700">
-            💵 Cash on Arrival (80%){variant === 'host' ? ' — you collect' : ''}
+            💵 Cash on Arrival{cashPctLabel}{variant === 'host' ? ' — you collect' : ''}
           </span>
           <span className="font-bold text-amber-700">
             {formatMoney(cashDue, currency)}

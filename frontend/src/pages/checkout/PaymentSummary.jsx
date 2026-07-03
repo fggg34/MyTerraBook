@@ -19,7 +19,7 @@ export default function PaymentSummary({
   totalPrice,
   currency = 'USD',
   hostId,
-  commissionRate = 0.2,
+  commissionRate = 0.15,
 }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

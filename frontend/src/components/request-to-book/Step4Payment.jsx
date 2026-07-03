@@ -6,17 +6,14 @@ import LoadingSpinner from '../ui/LoadingSpinner'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 
 function buildPayNotes(prepayPercent) {
+  const hostedCardNote = (
+    <>
+      <b>Pay {prepayPercent}% now by card.</b> You&apos;ll be redirected to our secure card checkout to pay the {prepayPercent}% booking fee. The remaining {100 - prepayPercent}% is paid in cash directly to the host on arrival.
+    </>
+  )
   return {
-    rapyd_card: (
-      <>
-        <b>Pay 20% now by card.</b> You&apos;ll be redirected to our secure card checkout to pay the 20% booking fee. The remaining 80% is paid in cash directly to the host on arrival.
-      </>
-    ),
-    card: (
-      <>
-        <b>{prepayPercent}% prepayment on approval.</b> Once your host approves, we charge {prepayPercent}% to hold the booking. This prepayment is non-refundable. The remaining balance is paid on pick-up.
-      </>
-    ),
+    rapyd_card: hostedCardNote,
+    card: hostedCardNote,
     instal: (
       <>
         <b>Pay in 3.</b> The {prepayPercent}% prepayment is taken after approval; the rest can be split into interest-free instalments, with the final balance due on pick-up.
@@ -70,10 +67,11 @@ export default function Step4Payment({
       <b>{prepayPercent}% prepayment on approval.</b> The remaining balance is paid on pick-up or check-in.
     </>
   )
-  // Rapyd collects card + billing details on its own hosted checkout page,
-  // so we don't render the local card form or billing address for it.
-  const isHostedRedirect = form.paymentMethod === 'rapyd_card'
-  const showCardForm = !isHostedRedirect && ['card', 'offline_card', 'bank_transfer'].includes(form.paymentMethod)
+  // Card payments are processed on Rapyd's hosted checkout page (card + billing
+  // details are entered there after redirect), so we never render the local
+  // card form or billing address for card methods.
+  const isHostedRedirect = ['card', 'rapyd_card'].includes(form.paymentMethod)
+  const showCardForm = !isHostedRedirect && ['offline_card', 'bank_transfer'].includes(form.paymentMethod)
 
   return (
     <div data-step="4">

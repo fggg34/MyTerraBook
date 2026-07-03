@@ -423,10 +423,8 @@ export default function useRequestToBook() {
       }
       if (s === 4) {
         if (!form.agreed) e.agreed = 'Required'
-        if (form.paymentMethod === 'card') {
-          if (!form.cardNumber.replace(/\s/g, '').match(/^\d{13,16}$/)) e.cardNumber = 'Invalid'
-          if (!form.cardName.trim()) e.cardName = 'Required'
-        }
+        // Card details are collected on Rapyd's hosted page, so no local
+        // card-field validation is needed for card methods.
       }
       setErrors(e)
       return e
@@ -532,9 +530,9 @@ export default function useRequestToBook() {
         created = data?.data
       }
 
-      // Rapyd card payment: charge the 20% platform fee on the hosted checkout,
+      // Card payment (Rapyd): charge the 20% platform fee on the hosted checkout,
       // then Rapyd redirects the guest back to /booking/rapyd/success.
-      if (form.paymentMethod === 'rapyd_card' && created?.id) {
+      if (['card', 'rapyd_card'].includes(form.paymentMethod) && created?.id) {
         const totalCents =
           created.total_amount_cents ?? created.total_cents ?? quote?.total_cents ?? 0
         try {

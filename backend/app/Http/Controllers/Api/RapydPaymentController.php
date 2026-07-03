@@ -32,7 +32,7 @@ class RapydPaymentController extends Controller
 
         $booking = GuestHouseBooking::query()->find($validated['order_id']);
 
-        $commissionRate = (float) config('rapyd.commission_rate', 0.20);
+        $commissionRate = (float) config('rapyd.commission_rate', 0.15);
         $totalPrice = round((float) $validated['total_price'], 2);
         $platformFee = round($totalPrice * $commissionRate, 2);
         $cashDueOnArrival = round($totalPrice - $platformFee, 2);

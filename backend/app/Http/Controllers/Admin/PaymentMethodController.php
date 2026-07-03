@@ -45,7 +45,7 @@ class PaymentMethodController extends Controller
             $config['secret_key'] = $validated['secret_key'];
         }
         $config['environment'] = $validated['environment'] ?? ($config['environment'] ?? 'sandbox');
-        $config['commission_rate'] = (float) config('rapyd.commission_rate', 0.20);
+        $config['commission_rate'] = (float) config('rapyd.commission_rate', 0.15);
         $config['webhook_url'] = rtrim((string) config('app.url'), '/').'/api/rapyd/webhook';
 
         $method->fill([
@@ -64,7 +64,7 @@ class PaymentMethodController extends Controller
     private function present(PaymentMethod $method): array
     {
         $config = $method->config ?? [];
-        $commissionRate = (float) ($config['commission_rate'] ?? config('rapyd.commission_rate', 0.20));
+        $commissionRate = (float) ($config['commission_rate'] ?? config('rapyd.commission_rate', 0.15));
 
         return [
             'id' => $method->id,
