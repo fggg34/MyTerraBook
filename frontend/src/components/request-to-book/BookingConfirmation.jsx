@@ -30,6 +30,15 @@ export default function BookingConfirmation({
   const [calendarLoading, setCalendarLoading] = useState(false)
   const timeline = config.confirmationTimeline
   const isVehicle = bookingType !== 'guesthouse'
+  const payment = confirmed.payment
+  const fmtMoney = (amount, currency = 'EUR') => {
+    const value = Number(amount || 0)
+    try {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value)
+    } catch {
+      return `${currency} ${value.toFixed(2)}`
+    }
+  }
   const hostName = host?.name || 'Your host'
   const hostInitial = host?.initial || hostName.charAt(0).toUpperCase() || 'H'
   const hostSubtitle = hostMemberLabel(host)
@@ -132,12 +141,49 @@ export default function BookingConfirmation({
                 </span>
                 {isVehicle && <span className="cfs">Unlimited mileage included</span>}
               </div>
-              <div className="cf cf-total">
-                <span className="cfk">Total paid</span>
-                <span className="cfv">{confirmed.total}</span>
-                {protectionSummary && <span className="cfs">{protectionSummary}</span>}
-              </div>
+              {payment ? (
+                <>
+                  <div className="cf cf-total">
+                    <span className="cfk">Total booking value</span>
+                    <span className="cfv">{fmtMoney(payment.total_price, payment.currency)}</span>
+                  </div>
+                  <div className="cf">
+                    <span className="cfk">Paid online (card)</span>
+                    <span className="cfv">{fmtMoney(payment.platform_fee, payment.currency)}</span>
+                    <span className="cfs">{payment.status === 'paid' ? 'Paid' : 'Pending'}</span>
+                  </div>
+                  <div className="cf">
+                    <span className="cfk">Cash due on arrival</span>
+                    <span className="cfv">{fmtMoney(payment.cash_due_on_arrival, payment.currency)}</span>
+                    <span className="cfs">Pay the host directly</span>
+                  </div>
+                </>
+              ) : (
+                <div className="cf cf-total">
+                  <span className="cfk">Total paid</span>
+                  <span className="cfv">{confirmed.total}</span>
+                  {protectionSummary && <span className="cfs">{protectionSummary}</span>}
+                </div>
+              )}
             </div>
+
+            {payment && Number(payment.cash_due_on_arrival) > 0 && (
+              <div
+                className="cash-notice"
+                style={{
+                  marginTop: 16,
+                  padding: '12px 16px',
+                  borderRadius: 12,
+                  background: '#fff7ed',
+                  border: '1px solid #fed7aa',
+                  color: '#9a3412',
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                Please bring {fmtMoney(payment.cash_due_on_arrival, payment.currency)} in cash to pay {hostName} directly upon arrival.
+              </div>
+            )}
 
             <div className="ctimeline">
               {timeline.map((step, i) => (

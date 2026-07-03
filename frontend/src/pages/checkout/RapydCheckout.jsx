@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { getRapydCheckoutStatus, getRapydOrderStatus } from '../../api/rapyd'
-import BookingConfirmation from './BookingConfirmation'
 
 /**
  * Rapyd return handler.
  *
  * Rapyd redirects the guest back to /booking/rapyd/success?order_id=&order_type=
  * (or /booking/rapyd/failed). This page polls the payment status until it is
- * marked as paid, then renders the confirmation. It falls back to checkout_id
- * for backwards compatibility with older redirect URLs.
+ * marked as paid, then redirects the guest to the existing booking confirmation
+ * page (which now shows the paid-online / cash-on-arrival split dynamically).
+ * It falls back to checkout_id for backwards compatibility with older URLs.
  *
  * Props:
  *  - outcome: 'success' | 'failed'
@@ -19,14 +19,14 @@ const POLL_INTERVAL_MS = 2000
 
 export default function RapydCheckout({ outcome = 'success' }) {
   const [params] = useSearchParams()
+  const navigate = useNavigate()
   const orderId = params.get('order_id')
   const orderType = params.get('order_type') || 'guesthouse'
   const checkoutId = params.get('checkout_id')
   // Ignore the un-substituted placeholder from older/misconfigured redirects.
   const validCheckoutId = checkoutId && !checkoutId.includes('{') ? checkoutId : null
 
-  const [status, setStatus] = useState('loading') // loading | paid | pending | failed | error
-  const [payment, setPayment] = useState(null)
+  const [status, setStatus] = useState('loading') // loading | pending | failed | error
   const pollsRef = useRef(0)
   const timerRef = useRef(null)
 
@@ -39,9 +39,13 @@ export default function RapydCheckout({ outcome = 'success' }) {
       const { data } = orderId
         ? await getRapydOrderStatus({ order_id: orderId, order_type: orderType })
         : await getRapydCheckoutStatus(validCheckoutId)
-      setPayment(data)
       if (data?.status === 'paid') {
-        setStatus('paid')
+        // Reuse the existing confirmation page instead of a bespoke one.
+        if (data.confirmation_token) {
+          navigate(`/booking/confirmation/${data.confirmation_token}`, { replace: true })
+        } else {
+          navigate('/dashboard?type=guesthouse', { replace: true })
+        }
         return
       }
       if (data?.status === 'failed') {
@@ -57,7 +61,7 @@ export default function RapydCheckout({ outcome = 'success' }) {
     } catch {
       setStatus('error')
     }
-  }, [orderId, orderType, validCheckoutId])
+  }, [orderId, orderType, validCheckoutId, navigate])
 
   useEffect(() => {
     if (outcome === 'failed') {
@@ -69,18 +73,6 @@ export default function RapydCheckout({ outcome = 'success' }) {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
   }, [outcome, poll])
-
-  if (status === 'paid' && payment) {
-    return (
-      <BookingConfirmation
-        bookingReference={payment.order_id ? `#${payment.order_id}` : undefined}
-        totalPrice={payment.total_price}
-        platformFee={payment.platform_fee}
-        cashDue={payment.cash_due_on_arrival}
-        currency={payment.currency || 'USD'}
-      />
-    )
-  }
 
   if (status === 'loading' || status === 'pending') {
     return (

@@ -213,7 +213,21 @@ class RapydPaymentController extends Controller
             'cash_due_on_arrival' => $payment?->cash_due_on_arrival,
             'currency' => $payment?->currency,
             'paid_at' => $payment?->paid_at,
+            // Lets the SPA redirect to the existing confirmation page after payment.
+            'confirmation_token' => $payment ? $this->confirmationTokenFor($payment) : null,
         ];
+    }
+
+    /**
+     * Resolve the confirmation token for the booking/order behind a payment.
+     */
+    private function confirmationTokenFor(RapydPayment $payment): ?string
+    {
+        $orderType = (string) data_get($payment->metadata, 'order_type', 'guesthouse');
+
+        return $orderType === 'car'
+            ? Order::query()->whereKey($payment->order_id)->value('confirmation_token')
+            : GuestHouseBooking::query()->whereKey($payment->order_id)->value('confirmation_token');
     }
 
     /**

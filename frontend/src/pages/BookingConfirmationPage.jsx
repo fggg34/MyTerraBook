@@ -41,6 +41,7 @@ function buildPropsFromPayload(data, prepayPercent) {
       currency: data.currency,
       name: firstName,
       customerEmail: data.customer_email,
+      payment: data.payment || null,
     },
     config,
     item: data.item,

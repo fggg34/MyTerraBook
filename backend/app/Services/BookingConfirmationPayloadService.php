@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\GuestHouseBooking;
 use App\Models\Order;
+use App\Models\RapydPayment;
 use App\Models\User;
 use App\Support\Money;
 use App\Support\VehicleType;
@@ -69,6 +70,7 @@ class BookingConfirmationPayloadService
                 'category' => $car->subCategory ? ['name' => $car->subCategory->name] : null,
             ] : null,
             'host' => $this->hostPayload($car?->host),
+            'payment' => $this->rapydPaymentPayload($order->id, 'car'),
         ];
     }
 
@@ -107,6 +109,39 @@ class BookingConfirmationPayloadService
                 'check_out_time' => $house->check_out_time,
             ] : null,
             'host' => $this->hostPayload($house?->host),
+            'payment' => $this->rapydPaymentPayload($booking->id, 'guesthouse'),
+        ];
+    }
+
+    /**
+     * The online-fee / cash-on-arrival split from the Rapyd payment (if any),
+     * so the existing confirmation page can display it dynamically.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function rapydPaymentPayload(int $orderId, string $orderType): ?array
+    {
+        $payment = RapydPayment::query()
+            ->where('order_id', $orderId)
+            ->where(function ($q) use ($orderType) {
+                $q->whereNull('metadata->order_type')
+                    ->orWhere('metadata->order_type', $orderType);
+            })
+            ->latest()
+            ->first();
+
+        if ($payment === null) {
+            return null;
+        }
+
+        return [
+            'method' => 'rapyd_card',
+            'status' => $payment->status, // pending | paid | failed | refunded
+            'currency' => $payment->currency,
+            'total_price' => (float) $payment->total_price,
+            'platform_fee' => (float) $payment->platform_fee,
+            'cash_due_on_arrival' => (float) $payment->cash_due_on_arrival,
+            'paid_at' => $payment->paid_at?->toIso8601String(),
         ];
     }
 
