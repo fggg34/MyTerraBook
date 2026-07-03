@@ -315,7 +315,14 @@ class RapydPaymentController extends Controller
 
         $payment = $booking->rapydPayments()->latest()->first();
         if ($payment) {
-            SendBookingConfirmationEmail::dispatch($payment->id, notifyCashReceived: true);
+            try {
+                SendBookingConfirmationEmail::dispatchSync($payment->id, notifyCashReceived: true);
+            } catch (Throwable $e) {
+                Log::error('Rapyd cash-received email failed', [
+                    'payment_id' => $payment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         return response()->json([
@@ -379,6 +386,15 @@ class RapydPaymentController extends Controller
         $booking->forceFill($attrs)->save();
 
         // Guest houses use the 15%/85% paid-online / cash-on-arrival emails.
-        SendBookingConfirmationEmail::dispatch($payment->id);
+        // Sent synchronously so it works without a queue worker (matches the rest
+        // of the app); a mail failure must not break payment confirmation.
+        try {
+            SendBookingConfirmationEmail::dispatchSync($payment->id);
+        } catch (Throwable $e) {
+            Log::error('Rapyd confirmation email failed', [
+                'payment_id' => $payment->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }
