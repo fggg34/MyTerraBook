@@ -266,7 +266,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   /* ---------- Hero (full-bleed, booking module inside) ---------- */
   .hero{
     position:relative;
-    min-height:780px;
+    min-height:650px;
     display:flex;
     overflow:hidden;
   }
