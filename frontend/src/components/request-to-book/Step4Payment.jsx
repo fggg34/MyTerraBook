@@ -70,7 +70,10 @@ export default function Step4Payment({
       <b>{prepayPercent}% prepayment on approval.</b> The remaining balance is paid on pick-up or check-in.
     </>
   )
-  const showCardForm = ['card', 'offline_card', 'bank_transfer'].includes(form.paymentMethod)
+  // Rapyd collects card + billing details on its own hosted checkout page,
+  // so we don't render the local card form or billing address for it.
+  const isHostedRedirect = form.paymentMethod === 'rapyd_card'
+  const showCardForm = !isHostedRedirect && ['card', 'offline_card', 'bank_transfer'].includes(form.paymentMethod)
 
   return (
     <div data-step="4">
@@ -181,38 +184,40 @@ export default function Step4Payment({
         </div>
       </div>
 
-      <div className="block">
-        <div className="block-head">
-          <span className="bnum">2</span>
-          <h3>Billing address</h3>
-        </div>
-        <div className="frow">
-          <div className="field full">
-            <label>Street address <span className="req">*</span></label>
-            <input
-              className="inp"
-              placeholder="Street and number"
-              value={form.billingStreet}
-              onChange={(e) => updateForm({ billingStreet: e.target.value })}
-            />
+      {isHostedRedirect ? null : (
+        <div className="block">
+          <div className="block-head">
+            <span className="bnum">2</span>
+            <h3>Billing address</h3>
+          </div>
+          <div className="frow">
+            <div className="field full">
+              <label>Street address <span className="req">*</span></label>
+              <input
+                className="inp"
+                placeholder="Street and number"
+                value={form.billingStreet}
+                onChange={(e) => updateForm({ billingStreet: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="frow">
+            <div className="field">
+              <label>City <span className="req">*</span></label>
+              <input className="inp" placeholder="City" value={form.billingCity} onChange={(e) => updateForm({ billingCity: e.target.value })} />
+            </div>
+            <div className="field">
+              <label>Country <span className="req">*</span></label>
+              <CountrySelect
+                className="sel"
+                value={form.billingCountry}
+                onChange={(e) => updateForm({ billingCountry: e.target.value })}
+                placeholder="Select"
+              />
+            </div>
           </div>
         </div>
-        <div className="frow">
-          <div className="field">
-            <label>City <span className="req">*</span></label>
-            <input className="inp" placeholder="City" value={form.billingCity} onChange={(e) => updateForm({ billingCity: e.target.value })} />
-          </div>
-          <div className="field">
-            <label>Country <span className="req">*</span></label>
-            <CountrySelect
-              className="sel"
-              value={form.billingCountry}
-              onChange={(e) => updateForm({ billingCountry: e.target.value })}
-              placeholder="Select"
-            />
-          </div>
-        </div>
-      </div>
+      )}
 
       <label
         className={`agree${form.agreed ? ' on' : ''}`}

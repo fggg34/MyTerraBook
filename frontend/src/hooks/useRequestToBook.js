@@ -181,7 +181,13 @@ export default function useRequestToBook() {
       if (methods.length) {
         setForm((prev) => ({
           ...prev,
-          paymentMethod: prev.paymentMethod || methods[0].code,
+          // Keep the current choice only if it's actually offered; otherwise
+          // fall back to the first available method. This prevents the default
+          // 'card' from sticking (and showing the local card form) when, e.g.,
+          // only Rapyd card is enabled — card data is entered on Rapyd's page.
+          paymentMethod: methods.some((m) => m.code === prev.paymentMethod)
+            ? prev.paymentMethod
+            : methods[0].code,
         }))
       }
     }).catch(() => setPaymentMethods([]))
