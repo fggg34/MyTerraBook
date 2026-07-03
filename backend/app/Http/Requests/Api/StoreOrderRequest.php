@@ -29,6 +29,7 @@ class StoreOrderRequest extends FormRequest
             'rental_options' => ['nullable', 'array'],
             'rental_options.*' => ['integer', 'min:1'],
             'coupon_code' => ['nullable', 'string', 'max:64'],
+            'payment_method' => ['nullable', 'string', 'max:64'],
             'custom_field_values' => ['nullable', 'array'],
             'custom_field_values.*' => ['nullable', 'string', 'max:2000'],
         ];

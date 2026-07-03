@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\GuestHouseBookingStatus;
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendBookingConfirmationEmail;
 use App\Models\GuestHouseBooking;
+use App\Models\Order;
 use App\Models\RapydPayment;
 use App\Models\RapydWebhookLog;
 use App\Services\RapydService;
@@ -28,9 +31,13 @@ class RapydPaymentController extends Controller
             'total_price' => ['required', 'numeric', 'min:0.01'],
             'currency' => ['nullable', 'string', 'size:3'],
             'host_id' => ['nullable', 'integer'],
+            'order_type' => ['nullable', 'in:guesthouse,car'],
         ]);
 
-        $booking = GuestHouseBooking::query()->find($validated['order_id']);
+        $orderType = $validated['order_type'] ?? 'guesthouse';
+        $booking = $orderType === 'guesthouse'
+            ? GuestHouseBooking::query()->find($validated['order_id'])
+            : null;
 
         $commissionRate = (float) config('rapyd.commission_rate', 0.15);
         $totalPrice = round((float) $validated['total_price'], 2);
@@ -43,6 +50,7 @@ class RapydPaymentController extends Controller
 
         $metadata = [
             'order_id' => (string) $validated['order_id'],
+            'order_type' => $orderType,
             'user_id' => (string) ($userId ?? ''),
             'host_id' => (string) ($hostId ?? ''),
             'total_price' => (string) $totalPrice,
@@ -52,7 +60,7 @@ class RapydPaymentController extends Controller
 
         try {
             $checkout = $this->rapyd->createCheckoutPage([
-                'amount' => $platformFee, // ONLY the 20% platform fee is charged online.
+                'amount' => $platformFee, // ONLY the platform fee is charged online.
                 'currency' => $currency,
                 'country' => config('rapyd.country', 'US'),
                 'payment_method_types' => config('rapyd.payment_method_types'),
@@ -62,7 +70,11 @@ class RapydPaymentController extends Controller
         } catch (Throwable $e) {
             Log::error('Rapyd initiateCheckout failed', ['error' => $e->getMessage()]);
 
-            return response()->json(['message' => 'Could not start card payment. Please try again.'], 502);
+            return response()->json([
+                'message' => 'Could not start card payment. Please try again.',
+                // Surface the underlying reason only when debugging is enabled.
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 502);
         }
 
         $payment = RapydPayment::create([
@@ -85,7 +97,6 @@ class RapydPaymentController extends Controller
                 'platform_fee' => $platformFee,
                 'cash_due_on_arrival' => $cashDueOnArrival,
                 'payment_status' => 'pending',
-                'payment_method' => 'rapyd_card',
                 'rapyd_checkout_id' => $checkout['checkout_id'],
             ])->save();
         }
@@ -117,6 +128,23 @@ class RapydPaymentController extends Controller
         }
 
         $paymentStatus = data_get($remote, 'payment.status') ?? data_get($remote, 'status');
+
+        // Fallback confirmation: if Rapyd reports the fee as paid but our webhook
+        // hasn't arrived yet (common on local/sandbox where webhooks can't reach
+        // the host), confirm the order here so the guest sees the right state.
+        $rapydPaidId = data_get($remote, 'payment.id');
+        $rapydPaid = data_get($remote, 'payment.paid') === true
+            || in_array((string) data_get($remote, 'payment.status'), ['CLO', 'closed'], true);
+
+        if ($payment && $payment->status !== 'paid' && $rapydPaid) {
+            $payment->update([
+                'status' => 'paid',
+                'payment_id' => is_string($rapydPaidId) ? $rapydPaidId : $payment->payment_id,
+                'paid_at' => now(),
+            ]);
+            $this->confirmOrder($payment, is_string($rapydPaidId) ? $rapydPaidId : null);
+            $payment->refresh();
+        }
 
         return response()->json([
             'checkout_id' => $checkoutId,
@@ -174,15 +202,16 @@ class RapydPaymentController extends Controller
                         'paid_at' => now(),
                     ]);
 
-                    $this->updateBooking($payment, 'partially_paid', is_string($paymentId) ? $paymentId : null);
-                    SendBookingConfirmationEmail::dispatch($payment->id);
+                    // Online fee received: confirm the previously-held booking/order
+                    // and trigger the appropriate confirmation email(s).
+                    $this->confirmOrder($payment, is_string($paymentId) ? $paymentId : null);
                 }
                 break;
 
             case 'PAYMENT_FAILED':
                 if ($payment) {
                     $payment->update(['status' => 'failed']);
-                    $this->updateBooking($payment, 'pending');
+                    // Leave the booking/order pending; the guest can retry payment.
                 }
                 break;
 
@@ -238,18 +267,47 @@ class RapydPaymentController extends Controller
         return response()->json($payments);
     }
 
-    private function updateBooking(RapydPayment $payment, string $paymentStatus, ?string $paymentId = null): void
+    /**
+     * Confirm the held booking/order once the online fee has been paid.
+     * The correct table is resolved from the payment's stored order_type.
+     */
+    private function confirmOrder(RapydPayment $payment, ?string $paymentId = null): void
     {
+        $orderType = (string) data_get($payment->metadata, 'order_type', 'guesthouse');
+
+        if ($orderType === 'car') {
+            $order = Order::query()->find($payment->order_id);
+            if (! $order) {
+                return;
+            }
+            if ($order->order_status === OrderStatus::Pending) {
+                $order->transitionOrderStatus(OrderStatus::Confirmed);
+                // Car rentals use their own confirmation email (not the cash-on-arrival split).
+                app(\App\Services\Email\OrderEmailNotifier::class)->notifyCreated($order->load('car.host'));
+            }
+
+            return;
+        }
+
         $booking = GuestHouseBooking::query()->find($payment->order_id);
         if (! $booking) {
             return;
         }
 
-        $attrs = ['payment_status' => $paymentStatus];
+        $attrs = [
+            'payment_status' => 'partially_paid',
+            'status' => GuestHouseBookingStatus::Confirmed,
+        ];
+        if ($booking->confirmed_at === null) {
+            $attrs['confirmed_at'] = now();
+        }
         if ($paymentId !== null) {
             $attrs['rapyd_payment_id'] = $paymentId;
         }
 
         $booking->forceFill($attrs)->save();
+
+        // Guest houses use the 15%/85% paid-online / cash-on-arrival emails.
+        SendBookingConfirmationEmail::dispatch($payment->id);
     }
 }

@@ -29,6 +29,7 @@ class GuestHouseBookingRequest extends FormRequest
             'guest_phone' => ['required', 'string', 'max:64'],
             'special_requests' => ['nullable', 'string', 'max:1000'],
             'coupon_code' => ['nullable', 'string', 'max:64'],
+            'payment_method' => ['nullable', 'string', 'max:64'],
         ];
     }
 

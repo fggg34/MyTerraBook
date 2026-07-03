@@ -138,8 +138,13 @@ class PublicOrderController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
+        // Card payments are settled on Rapyd's hosted checkout, so the order is
+        // held as "pending" until the payment webhook confirms it.
+        $paymentMethod = (string) ($request->input('payment_method') ?? '');
+        $awaitsOnlinePayment = in_array($paymentMethod, ['card', 'rapyd_card'], true);
+
         try {
-            $order = DB::transaction(function () use ($request, $car, $pickup, $dropoff, $quote) {
+            $order = DB::transaction(function () use ($request, $car, $pickup, $dropoff, $quote, $awaitsOnlinePayment) {
             // Serialize concurrent bookings for this car so the capacity
             // re-check below is atomic and cannot be raced (double-booking).
             // Use the freshly locked row's fleet size, not the stale value read
@@ -160,7 +165,7 @@ class PublicOrderController extends Controller
                 'dropoff_location_id' => $request->integer('dropoff_location_id'),
                 'pickup_at' => $pickup,
                 'dropoff_at' => $dropoff,
-                'order_status' => OrderStatus::Confirmed,
+                'order_status' => $awaitsOnlinePayment ? OrderStatus::Pending : OrderStatus::Confirmed,
                 'rental_status' => RentalStatus::Upcoming,
                 'customer_name' => $request->string('customer_name'),
                 'customer_email' => $request->string('customer_email'),
@@ -252,7 +257,11 @@ class PublicOrderController extends Controller
             return response()->json(['message' => 'No availability for these dates.'], 422);
         }
 
-        $this->orderEmails->notifyCreated($order->load('car.host'));
+        // For card orders, the confirmation email is sent once Rapyd confirms
+        // the online payment (via the webhook), not at creation time.
+        if (! $awaitsOnlinePayment) {
+            $this->orderEmails->notifyCreated($order->load('car.host'));
+        }
 
         return response()->json([
             'data' => OrderResource::make($order),

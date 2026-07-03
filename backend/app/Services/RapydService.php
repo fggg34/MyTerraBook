@@ -12,9 +12,9 @@ use RuntimeException;
 /**
  * Thin client around the Rapyd Collect API.
  *
- * The platform only ever charges the 20% booking fee through Rapyd; the
- * remaining 80% is settled in cash directly with the host on arrival, so this
- * service intentionally implements no payout / transfer calls.
+ * The platform only ever charges the online booking fee through Rapyd; the
+ * remaining balance is settled in cash directly with the host on arrival, so
+ * this service intentionally implements no payout / transfer calls.
  */
 class RapydService
 {
@@ -35,7 +35,7 @@ class RapydService
     }
 
     /**
-     * Create a hosted checkout page for the platform fee (20% of the total).
+     * Create a hosted checkout page for the platform fee (a percentage of the total).
      *
      * @param  array<string, mixed>  $data  Expects: amount (platform fee, major units),
      *                                       currency, country, merchant_reference_id, metadata[]
@@ -115,11 +115,12 @@ class RapydService
         $body = $request->getContent();
 
         $toSign = $urlPath.$salt.$timestamp.$accessKey.$this->secretKey.$body;
-        $expected = base64_encode(hash_hmac('sha256', $toSign, $this->secretKey, true));
+        // Rapyd signs the hex HMAC digest, then base64-encodes that hex string.
+        $expected = base64_encode(hash_hmac('sha256', $toSign, $this->secretKey, false));
 
         // Also accept a dashboard-configured shared webhook secret if provided.
         if ($this->webhookSecret !== '') {
-            $expectedSecret = base64_encode(hash_hmac('sha256', $toSign, $this->webhookSecret, true));
+            $expectedSecret = base64_encode(hash_hmac('sha256', $toSign, $this->webhookSecret, false));
             if (hash_equals($expectedSecret, $signature)) {
                 return true;
             }
@@ -141,12 +142,10 @@ class RapydService
 
         // GET requests must sign against an empty body.
         $jsonBody = ($method === 'get' || $body === []) ? '' : json_encode($body, JSON_UNESCAPED_SLASHES);
-        if ($jsonBody === '{}') {
-            $jsonBody = '';
-        }
 
         $toSign = $method.$urlPath.$salt.$timestamp.$this->accessKey.$this->secretKey.$jsonBody;
-        $signature = base64_encode(hash_hmac('sha256', $toSign, $this->secretKey, true));
+        // Rapyd signs the *hex* HMAC digest, then base64-encodes that hex string.
+        $signature = base64_encode(hash_hmac('sha256', $toSign, $this->secretKey, false));
 
         $headers = [
             'access_key' => $this->accessKey,
@@ -167,7 +166,7 @@ class RapydService
         }
 
         // Send the exact signed JSON string so the signature matches the body byte-for-byte.
-        return $client->withBody($jsonBody === '' ? '{}' : $jsonBody, 'application/json')->{$method}($url);
+        return $client->withBody($jsonBody, 'application/json')->{$method}($url);
     }
 
     private function salt(): string

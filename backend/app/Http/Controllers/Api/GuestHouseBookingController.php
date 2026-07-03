@@ -51,8 +51,13 @@ class GuestHouseBookingController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
+        // Card payments are settled on Rapyd's hosted checkout, so the booking
+        // is held as "pending" until the payment webhook confirms it.
+        $paymentMethod = (string) ($request->input('payment_method') ?? '');
+        $awaitsOnlinePayment = in_array($paymentMethod, ['card', 'rapyd_card'], true);
+
         try {
-            $booking = DB::transaction(function () use ($request, $house, $checkIn, $checkOut, $quote) {
+            $booking = DB::transaction(function () use ($request, $house, $checkIn, $checkOut, $quote, $paymentMethod, $awaitsOnlinePayment) {
                 // Serialize concurrent bookings for this guest house, then
                 // re-check both existing bookings AND availability blocks
                 // atomically to prevent double-booking / booking over blocks.
@@ -65,8 +70,10 @@ class GuestHouseBookingController extends Controller
                 return GuestHouseBooking::query()->create([
                     'guest_house_id' => $house->id,
                     'user_id' => $request->user()?->id,
-                    'status' => GuestHouseBookingStatus::Confirmed,
-                    'confirmed_at' => now(),
+                    'status' => $awaitsOnlinePayment ? GuestHouseBookingStatus::Pending : GuestHouseBookingStatus::Confirmed,
+                    'confirmed_at' => $awaitsOnlinePayment ? null : now(),
+                    'payment_method' => $paymentMethod !== '' ? $paymentMethod : 'rapyd_card',
+                    'payment_status' => 'pending',
                     'guest_name' => $request->string('guest_name'),
                     'guest_email' => $request->string('guest_email'),
                     'guest_phone' => $request->string('guest_phone'),
@@ -91,7 +98,11 @@ class GuestHouseBookingController extends Controller
 
         $booking->load('guestHouse');
 
-        $this->bookingEmails->notifyCreated($booking, $house);
+        // For card bookings, the confirmation emails (with the paid/cash split)
+        // are sent by the Rapyd webhook once payment completes.
+        if (! $awaitsOnlinePayment) {
+            $this->bookingEmails->notifyCreated($booking, $house);
+        }
 
         return response()->json([
             'data' => new GuestHouseBookingResource($booking),

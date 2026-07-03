@@ -509,6 +509,7 @@ export default function useRequestToBook() {
           guest_phone: formatPhoneForApi(form.customer_phone),
           special_requests: form.special_requests || form.notes || undefined,
           coupon_code: form.coupon_code.trim() || undefined,
+          payment_method: form.paymentMethod,
         })
         created = data?.data
       } else {
@@ -526,6 +527,7 @@ export default function useRequestToBook() {
           rental_options: form.rental_option_ids.map(Number),
           coupon_code: form.coupon_code.trim() || undefined,
           custom_field_values: form.custom_field_values,
+          payment_method: form.paymentMethod,
         })
         created = data?.data
       }
@@ -539,6 +541,7 @@ export default function useRequestToBook() {
           const { data: rapyd } = await initiateRapydCheckout({
             order_id: created.id,
             total_price: Number(totalCents) / 100,
+            order_type: bookingType === 'guesthouse' ? 'guesthouse' : 'car',
           })
           if (rapyd?.checkout_url) {
             window.location.href = rapyd.checkout_url
