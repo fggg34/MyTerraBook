@@ -33,13 +33,40 @@
         border-right: 1px solid var(--mtb-primary-dark);
     }
 
+    .fi-main-sidebar {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
     .fi-sidebar-nav {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
+        scrollbar-color: rgb(255 255 255 / 0.42) rgb(255 255 255 / 0.08);
     }
 
     .fi-sidebar-nav::-webkit-scrollbar {
-        display: none;
+        width: 8px;
+    }
+
+    .fi-sidebar-nav::-webkit-scrollbar-track {
+        background: rgb(255 255 255 / 0.08);
+        border-radius: 999px;
+    }
+
+    .fi-sidebar-nav::-webkit-scrollbar-thumb {
+        background-color: rgb(255 255 255 / 0.38);
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+
+    .fi-sidebar-nav::-webkit-scrollbar-thumb:hover {
+        background-color: rgb(255 255 255 / 0.58);
     }
 
     .fi-sidebar-header {

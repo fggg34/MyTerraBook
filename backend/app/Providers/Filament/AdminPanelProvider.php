@@ -65,11 +65,12 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make('Marketing'),
+                NavigationGroup::make('Moderation'),
+                NavigationGroup::make('Site'),
                 NavigationGroup::make('Content')
                     ->collapsible()
                     ->collapsed(),
-                NavigationGroup::make('Moderation'),
+                NavigationGroup::make('Marketing'),
                 NavigationGroup::make('Email'),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
