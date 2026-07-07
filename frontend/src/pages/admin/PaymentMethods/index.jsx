@@ -4,7 +4,7 @@ import RapydConfigModal from './RapydConfigModal'
 
 /**
  * Admin — Payment Methods page.
- * Route target: /backend/admin/impact-rent/payment-methods
+ * Route target: /backend/admin/payment-methods
  */
 export default function PaymentMethodsPage() {
   const [methods, setMethods] = useState([])

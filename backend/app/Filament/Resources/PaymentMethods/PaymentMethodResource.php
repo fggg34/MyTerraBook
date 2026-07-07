@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\PaymentMethods;
 
-use App\Filament\Clusters\ImpactRentCluster;
 use App\Filament\Resources\PaymentMethods\Pages\CreatePaymentMethod;
 use App\Filament\Resources\PaymentMethods\Pages\EditPaymentMethod;
 use App\Filament\Resources\PaymentMethods\Pages\ListPaymentMethods;
@@ -14,19 +13,16 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class PaymentMethodResource extends Resource
 {
     protected static ?string $model = PaymentMethod::class;
 
-    protected static ?string $cluster = ImpactRentCluster::class;
+    protected static ?string $slug = 'payment-methods';
+
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
-    protected static string|UnitEnum|null $navigationGroup = 'Operations';
-
-    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

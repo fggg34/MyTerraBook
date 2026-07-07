@@ -41,18 +41,10 @@
                 || request()->is('admin/guest-houses/guest-reviews*'),
         ],
         [
-            'label'  => 'Moderation',
+            'label'  => 'Listing approvals',
             'icon'   => $icons['moderation'],
-            'active' => request()->is('admin/impact-rent/settings*')
-                || request()->is('admin/impact-rent/payment-methods*')
-                || request()->is('admin/impact-rent/custom-fields*')
-                || request()->is('admin/listing-approvals*'),
-            'items'  => [
-                ['label' => 'Configuration',     'url' => url('/admin/impact-rent/settings'),        'active' => request()->is('admin/impact-rent/settings*')],
-                ['label' => 'Payment Methods',   'url' => url('/admin/impact-rent/payment-methods'), 'active' => request()->is('admin/impact-rent/payment-methods*')],
-                ['label' => 'Custom Fields',     'url' => url('/admin/impact-rent/custom-fields'),   'active' => request()->is('admin/impact-rent/custom-fields*')],
-                ['label' => 'Listing approvals', 'url' => url('/admin/listing-approvals'),         'active' => request()->is('admin/listing-approvals*')],
-            ],
+            'url'    => url('/admin/listing-approvals'),
+            'active' => request()->is('admin/listing-approvals*'),
         ],
         [
             'label'  => 'Setup',

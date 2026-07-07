@@ -10,7 +10,6 @@ use Filament\Navigation\NavigationItem;
 use Filament\Pages\Page;
 use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
-use UnitEnum;
 
 class ModerationSettings extends Page
 {
@@ -33,9 +32,9 @@ class ModerationSettings extends Page
         $paymentMethodsUrl = PaymentMethodResource::getUrl('index');
         $customFieldsUrl = CustomFieldResource::getUrl('index');
 
-        $isSettingsActive = fn (): bool => request()->is('admin/impact-rent/settings*')
-            || request()->is('admin/impact-rent/payment-methods*')
-            || request()->is('admin/impact-rent/custom-fields*');
+        $isSettingsActive = fn (): bool => request()->is('admin/global-configuration*')
+            || request()->is('admin/payment-methods*')
+            || request()->is('admin/custom-fields*');
 
         return [
             NavigationItem::make('moderation-settings')
@@ -51,21 +50,21 @@ class ModerationSettings extends Page
                 ->parentItem(self::PARENT_LABEL)
                 ->sort(1)
                 ->url($configurationUrl)
-                ->isActiveWhen(fn (): bool => request()->is('admin/impact-rent/settings*')),
+                ->isActiveWhen(fn (): bool => request()->is('admin/global-configuration*')),
             NavigationItem::make('moderation-payment-methods')
                 ->label('Payment Methods')
                 ->group('Moderation')
                 ->parentItem(self::PARENT_LABEL)
                 ->sort(2)
                 ->url($paymentMethodsUrl)
-                ->isActiveWhen(fn (): bool => request()->is('admin/impact-rent/payment-methods*')),
+                ->isActiveWhen(fn (): bool => request()->is('admin/payment-methods*')),
             NavigationItem::make('moderation-custom-fields')
                 ->label('Custom Fields')
                 ->group('Moderation')
                 ->parentItem(self::PARENT_LABEL)
                 ->sort(3)
                 ->url($customFieldsUrl)
-                ->isActiveWhen(fn (): bool => request()->is('admin/impact-rent/custom-fields*')),
+                ->isActiveWhen(fn (): bool => request()->is('admin/custom-fields*')),
         ];
     }
 

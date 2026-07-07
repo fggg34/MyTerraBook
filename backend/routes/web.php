@@ -32,6 +32,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin/homepage')->name('admin.home
     Route::post('/{section}/image', [AdminHomepageController::class, 'uploadImage'])->name('image');
 });
 
+Route::middleware('auth')->group(function (): void {
+    Route::redirect('/admin/impact-rent/settings', '/admin/global-configuration');
+    Route::redirect('/admin/impact-rent/payment-methods', '/admin/payment-methods');
+    Route::redirect('/admin/impact-rent/custom-fields', '/admin/custom-fields');
+});
+
 Route::middleware('auth')->prefix('admin/impact-rent/orders')->group(function (): void {
     Route::get('{order}/contract.pdf', [OrderContractPdfController::class, 'show'])
         ->name('admin.orders.contract-pdf');
