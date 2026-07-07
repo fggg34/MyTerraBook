@@ -20,7 +20,7 @@ class GlobalConfiguration extends Page
 
     protected static ?string $title = 'Configuration';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Platform';
+    protected static string|UnitEnum|null $navigationGroup = 'Moderation';
 
     protected static ?int $navigationSort = 1;
 

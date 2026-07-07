@@ -112,6 +112,25 @@ HTML,
                 'content' => null,
             ],
             [
+                'slug' => 'refund-policy',
+                'title' => 'Refund policy',
+                'eyebrow' => 'Legal',
+                'lead' => 'How refunds and cancellations work for bookings made through MyTerraBook.',
+                'body' => <<<'HTML'
+<h2>Online payments</h2>
+<p>When you pay online at checkout, the amount charged is shown on your booking confirmation. Refunds for eligible cancellations are returned to the original payment method.</p>
+<h2>Cancellation windows</h2>
+<p>Most listings offer free cancellation up to 48 hours before pickup or check-in unless a stricter policy is shown on the listing page. Late cancellations may be partially or fully non-refundable according to the host's policy.</p>
+<h2>Partial payments</h2>
+<p>Where a booking includes an online deposit and a balance due on arrival, only the online portion is refundable when a cancellation qualifies. The remaining balance is not charged if you cancel within the free cancellation window.</p>
+<h2>Processing time</h2>
+<p>Approved refunds are typically processed within 5–10 business days, depending on your card issuer or payment provider.</p>
+<h2>How to request a refund</h2>
+<p>Cancel through your booking dashboard or contact support@myterrabook.is with your booking reference. We will confirm eligibility and next steps.</p>
+HTML,
+                'content' => null,
+            ],
+            [
                 'slug' => 'cookies',
                 'title' => 'Cookie policy',
                 'eyebrow' => 'Legal',

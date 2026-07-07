@@ -174,6 +174,7 @@ function AppRoutes() {
         <Route path="/contact" element={<SitePagePage forcedSlug="contact" />} />
         <Route path="/terms" element={<SitePagePage forcedSlug="terms" />} />
         <Route path="/privacy" element={<SitePagePage forcedSlug="privacy" />} />
+        <Route path="/refund-policy" element={<SitePagePage forcedSlug="refund-policy" />} />
         <Route path="/cookies" element={<SitePagePage forcedSlug="cookies" />} />
         <Route path="/good-to-know" element={<GoodToKnowPage />} />
         <Route path="/good-to-know/:slug" element={<GoodToKnowPostPage />} />

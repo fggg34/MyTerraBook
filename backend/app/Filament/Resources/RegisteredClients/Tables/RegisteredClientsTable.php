@@ -9,6 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
 
 class RegisteredClientsTable
 {
@@ -50,8 +51,8 @@ class RegisteredClientsTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->before(function (User $record): void {
-                            $record->tokens()->delete();
+                        ->before(function (Collection $records): void {
+                            $records->each(fn (User $record) => self::revokeApiTokens($record));
                         }),
                 ]),
             ])
@@ -63,9 +64,12 @@ class RegisteredClientsTable
         return DeleteAction::make()
             ->modalHeading('Delete registered client')
             ->modalDescription(fn (User $record): string => self::deleteConfirmationMessage($record))
-            ->before(function (User $record): void {
-                $record->tokens()->delete();
-            });
+            ->before(fn (User $record) => self::revokeApiTokens($record));
+    }
+
+    private static function revokeApiTokens(User $record): void
+    {
+        $record->tokens()->delete();
     }
 
     public static function deleteConfirmationMessage(User $record): string

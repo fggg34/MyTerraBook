@@ -26,6 +26,7 @@ class SiteContentService
         'contact',
         'terms',
         'privacy',
+        'refund-policy',
         'cookies',
     ];
 
@@ -327,7 +328,7 @@ class SiteContentService
             unset($content['details']);
         }
 
-        if (in_array($pageKey, ['about', 'terms', 'privacy', 'cookies'], true)) {
+        if (in_array($pageKey, ['about', 'terms', 'privacy', 'refund-policy', 'cookies'], true)) {
             $content = $this->flattenRootRichtextBody($content);
         }
 

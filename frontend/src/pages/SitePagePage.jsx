@@ -15,6 +15,7 @@ const SLUG_ALIASES = {
   contact: 'contact',
   terms: 'terms',
   privacy: 'privacy',
+  'refund-policy': 'refund-policy',
   cookies: 'cookies',
 }
 

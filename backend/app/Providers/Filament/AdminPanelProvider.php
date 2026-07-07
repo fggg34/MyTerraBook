@@ -107,7 +107,8 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::PAGE_SUB_NAVIGATION_TOP_AFTER,
-                fn (): string => view('filament.panel.impact-rent-editor-quick-access')->render(),
+                fn (): string => view('filament.panel.impact-rent-editor-quick-access')->render()
+                    .view('filament.panel.guest-house-editor-quick-access')->render(),
             );
     }
 }

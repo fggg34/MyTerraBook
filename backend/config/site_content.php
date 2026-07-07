@@ -613,11 +613,24 @@ return [
                 'seo' => $pageSeoSection,
             ],
         ],
+        'refund-policy' => [
+            'label' => 'Refund Policy',
+            'group' => 'Marketing',
+            'preview_route' => '/refund-policy',
+            'sort_order' => 7,
+            'sections' => [
+                'hero' => ['label' => 'Hero', 'fields' => $heroFields],
+                'body' => ['label' => 'Body', 'fields' => [
+                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
+                ]],
+                'seo' => $pageSeoSection,
+            ],
+        ],
         'cookies' => [
             'label' => 'Cookies',
             'group' => 'Marketing',
             'preview_route' => '/cookies',
-            'sort_order' => 7,
+            'sort_order' => 8,
             'sections' => [
                 'hero' => ['label' => 'Hero', 'fields' => $heroFields],
                 'body' => ['label' => 'Body', 'fields' => [

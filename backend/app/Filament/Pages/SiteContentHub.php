@@ -308,6 +308,7 @@ class SiteContentHub extends Page
             'contact' => 'contact',
             'terms' => 'terms',
             'privacy' => 'privacy',
+            'refund-policy' => 'refund-policy',
             'cookies' => 'cookies',
         ];
 
