@@ -69,6 +69,8 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Content')
                     ->collapsible()
                     ->collapsed(),
+                NavigationGroup::make('Moderation'),
+                NavigationGroup::make('Email'),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->middleware([

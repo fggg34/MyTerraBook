@@ -33,7 +33,7 @@ class RegisteredClientResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Moderation';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
 
     public static function getEloquentQuery(): Builder
     {

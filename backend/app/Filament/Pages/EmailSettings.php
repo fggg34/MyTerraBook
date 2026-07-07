@@ -26,7 +26,7 @@ class EmailSettings extends Page
 
     protected static ?string $title = 'Email settings';
 
-    protected static ?string $navigationLabel = 'Settings';
+    protected static ?string $navigationLabel = 'SMTP settings';
 
     protected static ?string $slug = 'email-settings';
 
