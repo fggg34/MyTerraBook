@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Clusters\ImpactRentCluster;
 use App\Support\AdminCalendarEmbed;
+use App\Support\AdminCalendarEmbedAssets;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -30,9 +31,18 @@ class OrdersCalendar extends Page
 
     public string $calendarEmbedUrl = '';
 
+    public ?string $handoffToken = null;
+
+    public ?string $embedJsUrl = null;
+
+    public ?string $embedCssUrl = null;
+
     public function mount(): void
     {
-        $this->calendarEmbedUrl = AdminCalendarEmbed::embedUrlFor(auth()->user());
+        $user = auth()->user();
+        $this->handoffToken = AdminCalendarEmbed::createHandoffToken($user);
+        [$this->embedJsUrl, $this->embedCssUrl] = AdminCalendarEmbedAssets::resolve();
+        $this->calendarEmbedUrl = AdminCalendarEmbed::embedUrlFor($user);
     }
 
     public function getHeading(): string|Htmlable

@@ -2,11 +2,21 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from 'tailwindcss'
 import autoprefixer from 'autoprefixer'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   appType: 'spa',
   plugins: [react()],
+  build: {
+    manifest: true,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        calendarEmbed: resolve(__dirname, 'calendar-embed.html'),
+      },
+    },
+  },
   css: {
     postcss: {
       plugins: [tailwindcss(), autoprefixer()],

@@ -1,15 +1,29 @@
 <x-filament-panels::page>
     <style>
+        .fi-main-ctn:has(.admin-calendar-inline) .fi-page-header-main-ctn,
         .fi-main-ctn:has(.admin-calendar-embed__frame) .fi-page-header-main-ctn {
             display: none !important;
         }
 
+        .fi-main-ctn:has(.admin-calendar-inline) .fi-page-main,
         .fi-main-ctn:has(.admin-calendar-embed__frame) .fi-page-main {
             gap: 0 !important;
         }
 
+        .fi-main-ctn:has(.admin-calendar-inline) .fi-page-content,
         .fi-main-ctn:has(.admin-calendar-embed__frame) .fi-page-content {
             padding: 0 !important;
+        }
+
+        .admin-calendar-inline {
+            display: block;
+            width: 100%;
+            min-height: calc(100vh - 11.5rem);
+            background: #fff;
+        }
+
+        .admin-calendar-inline #terrabook-calendar-root {
+            min-height: inherit;
         }
 
         .admin-calendar-embed__frame {
@@ -34,6 +48,10 @@
         }
 
         @media (max-width: 1024px) {
+            .admin-calendar-inline {
+                min-height: calc(100vh - 13rem);
+            }
+
             .admin-calendar-embed__frame {
                 height: calc(100vh - 13rem);
                 min-height: 520px;
@@ -41,13 +59,37 @@
         }
     </style>
 
-    @php($embedUrl = $this->calendarEmbedUrl)
+    @php
+        $embedJsUrl = $this->embedJsUrl ?? null;
+        $embedCssUrl = $this->embedCssUrl ?? null;
+        $handoffToken = $this->handoffToken ?? null;
+        $embedUrl = $this->calendarEmbedUrl ?? '';
+        $useInline = filled($embedJsUrl);
+    @endphp
 
-    @if (blank($embedUrl))
+    @if ($useInline)
+        <div class="admin-calendar-inline">
+            @if (filled($handoffToken))
+                <script>
+                    window.__TERRABOOK_CALENDAR_HANDOFF__ = @json($handoffToken);
+                </script>
+            @endif
+            @if (filled($embedCssUrl))
+                <link rel="stylesheet" href="{{ $embedCssUrl }}" />
+            @endif
+            <div id="terrabook-calendar-root"></div>
+            <script type="module" src="{{ $embedJsUrl }}"></script>
+        </div>
+        @if (config('app.debug'))
+            <p style="margin:0.5rem 0 0;font-size:11px;color:#64748b;">
+                Inline embed JS: <code>{{ $embedJsUrl }}</code>
+            </p>
+        @endif
+    @elseif (blank($embedUrl))
         <div class="admin-calendar-embed__error">
-            Calendar embed URL could not be built. Set
-            <code>FRONTEND_URL=https://myterrabook.com</code> in <code>backend/.env</code>
-            and deploy the latest frontend build.
+            Calendar assets could not be loaded. Run <code>npm run build</code> in the frontend,
+            upload <code>dist/</code> to the site root, and set
+            <code>FRONTEND_URL=https://myterrabook.com</code> in <code>backend/.env</code>.
         </div>
     @else
         <iframe
@@ -59,7 +101,7 @@
         ></iframe>
         @if (config('app.debug'))
             <p style="margin:0.5rem 0 0;font-size:11px;color:#64748b;">
-                Embed URL: <code>{{ $embedUrl }}</code>
+                Iframe fallback URL: <code>{{ $embedUrl }}</code>
             </p>
         @endif
     @endif

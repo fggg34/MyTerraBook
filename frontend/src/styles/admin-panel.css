@@ -116,7 +116,8 @@
 
 html.admin-calendar-embed-root,
 html.admin-calendar-embed-root body,
-html.admin-calendar-embed-root #root {
+html.admin-calendar-embed-root #root,
+html.admin-calendar-embed-root #terrabook-calendar-root {
   margin: 0;
   padding: 0;
   min-height: 100%;
@@ -144,6 +145,7 @@ html.admin-calendar-embed-root #root {
 
 .admin-calendar-page--embed .admin-calendar-mount {
   min-height: calc(100vh - 8.5rem);
+  overflow: visible;
 }
 
 .admin-calendar-page--embed .admin-calendar-filters {

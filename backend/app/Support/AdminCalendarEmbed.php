@@ -74,7 +74,7 @@ class AdminCalendarEmbed
         return 'http://127.0.0.1:5174';
     }
 
-    private static function handoffTokenFor(?User $user): ?string
+    public static function createHandoffToken(?User $user): ?string
     {
         if (! $user) {
             return null;
@@ -85,5 +85,10 @@ class AdminCalendarEmbed
             ['admin'],
             Carbon::now()->addMinutes(30),
         )->plainTextToken;
+    }
+
+    private static function handoffTokenFor(?User $user): ?string
+    {
+        return self::createHandoffToken($user);
     }
 }

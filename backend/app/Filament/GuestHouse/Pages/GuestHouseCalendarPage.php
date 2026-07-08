@@ -4,6 +4,7 @@ namespace App\Filament\GuestHouse\Pages;
 
 use App\Filament\Clusters\GuestHouseCluster;
 use App\Support\AdminCalendarEmbed;
+use App\Support\AdminCalendarEmbedAssets;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -28,9 +29,18 @@ class GuestHouseCalendarPage extends Page
 
     public string $calendarEmbedUrl = '';
 
+    public ?string $handoffToken = null;
+
+    public ?string $embedJsUrl = null;
+
+    public ?string $embedCssUrl = null;
+
     public function mount(): void
     {
-        $this->calendarEmbedUrl = AdminCalendarEmbed::embedUrlFor(auth()->user());
+        $user = auth()->user();
+        $this->handoffToken = AdminCalendarEmbed::createHandoffToken($user);
+        [$this->embedJsUrl, $this->embedCssUrl] = AdminCalendarEmbedAssets::resolve();
+        $this->calendarEmbedUrl = AdminCalendarEmbed::embedUrlFor($user);
     }
 
     public function getHeading(): string|Htmlable

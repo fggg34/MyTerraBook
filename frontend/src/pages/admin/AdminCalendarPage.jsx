@@ -107,6 +107,25 @@ export default function AdminCalendarPage({ embed = false }) {
     return () => document.documentElement.classList.remove('admin-calendar-embed-root')
   }, [embed])
 
+  useEffect(() => {
+    if (!embed) return undefined
+
+    const updateSize = () => {
+      calendarRef.current?.getApi?.()?.updateSize()
+    }
+
+    updateSize()
+    const t1 = window.setTimeout(updateSize, 100)
+    const t2 = window.setTimeout(updateSize, 500)
+    window.addEventListener('resize', updateSize)
+
+    return () => {
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+      window.removeEventListener('resize', updateSize)
+    }
+  }, [embed, resources.length, events.length, currentView])
+
   return (
     <div className={`admin-calendar-page${embed ? ' admin-calendar-page--embed' : ''}`}>
       {!embed && (

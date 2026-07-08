@@ -23,6 +23,7 @@ export default function AdminEmbedCalendarPage() {
     async function bootstrap() {
       const params = new URLSearchParams(window.location.search)
       const handoff = params.get('handoff')
+        || (typeof window !== 'undefined' ? window.__TERRABOOK_CALENDAR_HANDOFF__ : null)
 
       if (handoff) {
         try {
@@ -30,7 +31,12 @@ export default function AdminEmbedCalendarPage() {
           const res = await api.get('/user')
           const user = res.data?.data ?? res.data
           storeAuth(handoff, user)
-          stripHandoffFromUrl()
+          if (params.has('handoff')) {
+            stripHandoffFromUrl()
+          }
+          if (typeof window !== 'undefined') {
+            delete window.__TERRABOOK_CALENDAR_HANDOFF__
+          }
         } catch {
           if (!cancelled) {
             clearAuth()
