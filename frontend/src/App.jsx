@@ -16,6 +16,7 @@ import BookingLayout from './components/layout/BookingLayout'
 import SearchResultsLayout from './components/layout/SearchResultsLayout'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminCalendarPage from './pages/admin/AdminCalendarPage'
+import AdminEmbedCalendarPage from './pages/admin/AdminEmbedCalendarPage'
 import AdminLayout from './components/admin/AdminLayout'
 import BecomeHostPage from './pages/BecomeHostPage'
 import ListingPage from './pages/ListingPage'
@@ -102,6 +103,10 @@ function AppRoutes() {
           <Route path="stays" element={<Navigate to="/dashboard?type=guesthouse" replace />} />
           <Route path="settings" element={<ClientSettingsPage />} />
         </Route>
+        <Route
+          path="/admin/embed/calendar"
+          element={<AdminEmbedCalendarPage />}
+        />
         <Route
           path="/admin"
           element={

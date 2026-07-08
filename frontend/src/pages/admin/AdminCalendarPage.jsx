@@ -30,7 +30,7 @@ function defaultRange() {
   return { start: start.toISOString(), end: end.toISOString() }
 }
 
-export default function AdminCalendarPage() {
+export default function AdminCalendarPage({ embed = false }) {
   const calendarRef = useRef(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const [range, setRange] = useState(defaultRange)
@@ -102,13 +102,15 @@ export default function AdminCalendarPage() {
   const detailEvent = detailQuery.data || selectedFromList
 
   return (
-    <div className="admin-calendar-page">
-      <div>
-        <h2 className="section-title" style={{ marginBottom: '0.25rem' }}>Reservations calendar</h2>
-        <p className="section-subtitle">
-          Platform-wide timeline for vehicles and guesthouses. Click a booking for details.
-        </p>
-      </div>
+    <div className={`admin-calendar-page${embed ? ' admin-calendar-page--embed' : ''}`}>
+      {!embed && (
+        <div>
+          <h2 className="section-title" style={{ marginBottom: '0.25rem' }}>Reservations calendar</h2>
+          <p className="section-subtitle">
+            Platform-wide timeline for vehicles and guesthouses. Click a booking for details.
+          </p>
+        </div>
+      )}
 
       <AdminCalendarFilters filters={filters} onChange={handleFilterChange} />
       <AdminCalendarSummaryBar summary={summaryQuery.data} loading={summaryQuery.isLoading} />

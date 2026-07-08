@@ -106,6 +106,13 @@
   gap: 1rem;
 }
 
+.admin-calendar-page--embed {
+  padding: 0.5rem;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+
 .admin-calendar-card {
   background: #fff;
   border: 1px solid #e2e8f0;
