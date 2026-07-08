@@ -22,8 +22,14 @@
             background: #fff;
         }
 
-        .admin-calendar-inline #terrabook-calendar-root {
+        .admin-calendar-inline__mount {
             min-height: inherit;
+        }
+
+        .admin-calendar-inline__status {
+            margin: 1rem;
+            font-size: 0.875rem;
+            color: #64748b;
         }
 
         .admin-calendar-embed__frame {
@@ -69,16 +75,43 @@
 
     @if ($useInline)
         <div class="admin-calendar-inline">
-            @if (filled($handoffToken))
-                <script>
-                    window.__TERRABOOK_CALENDAR_HANDOFF__ = @json($handoffToken);
-                </script>
-            @endif
-            @if (filled($embedCssUrl))
-                <link rel="stylesheet" href="{{ $embedCssUrl }}" />
-            @endif
-            <div id="terrabook-calendar-root"></div>
-            <script type="module" src="{{ $embedJsUrl }}"></script>
+            <div
+                id="terrabook-calendar-root"
+                class="admin-calendar-inline__mount"
+                wire:ignore
+                x-data
+                x-init="
+                    if (window.__terrabookCalendarBooted) return;
+                    window.__terrabookCalendarBooted = true;
+                    @if (filled($handoffToken))
+                    window.__TERRABOOK_CALENDAR_HANDOFF__ = @js($handoffToken);
+                    @endif
+                    @if (filled($embedCssUrl))
+                    if (! document.querySelector('[data-tb-calendar-css]')) {
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.href = @js($embedCssUrl);
+                        link.setAttribute('data-tb-calendar-css', '1');
+                        document.head.appendChild(link);
+                    }
+                    @endif
+                    if (! document.querySelector('[data-tb-calendar-js]')) {
+                        const script = document.createElement('script');
+                        script.type = 'module';
+                        script.src = @js($embedJsUrl);
+                        script.setAttribute('data-tb-calendar-js', '1');
+                        script.onerror = () => {
+                            const root = document.getElementById('terrabook-calendar-root');
+                            if (root) {
+                                root.innerHTML = '<p class=&quot;admin-calendar-embed__error&quot;>Could not load calendar assets. Rebuild the frontend and upload dist/ to the site root.</p>';
+                            }
+                        };
+                        document.head.appendChild(script);
+                    }
+                "
+            >
+                <p class="admin-calendar-inline__status">Loading calendar...</p>
+            </div>
         </div>
         @if (config('app.debug'))
             <p style="margin:0.5rem 0 0;font-size:11px;color:#64748b;">
@@ -89,7 +122,8 @@
         <div class="admin-calendar-embed__error">
             Calendar assets could not be loaded. Run <code>npm run build</code> in the frontend,
             upload <code>dist/</code> to the site root, and set
-            <code>FRONTEND_URL=https://myterrabook.com</code> in <code>backend/.env</code>.
+            <code>FRONTEND_URL=https://myterrabook.com</code> and
+            <code>SPA_INDEX_PATH=/home/YOUR_USER/public_html/index.html</code> in <code>backend/.env</code>.
         </div>
     @else
         <iframe

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\SpaShellService;
 use App\Support\AdminCalendarEmbed;
+use App\Support\AdminCalendarEmbedAssets;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;
 
@@ -12,21 +13,32 @@ class AdminCalendarEmbedController extends Controller
 {
     public function __invoke(SpaShellService $spaShell): Response
     {
+        $embedHtmlPath = AdminCalendarEmbedAssets::resolveEmbedHtmlPath();
+
+        if (is_string($embedHtmlPath) && $embedHtmlPath !== '') {
+            return response(File::get($embedHtmlPath), 200, $this->responseHeaders());
+        }
+
         $indexPath = config('spa.index_path');
 
         if (! is_string($indexPath) || $indexPath === '' || ! File::isFile($indexPath)) {
-            return response($this->missingShellHtml(), 503, [
-                'Content-Type' => 'text/html; charset=UTF-8',
-                'X-Frame-Options' => 'SAMEORIGIN',
-            ]);
+            return response($this->missingShellHtml(), 503, $this->responseHeaders());
         }
 
-        return response($spaShell->renderShell(), 200, [
+        return response($spaShell->renderShell(), 200, $this->responseHeaders());
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function responseHeaders(): array
+    {
+        return [
             'Content-Type' => 'text/html; charset=UTF-8',
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
             'Pragma' => 'no-cache',
             'X-Frame-Options' => 'SAMEORIGIN',
-        ]);
+        ];
     }
 
     private function missingShellHtml(): string

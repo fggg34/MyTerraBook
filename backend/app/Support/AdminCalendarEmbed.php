@@ -19,6 +19,10 @@ class AdminCalendarEmbed
             return self::resolveFrontendDevUrl().self::EMBED_PATH.$query;
         }
 
+        if (self::canServeBackendShell()) {
+            return url(self::EMBED_PATH).$query;
+        }
+
         return self::resolvePublicFrontendUrl().self::EMBED_PATH.$query;
     }
 

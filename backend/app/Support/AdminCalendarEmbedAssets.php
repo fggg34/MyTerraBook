@@ -106,4 +106,32 @@ class AdminCalendarEmbedAssets
 
         return $paths;
     }
+
+    public static function resolveEmbedHtmlPath(): ?string
+    {
+        foreach (self::embedHtmlPaths() as $path) {
+            if (File::isFile($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function embedHtmlPaths(): array
+    {
+        $paths = [];
+        $indexPath = config('spa.index_path');
+
+        if (is_string($indexPath) && $indexPath !== '') {
+            $paths[] = dirname($indexPath).'/calendar-embed.html';
+        }
+
+        $paths[] = dirname(base_path()).'/frontend/dist/calendar-embed.html';
+
+        return $paths;
+    }
 }

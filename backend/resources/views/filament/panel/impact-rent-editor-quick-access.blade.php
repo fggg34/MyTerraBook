@@ -82,10 +82,11 @@
         [
             'label'  => 'Orders',
             'icon'   => $icons['orders'],
-            'active' => request()->is('admin/impact-rent/orders*')
+            'active' => request()->is('admin/impact-rent/orders')
+                || request()->is('admin/impact-rent/orders/*')
                 || request()->is('admin/impact-rent/orders-calendar*'),
             'items'  => [
-                ['label' => 'Orders List', 'url' => url('/admin/impact-rent/orders'), 'active' => request()->is('admin/impact-rent/orders*')],
+                ['label' => 'Orders List', 'url' => url('/admin/impact-rent/orders'), 'active' => request()->is('admin/impact-rent/orders') || request()->is('admin/impact-rent/orders/*')],
                 ['label' => 'Calendar',    'url' => url('/admin/impact-rent/orders-calendar'), 'active' => request()->is('admin/impact-rent/orders-calendar*')],
                 ['label' => 'Overview',    'url' => null,                               'active' => false], // Phase 2
                 ['label' => 'Dashboard',   'url' => null,                               'active' => false], // Phase 2
