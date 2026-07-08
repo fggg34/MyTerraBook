@@ -129,6 +129,12 @@ html.admin-calendar-embed-root #root {
   color: #64748b;
 }
 
+.admin-calendar-embed-error {
+  padding: 1rem;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
 .admin-calendar-page--embed .admin-calendar-card {
   border: 0;
   border-radius: 0;

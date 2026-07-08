@@ -79,6 +79,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/admin/embed/calendar" element={<AdminEmbedCalendarPage />} />
       <Route
         element={
           <SiteLayoutProvider>
@@ -103,10 +104,6 @@ function AppRoutes() {
           <Route path="stays" element={<Navigate to="/dashboard?type=guesthouse" replace />} />
           <Route path="settings" element={<ClientSettingsPage />} />
         </Route>
-        <Route
-          path="/admin/embed/calendar"
-          element={<AdminEmbedCalendarPage />}
-        />
         <Route
           path="/admin"
           element={
