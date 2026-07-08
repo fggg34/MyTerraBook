@@ -15,26 +15,52 @@ class AdminCalendarEmbed
         $handoff = self::handoffTokenFor($user);
         $query = $handoff !== null ? '?handoff='.urlencode($handoff) : '';
 
-        if (self::shouldServeFromBackend()) {
-            return url(self::EMBED_PATH).$query;
+        if (app()->environment('local')) {
+            return self::resolveFrontendDevUrl().self::EMBED_PATH.$query;
         }
 
-        return self::resolveFrontendDevUrl().self::EMBED_PATH.$query;
+        return self::resolvePublicFrontendUrl().self::EMBED_PATH.$query;
     }
 
-    /**
-     * Production: serve the built SPA shell from Laravel (same origin as Filament).
-     * Local dev: use the Vite dev server so /assets/* resolves correctly.
-     */
-    private static function shouldServeFromBackend(): bool
+    public static function resolvePublicFrontendUrl(): string
     {
-        if (app()->environment('local')) {
-            return false;
+        $configured = rtrim((string) config('app.frontend_url', ''), '/');
+
+        if (self::isUsablePublicUrl($configured)) {
+            return $configured;
         }
 
+        $appUrl = rtrim((string) config('app.url', ''), '/');
+
+        if ($appUrl !== '' && str_ends_with($appUrl, '/backend')) {
+            return substr($appUrl, 0, -strlen('/backend'));
+        }
+
+        if ($appUrl !== '' && ! str_contains($appUrl, '/backend')) {
+            return $appUrl;
+        }
+
+        return 'https://myterrabook.com';
+    }
+
+    public static function canServeBackendShell(): bool
+    {
         $indexPath = config('spa.index_path');
 
         return is_string($indexPath) && $indexPath !== '' && File::isFile($indexPath);
+    }
+
+    private static function isUsablePublicUrl(string $url): bool
+    {
+        if ($url === '') {
+            return false;
+        }
+
+        if (preg_match('#^https?://(127\.0\.0\.1|localhost)(:\d+)?$#i', $url)) {
+            return false;
+        }
+
+        return true;
     }
 
     private static function resolveFrontendDevUrl(): string

@@ -13,11 +13,11 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 Route::get('/favicon.ico', [FaviconController::class, 'show']);
 
-Route::middleware(['auth', 'admin'])->get('/calendar-embed', AdminCalendarEmbedController::class)
+Route::get('/calendar-embed', AdminCalendarEmbedController::class)
     ->name('admin.calendar.embed');
 
 // Legacy path kept for older iframe URLs.
-Route::middleware(['auth', 'admin'])->get('/admin/embed/calendar', AdminCalendarEmbedController::class)
+Route::get('/admin/embed/calendar', AdminCalendarEmbedController::class)
     ->name('admin.calendar.embed.legacy');
 
 Route::get('/spa-shell', [SpaShellController::class, 'show'])
