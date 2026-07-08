@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import AdminCalendarAlertsPanel from '../../components/admin/calendar/AdminCalendarAlertsPanel'
 import AdminCalendarFilters from '../../components/admin/calendar/AdminCalendarFilters'
@@ -101,6 +101,12 @@ export default function AdminCalendarPage({ embed = false }) {
   const selectedFromList = events.find((e) => e.id === selectedEventId)
   const detailEvent = detailQuery.data || selectedFromList
 
+  useEffect(() => {
+    if (!embed) return undefined
+    document.documentElement.classList.add('admin-calendar-embed-root')
+    return () => document.documentElement.classList.remove('admin-calendar-embed-root')
+  }, [embed])
+
   return (
     <div className={`admin-calendar-page${embed ? ' admin-calendar-page--embed' : ''}`}>
       {!embed && (
@@ -112,9 +118,13 @@ export default function AdminCalendarPage({ embed = false }) {
         </div>
       )}
 
-      <AdminCalendarFilters filters={filters} onChange={handleFilterChange} />
-      <AdminCalendarSummaryBar summary={summaryQuery.data} loading={summaryQuery.isLoading} />
-      <AdminCalendarAlertsPanel alerts={alertsQuery.data} loading={alertsQuery.isLoading} />
+      {!embed && (
+        <>
+          <AdminCalendarFilters filters={filters} onChange={handleFilterChange} />
+          <AdminCalendarSummaryBar summary={summaryQuery.data} loading={summaryQuery.isLoading} />
+          <AdminCalendarAlertsPanel alerts={alertsQuery.data} loading={alertsQuery.isLoading} />
+        </>
+      )}
 
       <AdminCalendarToolbar
         currentView={currentView}

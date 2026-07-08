@@ -7,6 +7,7 @@ use App\Support\AdminCalendarEmbed;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
 use UnitEnum;
 
 class OrdersCalendar extends Page
@@ -15,7 +16,7 @@ class OrdersCalendar extends Page
 
     protected static ?string $cluster = ImpactRentCluster::class;
 
-    protected string $view = 'filament.pages.orders-calendar';
+    protected string $view = 'filament.partials.admin-calendar-embed';
 
     protected static ?string $title = 'Orders Calendar';
 
@@ -32,5 +33,10 @@ class OrdersCalendar extends Page
     public function mount(): void
     {
         $this->calendarEmbedUrl = AdminCalendarEmbed::embedUrlFor(auth()->user());
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        return '';
     }
 }

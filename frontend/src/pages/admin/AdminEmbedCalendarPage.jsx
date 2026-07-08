@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, setAuthToken } from '../../api'
 import { clearAuth, getStoredToken, storeAuth } from '../../auth'
 import AdminCalendarPage from './AdminCalendarPage'
+import '../../styles/admin-panel.css'
 
 function stripHandoffFromUrl() {
   const params = new URLSearchParams(window.location.search)
@@ -68,7 +69,7 @@ export default function AdminEmbedCalendarPage() {
 
   if (!ready) {
     return (
-      <div style={{ padding: '1.5rem', fontFamily: 'system-ui, sans-serif', color: '#475569' }}>
+      <div className="admin-calendar-embed-loading">
         Loading calendar...
       </div>
     )

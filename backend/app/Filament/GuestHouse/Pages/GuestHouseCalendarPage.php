@@ -7,13 +7,14 @@ use App\Support\AdminCalendarEmbed;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
 use UnitEnum;
 
 class GuestHouseCalendarPage extends Page
 {
     protected static ?string $cluster = GuestHouseCluster::class;
 
-    protected string $view = 'filament.guest-house.pages.calendar';
+    protected string $view = 'filament.partials.admin-calendar-embed';
 
     protected static ?string $title = 'Bookings Calendar';
 
@@ -30,5 +31,10 @@ class GuestHouseCalendarPage extends Page
     public function mount(): void
     {
         $this->calendarEmbedUrl = AdminCalendarEmbed::embedUrlFor(auth()->user());
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        return '';
     }
 }
