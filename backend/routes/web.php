@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminCalendarEmbedController;
 use App\Http\Controllers\Admin\HomepageController as AdminHomepageController;
+use App\Support\CalendarEmbedDebug;
 use App\Http\Controllers\Api\Admin\OrderCheckinPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\FaviconController;
@@ -19,6 +20,17 @@ Route::get('/calendar-embed', AdminCalendarEmbedController::class)
 // Legacy path kept for older iframe URLs.
 Route::get('/admin/embed/calendar', AdminCalendarEmbedController::class)
     ->name('admin.calendar.embed.legacy');
+
+Route::middleware('auth')->post('/admin/debug/calendar-embed-log', function (\Illuminate\Http\Request $request) {
+    CalendarEmbedDebug::log(
+        (string) $request->input('location', 'client'),
+        (string) $request->input('message', 'client beacon'),
+        (array) $request->input('data', []),
+        (string) $request->input('hypothesisId', ''),
+    );
+
+    return response()->json(['ok' => true]);
+})->name('admin.calendar.embed.debug');
 
 Route::get('/spa-shell', [SpaShellController::class, 'show'])
     ->name('spa.shell')
