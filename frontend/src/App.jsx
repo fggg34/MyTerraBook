@@ -1,3 +1,5 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { setAuthToken } from './api'
 import { AuthProvider, getLoginPathForRole, normalizeUserRole, useAuth } from './context/AuthContext'
@@ -13,6 +15,8 @@ import ContentLayout from './components/layout/ContentLayout'
 import BookingLayout from './components/layout/BookingLayout'
 import SearchResultsLayout from './components/layout/SearchResultsLayout'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminCalendarPage from './pages/admin/AdminCalendarPage'
+import AdminLayout from './components/admin/AdminLayout'
 import BecomeHostPage from './pages/BecomeHostPage'
 import ListingPage from './pages/ListingPage'
 import SearchResultsPage from './pages/SearchResultsPage'
@@ -102,10 +106,13 @@ function AppRoutes() {
           path="/admin"
           element={
             <ProtectedRoute role="admin">
-              <AdminDashboardPage />
+              <AdminLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="calendar" element={<AdminCalendarPage />} />
+        </Route>
         <Route
           path="/host"
           element={
@@ -199,18 +206,29 @@ function LocalePreferencesBridge({ children }) {
 }
 
 function App() {
+  const queryClient = useMemo(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  }), [])
+
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <SiteContentProvider>
-          <ShopConfigProvider>
-            <LocalePreferencesBridge>
-              <AppRoutes />
-            </LocalePreferencesBridge>
-          </ShopConfigProvider>
-        </SiteContentProvider>
-      </AuthProvider>
-    </ToastProvider>
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>
+        <AuthProvider>
+          <SiteContentProvider>
+            <ShopConfigProvider>
+              <LocalePreferencesBridge>
+                <AppRoutes />
+              </LocalePreferencesBridge>
+            </ShopConfigProvider>
+          </SiteContentProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </QueryClientProvider>
   )
 }
 

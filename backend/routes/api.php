@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\MeOrderContractPdfController;
 use App\Http\Controllers\Api\MeOrderController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\MeOrderIcalController;
+use App\Http\Controllers\Api\Admin\AdminCalendarController;
 use App\Http\Controllers\Api\Admin\AdminGuestHouseBookingController;
 use App\Http\Controllers\Api\Admin\AdminGuestHouseController;
 use App\Http\Controllers\Api\Admin\GuestHouseBookingPdfController;
@@ -256,6 +257,12 @@ Route::middleware(['auth:sanctum', 'host'])->prefix('host')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::get('calendar/resources', [AdminCalendarController::class, 'resources'])->name('api.admin.calendar.resources');
+    Route::get('calendar/events', [AdminCalendarController::class, 'events'])->name('api.admin.calendar.events');
+    Route::get('calendar/summary', [AdminCalendarController::class, 'summary'])->name('api.admin.calendar.summary');
+    Route::get('calendar/alerts', [AdminCalendarController::class, 'alerts'])->name('api.admin.calendar.alerts');
+    Route::get('calendar/events/{type}/{id}', [AdminCalendarController::class, 'showEvent'])->name('api.admin.calendar.events.show');
+
     Route::get('stats', AdminStatsController::class)->name('api.admin.stats');
     Route::get('reports', AdminReportsController::class)->name('api.admin.reports');
     Route::get('orders/export.csv', AdminOrdersCsvExportController::class)->name('api.admin.orders.export-csv');

@@ -8,6 +8,7 @@ const STATUS_MAP = {
   upcoming: { label: 'Upcoming', className: 'bg-sky-100 text-sky-800 ring-sky-200' },
   started: { label: 'Active', className: 'bg-emerald-100 text-emerald-800 ring-emerald-200' },
   terminated: { label: 'Completed', className: 'bg-slate-200 text-slate-700 ring-slate-300' },
+  completed: { label: 'Completed', className: 'bg-slate-200 text-slate-700 ring-slate-300' },
   no_show: { label: 'No Show', className: 'bg-orange-100 text-orange-800 ring-orange-200' },
 }
 

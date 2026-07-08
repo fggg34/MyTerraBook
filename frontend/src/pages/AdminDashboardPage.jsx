@@ -1,4 +1,5 @@
-import { BarChart3, Car, ExternalLink, TrendingUp } from 'lucide-react'
+import { BarChart3, Calendar, Car, ExternalLink, TrendingUp } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { usePageContent } from '../context/SiteContentContext'
@@ -60,7 +61,7 @@ export default function AdminDashboardPage() {
   return (
     <>
       <PageHead {...seo} />
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div>
       <h1 className="section-title">{copy.title ?? 'Admin Dashboard'}</h1>
       <p className="section-subtitle">Overview of your rental business performance.</p>
 
@@ -78,20 +79,39 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
-      <div className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-card">
-        <h2 className="text-lg font-bold text-brand-950">Filament Admin Panel</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Full CRUD for cars, locations, pricing, coupons, and orders is available in the Filament panel.
-        </p>
-        <a
-          href={filamentPanelUrl()}
-          target="_blank"
-          rel="noreferrer"
-          className="btn-primary mt-4 inline-flex"
-        >
-          {copy.filamentLink ?? 'Open Filament Admin'}
-          <ExternalLink className="h-4 w-4" aria-hidden />
-        </a>
+      <div className="mt-8 grid gap-6 sm:grid-cols-2">
+        <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-card">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+              <Calendar className="h-5 w-5" aria-hidden />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-brand-950">Reservations calendar</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Timeline view for all vehicle rentals and guesthouse bookings.
+              </p>
+            </div>
+          </div>
+          <Link to="/admin/calendar" className="btn-primary mt-4 inline-flex">
+            Open calendar
+          </Link>
+        </article>
+
+        <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-card">
+          <h2 className="text-lg font-bold text-brand-950">Filament Admin Panel</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Full CRUD for cars, locations, pricing, coupons, and orders is available in the Filament panel.
+          </p>
+          <a
+            href={filamentPanelUrl()}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-primary mt-4 inline-flex"
+          >
+            {copy.filamentLink ?? 'Open Filament Admin'}
+            <ExternalLink className="h-4 w-4" aria-hidden />
+          </a>
+        </article>
       </div>
     </div>
     </>
