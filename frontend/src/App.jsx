@@ -49,6 +49,7 @@ import GoodToKnowPage from './pages/GoodToKnowPage'
 import CampsiteMapPage from './pages/CampsiteMapPage'
 import NewsletterUnsubscribePage from './pages/NewsletterUnsubscribePage'
 import GoodToKnowPostPage from './pages/GoodToKnowPostPage'
+import { ADMIN_CALENDAR_EMBED_PATH } from './utils/routerBasename'
 
 function RedirectGuestHouseSlug() {
   const { slug } = useParams()
@@ -79,6 +80,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path={ADMIN_CALENDAR_EMBED_PATH} element={<AdminEmbedCalendarPage />} />
       <Route path="/admin/embed/calendar" element={<AdminEmbedCalendarPage />} />
       <Route
         element={
