@@ -80,6 +80,7 @@ class MigrateLegacySiteContent extends Command
             'privacy' => 'privacy',
             'refund-policy' => 'refund-policy',
             'cookies' => 'cookies',
+            'cardholder-terms' => 'cardholder-terms',
         ];
 
         foreach ($sitePageMap as $slug => $pageKey) {

@@ -1,7 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
-import axios from 'axios'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
-import { getSitePreviewUrl, setAuthToken } from './api'
+import { setAuthToken } from './api'
 import { AuthProvider, getLoginPathForRole, normalizeUserRole, useAuth } from './context/AuthContext'
 import { getCurrentUser } from './auth'
 import { SiteContentProvider, useSiteContent } from './context/SiteContentContext'
@@ -26,7 +24,6 @@ import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import RegisterPage from './pages/RegisterPage'
-import UnderConstructionPage from './pages/UnderConstructionPage'
 import ClientLayout from './components/client/ClientLayout'
 import ClientHistoryPage from './pages/client/ClientHistoryPage'
 import ClientSettingsPage from './pages/client/ClientSettingsPage'
@@ -72,35 +69,8 @@ function ProtectedRoute({ children, role, customerOnly = false }) {
 }
 
 function AppRoutes() {
-  const [previewUnlocked, setPreviewUnlocked] = useState(true)
   const token = getStoredToken()
   setAuthToken(token)
-
-  const refreshPreview = useCallback(async () => {
-    try {
-      const headers = {}
-      if (token) headers.Authorization = `Bearer ${token}`
-      const { data } = await axios.get(getSitePreviewUrl(), {
-        withCredentials: true,
-        headers,
-      })
-      setPreviewUnlocked(!!data.preview_unlocked)
-    } catch {
-      setPreviewUnlocked(!!import.meta.env.DEV)
-    }
-  }, [token])
-
-  useEffect(() => {
-    refreshPreview()
-  }, [refreshPreview])
-
-  if (!previewUnlocked) {
-    return (
-      <Routes>
-        <Route path="*" element={<UnderConstructionPage />} />
-      </Routes>
-    )
-  }
 
   return (
     <Routes>
@@ -176,6 +146,7 @@ function AppRoutes() {
         <Route path="/privacy" element={<SitePagePage forcedSlug="privacy" />} />
         <Route path="/refund-policy" element={<SitePagePage forcedSlug="refund-policy" />} />
         <Route path="/cookies" element={<SitePagePage forcedSlug="cookies" />} />
+        <Route path="/cardholder-terms" element={<SitePagePage forcedSlug="cardholder-terms" />} />
         <Route path="/good-to-know" element={<GoodToKnowPage />} />
         <Route path="/good-to-know/:slug" element={<GoodToKnowPostPage />} />
         <Route path="/campsite-map" element={<CampsiteMapPage />} />

@@ -115,6 +115,10 @@
         {
           "label": "Cookies",
           "href": "/cookies"
+        },
+        {
+          "label": "Cardholder Terms",
+          "href": "/cardholder-terms"
         }
       ],
       "social": [
@@ -1266,6 +1270,19 @@
       "robots": "index"
     }
   },
+  "cardholder-terms": {
+    "hero": {
+      "eyebrow": "Legal",
+      "title": "Cardholder Terms & Conditions",
+      "lead": "Terms governing card payments, authorisations, and charges made through MyTerraBook."
+    },
+    "body": "<h2>Card payments</h2>\n<p>When you pay by card on MyTerraBook, you authorise us and our payment partners to charge the card you provide for the amounts shown at checkout, including deposits, balances, and any agreed extras.</p>\n<h2>Authorisations &amp; holds</h2>\n<p>Security deposits and pre-authorisations may be placed on your card at pickup or check-in. These holds are released according to your booking confirmation and the host's inspection process.</p>\n<h2>Currency &amp; charges</h2>\n<p>Prices are shown in the currency selected at checkout. Your card issuer may apply exchange rates or fees for international transactions.</p>\n<h2>Refunds</h2>\n<p>Eligible refunds are returned to the original payment method. See our <a href=\"/refund-policy\">refund policy</a> for cancellation windows and processing times.</p>\n<h2>Disputes</h2>\n<p>If you believe a charge is incorrect, contact support@myterrabook.is with your booking reference before initiating a chargeback. We will work with you and the host to resolve the issue promptly.</p>",
+    "seo": {
+      "title": "Cardholder Terms & Conditions",
+      "description": "Cardholder terms for payments, authorisations, deposits, refunds, and disputes on MyTerraBook bookings.",
+      "robots": "index"
+    }
+  },
   "become-a-host": {
     "topbar": {
       "text": "Iceland hosts earned €2.4M+ last season, list your van or guesthouse today."
@@ -1993,12 +2010,5 @@
     "successMessage": "You have been unsubscribed.",
     "errorMessage": "Invalid link.",
     "backLabel": "Back to homepage"
-  },
-  "under-construction": {
-    "badge": "Coming soon",
-    "title": "MyTerraBook is almost ready",
-    "subtitle": "Finishing touches on Iceland's road-trip platform.",
-    "hint": "Admins can preview the site.",
-    "footer": "© 2026 MyTerraBook ehf."
   }
 }

@@ -639,6 +639,19 @@ return [
                 'seo' => $pageSeoSection,
             ],
         ],
+        'cardholder-terms' => [
+            'label' => 'Cardholder Terms',
+            'group' => 'Marketing',
+            'preview_route' => '/cardholder-terms',
+            'sort_order' => 9,
+            'sections' => [
+                'hero' => ['label' => 'Hero', 'fields' => $heroFields],
+                'body' => ['label' => 'Body', 'fields' => [
+                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
+                ]],
+                'seo' => $pageSeoSection,
+            ],
+        ],
         'become-a-host' => [
             'label' => 'Become a host',
             'group' => 'Marketing',
@@ -1001,21 +1014,6 @@ return [
                     ['key' => 'successMessage', 'type' => 'text', 'label' => 'Success message'],
                     ['key' => 'errorMessage', 'type' => 'text', 'label' => 'Error message'],
                     ['key' => 'backLabel', 'type' => 'text', 'label' => 'Back link label'],
-                ]],
-            ],
-        ],
-        'under-construction' => [
-            'label' => 'Under construction',
-            'group' => 'App',
-            'preview_route' => '/',
-            'sort_order' => 24,
-            'sections' => [
-                'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => [
-                    ['key' => 'badge', 'type' => 'text', 'label' => 'Badge'],
-                    ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
-                    ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
-                    ['key' => 'hint', 'type' => 'text', 'label' => 'Hint'],
-                    ['key' => 'footer', 'type' => 'text', 'label' => 'Footer'],
                 ]],
             ],
         ],

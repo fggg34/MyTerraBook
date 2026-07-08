@@ -59,18 +59,6 @@ export function resolveCmsImage(value, fallback) {
   return resolved || fallback || ''
 }
 
-/**
- * Session-based preview check; defaults to same base as the API (`…/api` + `/site-preview`).
- * Override with VITE_SITE_PREVIEW_URL only if you must point somewhere else.
- */
-export function getSitePreviewUrl() {
-  const explicit = import.meta.env.VITE_SITE_PREVIEW_URL
-  if (explicit) {
-    return explicit
-  }
-  return `${resolveApiBaseUrl()}/site-preview`
-}
-
 export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,

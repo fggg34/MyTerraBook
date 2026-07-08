@@ -542,6 +542,7 @@ export const defaultHomepageData = {
       { label: 'Terms', href: '/terms' },
       { label: 'Privacy', href: '/privacy' },
       { label: 'Cookies', href: '/cookies' },
+      { label: 'Cardholder Terms', href: '/cardholder-terms' },
     ],
     social: [
       { label: 'Instagram', href: 'https://www.instagram.com/myterrabook' },

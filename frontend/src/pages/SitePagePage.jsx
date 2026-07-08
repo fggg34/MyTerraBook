@@ -17,6 +17,7 @@ const SLUG_ALIASES = {
   privacy: 'privacy',
   'refund-policy': 'refund-policy',
   cookies: 'cookies',
+  'cardholder-terms': 'cardholder-terms',
 }
 
 export default function SitePagePage({ forcedSlug }) {

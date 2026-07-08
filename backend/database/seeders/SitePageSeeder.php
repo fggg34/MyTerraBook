@@ -147,6 +147,25 @@ HTML,
 HTML,
                 'content' => null,
             ],
+            [
+                'slug' => 'cardholder-terms',
+                'title' => 'Cardholder Terms & Conditions',
+                'eyebrow' => 'Legal',
+                'lead' => 'Terms governing card payments, authorisations, and charges made through MyTerraBook.',
+                'body' => <<<'HTML'
+<h2>Card payments</h2>
+<p>When you pay by card on MyTerraBook, you authorise us and our payment partners to charge the card you provide for the amounts shown at checkout, including deposits, balances, and any agreed extras.</p>
+<h2>Authorisations & holds</h2>
+<p>Security deposits and pre-authorisations may be placed on your card at pickup or check-in. These holds are released according to your booking confirmation and the host's inspection process.</p>
+<h2>Currency & charges</h2>
+<p>Prices are shown in the currency selected at checkout. Your card issuer may apply exchange rates or fees for international transactions.</p>
+<h2>Refunds</h2>
+<p>Eligible refunds are returned to the original payment method. See our <a href="/refund-policy">refund policy</a> for cancellation windows and processing times.</p>
+<h2>Disputes</h2>
+<p>If you believe a charge is incorrect, contact support@myterrabook.is with your booking reference before initiating a chargeback. We will work with you and the host to resolve the issue promptly.</p>
+HTML,
+                'content' => null,
+            ],
         ];
 
         foreach ($pages as $page) {

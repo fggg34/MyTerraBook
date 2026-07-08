@@ -115,6 +115,10 @@
         {
           "label": "Cookies",
           "href": "/cookies"
+        },
+        {
+          "label": "Cardholder Terms",
+          "href": "/cardholder-terms"
         }
       ],
       "social": []
@@ -1984,12 +1988,5 @@
     "successMessage": "You have been unsubscribed.",
     "errorMessage": "Invalid link.",
     "backLabel": "Back to homepage"
-  },
-  "under-construction": {
-    "badge": "Coming soon",
-    "title": "MyTerraBook is almost ready",
-    "subtitle": "Finishing touches on Iceland's road-trip platform.",
-    "hint": "Admins can preview the site.",
-    "footer": "© 2026 MyTerraBook ehf."
   }
 }

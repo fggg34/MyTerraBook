@@ -219,6 +219,7 @@ class HomepageSectionSeeder extends Seeder
                         ['label' => 'Terms', 'href' => '/terms'],
                         ['label' => 'Privacy', 'href' => '/privacy'],
                         ['label' => 'Cookies', 'href' => '/cookies'],
+                        ['label' => 'Cardholder Terms', 'href' => '/cardholder-terms'],
                     ],
                     'locale' => 'English (UK)',
                     'currency' => 'EUR €',

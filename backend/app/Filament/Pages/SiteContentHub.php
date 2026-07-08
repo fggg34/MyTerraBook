@@ -310,6 +310,7 @@ class SiteContentHub extends Page
             'privacy' => 'privacy',
             'refund-policy' => 'refund-policy',
             'cookies' => 'cookies',
+            'cardholder-terms' => 'cardholder-terms',
         ];
 
         if (! isset($slugMap[$this->activePageKey])) {
