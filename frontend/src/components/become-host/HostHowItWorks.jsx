@@ -10,6 +10,7 @@ export default function HostHowItWorks({
   headingAccent = '',
 }) {
   const sectionRef = useRef(null)
+  const tabsRef = useRef(null)
   const [active, setActive] = useState(0)
   const timerRef = useRef(null)
   const pausedRef = useRef(false)
@@ -32,6 +33,27 @@ export default function HostHowItWorks({
     return () => clearTimeout(timerRef.current)
   }, [howTabs.length, active])
 
+  // Keep the active step card in view on the mobile horizontal tab scroller.
+  useEffect(() => {
+    const tabs = tabsRef.current
+    if (!tabs) return
+
+    const activeTab = tabs.querySelector('.host-how-tab.active')
+    if (!activeTab) return
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const tabLeft = activeTab.offsetLeft
+    const tabWidth = activeTab.offsetWidth
+    const target = tabLeft - (tabs.clientWidth - tabWidth) / 2
+    const maxScroll = tabs.scrollWidth - tabs.clientWidth
+    const nextLeft = Math.max(0, Math.min(target, maxScroll))
+
+    tabs.scrollTo({
+      left: nextLeft,
+      behavior: reduce ? 'auto' : 'smooth',
+    })
+  }, [active])
+
   const goTo = (index) => {
     setActive(index)
     schedule()
@@ -48,7 +70,12 @@ export default function HostHowItWorks({
             {headingAccent && <span className="host-accent"> {headingAccent}</span>}
           </h2>
         </div>
-        <div className="host-how-tabs" role="tablist" aria-label="How it works steps">
+        <div
+          className="host-how-tabs"
+          role="tablist"
+          aria-label="How it works steps"
+          ref={tabsRef}
+        >
           {howTabs.map((tab, index) => (
             <button
               key={tab.title}
