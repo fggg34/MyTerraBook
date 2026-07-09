@@ -16,18 +16,65 @@ const TYPE_OPTIONS = [
   { value: 'guesthouse', label: 'Guesthouses only' },
 ]
 
-export default function AdminCalendarFilters({ filters, onChange }) {
+function resourceLabel(resource) {
+  const type = resource.type === 'guesthouse' ? 'Guesthouse' : 'Vehicle'
+  const city = resource.city ? ` · ${resource.city}` : ''
+  return `${resource.title}${city} (${type})`
+}
+
+export default function AdminCalendarFilters({
+  filters,
+  onChange,
+  resources = [],
+  resourcesLoading = false,
+}) {
+  const selectedIds = Array.isArray(filters.resource_ids) ? filters.resource_ids : []
+  const listingType = filters.listing_type || 'all'
+
+  const listingOptions = resources.filter((resource) => {
+    if (listingType === 'vehicle') return resource.type === 'vehicle'
+    if (listingType === 'guesthouse') return resource.type === 'guesthouse'
+    return true
+  })
+
   return (
     <div className="admin-calendar-card">
       <div className="admin-calendar-filters">
         <label>
           Listing type
           <select
-            value={filters.listing_type || 'all'}
-            onChange={(e) => onChange({ listing_type: e.target.value })}
+            value={listingType}
+            onChange={(e) => onChange({
+              listing_type: e.target.value,
+              // Clear specific listing picks when switching type buckets.
+              resource_ids: undefined,
+            })}
           >
             {TYPE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="admin-calendar-filters__listing">
+          Vehicle / listing
+          <select
+            value={selectedIds[0] || ''}
+            disabled={resourcesLoading}
+            onChange={(e) => {
+              const value = e.target.value
+              onChange({ resource_ids: value ? [value] : undefined })
+            }}
+          >
+            <option value="">
+              {resourcesLoading
+                ? 'Loading listings…'
+                : `All visible listings (${listingOptions.length})`}
+            </option>
+            {listingOptions.map((resource) => (
+              <option key={resource.id} value={resource.id}>
+                {resourceLabel(resource)}
+              </option>
             ))}
           </select>
         </label>

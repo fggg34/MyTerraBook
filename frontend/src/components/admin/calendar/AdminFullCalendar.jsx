@@ -1,4 +1,4 @@
-import { Component } from 'react'
+import { Component, useEffect, useMemo } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -15,6 +15,12 @@ class CalendarErrorBoundary extends Component {
     return { error }
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.error) {
+      this.setState({ error: null })
+    }
+  }
+
   render() {
     if (this.state.error) {
       return (
@@ -28,6 +34,12 @@ class CalendarErrorBoundary extends Component {
   }
 }
 
+function slotMinWidthForView(view) {
+  if (view === 'resourceTimelineDay') return 72
+  if (view === 'resourceTimelineWeek') return 96
+  return 42
+}
+
 export default function AdminFullCalendar({
   resources = [],
   events = [],
@@ -37,29 +49,64 @@ export default function AdminFullCalendar({
   onEventClick,
   calendarRef,
 }) {
-  const mappedResources = resources.map(toFullCalendarResource)
-  const mappedEvents = events.map(toFullCalendarEvent)
+  const mappedResources = useMemo(
+    () => resources.map(toFullCalendarResource),
+    [resources],
+  )
+  const mappedEvents = useMemo(
+    () => events.map(toFullCalendarEvent),
+    [events],
+  )
+  const slotMinWidth = slotMinWidthForView(currentView)
+  const isListView = currentView === 'listWeek'
+
+  useEffect(() => {
+    const api = calendarRef?.current?.getApi?.()
+    if (!api) return undefined
+
+    // FullCalendar often keeps a stale width after month ↔ week switches.
+    const refresh = () => {
+      try {
+        api.updateSize()
+      } catch {
+        // Calendar may be mid-unmount during view changes.
+      }
+    }
+
+    refresh()
+    const t1 = window.setTimeout(refresh, 50)
+    const t2 = window.setTimeout(refresh, 250)
+    const t3 = window.setTimeout(refresh, 600)
+
+    return () => {
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+      window.clearTimeout(t3)
+    }
+  }, [calendarRef, currentView, mappedResources.length, mappedEvents.length])
 
   return (
-    <div className="admin-calendar-card admin-calendar-mount">
+    <div className={`admin-calendar-card admin-calendar-mount admin-calendar-mount--${currentView}`}>
       {loading && (
         <div className="admin-calendar-skeleton" style={{ marginBottom: '0.75rem' }}>
           <div className="admin-calendar-skeleton__bar" />
         </div>
       )}
-      <CalendarErrorBoundary>
+      <CalendarErrorBoundary resetKey={currentView}>
         <FullCalendar
           ref={calendarRef}
           plugins={[resourceTimelinePlugin, interactionPlugin, listPlugin]}
           initialView={currentView}
           headerToolbar={false}
           height="auto"
+          contentHeight="auto"
+          stickyHeaderDates
           schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
           resources={mappedResources}
           events={mappedEvents}
           resourceAreaHeaderContent="Listings"
-          resourceAreaWidth="220px"
-          slotMinWidth={42}
+          resourceAreaWidth={isListView ? undefined : '220px'}
+          slotMinWidth={slotMinWidth}
           eventMinWidth={8}
           nowIndicator
           editable={false}
@@ -70,21 +117,30 @@ export default function AdminFullCalendar({
               type: 'resourceTimeline',
               duration: { months: 1 },
               slotDuration: { days: 1 },
+              slotLabelFormat: [{ day: 'numeric' }],
             },
             resourceTimelineWeek: {
               type: 'resourceTimeline',
               duration: { weeks: 1 },
               slotDuration: { days: 1 },
+              slotLabelFormat: [
+                { weekday: 'short', month: 'numeric', day: 'numeric' },
+              ],
             },
             resourceTimelineDay: {
               type: 'resourceTimeline',
               duration: { days: 1 },
-              slotDuration: { hours: 6 },
+              slotDuration: { hours: 2 },
+              slotLabelFormat: [{ hour: 'numeric', minute: '2-digit' }],
+            },
+            listWeek: {
+              type: 'list',
+              duration: { weeks: 1 },
             },
           }}
           eventClassNames={(arg) => (arg.event.extendedProps.hasConflict ? ['conflict-event'] : [])}
           eventContent={(arg) => (
-            <div style={{ padding: '2px 4px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+            <div className="admin-calendar-event-label">
               {arg.event.title}
             </div>
           )}

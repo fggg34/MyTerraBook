@@ -136,6 +136,11 @@ class AdminCalendarEventService
      */
     private function applyCarFilters(Builder $query, AdminCalendarFilters $filters): void
     {
+        $carIds = $filters->carIds();
+        if ($carIds !== []) {
+            $query->whereIn('car_id', $carIds);
+        }
+
         if ($filters->status) {
             $this->applyCarStatusFilter($query, $filters->status);
         }
@@ -167,6 +172,11 @@ class AdminCalendarEventService
      */
     private function applyStayFilters(Builder $query, AdminCalendarFilters $filters): void
     {
+        $guestHouseIds = $filters->guestHouseIds();
+        if ($guestHouseIds !== []) {
+            $query->whereIn('guest_house_id', $guestHouseIds);
+        }
+
         if ($filters->status) {
             $query->where('status', $filters->status);
         }

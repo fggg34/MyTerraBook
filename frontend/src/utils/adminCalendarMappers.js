@@ -55,11 +55,18 @@ export function parseEventId(eventId) {
 }
 
 export function buildFilterParams(searchParams) {
+  const resourceRaw = searchParams.get('resource') || searchParams.get('resource_ids') || ''
+  const resourceIds = resourceRaw
+    .split(',')
+    .map((id) => id.trim())
+    .filter((id) => /^(car|guesthouse):\d+$/.test(id))
+
   return {
     listing_type: searchParams.get('type') || 'all',
     host_id: searchParams.get('host') || undefined,
     city: searchParams.get('city') || undefined,
     status: searchParams.get('status') || undefined,
     search: searchParams.get('q') || undefined,
+    resource_ids: resourceIds.length > 0 ? resourceIds : undefined,
   }
 }

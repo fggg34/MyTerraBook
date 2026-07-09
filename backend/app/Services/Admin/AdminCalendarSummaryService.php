@@ -60,6 +60,11 @@ class AdminCalendarSummaryService
             ->where('pickup_at', '<', $end)
             ->where('dropoff_at', '>', $start);
 
+        $carIds = $filters->carIds();
+        if ($carIds !== []) {
+            $query->whereIn('car_id', $carIds);
+        }
+
         if ($filters->hostId) {
             $query->whereHas('car', fn ($q) => $q->where('user_id', $filters->hostId));
         }
@@ -81,6 +86,9 @@ class AdminCalendarSummaryService
         }
 
         $carQuery = Car::query()->select(['id', 'units_available']);
+        if ($carIds !== []) {
+            $carQuery->whereIn('id', $carIds);
+        }
         if ($filters->hostId) {
             $carQuery->where('user_id', $filters->hostId);
         }
@@ -105,6 +113,11 @@ class AdminCalendarSummaryService
             ->where('check_in', '<', $end->toDateString())
             ->where('check_out', '>', $start->toDateString());
 
+        $guestHouseIds = $filters->guestHouseIds();
+        if ($guestHouseIds !== []) {
+            $query->whereIn('guest_house_id', $guestHouseIds);
+        }
+
         if ($filters->hostId) {
             $query->whereHas('guestHouse', fn ($q) => $q->where('user_id', $filters->hostId));
         }
@@ -125,6 +138,9 @@ class AdminCalendarSummaryService
         }
 
         $houseQuery = GuestHouse::query();
+        if ($guestHouseIds !== []) {
+            $houseQuery->whereIn('id', $guestHouseIds);
+        }
         if ($filters->hostId) {
             $houseQuery->where('user_id', $filters->hostId);
         }

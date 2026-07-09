@@ -14,15 +14,17 @@ class AdminCalendarResourceService
      */
     public function list(AdminCalendarFilters $filters, Request $request): array
     {
-        $perPage = min(100, max(10, (int) $request->query('per_page', 50)));
+        $perPage = min(200, max(10, (int) $request->query('per_page', 50)));
         $page = max(1, (int) $request->query('page', 1));
 
         $resources = collect();
 
         if ($filters->includesVehicles()) {
+            $carIds = $filters->carIds();
             $carQuery = Car::query()
                 ->select(['id', 'name', 'user_id', 'units_available', 'listing_status', 'is_active'])
                 ->with(['host:id,name,email', 'locations:id,name'])
+                ->when($carIds !== [], fn ($q) => $q->whereIn('id', $carIds))
                 ->when($filters->hostId, fn ($q) => $q->where('user_id', $filters->hostId))
                 ->when($filters->city, function ($q) use ($filters): void {
                     $q->whereHas('locations', fn ($loc) => $loc
@@ -44,9 +46,11 @@ class AdminCalendarResourceService
         }
 
         if ($filters->includesGuesthouses()) {
+            $guestHouseIds = $filters->guestHouseIds();
             $stayQuery = GuestHouse::query()
                 ->select(['id', 'name', 'user_id', 'type', 'status', 'city'])
                 ->with(['host:id,name,email'])
+                ->when($guestHouseIds !== [], fn ($q) => $q->whereIn('id', $guestHouseIds))
                 ->when($filters->hostId, fn ($q) => $q->where('user_id', $filters->hostId))
                 ->when($filters->city, fn ($q) => $q->where('city', 'like', '%'.$filters->city.'%'))
                 ->when($filters->search, function ($q) use ($filters): void {

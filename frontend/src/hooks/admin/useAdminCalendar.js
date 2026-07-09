@@ -7,10 +7,11 @@ import {
   fetchCalendarSummary,
 } from '../../api/adminCalendar'
 
-export function useAdminCalendarResources(filters) {
+export function useAdminCalendarResources(filters, options = {}) {
+  const perPage = options.perPage ?? 100
   return useQuery({
-    queryKey: ['admin-calendar-resources', filters],
-    queryFn: () => fetchCalendarResources({ ...filters, per_page: 100 }),
+    queryKey: ['admin-calendar-resources', filters, perPage],
+    queryFn: () => fetchCalendarResources({ ...filters, per_page: perPage }),
     staleTime: 60_000,
   })
 }

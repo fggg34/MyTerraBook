@@ -15,6 +15,8 @@ import {
 } from '../../hooks/admin/useAdminCalendar'
 import { buildFilterParams, parseEventId } from '../../utils/adminCalendarMappers'
 
+const DEFAULT_VISIBLE_RESOURCES = 20
+
 function toIsoDate(date) {
   if (!date) return null
   return new Date(date).toISOString()
@@ -38,21 +40,46 @@ export default function AdminCalendarPage({ embed = false }) {
   const [calendarTitle, setCalendarTitle] = useState('')
   const [selectedEventId, setSelectedEventId] = useState(null)
 
-  const filters = useMemo(() => {
-    const fromUrl = buildFilterParams(searchParams)
-    return {
-      listing_type: fromUrl.listing_type,
-      host_id: fromUrl.host_id,
-      city: fromUrl.city,
-      status: fromUrl.status,
-      search: fromUrl.search,
-    }
-  }, [searchParams])
+  const filters = useMemo(() => buildFilterParams(searchParams), [searchParams])
 
-  const resourcesQuery = useAdminCalendarResources(filters)
-  const eventsQuery = useAdminCalendarEvents(range, filters)
-  const summaryQuery = useAdminCalendarSummary(range, filters)
-  const alertsQuery = useAdminCalendarAlerts(filters)
+  // Catalog query ignores resource_ids so the select always lists all matching listings.
+  const catalogFilters = useMemo(() => ({
+    listing_type: filters.listing_type,
+    host_id: filters.host_id,
+    city: filters.city,
+    search: filters.search,
+  }), [filters.listing_type, filters.host_id, filters.city, filters.search])
+
+  const catalogQuery = useAdminCalendarResources(catalogFilters, { perPage: 200 })
+  const catalogResources = catalogQuery.data?.data || []
+
+  const selectedResourceIds = filters.resource_ids || []
+  const visibleResources = useMemo(() => {
+    if (selectedResourceIds.length > 0) {
+      const selected = new Set(selectedResourceIds)
+      return catalogResources.filter((resource) => selected.has(resource.id))
+    }
+    return catalogResources.slice(0, DEFAULT_VISIBLE_RESOURCES)
+  }, [catalogResources, selectedResourceIds])
+
+  const queryFilters = useMemo(() => {
+    const resourceIds = selectedResourceIds.length > 0
+      ? selectedResourceIds
+      : visibleResources.map((resource) => resource.id)
+
+    return {
+      listing_type: filters.listing_type,
+      host_id: filters.host_id,
+      city: filters.city,
+      status: filters.status,
+      search: filters.search,
+      resource_ids: resourceIds.length > 0 ? resourceIds.join(',') : undefined,
+    }
+  }, [filters, selectedResourceIds, visibleResources])
+
+  const eventsQuery = useAdminCalendarEvents(range, queryFilters)
+  const summaryQuery = useAdminCalendarSummary(range, queryFilters)
+  const alertsQuery = useAdminCalendarAlerts(queryFilters)
 
   const parsedSelection = parseEventId(selectedEventId)
   const detailQuery = useAdminCalendarEventDetail(parsedSelection?.type, parsedSelection?.id)
@@ -63,9 +90,13 @@ export default function AdminCalendarPage({ embed = false }) {
       const urlKey = key === 'listing_type' ? 'type'
         : key === 'host_id' ? 'host'
         : key === 'search' ? 'q'
+        : key === 'resource_ids' ? 'resource'
         : key
-      if (value === undefined || value === null || value === '') {
+
+      if (value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
         next.delete(urlKey)
+      } else if (Array.isArray(value)) {
+        next.set(urlKey, value.join(','))
       } else {
         next.set(urlKey, String(value))
       }
@@ -89,17 +120,40 @@ export default function AdminCalendarPage({ embed = false }) {
   const handleViewChange = useCallback((viewName) => {
     setCurrentView(viewName)
     const api = calendarRef.current?.getApi?.()
-    api?.changeView(viewName)
+    if (!api) return
+
+    try {
+      api.changeView(viewName)
+    } catch {
+      // Ignore transient FullCalendar errors during rapid tab switches.
+    }
+
+    // Force a layout pass after the view DOM settles.
+    window.requestAnimationFrame(() => {
+      try {
+        api.updateSize()
+      } catch {
+        // no-op
+      }
+    })
+    window.setTimeout(() => {
+      try {
+        api.updateSize()
+      } catch {
+        // no-op
+      }
+    }, 120)
   }, [])
 
   const handlePrev = () => calendarRef.current?.getApi?.()?.prev()
   const handleNext = () => calendarRef.current?.getApi?.()?.next()
   const handleToday = () => calendarRef.current?.getApi?.()?.today()
 
-  const resources = resourcesQuery.data?.data || []
   const events = eventsQuery.data?.data || []
   const selectedFromList = events.find((e) => e.id === selectedEventId)
   const detailEvent = detailQuery.data || selectedFromList
+  const totalListings = catalogQuery.data?.meta?.total ?? catalogResources.length
+  const showingLimited = selectedResourceIds.length === 0 && totalListings > visibleResources.length
 
   useEffect(() => {
     if (!embed) return undefined
@@ -108,15 +162,17 @@ export default function AdminCalendarPage({ embed = false }) {
   }, [embed])
 
   useEffect(() => {
-    if (!embed) return undefined
-
     const updateSize = () => {
-      calendarRef.current?.getApi?.()?.updateSize()
+      try {
+        calendarRef.current?.getApi?.()?.updateSize()
+      } catch {
+        // no-op
+      }
     }
 
     updateSize()
     const t1 = window.setTimeout(updateSize, 100)
-    const t2 = window.setTimeout(updateSize, 500)
+    const t2 = window.setTimeout(updateSize, 400)
     window.addEventListener('resize', updateSize)
 
     return () => {
@@ -124,7 +180,7 @@ export default function AdminCalendarPage({ embed = false }) {
       window.clearTimeout(t2)
       window.removeEventListener('resize', updateSize)
     }
-  }, [embed, resources.length, events.length, currentView])
+  }, [embed, visibleResources.length, events.length, currentView])
 
   return (
     <div className={`admin-calendar-page${embed ? ' admin-calendar-page--embed' : ''}`}>
@@ -137,9 +193,22 @@ export default function AdminCalendarPage({ embed = false }) {
         </div>
       )}
 
+      <AdminCalendarFilters
+        filters={filters}
+        onChange={handleFilterChange}
+        resources={catalogResources}
+        resourcesLoading={catalogQuery.isLoading}
+      />
+
+      {showingLimited && (
+        <p className="admin-calendar-limit-note">
+          Showing {visibleResources.length} of {totalListings} listings.
+          Use the Vehicle / listing filter to focus on one vehicle.
+        </p>
+      )}
+
       {!embed && (
         <>
-          <AdminCalendarFilters filters={filters} onChange={handleFilterChange} />
           <AdminCalendarSummaryBar summary={summaryQuery.data} loading={summaryQuery.isLoading} />
           <AdminCalendarAlertsPanel alerts={alertsQuery.data} loading={alertsQuery.isLoading} />
         </>
@@ -156,9 +225,9 @@ export default function AdminCalendarPage({ embed = false }) {
 
       <AdminFullCalendar
         calendarRef={calendarRef}
-        resources={resources}
+        resources={visibleResources}
         events={events}
-        loading={resourcesQuery.isLoading || eventsQuery.isLoading}
+        loading={catalogQuery.isLoading || eventsQuery.isLoading}
         currentView={currentView}
         onDatesSet={handleDatesSet}
         onEventClick={handleEventClick}
