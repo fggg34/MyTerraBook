@@ -145,7 +145,7 @@ html.admin-calendar-embed-root #terrabook-calendar-root {
 
 .admin-calendar-page--embed .admin-calendar-mount {
   min-height: calc(100vh - 8.5rem);
-  overflow: visible;
+  overflow: hidden;
 }
 
 .admin-calendar-page--embed .admin-calendar-filters {
@@ -309,8 +309,8 @@ html.admin-calendar-embed-root #terrabook-calendar-root {
 }
 
 .admin-calendar-mount {
-  min-height: 520px;
-  overflow-x: auto;
+  min-height: 420px;
+  overflow: hidden;
 }
 
 .admin-calendar-mount .fc {
@@ -318,17 +318,18 @@ html.admin-calendar-embed-root #terrabook-calendar-root {
   width: 100%;
 }
 
-.admin-calendar-mount .fc .fc-scrollgrid,
-.admin-calendar-mount .fc .fc-scrollgrid-section-body > td,
-.admin-calendar-mount .fc .fc-timeline-body,
-.admin-calendar-mount .fc .fc-scroller,
-.admin-calendar-mount .fc .fc-scroller-harness {
-  max-width: 100%;
+.admin-calendar-mount .fc .fc-scrollgrid {
+  border-left-width: 0;
+  border-right-width: 0;
 }
 
-.admin-calendar-mount--resourceTimelineWeek .fc-timeline-slot,
-.admin-calendar-mount--resourceTimelineDay .fc-timeline-slot {
-  min-width: 0;
+.admin-calendar-mount .fc .fc-timeline-header,
+.admin-calendar-mount .fc .fc-timeline-body {
+  overflow: hidden !important;
+}
+
+.admin-calendar-mount .fc .fc-scroller {
+  overflow: auto !important;
 }
 
 .admin-calendar-event-label {

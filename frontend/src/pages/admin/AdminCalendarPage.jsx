@@ -118,31 +118,9 @@ export default function AdminCalendarPage({ embed = false }) {
   }, [])
 
   const handleViewChange = useCallback((viewName) => {
+    // Remount FullCalendar via key={currentView} — do not call changeView().
+    // Resource-timeline month↔week changeView leaves a broken layout.
     setCurrentView(viewName)
-    const api = calendarRef.current?.getApi?.()
-    if (!api) return
-
-    try {
-      api.changeView(viewName)
-    } catch {
-      // Ignore transient FullCalendar errors during rapid tab switches.
-    }
-
-    // Force a layout pass after the view DOM settles.
-    window.requestAnimationFrame(() => {
-      try {
-        api.updateSize()
-      } catch {
-        // no-op
-      }
-    })
-    window.setTimeout(() => {
-      try {
-        api.updateSize()
-      } catch {
-        // no-op
-      }
-    }, 120)
   }, [])
 
   const handlePrev = () => calendarRef.current?.getApi?.()?.prev()
@@ -229,6 +207,7 @@ export default function AdminCalendarPage({ embed = false }) {
         events={events}
         loading={catalogQuery.isLoading || eventsQuery.isLoading}
         currentView={currentView}
+        initialDate={range.start}
         onDatesSet={handleDatesSet}
         onEventClick={handleEventClick}
       />
