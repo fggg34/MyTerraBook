@@ -40,7 +40,7 @@ class GuestHouseCalendarPage extends Page
         $user = auth()->user();
         $this->handoffToken = AdminCalendarEmbed::createHandoffToken($user);
         [$this->embedJsUrl, $this->embedCssUrl] = AdminCalendarEmbedAssets::resolve();
-        $this->calendarEmbedUrl = AdminCalendarEmbed::embedUrlFor($user);
+        $this->calendarEmbedUrl = AdminCalendarEmbed::embedUrlFor($user, $this->handoffToken);
     }
 
     public function getHeading(): string|Htmlable

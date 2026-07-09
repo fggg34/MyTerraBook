@@ -10,9 +10,9 @@ class AdminCalendarEmbed
 {
     public const EMBED_PATH = '/calendar-embed';
 
-    public static function embedUrlFor(?User $user): string
+    public static function embedUrlFor(?User $user, ?string $handoffToken = null): string
     {
-        $handoff = self::handoffTokenFor($user);
+        $handoff = $handoffToken ?? self::createHandoffToken($user);
         $query = $handoff !== null ? '?handoff='.urlencode($handoff) : '';
 
         if (app()->environment('local')) {
@@ -84,15 +84,14 @@ class AdminCalendarEmbed
             return null;
         }
 
-        return $user->createToken(
-            'admin-calendar-embed',
-            ['admin'],
-            Carbon::now()->addMinutes(30),
-        )->plainTextToken;
-    }
-
-    private static function handoffTokenFor(?User $user): ?string
-    {
-        return self::createHandoffToken($user);
+        try {
+            return $user->createToken(
+                'admin-calendar-embed',
+                ['admin'],
+                Carbon::now()->addMinutes(30),
+            )->plainTextToken;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }
