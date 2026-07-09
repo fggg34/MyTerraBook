@@ -1,17 +1,33 @@
 <x-filament-panels::page>
     <style>
+        /*
+          Do NOT hide .fi-page-header-main-ctn — in Filament it wraps BOTH the
+          page header and .fi-page-main / .fi-page-content (the calendar slot).
+          Hiding it blanks the whole page.
+        */
+        .fi-main-ctn:has(.admin-calendar-inline) .fi-header,
+        .fi-main-ctn:has(.admin-calendar-embed__frame) .fi-header,
+        .fi-main-ctn:has(.admin-calendar-inline) .fi-page-main-sub-navigation-mobile-menu-render-hook-ctn,
+        .fi-main-ctn:has(.admin-calendar-embed__frame) .fi-page-main-sub-navigation-mobile-menu-render-hook-ctn {
+            display: none !important;
+        }
+
         .fi-main-ctn:has(.admin-calendar-inline) .fi-page-header-main-ctn,
         .fi-main-ctn:has(.admin-calendar-embed__frame) .fi-page-header-main-ctn {
-            display: none !important;
+            display: flex !important;
+            flex-direction: column;
+            gap: 0 !important;
         }
 
         .fi-main-ctn:has(.admin-calendar-inline) .fi-page-main,
         .fi-main-ctn:has(.admin-calendar-embed__frame) .fi-page-main {
+            display: flex !important;
             gap: 0 !important;
         }
 
         .fi-main-ctn:has(.admin-calendar-inline) .fi-page-content,
         .fi-main-ctn:has(.admin-calendar-embed__frame) .fi-page-content {
+            display: block !important;
             padding: 0 !important;
         }
 
