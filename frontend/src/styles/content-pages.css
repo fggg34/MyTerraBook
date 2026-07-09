@@ -2845,6 +2845,14 @@
   transition: color 0.2s;
 }
 
+.host-how-tab-num {
+  flex-shrink: 0;
+}
+
+.host-how-tab-label {
+  min-width: 0;
+}
+
 .host-how-tab:hover,
 .host-how-tab.active {
   color: var(--navy, #0f2036);
@@ -3612,13 +3620,98 @@
     min-height: 680px;
   }
 
+  .host-how {
+    padding: 64px 0 72px;
+  }
+
+  .host-how-head {
+    margin-bottom: 28px;
+    padding: 0 4px;
+  }
+
+  .host-how-head h2 {
+    font-size: clamp(1.65rem, 6vw, 2.25rem);
+  }
+
+  /* Horizontal step scroller — avoids cramped 2×2 tab grid on tablets/phones */
   .host-how-tabs {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px 20px;
+    display: flex;
+    grid-template-columns: none;
+    gap: 10px;
+    margin: 0 -4px 20px;
+    padding: 4px 4px 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .host-how-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .host-how-tab {
+    flex: 0 0 auto;
+    flex-direction: column;
+    scroll-snap-align: start;
+    min-width: min(72vw, 220px);
+    max-width: 240px;
+    padding: 14px 16px 18px;
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid var(--line, #e2e7ef);
+    box-shadow: 0 8px 20px -16px rgba(15, 32, 54, 0.35);
+    font-size: 15px;
+    line-height: 1.3;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .host-how-tab::before {
+    display: none;
+  }
+
+  .host-how-tab-num {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--green, #45a06a);
+    margin-bottom: 2px;
+  }
+
+  .host-how-tab-bar {
+    left: 16px;
+    right: 16px;
+    bottom: 8px;
+    border-radius: 999px;
+  }
+
+  .host-how-tab.active {
+    border-color: rgba(69, 160, 106, 0.45);
+    box-shadow: 0 12px 28px -18px rgba(69, 160, 106, 0.55);
   }
 
   .host-how-stage {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 4 / 5;
+    border-radius: 20px;
+    min-height: 320px;
+  }
+
+  .host-how-cap {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    font-size: clamp(16px, 4.4vw, 22px);
+    line-height: 1.3;
+  }
+
+  .host-how-cap-muted {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.82em;
+    font-weight: 600;
   }
 
   .host-feat-head {
@@ -3645,8 +3738,56 @@
 }
 
 @media (max-width: 560px) {
+  section.host-landing-hero {
+    padding: 50px 0;
+    min-height: 0;
+  }
+
+  .host-feat-bleed-art {
+    margin: 0;
+  }
+
+  .host-feat-bleed-art img,
+  .host-feat-bleed-art > div {
+    border-radius: 16px;
+  }
+
   .host-landing-hero-grid {
     padding: 40px 20px 48px;
+  }
+
+  .host-how {
+    padding: 48px 0 56px;
+  }
+
+  .host-how .wrap {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .host-how-tabs {
+    margin: 0 -16px 16px;
+    padding: 2px 16px 10px;
+  }
+
+  .host-how-tab {
+    min-width: 78vw;
+    max-width: 78vw;
+    padding: 12px 14px 18px;
+    font-size: 14px;
+  }
+
+  .host-how-stage {
+    aspect-ratio: 3 / 4;
+    min-height: 280px;
+    border-radius: 18px;
+  }
+
+  .host-how-cap {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    max-width: none;
   }
 
   .host-bottom-cta-box {

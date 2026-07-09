@@ -48,29 +48,42 @@ export default function HostHowItWorks({
             {headingAccent && <span className="host-accent"> {headingAccent}</span>}
           </h2>
         </div>
-        <div className="host-how-tabs" role="tablist">
+        <div className="host-how-tabs" role="tablist" aria-label="How it works steps">
           {howTabs.map((tab, index) => (
             <button
               key={tab.title}
               type="button"
               role="tab"
               aria-selected={index === active}
+              aria-controls="host-how-stage"
+              id={`host-how-tab-${index}`}
               className={`host-how-tab ${index === active ? 'active' : ''}`}
               onClick={() => goTo(index)}
             >
-              <span className="host-how-tab-num">{index + 1}.</span>
-              {tab.title}
+              <span className="host-how-tab-num">{String(index + 1).padStart(2, '0')}</span>
+              <span className="host-how-tab-label">{tab.title}</span>
               <span className="host-how-tab-bar" key={index === active ? `bar-${active}` : 'bar-idle'} />
             </button>
           ))}
         </div>
         <div
+          id="host-how-stage"
           className="host-how-stage"
+          role="tabpanel"
+          aria-labelledby={`host-how-tab-${active}`}
           onMouseEnter={() => {
             pausedRef.current = true
             clearTimeout(timerRef.current)
           }}
           onMouseLeave={() => {
+            pausedRef.current = false
+            schedule()
+          }}
+          onTouchStart={() => {
+            pausedRef.current = true
+            clearTimeout(timerRef.current)
+          }}
+          onTouchEnd={() => {
             pausedRef.current = false
             schedule()
           }}
