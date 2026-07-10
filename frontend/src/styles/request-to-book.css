@@ -2022,7 +2022,6 @@
     flex-direction: column-reverse;
   }
   .rtb-page .step-nav {
-    flex-wrap: nowrap;
     justify-content: space-between;
   }
   .rtb-page .btn-next {
