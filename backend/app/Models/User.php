@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\HostAccountType;
 use App\Enums\UserRole;
+use App\Services\Email\EmailService;
 use App\Support\PricingCurrency;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
