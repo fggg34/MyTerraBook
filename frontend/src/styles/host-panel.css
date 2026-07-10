@@ -2496,11 +2496,17 @@ a.host-overview-card:hover .host-overview-card-link {
     padding: 16px 13px;
   }
 
-  /* Dashboard + editor grids collapse to a single column */
+  /* Dashboard + editor grids stay in a row on mobile */
   .host-overview-metrics,
   .host-capacity-grid,
+  .host-form-grid,
   .host-form-grid--3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .host-overview-metric {
+    width: 30%;
   }
 
   /* ---- Tables → stacked cards ---- */
@@ -2620,7 +2626,12 @@ a.host-overview-card:hover .host-overview-card-link {
   .host-capacity-grid,
   .host-form-grid,
   .host-form-grid--3 {
-    grid-template-columns: 1fr;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .host-overview-metric {
+    width: 30%;
   }
 }
 

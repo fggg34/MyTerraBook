@@ -2017,6 +2017,24 @@
   }
 }
 @media (max-width: 760px) {
+  .rtb-page .split {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .rtb-page .step-nav {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+  .rtb-page .btn-next {
+    padding: 14px;
+  }
+  .rtb-page .btn-back {
+    padding: 14px;
+  }
+  .rtb-page .field {
+    padding: 0;
+    border: 0;
+  }
   .rtb-page .rtb-wrap,
   .rtb-checkout-ftr .rtb-wrap {
     padding: 0 20px;
@@ -2073,51 +2091,42 @@
     margin-inline: auto;
   }
   .rtb-page .strip {
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    text-align: center;
+    justify-content: space-between;
+    flex-direction: row;
+    width: 100% !important;
   }
   .rtb-page .strip .leg {
-    align-items: center;
-    width: 100%;
-  }
-  .rtb-page .strip .leg .lt {
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
-    max-width: 28ch;
-    margin-inline: auto;
+    width: 40%;
+    flex: 0 0 40%;
   }
   .rtb-page .strip .arrowic {
-    transform: rotate(90deg);
-    padding: 2px 0;
+    transform: unset;
+  }
+  .rtb-page .strip .leg:first-of-type {
+    align-items: flex-start;
+  }
+  .rtb-page .strip .leg .lt {
+    margin-left: 0;
+  }
+  .rtb-page .strip .leg:nth-child(3) {
+    align-items: flex-end;
+  }
+  .rtb-page .strip .leg:nth-child(3) .lt {
+    margin-left: auto;
+    margin-right: 0;
   }
   .rtb-page .lines {
     padding: 14px 16px;
     min-height: 56px;
   }
   .rtb-page .lrow {
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    text-align: center;
-    padding: 5px 0;
-  }
-  .rtb-page .lrow .lv {
-    text-align: center;
-    min-width: 0;
+    flex-direction: row;
   }
   .rtb-page .total-row {
-    justify-content: center;
-    gap: 10px;
-    padding: 14px 16px;
-    min-height: 52px;
+    justify-content: space-between;
   }
   .rtb-page .total-row .tv {
-    text-align: center;
-    min-width: 7ch;
+    text-align: right;
   }
   .rtb-page .scard-foot {
     padding: 14px 16px;
@@ -2136,10 +2145,7 @@
     text-align: center;
   }
   .rtb-page .prepay-row {
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    text-align: center;
+    flex-direction: row;
   }
   .rtb-page .promo-card {
     text-align: center;
