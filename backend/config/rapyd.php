@@ -40,9 +40,12 @@ return [
 
     /*
     | Restrict the card brands offered on the hosted page. Leave empty (default)
-    | to let Rapyd present every card method valid for the country/currency —
-    | forcing US-only brands breaks non-US currencies such as ISK.
-    | Provide a comma-separated list via RAPYD_PAYMENT_METHOD_TYPES to override.
+    | to let Rapyd present every card method valid for the country/currency.
+    | Production accounts must also enable the Card category in the Rapyd Client
+    | Portal or checkout creation fails with
+    | ERROR_HOSTED_PAGE_PAYMENT_METHOD_TYPE_CATEGORIES_NOT_ENABLED.
+    | Provide a comma-separated list via RAPYD_PAYMENT_METHOD_TYPES to override
+    | (e.g. is_visa_card,is_mastercard_card). Uses payment_method_types_include.
     */
     'payment_method_types' => array_values(array_filter(array_map(
         'trim',

@@ -137,11 +137,11 @@ class RapydService
             'metadata' => $data['metadata'] ?? [],
         ];
 
-        // Only constrain the card brands when explicitly configured; otherwise let
-        // Rapyd offer every method valid for the country/currency.
+        // Only constrain methods when explicitly configured. Rapyd expects
+        // `payment_method_types_include` (not `payment_method_types`).
         $methodTypes = $data['payment_method_types'] ?? config('rapyd.payment_method_types');
         if (is_array($methodTypes) && $methodTypes !== []) {
-            $payload['payment_method_types'] = array_values($methodTypes);
+            $payload['payment_method_types_include'] = array_values($methodTypes);
         }
 
         $response = $this->request('post', '/v1/checkout', $payload);
@@ -150,7 +150,15 @@ class RapydService
 
         if (! $response->successful() || empty($checkout['id'])) {
             Log::error('Rapyd checkout creation failed', ['status' => $response->status(), 'body' => $body]);
-            throw new RuntimeException('Unable to create Rapyd checkout page.');
+            $rapydMessage = (string) data_get($body, 'status.message', '');
+            $rapydCode = (string) data_get($body, 'status.error_code', '');
+            $hint = $rapydMessage !== ''
+                ? $rapydMessage
+                : 'Unable to create Rapyd checkout page.';
+            if ($rapydCode === 'ERROR_HOSTED_PAGE_PAYMENT_METHOD_TYPE_CATEGORIES_NOT_ENABLED') {
+                $hint = 'Rapyd hosted checkout is not enabled for card payments on this account. In the Rapyd Client Portal, enable the Card payment method category (Settings → Payment Methods), then try again.';
+            }
+            throw new RuntimeException($hint.($rapydCode !== '' ? " [{$rapydCode}]" : ''));
         }
 
         return [

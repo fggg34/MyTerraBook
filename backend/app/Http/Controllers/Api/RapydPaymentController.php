@@ -75,6 +75,7 @@ class RapydPaymentController extends Controller
         if (! $this->rapyd->isConfigured()) {
             Log::error('Rapyd initiateCheckout failed: credentials missing');
 
+            // Use 503 (not 502): Cloudflare replaces opaque 502 responses and hides our JSON.
             return response()->json([
                 'message' => 'Card payment is not configured yet. Please contact support or try another payment method.',
                 'error' => config('app.debug')
@@ -97,11 +98,13 @@ class RapydPaymentController extends Controller
         } catch (Throwable $e) {
             Log::error('Rapyd initiateCheckout failed', ['error' => $e->getMessage()]);
 
+            // 422 keeps the JSON body visible through Cloudflare (502s get replaced).
             return response()->json([
-                'message' => 'Could not start card payment. Please try again.',
-                // Surface the underlying reason only when debugging is enabled.
+                'message' => $e->getMessage() !== ''
+                    ? $e->getMessage()
+                    : 'Could not start card payment. Please try again.',
                 'error' => config('app.debug') ? $e->getMessage() : null,
-            ], 502);
+            ], 422);
         }
 
         if (empty($checkout['redirect_url'])) {
@@ -112,7 +115,7 @@ class RapydPaymentController extends Controller
             return response()->json([
                 'message' => 'Could not start card payment. Please try again.',
                 'error' => config('app.debug') ? 'Rapyd returned an empty redirect_url.' : null,
-            ], 502);
+            ], 422);
         }
 
         $payment = RapydPayment::create([
