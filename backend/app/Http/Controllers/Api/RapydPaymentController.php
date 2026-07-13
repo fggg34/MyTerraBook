@@ -72,11 +72,22 @@ class RapydPaymentController extends Controller
         $completeUrl = $frontendUrl.config('rapyd.success_path', '/booking/rapyd/success').'?'.$returnQuery;
         $errorUrl = $frontendUrl.config('rapyd.error_path', '/booking/rapyd/failed').'?'.$returnQuery;
 
+        if (! $this->rapyd->isConfigured()) {
+            Log::error('Rapyd initiateCheckout failed: credentials missing');
+
+            return response()->json([
+                'message' => 'Card payment is not configured yet. Please contact support or try another payment method.',
+                'error' => config('app.debug')
+                    ? 'Missing RAPYD_ACCESS_KEY / RAPYD_SECRET_KEY (or admin Payment Methods keys).'
+                    : null,
+            ], 503);
+        }
+
         try {
             $checkout = $this->rapyd->createCheckoutPage([
                 'amount' => $platformFee, // ONLY the platform fee is charged online.
                 'currency' => $currency,
-                'country' => config('rapyd.country', 'US'),
+                'country' => config('rapyd.country', 'IS'),
                 'payment_method_types' => config('rapyd.payment_method_types'),
                 'merchant_reference_id' => (string) $validated['order_id'],
                 'complete_payment_url' => $completeUrl,
@@ -90,6 +101,17 @@ class RapydPaymentController extends Controller
                 'message' => 'Could not start card payment. Please try again.',
                 // Surface the underlying reason only when debugging is enabled.
                 'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 502);
+        }
+
+        if (empty($checkout['redirect_url'])) {
+            Log::error('Rapyd initiateCheckout returned empty redirect_url', [
+                'checkout_id' => $checkout['checkout_id'] ?? null,
+            ]);
+
+            return response()->json([
+                'message' => 'Could not start card payment. Please try again.',
+                'error' => config('app.debug') ? 'Rapyd returned an empty redirect_url.' : null,
             ], 502);
         }
 

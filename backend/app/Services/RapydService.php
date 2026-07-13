@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\PaymentMethod;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -28,10 +29,51 @@ class RapydService
 
     public function __construct()
     {
-        $this->accessKey = (string) config('rapyd.access_key');
-        $this->secretKey = (string) config('rapyd.secret_key');
-        $this->baseUrl = rtrim((string) config('rapyd.base_url'), '/');
-        $this->webhookSecret = (string) config('rapyd.webhook_secret');
+        // Prefer credentials saved via Admin → Payment Methods; fall back to .env.
+        // Previously only .env was read, so keys entered in the admin UI were ignored
+        // and checkout creation failed — while the SPA still showed "confirmed".
+        $dbConfig = [];
+        try {
+            $dbConfig = PaymentMethod::query()->where('code', 'rapyd_card')->value('config') ?? [];
+        } catch (\Throwable) {
+            $dbConfig = [];
+        }
+        if (! is_array($dbConfig)) {
+            $dbConfig = [];
+        }
+
+        $this->accessKey = (string) (
+            (! empty($dbConfig['access_key']) ? $dbConfig['access_key'] : null)
+            ?? config('rapyd.access_key')
+            ?? ''
+        );
+        $this->secretKey = (string) (
+            (! empty($dbConfig['secret_key']) ? $dbConfig['secret_key'] : null)
+            ?? config('rapyd.secret_key')
+            ?? ''
+        );
+        $this->webhookSecret = (string) (
+            (! empty($dbConfig['webhook_secret']) ? $dbConfig['webhook_secret'] : null)
+            ?? config('rapyd.webhook_secret')
+            ?? ''
+        );
+
+        $environment = (string) ($dbConfig['environment'] ?? '');
+        if ($environment === 'production') {
+            $this->baseUrl = 'https://api.rapyd.net';
+        } elseif ($environment === 'sandbox') {
+            $this->baseUrl = 'https://sandboxapi.rapyd.net';
+        } else {
+            $this->baseUrl = rtrim((string) config('rapyd.base_url', 'https://sandboxapi.rapyd.net'), '/');
+        }
+    }
+
+    /**
+     * Whether access/secret keys are present (from admin config or .env).
+     */
+    public function isConfigured(): bool
+    {
+        return $this->accessKey !== '' && $this->secretKey !== '';
     }
 
     /**
@@ -74,6 +116,12 @@ class RapydService
      */
     public function createCheckoutPage(array $data): array
     {
+        if (! $this->isConfigured()) {
+            throw new RuntimeException(
+                'Rapyd is not configured. Add RAPYD_ACCESS_KEY / RAPYD_SECRET_KEY to .env, or save keys under Admin → Payment Methods.'
+            );
+        }
+
         $currency = strtoupper((string) ($data['currency'] ?? config('rapyd.currency', 'ISK')));
 
         $payload = [

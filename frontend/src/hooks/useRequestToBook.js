@@ -532,8 +532,10 @@ export default function useRequestToBook() {
         created = data?.data
       }
 
-      // Card payment (Rapyd): charge the 20% platform fee on the hosted checkout,
+      // Card payment (Rapyd): charge the platform fee on the hosted checkout,
       // then Rapyd redirects the guest back to /booking/rapyd/success.
+      // Never fall through to the confirmation page if checkout did not start —
+      // that made failed Rapyd setups look like instant confirmed bookings.
       if (['card', 'rapyd_card'].includes(form.paymentMethod) && created?.id) {
         const totalCents =
           created.total_amount_cents ?? created.total_cents ?? quote?.total_cents ?? 0
@@ -541,6 +543,7 @@ export default function useRequestToBook() {
           const { data: rapyd } = await initiateRapydCheckout({
             order_id: created.id,
             total_price: Number(totalCents) / 100,
+            currency: created.currency || quote?.currency || undefined,
             order_type: bookingType === 'guesthouse' ? 'guesthouse' : 'car',
           })
           if (rapyd?.checkout_url) {
@@ -548,8 +551,10 @@ export default function useRequestToBook() {
             return // keep `saving` true while the browser redirects
           }
           toast('Could not start the card payment. Please try again.', 'error')
+          return
         } catch (err) {
           toast(err.response?.data?.message || 'Could not start the card payment.', 'error')
+          return
         }
       }
 
