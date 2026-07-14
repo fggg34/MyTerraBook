@@ -87,6 +87,21 @@ export function guideToElement(el, focusEl) {
   }
 }
 
+/** Scroll to the first invalid checkout field and focus it. */
+export function scrollToFirstFieldError(errors) {
+  const keys = Object.keys(errors || {})
+  if (!keys.length) return
+  for (const key of keys) {
+    const el = document.querySelector(`[data-field="${CSS.escape(key)}"]`)
+    if (!el) continue
+    const focusEl = el.matches('input, select, textarea, button')
+      ? el
+      : el.querySelector('input, select, textarea, button')
+    guideToElement(el, focusEl || undefined)
+    return
+  }
+}
+
 /**
  * Estimate location / one-way fees for a pick-up → drop-off pair (matches checkout quote rules).
  */

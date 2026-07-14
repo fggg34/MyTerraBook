@@ -144,6 +144,16 @@
   box-shadow: 0 0 0 3px rgba(197, 48, 48, 0.12);
 }
 
+.phone-field--rtb.phone-field--error .PhoneInput {
+  border-color: var(--rtb-red, #e23744);
+  background: #fef5f6;
+  box-shadow: 0 0 0 3px rgba(226, 55, 68, 0.12);
+}
+
+.phone-field--rtb.phone-field--error .PhoneInputCountry {
+  background: #fde8e8;
+}
+
 /* Host landing signup */
 .phone-field--host label {
   display: block;

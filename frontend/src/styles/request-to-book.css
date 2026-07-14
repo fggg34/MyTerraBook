@@ -360,6 +360,23 @@
   border-color: var(--rtb-blue);
   box-shadow: 0 0 0 3px rgba(52, 98, 158, 0.12);
 }
+.rtb-page input.inp.inp-error,
+.rtb-page select.sel.inp-error,
+.rtb-page textarea.inp.inp-error {
+  border-color: var(--rtb-red);
+  background: #fef5f6;
+  box-shadow: 0 0 0 3px rgba(226, 55, 68, 0.12);
+}
+.rtb-page input.inp.inp-error:focus,
+.rtb-page select.sel.inp-error:focus,
+.rtb-page textarea.inp.inp-error:focus {
+  border-color: var(--rtb-red);
+  box-shadow: 0 0 0 3px rgba(226, 55, 68, 0.18);
+}
+.rtb-page .agree.agree-error .cbx {
+  border-color: var(--rtb-red);
+  box-shadow: 0 0 0 3px rgba(226, 55, 68, 0.12);
+}
 .rtb-page select.sel {
   appearance: none;
   cursor: pointer;

@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext'
 import { usePageContent } from '../context/SiteContentContext'
 import { getRequestToBookConfig, resolveBookingType, resolveTimeOptions } from '../data/requestToBookConfig'
 import { formatPhoneForApi, validatePhone } from '../utils/phone'
-import { combineDateAndTime, nightsBetween, parseRentalOptionIds, resolveLocationRouteFeeCents, toDateOnlyString } from '../utils/requestToBookUtils'
+import { combineDateAndTime, nightsBetween, parseRentalOptionIds, resolveLocationRouteFeeCents, scrollToFirstFieldError, toDateOnlyString } from '../utils/requestToBookUtils'
 import { useFormatPrice } from './useFormatPrice'
 import { toApiDateTime, parseDateTimeLocal } from '../utils/format'
 import { useBookingRules } from './useBookingRules'
@@ -118,6 +118,26 @@ export default function useRequestToBook() {
 
   const updateForm = useCallback((patch) => {
     setForm((prev) => ({ ...prev, ...patch }))
+    setErrors((prev) => {
+      if (!Object.keys(prev).length) return prev
+      const next = { ...prev }
+      let changed = false
+      for (const key of Object.keys(patch)) {
+        if (key === 'custom_field_values') {
+          for (const fieldKey of Object.keys(patch.custom_field_values || {})) {
+            const errKey = `custom_${fieldKey}`
+            if (next[errKey]) {
+              delete next[errKey]
+              changed = true
+            }
+          }
+        } else if (next[key] !== undefined) {
+          delete next[key]
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
   }, [])
 
   const carId = searchParams.get('car_id')
@@ -458,6 +478,7 @@ export default function useRequestToBook() {
     const validationErrors = validateStep(step)
     if (Object.keys(validationErrors).length) {
       toast(stepValidationMessage(step, validationErrors), 'error')
+      requestAnimationFrame(() => scrollToFirstFieldError(validationErrors))
       return
     }
     const next = Math.min(step + 1, 4)
@@ -489,6 +510,7 @@ export default function useRequestToBook() {
     if (Object.keys(validationErrors).length) {
       if (validationErrors.agreed) toast('Please confirm the terms', 'error')
       else toast('Complete the required payment fields to continue', 'error')
+      requestAnimationFrame(() => scrollToFirstFieldError(validationErrors))
       return
     }
     if (!quote) {

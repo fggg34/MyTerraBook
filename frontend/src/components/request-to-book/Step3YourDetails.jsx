@@ -44,10 +44,12 @@ export default function Step3YourDetails({
           <div className="field">
             <label>Full name <span className="req">*</span></label>
             <input
-              className="inp"
+              data-field="customer_name"
+              className={`inp${errors.customer_name ? ' inp-error' : ''}`}
               placeholder={config.step3.showLicence ? 'As shown on your licence' : 'As shown on your ID'}
               value={form.customer_name}
               onChange={(e) => updateForm({ customer_name: e.target.value })}
+              aria-invalid={!!errors.customer_name}
             />
             {errors.customer_name && <span className="hint" style={{ color: 'var(--rtb-red)' }}>{errors.customer_name}</span>}
           </div>
@@ -55,12 +57,15 @@ export default function Step3YourDetails({
             <div className="field">
               <label>Country of residence <span className="req">*</span></label>
               <CountrySelect
-                className="sel"
+                data-field="customer_country"
+                className={`sel${errors.customer_country ? ' inp-error' : ''}`}
                 includeOther={false}
                 value={form.customer_country}
                 onChange={(e) => updateForm({ customer_country: e.target.value })}
                 placeholder="Select country"
+                aria-invalid={!!errors.customer_country}
               />
+              {errors.customer_country && <span className="hint" style={{ color: 'var(--rtb-red)' }}>{errors.customer_country}</span>}
             </div>
           )}
         </div>
@@ -70,21 +75,25 @@ export default function Step3YourDetails({
             <div className="control ic">
               <Mail className="lead" aria-hidden />
               <input
-                className="inp"
+                data-field="customer_email"
+                className={`inp${errors.customer_email ? ' inp-error' : ''}`}
                 type="email"
                 placeholder="you@email.com"
                 value={form.customer_email}
                 onChange={(e) => updateForm({ customer_email: e.target.value })}
+                aria-invalid={!!errors.customer_email}
               />
             </div>
+            {errors.customer_email && <span className="hint" style={{ color: 'var(--rtb-red)' }}>{errors.customer_email}</span>}
           </div>
-          <div className="field full">
+          <div className="field full" data-field="customer_phone">
             <PhoneField
               id="rtb-customer-phone"
               label="Phone number"
               variant="rtb"
               required
               requiredMarkClassName="req"
+              hasError={!!errors.customer_phone}
               value={form.customer_phone}
               onChange={(customer_phone) => updateForm({ customer_phone })}
               placeholder="123 4567"
@@ -136,11 +145,14 @@ export default function Step3YourDetails({
             <div className="field">
               <label>Licence number <span className="req">*</span></label>
               <input
-                className="inp"
+                data-field="licenceNumber"
+                className={`inp${errors.licenceNumber ? ' inp-error' : ''}`}
                 placeholder="Number on your licence"
                 value={form.licenceNumber}
                 onChange={(e) => updateForm({ licenceNumber: e.target.value })}
+                aria-invalid={!!errors.licenceNumber}
               />
+              {errors.licenceNumber && <span className="hint" style={{ color: 'var(--rtb-red)' }}>{errors.licenceNumber}</span>}
             </div>
             <div className="field">
               <label>Issuing country <span className="req">*</span></label>
@@ -190,50 +202,58 @@ export default function Step3YourDetails({
             <span className="bnum">{config.step3.showLicence ? '3' : '2'}</span>
             <h3>Additional information</h3>
           </div>
-          {customFields.map((field) => (
-            <div key={field.field_key} className="field full" style={{ marginBottom: 12 }}>
-              <label>
-                {field.label}
-                {field.is_required ? <span className="req"> *</span> : null}
-              </label>
-              {field.type === 'select' ? (
-                <select
-                  className="sel"
-                  value={form.custom_field_values?.[field.field_key] || ''}
-                  onChange={(e) =>
-                    updateForm({
-                      custom_field_values: {
-                        ...form.custom_field_values,
-                        [field.field_key]: e.target.value,
-                      },
-                    })
-                  }
-                >
-                  <option value="">Select…</option>
-                  {(field.select_options || []).map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  className="inp"
-                  type={field.is_email ? 'email' : 'text'}
-                  value={form.custom_field_values?.[field.field_key] || ''}
-                  onChange={(e) =>
-                    updateForm({
-                      custom_field_values: {
-                        ...form.custom_field_values,
-                        [field.field_key]: e.target.value,
-                      },
-                    })
-                  }
-                />
-              )}
-              {errors[`custom_${field.field_key}`] && (
-                <span className="hint" style={{ color: 'var(--rtb-red)' }}>{errors[`custom_${field.field_key}`]}</span>
-              )}
-            </div>
-          ))}
+          {customFields.map((field) => {
+            const errKey = `custom_${field.field_key}`
+            const hasError = !!errors[errKey]
+            return (
+              <div key={field.field_key} className="field full" style={{ marginBottom: 12 }}>
+                <label>
+                  {field.label}
+                  {field.is_required ? <span className="req"> *</span> : null}
+                </label>
+                {field.type === 'select' ? (
+                  <select
+                    data-field={errKey}
+                    className={`sel${hasError ? ' inp-error' : ''}`}
+                    value={form.custom_field_values?.[field.field_key] || ''}
+                    onChange={(e) =>
+                      updateForm({
+                        custom_field_values: {
+                          ...form.custom_field_values,
+                          [field.field_key]: e.target.value,
+                        },
+                      })
+                    }
+                    aria-invalid={hasError}
+                  >
+                    <option value="">Select…</option>
+                    {(field.select_options || []).map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    data-field={errKey}
+                    className={`inp${hasError ? ' inp-error' : ''}`}
+                    type={field.is_email ? 'email' : 'text'}
+                    value={form.custom_field_values?.[field.field_key] || ''}
+                    onChange={(e) =>
+                      updateForm({
+                        custom_field_values: {
+                          ...form.custom_field_values,
+                          [field.field_key]: e.target.value,
+                        },
+                      })
+                    }
+                    aria-invalid={hasError}
+                  />
+                )}
+                {hasError && (
+                  <span className="hint" style={{ color: 'var(--rtb-red)' }}>{errors[errKey]}</span>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 

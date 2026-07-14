@@ -218,7 +218,8 @@ export default function Step4Payment({
       )}
 
       <label
-        className={`agree${form.agreed ? ' on' : ''}`}
+        data-field="agreed"
+        className={`agree${form.agreed ? ' on' : ''}${errors.agreed ? ' agree-error' : ''}`}
         onClick={() => updateForm({ agreed: !form.agreed })}
       >
         <span className="cbx"><Check aria-hidden /></span>

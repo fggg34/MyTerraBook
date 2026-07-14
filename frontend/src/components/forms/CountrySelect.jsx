@@ -9,6 +9,7 @@ export default function CountrySelect({
   className = '',
   includeOther = true,
   required = false,
+  ...rest
 }) {
   const options = useMemo(
     () => getCountryOptions({ includeOther }),
@@ -23,6 +24,7 @@ export default function CountrySelect({
       value={selectValue}
       onChange={onChange}
       required={required}
+      {...rest}
     >
       <option value="">{placeholder}</option>
       {options.map(({ code, name }) => (
