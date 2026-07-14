@@ -88,7 +88,7 @@ class RapydPaymentController extends Controller
             $checkout = $this->rapyd->createCheckoutPage([
                 'amount' => $platformFee, // ONLY the platform fee is charged online.
                 'currency' => $currency,
-                'country' => config('rapyd.country', 'IS'),
+                'country' => 'IS',
                 'payment_method_types' => config('rapyd.payment_method_types'),
                 'merchant_reference_id' => (string) $validated['order_id'],
                 'complete_payment_url' => $completeUrl,

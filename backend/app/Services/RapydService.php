@@ -162,7 +162,10 @@ class RapydService
             // NOT carry decimals, so we format the amount per the currency.
             'amount' => self::formatAmount((float) ($data['amount'] ?? 0), $currency),
             'currency' => $currency,
-            'country' => $data['country'] ?? config('rapyd.country', 'IS'),
+            // Always Iceland: TerraBook collects for Iceland listings only.
+            // Do not take country from the request/config so a mis-set env cannot
+            // switch Rapyd to another country's payment methods.
+            'country' => 'IS',
             'merchant_reference_id' => (string) ($data['merchant_reference_id'] ?? ''),
             // Hosted Checkout uses complete/cancel checkout URLs. The older
             // complete_payment_url / error_payment_url pair is also sent for

@@ -36,6 +36,8 @@ return [
     |--------------------------------------------------------------------------
     */
     'currency' => env('RAPYD_CURRENCY', 'ISK'),
+    // Country for Rapyd hosted checkout is hard-coded to IS (Iceland) in
+    // RapydService. RAPYD_COUNTRY is kept for reference / future use only.
     'country' => env('RAPYD_COUNTRY', 'IS'),
 
     /*
