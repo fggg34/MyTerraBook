@@ -77,6 +77,38 @@ class RapydService
     }
 
     /**
+     * Safe diagnostics for logs (no secrets). Useful when .env was updated but
+     * Admin → Payment Methods still supplies older keys / environment.
+     *
+     * @return array{base_url: string, credential_source: string, environment: string, access_key_last4: string}
+     */
+    public function diagnosticInfo(): array
+    {
+        $dbConfig = [];
+        try {
+            $dbConfig = PaymentMethod::query()->where('code', 'rapyd_card')->value('config') ?? [];
+        } catch (\Throwable) {
+            $dbConfig = [];
+        }
+        if (! is_array($dbConfig)) {
+            $dbConfig = [];
+        }
+
+        $fromDb = ! empty($dbConfig['access_key']) || ! empty($dbConfig['secret_key']);
+        $environment = (string) ($dbConfig['environment'] ?? '');
+        if ($environment === '') {
+            $environment = str_contains($this->baseUrl, 'sandbox') ? 'sandbox' : 'production';
+        }
+
+        return [
+            'base_url' => $this->baseUrl,
+            'credential_source' => $fromDb ? 'admin_db' : 'env',
+            'environment' => $environment,
+            'access_key_last4' => $this->accessKey !== '' ? substr($this->accessKey, -4) : '',
+        ];
+    }
+
+    /**
      * ISO 4217 currencies that have no minor unit (amounts must be whole numbers).
      *
      * @var list<string>
@@ -149,14 +181,26 @@ class RapydService
         $checkout = $body['data'] ?? [];
 
         if (! $response->successful() || empty($checkout['id'])) {
-            Log::error('Rapyd checkout creation failed', ['status' => $response->status(), 'body' => $body]);
+            Log::error('Rapyd checkout creation failed', [
+                'status' => $response->status(),
+                'body' => $body,
+                'rapyd' => $this->diagnosticInfo(),
+                'country' => $payload['country'] ?? null,
+                'currency' => $payload['currency'] ?? null,
+                'has_method_types_include' => isset($payload['payment_method_types_include']),
+            ]);
             $rapydMessage = (string) data_get($body, 'status.message', '');
             $rapydCode = (string) data_get($body, 'status.error_code', '');
             $hint = $rapydMessage !== ''
                 ? $rapydMessage
                 : 'Unable to create Rapyd checkout page.';
             if ($rapydCode === 'ERROR_HOSTED_PAGE_PAYMENT_METHOD_TYPE_CATEGORIES_NOT_ENABLED') {
-                $hint = 'Rapyd hosted checkout is not enabled for card payments on this account. In the Rapyd Client Portal, enable the Card payment method category (Settings → Payment Methods), then try again.';
+                $diag = $this->diagnosticInfo();
+                $hint = 'Rapyd hosted checkout is not enabled for card payments on this account'
+                    .' ('.$diag['environment'].' via '.$diag['credential_source'].', '.$diag['base_url'].').'
+                    .' In the Rapyd Client Portal for that same environment, enable the Card payment method category'
+                    .' (Settings → Payment Methods), then try again.'
+                    .' Note: keys saved under Admin → Payment Methods override .env.';
             }
             throw new RuntimeException($hint.($rapydCode !== '' ? " [{$rapydCode}]" : ''));
         }
