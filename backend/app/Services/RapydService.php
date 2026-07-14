@@ -164,6 +164,11 @@ class RapydService
             'currency' => $currency,
             'country' => $data['country'] ?? config('rapyd.country', 'IS'),
             'merchant_reference_id' => (string) ($data['merchant_reference_id'] ?? ''),
+            // Hosted Checkout uses complete/cancel checkout URLs. The older
+            // complete_payment_url / error_payment_url pair is also sent for
+            // redirect-style card flows.
+            'complete_checkout_url' => $data['complete_payment_url'] ?? config('rapyd.complete_payment_url'),
+            'cancel_checkout_url' => $data['error_payment_url'] ?? config('rapyd.error_payment_url'),
             'complete_payment_url' => $data['complete_payment_url'] ?? config('rapyd.complete_payment_url'),
             'error_payment_url' => $data['error_payment_url'] ?? config('rapyd.error_payment_url'),
             'metadata' => $data['metadata'] ?? [],
@@ -171,9 +176,13 @@ class RapydService
 
         // Only constrain methods when explicitly configured. Rapyd expects
         // `payment_method_types_include` (not `payment_method_types`).
+        // Otherwise default to the card category only — Hosted Checkout also
+        // requires Card to be enabled under Client Portal → Settings → Branding.
         $methodTypes = $data['payment_method_types'] ?? config('rapyd.payment_method_types');
         if (is_array($methodTypes) && $methodTypes !== []) {
             $payload['payment_method_types_include'] = array_values($methodTypes);
+        } else {
+            $payload['payment_method_type_categories'] = ['card'];
         }
 
         $response = $this->request('post', '/v1/checkout', $payload);
@@ -196,10 +205,11 @@ class RapydService
                 : 'Unable to create Rapyd checkout page.';
             if ($rapydCode === 'ERROR_HOSTED_PAGE_PAYMENT_METHOD_TYPE_CATEGORIES_NOT_ENABLED') {
                 $diag = $this->diagnosticInfo();
-                $hint = 'Rapyd hosted checkout is not enabled for card payments on this account'
+                $hint = 'Rapyd Hosted Checkout cannot show Card yet'
                     .' ('.$diag['environment'].' via '.$diag['credential_source'].', '.$diag['base_url'].').'
-                    .' In the Rapyd Client Portal for that same environment, enable the Card payment method category'
-                    .' (Settings → Payment Methods), then try again.'
+                    .' Settings → Payment Methods alone is not enough: open Settings → Branding,'
+                    .' select Hosted Checkout Page, enable the Card category, Save, then retry.'
+                    .' Also confirm the portal is on Production if you use live keys (api.rapyd.net).'
                     .' Note: keys saved under Admin → Payment Methods override .env.';
             }
             throw new RuntimeException($hint.($rapydCode !== '' ? " [{$rapydCode}]" : ''));
