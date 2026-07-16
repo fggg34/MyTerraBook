@@ -247,6 +247,12 @@
                 <article class="ir-global-card">
                     <h2 class="ir-global-card__title">System</h2>
                     <div class="ir-global-fields">
+                        <label class="ir-global-toggle">
+                            <input type="checkbox" wire:model.live="state.coming_soon"> Coming Soon Mode
+                        </label>
+                        <p class="ir-global-hint">
+                            When enabled, public visitors see the Coming Soon page. Admins and designers can still preview the full site when logged in.
+                        </p>
                         <div class="ir-global-field">
                             <label class="ir-global-label">Appearance</label>
                             <select class="ir-global-select" wire:model.live="state.appearance">

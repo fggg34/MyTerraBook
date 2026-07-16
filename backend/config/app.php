@@ -71,15 +71,18 @@ return [
     | Storefront “coming soon” gate (/api/site-preview)
     |--------------------------------------------------------------------------
     |
-    | When true, the Vite app skips the under-construction screen without admin auth.
-    | Defaults to true when APP_ENV is local so Filament “Preview” (new tab) works.
-    | Set SITE_PREVIEW_OPEN=false to test the closed storefront locally.
+    | Coming Soon is controlled from Filament → Global Configuration
+    | (system.coming_soon). Set SITE_PREVIEW_OPEN=true to force the storefront
+    | open regardless of that admin toggle (useful for local testing).
     |
     */
 
+    'site_preview_force_open' => env('SITE_PREVIEW_OPEN') !== null
+        && filter_var(env('SITE_PREVIEW_OPEN'), FILTER_VALIDATE_BOOLEAN),
+
+    /** @deprecated Use site_preview_force_open; kept for older references. */
     'site_preview_open' => env('SITE_PREVIEW_OPEN') !== null
-        ? filter_var(env('SITE_PREVIEW_OPEN'), FILTER_VALIDATE_BOOLEAN)
-        : env('APP_ENV', 'production') === 'local',
+        && filter_var(env('SITE_PREVIEW_OPEN'), FILTER_VALIDATE_BOOLEAN),
 
     /*
     |--------------------------------------------------------------------------

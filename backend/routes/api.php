@@ -47,31 +47,16 @@ use App\Http\Controllers\Admin\PaymentMethodController as AdminPaymentMethodCont
 use App\Http\Controllers\Api\PublicConfigController;
 use App\Http\Controllers\Api\PublicOrderController;
 use App\Http\Controllers\Api\SearchSuggestionsController;
+use App\Services\SitePreviewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Laravel\Sanctum\PersonalAccessToken;
 
 Route::middleware('web')->group(function () {
-    Route::get('/site-preview', function (Request $request) {
-        if (config('app.site_preview_open')) {
-            return response()->json(['preview_unlocked' => true]);
-        }
-
-        $webUser = auth()->guard('web')->user();
-        if ($webUser?->canPreviewSite()) {
-            return response()->json(['preview_unlocked' => true]);
-        }
-
-        $token = $request->bearerToken();
-        if ($token) {
-            $accessToken = PersonalAccessToken::findToken($token);
-            $sanctumUser = $accessToken?->tokenable;
-            if ($sanctumUser?->canPreviewSite()) {
-                return response()->json(['preview_unlocked' => true]);
-            }
-        }
-
-        return response()->json(['preview_unlocked' => false]);
+    Route::get('/site-preview', function (Request $request, SitePreviewService $sitePreview) {
+        return response()->json([
+            'preview_unlocked' => $sitePreview->isUnlocked($request),
+            'coming_soon' => $sitePreview->isComingSoonEnabled(),
+        ]);
     });
 });
 

@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import axios from 'axios'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
-import { setAuthToken } from './api'
+import { getSitePreviewUrl, setAuthToken } from './api'
 import { AuthProvider, getLoginPathForRole, normalizeUserRole, useAuth } from './context/AuthContext'
 import { getCurrentUser } from './auth'
 import { SiteContentProvider, useSiteContent } from './context/SiteContentContext'
@@ -29,6 +30,7 @@ import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import RegisterPage from './pages/RegisterPage'
+import UnderConstructionPage from './pages/UnderConstructionPage'
 import ClientLayout from './components/client/ClientLayout'
 import ClientHistoryPage from './pages/client/ClientHistoryPage'
 import ClientSettingsPage from './pages/client/ClientSettingsPage'
@@ -75,8 +77,43 @@ function ProtectedRoute({ children, role, customerOnly = false }) {
 }
 
 function AppRoutes() {
+  const [previewUnlocked, setPreviewUnlocked] = useState(true)
+  const [previewChecked, setPreviewChecked] = useState(false)
   const token = getStoredToken()
   setAuthToken(token)
+
+  const refreshPreview = useCallback(async () => {
+    try {
+      const headers = {}
+      if (token) headers.Authorization = `Bearer ${token}`
+      const { data } = await axios.get(getSitePreviewUrl(), {
+        withCredentials: true,
+        headers,
+      })
+      setPreviewUnlocked(!!data.preview_unlocked)
+    } catch {
+      // Keep the storefront available if the preview endpoint is unreachable in local dev.
+      setPreviewUnlocked(!!import.meta.env.DEV)
+    } finally {
+      setPreviewChecked(true)
+    }
+  }, [token])
+
+  useEffect(() => {
+    refreshPreview()
+  }, [refreshPreview])
+
+  if (!previewChecked) {
+    return null
+  }
+
+  if (!previewUnlocked) {
+    return (
+      <Routes>
+        <Route path="*" element={<UnderConstructionPage />} />
+      </Routes>
+    )
+  }
 
   return (
     <Routes>

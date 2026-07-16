@@ -44,6 +44,7 @@ class GlobalConfigurationService
             'preferred_countries_ordering' => (string) data_get(Setting::getValue('shop.preferred_countries_ordering', ['locale' => 'en_US']), 'locale', 'en_US'),
             'appearance' => (string) data_get(Setting::getValue('system.appearance', ['mode' => 'auto']), 'mode', 'auto'),
             'frontend_appearance' => (string) data_get(Setting::getValue('system.frontend_appearance', ['mode' => 'disabled']), 'mode', 'disabled'),
+            'coming_soon' => (bool) data_get(Setting::getValue('system.coming_soon', ['enabled' => false]), 'enabled', false),
             'cron_jobs_secret_key' => (string) data_get(Setting::getValue('system.cron_jobs_secret_key', ['key' => '']), 'key', ''),
             'enable_multilanguage' => (bool) data_get(Setting::getValue('system.enable_multilanguage', ['enabled' => true]), 'enabled', true),
             'load_font_awesome' => (bool) data_get(Setting::getValue('system.load_font_awesome', ['enabled' => true]), 'enabled', true),
@@ -142,6 +143,7 @@ class GlobalConfigurationService
         Setting::putValue('shop.preferred_countries_ordering', ['locale' => (string) ($state['preferred_countries_ordering'] ?? 'en_US')]);
         Setting::putValue('system.appearance', ['mode' => (string) ($state['appearance'] ?? 'auto')]);
         Setting::putValue('system.frontend_appearance', ['mode' => (string) ($state['frontend_appearance'] ?? 'disabled')]);
+        Setting::putValue('system.coming_soon', ['enabled' => (bool) ($state['coming_soon'] ?? false)]);
         Setting::putValue('system.cron_jobs_secret_key', ['key' => (string) ($state['cron_jobs_secret_key'] ?? '')]);
         Setting::putValue('system.enable_multilanguage', ['enabled' => (bool) ($state['enable_multilanguage'] ?? false)]);
         Setting::putValue('system.load_font_awesome', ['enabled' => (bool) ($state['load_font_awesome'] ?? false)]);
