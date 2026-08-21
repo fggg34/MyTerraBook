@@ -4,6 +4,8 @@ use Dotenv\Dotenv;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
+require __DIR__.'/../block-dot-env.php';
+
 define('LARAVEL_START', microtime(true));
 
 // Determine if the application is in maintenance mode...

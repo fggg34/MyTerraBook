@@ -9,6 +9,12 @@ server {
     root /var/www/myterrabook/public_html;
     index index.php index.html;
 
+    # Hide env and VCS files even if they sit under the document root.
+    location ~ /\.(env|git) {
+        deny all;
+        return 404;
+    }
+
     # Static assets (long cache)
     location /assets/ {
         try_files $uri =404;

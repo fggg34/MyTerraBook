@@ -1,9 +1,23 @@
+<Files ".env">
+    Require all denied
+</Files>
+<Files ".env.example">
+    Require all denied
+</Files>
+<Files ".env.local">
+    Require all denied
+</Files>
+<Files ".env.production">
+    Require all denied
+</Files>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
 
     RewriteEngine On
+    RewriteRule \.env$ forbid-dot-env.php [L]
 
     # Do not set RewriteBase here when the parent …/backend/.htaccess already rewrites into
     # public/ , a wrong base breaks the front controller on some hosts (404).

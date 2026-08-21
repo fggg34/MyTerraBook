@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__.'/block-dot-env.php';
+
 /**
  * Storefront entry for shared hosting (public_html/index.php).
  *

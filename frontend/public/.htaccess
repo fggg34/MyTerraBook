@@ -1,3 +1,17 @@
+# Hide .env for the storefront AND /backend/.env (this file lives at public_html).
+<Files ".env">
+  Require all denied
+</Files>
+<Files ".env.example">
+  Require all denied
+</Files>
+<Files ".env.local">
+  Require all denied
+</Files>
+<Files ".env.production">
+  Require all denied
+</Files>
+
 # MIME: module scripts require a JS MIME type; empty/wrong type breaks <script type="module">
 <IfModule mod_mime.c>
   AddType application/javascript js mjs
@@ -13,6 +27,7 @@ DirectoryIndex index.php index.html
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+  RewriteRule \.env$ /forbid-dot-env.php [L]
   # Run index.html through the shell so bootstrap is injected (same as client routes)
   RewriteRule ^index\.html$ index.php [L]
   # Do not rewrite real files/dirs (assets, vite.svg, etc.) or Laravel admin/Livewire paths

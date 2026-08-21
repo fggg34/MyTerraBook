@@ -8,9 +8,25 @@
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.php index.html
 
+# Hide .env even when the file exists on disk. LiteSpeed/cPanel will otherwise
+# serve it because the rewrite below skips real files.
+<Files ".env">
+    Require all denied
+</Files>
+<Files ".env.example">
+    Require all denied
+</Files>
+<Files ".env.local">
+    Require all denied
+</Files>
+<Files ".env.production">
+    Require all denied
+</Files>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /backend
+    RewriteRule \.env$ public/forbid-dot-env.php [L]
     RewriteRule ^index\.php$ - [L]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

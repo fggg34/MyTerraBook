@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__.'/block-dot-env.php';
+
 /**
  * Some hosts run this file for /backend/* instead of public/index.php. PHP then sets
  * SCRIPT_NAME=/…/backend/index.php, so Symfony/Laravel compute the wrong path and every

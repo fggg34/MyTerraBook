@@ -1,0 +1,12 @@
+<?php
+
+$path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
+$base = strtolower(basename($path));
+if ($base === '.env' || str_starts_with($base, '.env.')) {
+    http_response_code(403);
+    header('Content-Type: text/plain; charset=UTF-8');
+    header('Cache-Control: no-store');
+    header('X-Robots-Tag: noindex, nofollow');
+    echo 'Forbidden';
+    exit;
+}
