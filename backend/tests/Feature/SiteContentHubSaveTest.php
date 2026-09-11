@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Data\SiteContentDefaults;
 use App\Enums\UserRole;
 use App\Filament\Pages\SiteContentHub;
+use App\Models\Setting;
 use App\Models\SiteContentPage;
 use App\Models\User;
 use App\Services\SiteContentService;
@@ -40,6 +41,34 @@ class SiteContentHubSaveTest extends TestCase
         $branding = SiteContentPage::query()->where('page_key', 'global')->first()?->content['branding'];
 
         $this->assertSame('SavedPrefix', $branding['prefix'] ?? null);
+    }
+
+    public function test_save_persists_google_maps_api_key_to_settings(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+
+        $this->actingAs($admin);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        Livewire::test(SiteContentHub::class, ['activePageKey' => 'global'])
+            ->set('data.googleMaps.mapsApiKey', 'AIza-test-maps-key')
+            ->call('save')
+            ->assertNotified();
+
+        $this->assertSame(
+            'AIza-test-maps-key',
+            data_get(Setting::getValue('system.google_maps_api_key'), 'key'),
+        );
+
+        $saved = SiteContentPage::query()->where('page_key', 'global')->first()?->content ?? [];
+        $this->assertArrayNotHasKey('mapsApiKey', $saved['googleMaps'] ?? []);
     }
 
     public function test_save_persists_site_color_changes(): void

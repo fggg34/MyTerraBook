@@ -171,6 +171,11 @@ class SiteContentHub extends Page
                 $service->mergeDefaultsWithSaved($defaults, $page?->content ?? []),
             ),
         );
+
+        if ($this->activePageKey === 'global') {
+            $this->data = $service->hydrateGoogleMapsFormState($this->data);
+        }
+
         $this->form->fill($this->data);
     }
 
@@ -192,6 +197,15 @@ class SiteContentHub extends Page
         $snapshot = $this->form->getStateSnapshot();
         $incoming = $service->normalizePageContent($this->activePageKey, $snapshot);
         $data = $service->mergeSavedPageContent($baseline, $incoming);
+
+        if ($this->activePageKey === 'global') {
+            $service->syncGoogleMapsSettings([
+                'googleMaps' => [
+                    'mapsApiKey' => data_get($this->data, 'googleMaps.mapsApiKey', data_get($incoming, 'googleMaps.mapsApiKey')),
+                ],
+            ]);
+            $data = $service->forgetGoogleMapsSecrets($data);
+        }
 
         $meta = config("site_content.pages.{$this->activePageKey}", []);
 

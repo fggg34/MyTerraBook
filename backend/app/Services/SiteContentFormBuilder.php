@@ -124,6 +124,7 @@ class SiteContentFormBuilder
                 ->fileAttachmentsVisibility('public'),
             'toggle' => Toggle::make($statePath),
             'color' => ColorPicker::make($statePath)->hex(),
+            'password' => TextInput::make($statePath)->password()->revealable(),
             'image' => $this->buildImageUpload($statePath, $pageKey, $field),
             'file' => $this->buildFileUpload($statePath, $pageKey, $field),
             'number' => TextInput::make($statePath)->numeric(),

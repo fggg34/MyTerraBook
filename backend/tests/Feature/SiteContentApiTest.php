@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Data\SiteContentDefaults;
+use App\Models\Setting;
 use App\Models\SiteContentPage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -194,6 +195,7 @@ class SiteContentApiTest extends TestCase
 
         $this->assertArrayHasKey('seo', $data['global']);
         $this->assertArrayHasKey('colors', $data['global']);
+        $this->assertArrayNotHasKey('mapsApiKey', $data['global']['googleMaps'] ?? []);
         $this->assertSame('#0f2036', $data['global']['colors']['navy']);
         $this->assertSame('#45a06a', $data['global']['colors']['green']);
         $this->assertSame('MyTerraBook', $data['global']['seo']['siteName']);
@@ -203,6 +205,28 @@ class SiteContentApiTest extends TestCase
         $this->assertSame('index', $data['about']['seo']['robots']);
         $this->assertSame('Campsite Map of Iceland', $data['campsite-map']['header']['title']);
         $this->assertSame('noindex', $data['auth-login']['seo']['robots']);
+    }
+
+    public function test_site_content_api_strips_google_maps_api_key(): void
+    {
+        Setting::putValue('system.google_maps_api_key', ['key' => 'secret-maps-key']);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => array_replace_recursive(SiteContentDefaults::forPage('global'), [
+                'googleMaps' => ['mapsApiKey' => 'leaked-from-content'],
+            ]),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        $response = $this->getJson('/api/site-content/global');
+
+        $response->assertOk();
+        $this->assertArrayNotHasKey('mapsApiKey', $response->json('data.content.googleMaps') ?? []);
+        $this->assertStringNotContainsString('secret-maps-key', $response->getContent());
+        $this->assertStringNotContainsString('leaked-from-content', $response->getContent());
     }
 
     public function test_homepage_reviews_section_returns_demo_when_google_not_connected(): void

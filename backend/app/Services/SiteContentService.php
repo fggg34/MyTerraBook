@@ -7,6 +7,7 @@ use App\Http\Resources\Api\BlogPostResource;
 use App\Models\BlogPost;
 use App\Models\Car;
 use App\Models\GuestHouse;
+use App\Models\Setting;
 use App\Models\SiteContentPage;
 use App\Models\SitePage;
 use App\Support\DailyFarePricing;
@@ -55,7 +56,7 @@ class SiteContentService
             $normalized = $this->resolveAboutOfferings($normalized);
         }
 
-        return $this->resolveContentImages($normalized);
+        return $this->forgetGoogleMapsSecrets($this->resolveContentImages($normalized));
     }
 
     /**
@@ -244,6 +245,50 @@ class SiteContentService
         Cache::forget('site_content.homepage');
         Cache::forget('site_content.site_pages');
         Cache::forget('site_content.blog_posts_bootstrap');
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    public function hydrateGoogleMapsFormState(array $content): array
+    {
+        $content['googleMaps']['mapsApiKey'] = (string) data_get(
+            Setting::getValue('system.google_maps_api_key', ['key' => '']),
+            'key',
+            '',
+        );
+
+        return $content;
+    }
+
+    /**
+     * @param  array<string, mixed>  $incoming
+     */
+    public function syncGoogleMapsSettings(array $incoming): void
+    {
+        if (! array_key_exists('mapsApiKey', $incoming['googleMaps'] ?? [])) {
+            return;
+        }
+
+        Setting::putValue('system.google_maps_api_key', [
+            'key' => trim((string) $incoming['googleMaps']['mapsApiKey']),
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    public function forgetGoogleMapsSecrets(array $content): array
+    {
+        unset($content['googleMaps']['mapsApiKey']);
+
+        if (isset($content['googleMaps']) && $content['googleMaps'] === []) {
+            unset($content['googleMaps']);
+        }
+
+        return $content;
     }
 
     /**

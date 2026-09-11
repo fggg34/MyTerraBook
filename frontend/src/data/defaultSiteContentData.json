@@ -22,6 +22,9 @@
       "red": "#e23744",
       "accent": "#ea580c"
     },
+    "googleMaps": {
+      "mapsApiKey": ""
+    },
     "topbar": {
       "text": "Become a Host and start earning money!",
       "mobileText": "Become a Host — start earning today!",

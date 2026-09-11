@@ -254,6 +254,18 @@ return [
                         ['key' => 'accent', 'type' => 'color', 'label' => 'Accent', 'helperText' => 'Calendar highlights and extra emphasis.'],
                     ],
                 ],
+                'googleMaps' => [
+                    'label' => 'Google Maps',
+                    'fields' => [
+                        [
+                            'key' => 'mapsApiKey',
+                            'type' => 'password',
+                            'label' => 'Google Maps API key',
+                            'helperText' => 'Used for Google Reviews, host address autocomplete, and listing map previews. Enable Places API and Maps JavaScript API, then restrict the key to your site referrers in Google Cloud. This key is not shown on the public site.',
+                            'columnSpanFull' => true,
+                        ],
+                    ],
+                ],
                 'topbar' => [
                     'label' => 'Top bar',
                     'fields' => [
@@ -456,7 +468,7 @@ return [
                         ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
                         ['key' => 'heading', 'type' => 'text', 'label' => 'Heading'],
                         ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
-                        ['key' => 'googleEnabled', 'type' => 'toggle', 'label' => 'Connect Google Reviews', 'helperText' => 'Pull live rating and reviews from your Google Business profile. Requires a Google Maps API key in Global Configuration.'],
+                        ['key' => 'googleEnabled', 'type' => 'toggle', 'label' => 'Connect Google Reviews', 'helperText' => 'Pull live rating and reviews from your Google Business profile. Add the Google Maps API key in Global chrome → Google Maps.'],
                         ['key' => 'googlePlaceId', 'type' => 'text', 'label' => 'Google Place ID', 'helperText' => 'Find this in Google Maps → your business → Share → Embed a map, or use the Place ID finder.', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => true], 'columnSpanFull' => true],
                         ['key' => 'rating', 'type' => 'text', 'label' => 'Rating (demo)', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false]],
                         ['key' => 'ratingCount', 'type' => 'text', 'label' => 'Rating count (demo)', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false]],

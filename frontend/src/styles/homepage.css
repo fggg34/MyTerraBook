@@ -289,10 +289,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   .hero-heading--mobile,
   .hero-subtitle--mobile{display:none;}
   .hero::after{
-    content:"";position:absolute;inset:0;
-    background:
-      linear-gradient(180deg,rgba(8,18,34,.30) 0%,rgba(8,18,34,0) 26%,rgba(8,18,34,.12) 58%,rgba(8,18,34,.55) 100%),
-      linear-gradient(95deg,rgba(8,18,34,.55) 0%,rgba(8,18,34,.12) 46%,rgba(8,18,34,0) 72%);
+    display:none;
   }
   .hero-inner{
     position:relative;z-index:2;
@@ -302,11 +299,11 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   }
   .hero-copy{max-width:840px;margin-top:72px;margin-bottom:auto;}
   .hero-copy h1{
-    color:#fff;font-size:56px;line-height:1.04;font-weight:700;letter-spacing:-0.02em;
+    color:#fff;font-size:50px;line-height:1.04;font-weight:700;letter-spacing:-0.02em;
     text-wrap:balance;max-width:840px;
   }
   .hero-copy p{
-    color:#e7edf6;font-size:18px;margin:20px 0 0;max-width:600px;
+    color:#e7edf6;font-size:23px;margin:20px 0 0;max-width:600px;
   }
 
   /* ---------- Booking module (tabs + form + footer, one connected card) ---------- */
@@ -325,7 +322,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     filter:drop-shadow(0 30px 60px rgba(8,16,30,.45));
   }
   /* Tabs attached to top of the card */
-  .tabs{display:flex;gap:6px;padding-left:14px;position:relative;z-index:2;}
+  .tabs{display:flex;gap:6px;padding-left:0;position:relative;z-index:2;}
   .tab{
     display:flex;align-items:center;gap:10px;
     background:rgba(255,255,255,.62);
@@ -344,7 +341,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
 
   .booking-body{
     background:#fff;
-    border-radius:0 18px 0 0;
+    border-radius:0 18px 18px 18px;
     padding:22px 24px;
     position:relative;z-index:1;
     overflow:visible;
@@ -490,12 +487,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
 
   /* Footer hint connected to bottom of card, white background */
   .booking-foot{
-    background:#fff;
-    border-top:1px solid var(--line);
-    border-radius:0 0 18px 18px;
-    padding:8px 24px;
-    text-align:center;
-    font-size:13.5px;color:var(--slate);font-weight:500;
+    display:none;
   }
   .booking-foot a{color:var(--green);font-weight:700;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px;}
   .booking-foot a:hover{color:var(--green-dark);}
