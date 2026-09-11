@@ -2,11 +2,18 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import useCarouselScrollGuard from '../../hooks/useCarouselScrollGuard'
 import useHorizontalCarousel from '../../hooks/useHorizontalCarousel'
 import useMediaQuery from '../../hooks/useMediaQuery'
-import useReviewsMarquee from '../../hooks/useReviewsMarquee'
 import useSectionReveal from '../../hooks/useSectionReveal'
 import ReviewDetailDialog from './ReviewDetailDialog'
 
 const AVATAR_FILLS = ['#a9d4e6', '#bcdcab', '#f1d79a', '#cdbbea', '#a4ddcd', '#f4c1a4']
+const MARQUEE_CARD_PITCH = 320
+const MARQUEE_MIN_SET_PX = 1800
+
+function fillReviewSet(reviews, minPx = MARQUEE_MIN_SET_PX) {
+  if (!reviews.length) return []
+  const needed = Math.max(reviews.length, Math.ceil(minPx / MARQUEE_CARD_PITCH))
+  return Array.from({ length: needed }, (_, index) => reviews[index % reviews.length])
+}
 
 function StarRow({ count = 5, className = '' }) {
   return (
@@ -126,13 +133,13 @@ export default function ReviewsSection({
   const sectionRef = useRef(null)
   const trackWrapRef = useRef(null)
   const [activeReview, setActiveReview] = useState(null)
+  const [marqueePaused, setMarqueePaused] = useState(false)
   const isMobile = useMediaQuery('(max-width: 768px)')
   const showMobileCarousel = isMobile && reviews.length > 1
   const showMarquee = reviews.length > 1 && !showMobileCarousel
   const scrollGuardRef = useCarouselScrollGuard(trackWrapRef, { enabled: showMobileCarousel })
 
   useSectionReveal(sectionRef, { revealDoneMs: 1800 })
-  const { pause, resume } = useReviewsMarquee(trackWrapRef, { enabled: showMarquee })
   const { scroll, atStart, atEnd } = useHorizontalCarousel({
     trackRef: trackWrapRef,
     itemCount: reviews.length,
@@ -150,10 +157,14 @@ export default function ReviewsSection({
   const ratingSourceLabel = source === 'google' && !isDemo ? 'Google' : 'MyTerraBook'
   const resolvedCtaLabel = ctaLabel || (source === 'google' && !isDemo ? 'Leave a Google Review' : null)
 
-  const trackReviews = useMemo(() => {
-    if (showMarquee) return [...reviews, ...reviews]
-    return reviews
-  }, [reviews, showMarquee])
+  const marqueeSet = useMemo(
+    () => (showMarquee ? fillReviewSet(reviews) : reviews),
+    [reviews, showMarquee],
+  )
+  const trackSets = useMemo(
+    () => (showMarquee ? [marqueeSet, marqueeSet] : [marqueeSet]),
+    [marqueeSet, showMarquee],
+  )
 
   useEffect(() => {
     if (!showMobileCarousel) return
@@ -162,13 +173,13 @@ export default function ReviewsSection({
   }, [showMobileCarousel, reviews.length])
 
   const openReview = (review) => {
-    if (showMarquee) pause()
+    if (showMarquee) setMarqueePaused(true)
     setActiveReview(review)
   }
 
   const closeReview = () => {
     setActiveReview(null)
-    if (showMarquee) resume()
+    if (showMarquee) setMarqueePaused(false)
   }
 
   if (!reviews.length) return null
@@ -230,20 +241,30 @@ export default function ReviewsSection({
       {reviews.length > 1 ? (
         <div className="rv-carousel-panel">
           <div
-            className={`rv-track-wrap${showMobileCarousel ? ' rv-track-wrap--carousel' : ''}`}
+            className={`rv-track-wrap${showMobileCarousel ? ' rv-track-wrap--carousel' : ''}${
+              showMarquee && marqueePaused ? ' is-paused' : ''
+            }`}
             ref={trackWrapRef}
           >
             <div className={`rv-track rv-track--marquee${showMobileCarousel ? ' rv-track--carousel' : ''}`}>
-              {trackReviews.map((review, index) => (
-                <ReviewCard
-                  key={`${review.name}-${index}${index >= reviews.length ? '-dup' : ''}`}
-                  review={review}
-                  reviewerLabel={reviewerLabel}
-                  duplicate={showMarquee && index >= reviews.length}
-                  style={{ '--i': index % reviews.length }}
-                  onOpen={openReview}
-                  scrollGuardRef={scrollGuardRef}
-                />
+              {trackSets.map((set, setIndex) => (
+                <div
+                  key={setIndex}
+                  className="rv-track-set"
+                  aria-hidden={setIndex > 0 || undefined}
+                >
+                  {set.map((review, index) => (
+                    <ReviewCard
+                      key={`${review.name}-${setIndex}-${index}`}
+                      review={review}
+                      reviewerLabel={reviewerLabel}
+                      duplicate={setIndex > 0}
+                      style={{ '--i': index % reviews.length }}
+                      onOpen={openReview}
+                      scrollGuardRef={scrollGuardRef}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
           </div>

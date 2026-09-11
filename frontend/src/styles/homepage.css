@@ -301,9 +301,11 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   .hero-copy h1{
     color:#fff;font-size:50px;line-height:1.04;font-weight:700;letter-spacing:-0.02em;
     text-wrap:balance;max-width:840px;
+    text-shadow:0 1px 8px rgba(8,18,34,.22);
   }
   .hero-copy p{
     color:#e7edf6;font-size:23px;margin:20px 0 0;max-width:600px;
+    text-shadow:0 1px 6px rgba(8,18,34,.18);
   }
 
   /* ---------- Booking module (tabs + form + footer, one connected card) ---------- */
@@ -1743,6 +1745,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     }
     .reviews-carousel-controls{margin-top:20px;}
     .reviews .rv-track--marquee.rv-track--carousel{gap:12px;}
+    .reviews .rv-track--carousel .rv-track-set{gap:12px;padding-right:0;}
     .reviews .rv-track--marquee.rv-track--carousel .rv-card{
       flex:0 0 calc(100vw - 56px);
       width:calc(100vw - 56px);
@@ -2421,11 +2424,34 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     -webkit-overflow-scrolling:touch;
     overscroll-behavior-x:contain;
   }
+  .reviews .rv-track-wrap:not(.rv-track-wrap--carousel){
+    overflow-x:hidden;
+  }
   .reviews .rv-track-wrap::-webkit-scrollbar{display:none;}
   .reviews .rv-track--marquee{
     display:flex;
-    gap:20px;
+    gap:0;
     width:max-content;
+  }
+  .reviews .rv-track--marquee:not(.rv-track--carousel){
+    animation:rvMarquee 100s linear infinite;
+    will-change:transform;
+  }
+  .reviews .rv-track-wrap:hover .rv-track--marquee:not(.rv-track--carousel),
+  .reviews .rv-track-wrap.is-paused .rv-track--marquee:not(.rv-track--carousel){
+    animation-play-state:paused;
+  }
+  .reviews .rv-track-set{
+    display:flex;
+    gap:20px;
+    padding-right:20px;
+  }
+  @keyframes rvMarquee{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .reviews .rv-track--marquee:not(.rv-track--carousel){animation:none;}
   }
   .reviews .rv-track--marquee .rv-card{
     flex:0 0 auto;
