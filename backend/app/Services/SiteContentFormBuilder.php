@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -122,6 +123,7 @@ class SiteContentFormBuilder
                 ->fileAttachmentsDirectory("site-content/{$pageKey}/attachments")
                 ->fileAttachmentsVisibility('public'),
             'toggle' => Toggle::make($statePath),
+            'color' => ColorPicker::make($statePath)->hex(),
             'image' => $this->buildImageUpload($statePath, $pageKey, $field),
             'file' => $this->buildFileUpload($statePath, $pageKey, $field),
             'number' => TextInput::make($statePath)->numeric(),

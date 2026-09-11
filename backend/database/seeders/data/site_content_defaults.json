@@ -8,6 +8,20 @@
       "logoImage": "",
       "favicon": ""
     },
+    "colors": {
+      "navy": "#0f2036",
+      "ink": "#1d2b40",
+      "slate": "#5a6b82",
+      "slateLight": "#8090a4",
+      "green": "#45a06a",
+      "greenDark": "#3a8d5d",
+      "blue": "#34629e",
+      "blueSoft": "#eef2f8",
+      "line": "#e2e7ef",
+      "bg": "#fbfcfe",
+      "red": "#e23744",
+      "accent": "#ea580c"
+    },
     "topbar": {
       "text": "Become a Host and start earning money!",
       "mobileText": "Become a Host — start earning today!",

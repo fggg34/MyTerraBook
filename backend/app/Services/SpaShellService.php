@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\SiteColors;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -115,6 +116,30 @@ class SpaShellService
         $title = $prefix.$accent.$suffix;
 
         $html = preg_replace('/<title>.*?<\/title>/is', '<title>'.e($title, false).'</title>', $html, 1) ?? $html;
+
+        return $this->applySiteColorStyles($html, $payload);
+    }
+
+    /**
+     * @param  array{siteContent: array<string, array<string, mixed>>, homepage: array<string, mixed>}  $payload
+     */
+    private function applySiteColorStyles(string $html, array $payload): string
+    {
+        $colors = $payload['siteContent']['global']['colors'] ?? [];
+        if (! is_array($colors)) {
+            return $html;
+        }
+
+        $css = SiteColors::toRootCss($colors);
+        if ($css === '') {
+            return $html;
+        }
+
+        $style = '<style id="myterrabook-site-colors">'.$css.'</style>';
+
+        if (str_contains($html, '</head>')) {
+            return str_replace('</head>', $style."\n  </head>", $html);
+        }
 
         return $html;
     }

@@ -11,6 +11,7 @@ use App\Models\SiteContentPage;
 use App\Models\SitePage;
 use App\Support\DailyFarePricing;
 use App\Support\ResolvesPublicStorageUrls;
+use App\Support\SiteColors;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -390,9 +391,37 @@ class SiteContentService
         }
 
         $content = $this->normalizeUploadFields($content);
+        $content = $this->normalizeColorFields($pageKey, $content);
         $content = $this->stripEmptyArrayKeys($content);
 
         return $this->fillEmptyRepeatersFromDefaults($pageKey, $content);
+    }
+
+    /**
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function normalizeColorFields(string $pageKey, array $content): array
+    {
+        if ($pageKey !== 'global' || ! isset($content['colors']) || ! is_array($content['colors'])) {
+            return $content;
+        }
+
+        foreach (array_keys(SiteColors::CSS_VARIABLES) as $key) {
+            if (! array_key_exists($key, $content['colors'])) {
+                continue;
+            }
+
+            $hex = SiteColors::normalizeHex($content['colors'][$key]);
+            if ($hex === null) {
+                unset($content['colors'][$key]);
+                continue;
+            }
+
+            $content['colors'][$key] = $hex;
+        }
+
+        return $content;
     }
 
     /**

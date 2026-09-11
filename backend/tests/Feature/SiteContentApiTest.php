@@ -193,6 +193,9 @@ class SiteContentApiTest extends TestCase
         $data = $response->json('data');
 
         $this->assertArrayHasKey('seo', $data['global']);
+        $this->assertArrayHasKey('colors', $data['global']);
+        $this->assertSame('#0f2036', $data['global']['colors']['navy']);
+        $this->assertSame('#45a06a', $data['global']['colors']['green']);
         $this->assertSame('MyTerraBook', $data['global']['seo']['siteName']);
         $this->assertArrayHasKey('seo', $data['home']);
         $this->assertArrayHasKey('title', $data['home']['seo']);

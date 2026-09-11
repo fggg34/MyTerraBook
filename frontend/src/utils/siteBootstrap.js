@@ -1,5 +1,6 @@
 import { buildSiteDataFromContent } from '../data/defaultSiteContentData'
 import { readHomepageCache, readSiteContentCache } from './siteContentCache'
+import { applySiteColors } from './siteColors'
 
 /**
  * Read CMS bootstrap payload injected by Laravel into the production HTML shell.
@@ -101,6 +102,11 @@ export function mergeBranding(apiBranding = {}) {
 
 export function applyBootstrapDocumentMeta() {
   if (typeof document === 'undefined') return
+
+  const pages = getInstantSiteContent()
+  if (pages?.global?.colors) {
+    applySiteColors(pages.global.colors)
+  }
 
   const branding = getBootstrappedBranding()
   if (!branding) return

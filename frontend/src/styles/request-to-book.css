@@ -1,16 +1,16 @@
 /* Request to Book wizard, scoped under .rtb-page */
 .rtb-page {
-  --rtb-navy: #0f2036;
-  --rtb-ink: #1d2b40;
-  --rtb-slate: #5a6b82;
-  --rtb-slate-light: #8090a4;
-  --rtb-green: #45a06a;
-  --rtb-red: #e23744;
-  --rtb-green-dark: #3a8d5d;
-  --rtb-blue: #34629e;
-  --rtb-blue-soft: #eef2f8;
-  --rtb-line: #e2e7ef;
-  --rtb-bg: #fbfcfe;
+  --rtb-navy: var(--navy);
+  --rtb-ink: var(--ink);
+  --rtb-slate: var(--slate);
+  --rtb-slate-light: var(--slate-light);
+  --rtb-green: var(--green);
+  --rtb-red: var(--red);
+  --rtb-green-dark: var(--green-dark);
+  --rtb-blue: var(--blue);
+  --rtb-blue-soft: var(--blue-soft);
+  --rtb-line: var(--line);
+  --rtb-bg: var(--bg);
   --rtb-maxw: 1320px;
   --rtb-serif: 'Quicksand', sans-serif;
   --rtb-sans: 'Open Sans', sans-serif;
@@ -1976,10 +1976,10 @@
 
 .rtb-checkout-ftr {
   --rtb-maxw: 1320px;
-  --rtb-line: #e2e7ef;
-  --rtb-slate: #5a6b82;
-  --rtb-navy: #0f2036;
-  --rtb-green: #45a06a;
+  --rtb-line: var(--line);
+  --rtb-slate: var(--slate);
+  --rtb-navy: var(--navy);
+  --rtb-green: var(--green);
   border-top: 1px solid var(--rtb-line);
   background: #fff;
   padding: 26px 0;

@@ -237,6 +237,23 @@ return [
                         ],
                     ],
                 ],
+                'colors' => [
+                    'label' => 'Site colors',
+                    'fields' => [
+                        ['key' => 'navy', 'type' => 'color', 'label' => 'Navy', 'helperText' => 'Top bar, headings, and dark buttons.'],
+                        ['key' => 'ink', 'type' => 'color', 'label' => 'Ink', 'helperText' => 'Main body text.'],
+                        ['key' => 'slate', 'type' => 'color', 'label' => 'Slate', 'helperText' => 'Secondary text.'],
+                        ['key' => 'slateLight', 'type' => 'color', 'label' => 'Slate light', 'helperText' => 'Captions and muted labels.'],
+                        ['key' => 'green', 'type' => 'color', 'label' => 'Green', 'helperText' => 'Primary buttons and success states.'],
+                        ['key' => 'greenDark', 'type' => 'color', 'label' => 'Green hover', 'helperText' => 'Primary button hover.'],
+                        ['key' => 'blue', 'type' => 'color', 'label' => 'Blue', 'helperText' => 'Links and secondary actions.'],
+                        ['key' => 'blueSoft', 'type' => 'color', 'label' => 'Blue soft', 'helperText' => 'Soft panels and selected chips.'],
+                        ['key' => 'line', 'type' => 'color', 'label' => 'Line', 'helperText' => 'Borders and dividers.'],
+                        ['key' => 'bg', 'type' => 'color', 'label' => 'Background', 'helperText' => 'Page background.'],
+                        ['key' => 'red', 'type' => 'color', 'label' => 'Red', 'helperText' => 'Errors and destructive actions.'],
+                        ['key' => 'accent', 'type' => 'color', 'label' => 'Accent', 'helperText' => 'Calendar highlights and extra emphasis.'],
+                    ],
+                ],
                 'topbar' => [
                     'label' => 'Top bar',
                     'fields' => [

@@ -42,6 +42,33 @@ class SiteContentHubSaveTest extends TestCase
         $this->assertSame('SavedPrefix', $branding['prefix'] ?? null);
     }
 
+    public function test_save_persists_site_color_changes(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+
+        $this->actingAs($admin);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        Livewire::test(SiteContentHub::class, ['activePageKey' => 'global'])
+            ->set('data.colors.navy', '#112233')
+            ->set('data.colors.green', '#00AA55')
+            ->call('save')
+            ->assertNotified();
+
+        $colors = SiteContentPage::query()->where('page_key', 'global')->first()?->content['colors'] ?? [];
+
+        $this->assertSame('#112233', $colors['navy'] ?? null);
+        $this->assertSame('#00aa55', $colors['green'] ?? null);
+        $this->assertSame('#0f2036', SiteContentDefaults::forPage('global')['colors']['navy']);
+    }
+
     public function test_google_reviews_toggle_reveals_place_id_field(): void
     {
         $admin = User::factory()->create(['role' => UserRole::Admin]);

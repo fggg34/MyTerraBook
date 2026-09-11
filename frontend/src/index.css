@@ -129,7 +129,7 @@
 
 .tb-datepicker-calendar .react-datepicker__day--selected,
 .tb-datepicker-calendar .react-datepicker__day--keyboard-selected {
-  background: #ea580c !important;
+  background: var(--accent, #ea580c) !important;
   color: #fff !important;
   font-weight: 600;
 }
@@ -151,7 +151,7 @@
 }
 
 .tb-datepicker-calendar .react-datepicker__time-list-item--selected {
-  background: #ea580c !important;
+  background: var(--accent, #ea580c) !important;
   color: #fff !important;
   font-weight: 600;
 }
@@ -195,7 +195,7 @@
 }
 
 .tb-timepicker-calendar.react-datepicker--time-only .react-datepicker__time-list-item--selected {
-  background: #ea580c !important;
+  background: var(--accent, #ea580c) !important;
   color: #fff !important;
   font-weight: 600;
 }

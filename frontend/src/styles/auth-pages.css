@@ -1,17 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Quicksand:wght@600;700&display=swap');
 
 :root {
-  --auth-navy: #0f2036;
-  --auth-ink: #1d2b40;
-  --auth-slate: #5a6b82;
-  --auth-slate-light: #8090a4;
-  --auth-green: #45a06a;
-  --auth-green-dark: #3a8d5d;
-  --auth-blue: #34629e;
-  --auth-blue-soft: #eef2f8;
-  --auth-line: #e2e7ef;
-  --auth-bg: #fbfcfe;
-  --auth-red: #c53030;
+  --auth-navy: var(--navy);
+  --auth-ink: var(--ink);
+  --auth-slate: var(--slate);
+  --auth-slate-light: var(--slate-light);
+  --auth-green: var(--green);
+  --auth-green-dark: var(--green-dark);
+  --auth-blue: var(--blue);
+  --auth-blue-soft: var(--blue-soft);
+  --auth-line: var(--line);
+  --auth-bg: var(--bg);
+  --auth-red: var(--red);
   --auth-red-soft: #fef2f2;
   --auth-serif: 'Quicksand', sans-serif;
   --auth-sans: 'Open Sans', sans-serif;

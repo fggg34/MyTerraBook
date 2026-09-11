@@ -15,7 +15,7 @@ export default {
           950: '#0a1929',
         },
         accent: {
-          DEFAULT: '#ea580c',
+          DEFAULT: 'var(--accent, #ea580c)',
           hover: '#c2410c',
           light: '#ffedd5',
         },

@@ -6,6 +6,7 @@ import {
 } from '../data/defaultSiteContentData'
 import { mergePageContent } from '../utils/mergePageContent'
 import { getInstantSiteContent, mergeBranding } from '../utils/siteBootstrap'
+import { applySiteColors } from '../utils/siteColors'
 import {
   preloadSiteAssets,
   readBlogPostsCache,
@@ -80,6 +81,10 @@ export function SiteContentProvider({ children }) {
   )
 
   const branding = useMemo(() => mergeBranding(global.branding ?? {}), [global])
+
+  useEffect(() => {
+    applySiteColors(global.colors ?? {})
+  }, [global.colors])
 
   useEffect(() => {
     if (typeof document === 'undefined') return

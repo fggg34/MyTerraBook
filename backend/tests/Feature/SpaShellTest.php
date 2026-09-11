@@ -60,6 +60,9 @@ HTML);
                     'suffix' => 'Book',
                     'favicon' => '/storage/branding/live-favicon.png',
                 ],
+                'colors' => [
+                    'navy' => '#112233',
+                ],
             ]),
             'is_published' => true,
             'sort_order' => 0,
@@ -83,6 +86,8 @@ HTML);
         $response->assertSee('Live hero heading from CMS', false);
         $response->assertSee('"prefix":"Live"', false);
         $response->assertSee('/storage/branding/live-favicon.png', false);
+        $response->assertSee('id="myterrabook-site-colors"', false);
+        $response->assertSee('--navy: #112233 !important', false);
         $response->assertDontSee('<!-- MYTERRABOOK_SITE_BOOTSTRAP -->', false);
     }
 
