@@ -147,6 +147,40 @@ class SiteContentHubSaveTest extends TestCase
         $this->assertNotSame([], $favicon);
     }
 
+    public function test_save_persists_cleared_homepage_review_texts(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::Admin]);
+
+        $this->actingAs($admin);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => SiteContentDefaults::forPage('home'),
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $clearedReviews = array_map(
+            fn (array $review): array => array_replace($review, ['quote' => '', 'name' => '']),
+            SiteContentDefaults::forPage('home')['reviewsSection']['reviews'],
+        );
+
+        Livewire::test(SiteContentHub::class, ['activePageKey' => 'home'])
+            ->set('data.reviewsSection.heading', '')
+            ->set('data.reviewsSection.eyebrow', '')
+            ->set('data.reviewsSection.reviews', $clearedReviews)
+            ->call('save')
+            ->assertNotified();
+
+        $saved = SiteContentPage::query()->where('page_key', 'home')->first()?->content['reviewsSection'] ?? [];
+
+        $this->assertSame('', $saved['heading'] ?? 'missing');
+        $this->assertSame('', $saved['eyebrow'] ?? 'missing');
+        $this->assertSame('', $saved['reviews'][0]['quote'] ?? 'missing');
+        $this->assertSame('', $saved['reviews'][0]['name'] ?? 'missing');
+    }
+
     public function test_save_persists_rent_section_card_image(): void
     {
         Storage::fake('public');

@@ -151,6 +151,115 @@ class SiteContentServiceTest extends TestCase
         $this->assertSame('2. Get discovered', $merged['howTabs'][1]['title']);
     }
 
+    public function test_merge_defaults_does_not_pad_reviews_with_demo_cards(): void
+    {
+        $service = new SiteContentService;
+        $defaults = \App\Data\SiteContentDefaults::forPage('home');
+
+        $merged = $service->mergeDefaultsWithSaved($defaults, [
+            'reviewsSection' => [
+                'heading' => 'Our guests',
+                'reviews' => [
+                    ['quote' => 'Great trip', 'name' => 'Ada'],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('Our guests', $merged['reviewsSection']['heading']);
+        $this->assertCount(1, $merged['reviewsSection']['reviews']);
+        $this->assertSame('Great trip', $merged['reviewsSection']['reviews'][0]['quote']);
+    }
+
+    public function test_merge_defaults_keeps_cleared_review_texts(): void
+    {
+        $service = new SiteContentService;
+        $defaults = \App\Data\SiteContentDefaults::forPage('home');
+
+        $merged = $service->mergeDefaultsWithSaved($defaults, [
+            'reviewsSection' => [
+                'heading' => '',
+                'reviews' => [
+                    ['quote' => '', 'name' => ''],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('', $merged['reviewsSection']['heading']);
+        $this->assertCount(1, $merged['reviewsSection']['reviews']);
+        $this->assertSame('', $merged['reviewsSection']['reviews'][0]['quote']);
+    }
+
+    public function test_merge_saved_page_content_persists_filament_null_as_cleared_text(): void
+    {
+        $service = new SiteContentService;
+        $defaults = \App\Data\SiteContentDefaults::forPage('home');
+        $baseline = $service->normalizePageContent('home', $defaults);
+
+        $merged = $service->mergeSavedPageContent($baseline, [
+            'reviewsSection' => [
+                'heading' => null,
+                'eyebrow' => null,
+                'reviews' => [
+                    [
+                        'quote' => null,
+                        'name' => null,
+                        'fill' => $defaults['reviewsSection']['reviews'][0]['fill'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame('', $merged['reviewsSection']['heading']);
+        $this->assertSame('', $merged['reviewsSection']['eyebrow']);
+        $this->assertSame('', $merged['reviewsSection']['reviews'][0]['quote']);
+        $this->assertSame('', $merged['reviewsSection']['reviews'][0]['name']);
+    }
+
+    public function test_merge_saved_page_content_persists_cleared_review_texts(): void
+    {
+        $service = new SiteContentService;
+        $defaults = \App\Data\SiteContentDefaults::forPage('home');
+        $baseline = $service->normalizePageContent('home', $defaults);
+
+        $incoming = [
+            'reviewsSection' => [
+                'eyebrow' => '',
+                'heading' => '',
+                'rating' => $defaults['reviewsSection']['rating'],
+                'reviews' => [
+                    [
+                        'quote' => '',
+                        'name' => '',
+                        'fill' => $defaults['reviewsSection']['reviews'][0]['fill'],
+                    ],
+                ],
+            ],
+        ];
+
+        $merged = $service->mergeSavedPageContent($baseline, $incoming);
+
+        $this->assertSame('', $merged['reviewsSection']['heading']);
+        $this->assertSame('', $merged['reviewsSection']['eyebrow']);
+        $this->assertSame('', $merged['reviewsSection']['reviews'][0]['quote']);
+        $this->assertCount(1, $merged['reviewsSection']['reviews']);
+    }
+
+    public function test_resolve_reviews_section_hides_blank_demo_cards(): void
+    {
+        $service = new SiteContentService;
+
+        $resolved = $service->resolveReviewsSection([
+            'heading' => '',
+            'reviews' => [
+                ['quote' => '', 'name' => '', 'fill' => '#a9d4e6'],
+            ],
+        ]);
+
+        $this->assertSame('', $resolved['heading']);
+        $this->assertSame([], $resolved['reviews']);
+        $this->assertTrue($resolved['isDemo']);
+    }
+
     public function test_merge_saved_list_preserves_existing_when_incoming_repeater_is_blank(): void
     {
         $service = new SiteContentService;

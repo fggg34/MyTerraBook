@@ -168,7 +168,7 @@ class SiteContentHub extends Page
         $this->data = $service->prepareFormUploadState(
             $service->normalizePageContent(
                 $this->activePageKey,
-                array_replace_recursive($defaults, $page?->content ?? []),
+                $service->mergeDefaultsWithSaved($defaults, $page?->content ?? []),
             ),
         );
         $this->form->fill($this->data);
@@ -181,7 +181,7 @@ class SiteContentHub extends Page
         $defaults = SiteContentDefaults::forPage($this->activePageKey);
         $baseline = $service->normalizePageContent(
             $this->activePageKey,
-            array_replace_recursive($defaults, $existing?->content ?? []),
+            $service->mergeDefaultsWithSaved($defaults, $existing?->content ?? []),
         );
 
         // Persist uploads before snapshot, getStateSnapshot() skips beforeStateDehydrated().

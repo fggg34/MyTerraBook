@@ -42,7 +42,7 @@ class SiteContentService
             ->first();
 
         $defaults = SiteContentDefaults::forPage($pageKey);
-        $merged = array_replace_recursive($defaults, $page?->content ?? []);
+        $merged = $this->mergeDefaultsWithSaved($defaults, $page?->content ?? []);
 
         $normalized = $this->normalizePageContent($pageKey, $merged);
 
@@ -276,13 +276,44 @@ class SiteContentService
     }
 
     /**
+     * Merge CMS defaults with saved content. Repeater lists from saved content
+     * replace defaults entirely so deleted or cleared items do not come back.
+     *
+     * @param  array<string, mixed>  $defaults
+     * @param  array<string, mixed>  $saved
+     * @return array<string, mixed>
+     */
+    public function mergeDefaultsWithSaved(array $defaults, array $saved): array
+    {
+        $merged = $defaults;
+
+        foreach ($saved as $key => $value) {
+            if (is_array($value) && array_is_list($value)) {
+                $merged[$key] = $value;
+
+                continue;
+            }
+
+            if (is_array($value) && isset($merged[$key]) && is_array($merged[$key]) && ! array_is_list($merged[$key])) {
+                $merged[$key] = $this->mergeDefaultsWithSaved($merged[$key], $value);
+
+                continue;
+            }
+
+            $merged[$key] = $value;
+        }
+
+        return $merged;
+    }
+
+    /**
      * @param  array<string, mixed>  $section
      * @return array<string, mixed>
      */
     public function resolveReviewsSection(array $section): array
     {
         $defaults = SiteContentDefaults::forPage('home')['reviewsSection'] ?? [];
-        $demo = array_replace_recursive($defaults, $section);
+        $merged = $this->mergeDefaultsWithSaved($defaults, $section);
 
         $googleEnabled = (bool) ($section['googleEnabled'] ?? false);
         $placeId = trim((string) ($section['googlePlaceId'] ?? ''));
@@ -292,10 +323,11 @@ class SiteContentService
 
             if ($google !== null) {
                 return [
-                    'eyebrow' => $section['eyebrow'] ?? $defaults['eyebrow'] ?? '',
-                    'heading' => $section['heading'] ?? $defaults['heading'] ?? '',
-                    'rating' => $google['rating'] ?: ($demo['rating'] ?? ''),
-                    'ratingCount' => $google['ratingCount'] ?: ($demo['ratingCount'] ?? ''),
+                    'eyebrow' => $merged['eyebrow'] ?? '',
+                    'heading' => $merged['heading'] ?? '',
+                    'lead' => $merged['lead'] ?? '',
+                    'rating' => $google['rating'] ?: ($merged['rating'] ?? ''),
+                    'ratingCount' => $google['ratingCount'] ?: ($merged['ratingCount'] ?? ''),
                     'reviews' => $google['reviews'],
                     'source' => 'google',
                     'isDemo' => false,
@@ -303,15 +335,39 @@ class SiteContentService
             }
         }
 
+        $reviews = is_array($merged['reviews'] ?? null) ? $merged['reviews'] : [];
+        if (! array_is_list($reviews)) {
+            $reviews = array_values($reviews);
+        }
+
         return [
-            'eyebrow' => $demo['eyebrow'] ?? '',
-            'heading' => $demo['heading'] ?? '',
-            'rating' => $demo['rating'] ?? '',
-            'ratingCount' => $demo['ratingCount'] ?? '',
-            'reviews' => is_array($demo['reviews'] ?? null) ? $demo['reviews'] : [],
+            'eyebrow' => $merged['eyebrow'] ?? '',
+            'heading' => $merged['heading'] ?? '',
+            'lead' => $merged['lead'] ?? '',
+            'rating' => $merged['rating'] ?? '',
+            'ratingCount' => $merged['ratingCount'] ?? '',
+            'reviews' => $this->filterBlankReviews($reviews),
             'source' => 'demo',
             'isDemo' => true,
         ];
+    }
+
+    /**
+     * @param  list<mixed>  $reviews
+     * @return list<array<string, mixed>>
+     */
+    private function filterBlankReviews(array $reviews): array
+    {
+        return array_values(array_filter($reviews, function (mixed $review): bool {
+            if (! is_array($review)) {
+                return false;
+            }
+
+            $quote = trim((string) ($review['quote'] ?? ''));
+            $name = trim((string) ($review['name'] ?? ''));
+
+            return $quote !== '' || $name !== '';
+        }));
     }
 
     /**
@@ -548,6 +604,10 @@ class SiteContentService
                     && is_array($merged[$key])
                     && ($value === [] || $this->isBlankRepeaterList($value))
                 ) {
+                    if ($this->incomingSectionLooksSubmitted($incoming, $key)) {
+                        $merged[$key] = [];
+                    }
+
                     continue;
                 }
 
@@ -573,7 +633,22 @@ class SiteContentService
                 continue;
             }
 
-            // Inactive tabs often submit null/empty for untouched fields, do not erase stored values.
+            // Filament dehydrates cleared text inputs as null. Persist that as an
+            // empty string so demo copy does not return. Keep nested arrays and
+            // upload paths, those empty states mean "not hydrated" or "unchanged".
+            if ($value === null) {
+                if (
+                    array_key_exists($key, $merged)
+                    && (is_array($merged[$key]) || $this->isUploadFieldKey((string) $key))
+                ) {
+                    continue;
+                }
+
+                $merged[$key] = '';
+
+                continue;
+            }
+
             if ($this->isMissingIncomingValue($value) && array_key_exists($key, $merged) && ! $this->isMissingIncomingValue($merged[$key])) {
                 continue;
             }
@@ -586,7 +661,52 @@ class SiteContentService
 
     private function isMissingIncomingValue(mixed $value): bool
     {
-        return $value === null || $value === [] || $value === '';
+        return $value === null || $value === [];
+    }
+
+    private function isUploadFieldKey(string $key): bool
+    {
+        return in_array($key, [
+            'image',
+            'photo',
+            'backgroundImage',
+            'mobileBackgroundImage',
+            'logoImage',
+            'favicon',
+            'houseImage',
+            'vanImage',
+            'iconImage',
+            'featured_image',
+            'ogImage',
+            'defaultOgImage',
+            'patternImage',
+        ], true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $incoming
+     */
+    private function incomingSectionLooksSubmitted(array $incoming, string $listKey): bool
+    {
+        foreach ($incoming as $key => $value) {
+            if ($key === $listKey) {
+                continue;
+            }
+
+            if (is_bool($value) || is_numeric($value)) {
+                return true;
+            }
+
+            if (is_string($value) && $value !== '') {
+                return true;
+            }
+
+            if (is_array($value) && $value !== []) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

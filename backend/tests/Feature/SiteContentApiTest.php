@@ -259,6 +259,73 @@ class SiteContentApiTest extends TestCase
         $this->assertNotEmpty($response->json('reviewsSection.reviews'));
     }
 
+    public function test_homepage_reviews_section_uses_saved_cards_without_demo_padding(): void
+    {
+        $home = SiteContentDefaults::forPage('home');
+        $home['reviewsSection']['heading'] = '';
+        $home['reviewsSection']['eyebrow'] = 'Guests';
+        $home['reviewsSection']['reviews'] = [
+            ['quote' => 'Custom stay', 'name' => 'Ada'],
+        ];
+
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => $home,
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $response = $this->getJson('/api/homepage');
+
+        $response->assertOk();
+        $response->assertJsonPath('reviewsSection.heading', '');
+        $response->assertJsonPath('reviewsSection.eyebrow', 'Guests');
+        $this->assertCount(1, $response->json('reviewsSection.reviews'));
+        $response->assertJsonPath('reviewsSection.reviews.0.quote', 'Custom stay');
+        $response->assertJsonPath('reviewsSection.reviews.0.name', 'Ada');
+    }
+
+    public function test_homepage_reviews_section_hides_cards_when_texts_are_cleared(): void
+    {
+        $home = SiteContentDefaults::forPage('home');
+        $home['reviewsSection']['heading'] = '';
+        $home['reviewsSection']['reviews'] = array_map(
+            fn (array $review): array => array_replace($review, ['quote' => '', 'name' => '']),
+            $home['reviewsSection']['reviews'],
+        );
+
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => $home,
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $response = $this->getJson('/api/homepage');
+
+        $response->assertOk();
+        $response->assertJsonPath('reviewsSection.heading', '');
+        $this->assertSame([], $response->json('reviewsSection.reviews'));
+    }
+
     public function test_homepage_rent_and_how_section_images_resolve_from_storage(): void
     {
         $path = 'site-content/home/custom-card.jpg';

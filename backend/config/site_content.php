@@ -112,6 +112,7 @@ $blogPostFields = [
 $reviewCardFields = [
     ['key' => 'quote', 'type' => 'textarea', 'label' => 'Quote', 'columnSpanFull' => true],
     ['key' => 'name', 'type' => 'text', 'label' => 'Name'],
+    ['key' => 'relativeTime', 'type' => 'text', 'label' => 'Relative time'],
     ['key' => 'fill', 'type' => 'text', 'label' => 'Card colour (hex)'],
     ['key' => 'rot', 'type' => 'text', 'label' => 'Rotation'],
     ['key' => 'ty', 'type' => 'text', 'label' => 'Vertical offset'],
@@ -437,11 +438,12 @@ return [
                     'fields' => [
                         ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
                         ['key' => 'heading', 'type' => 'text', 'label' => 'Heading'],
+                        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
                         ['key' => 'googleEnabled', 'type' => 'toggle', 'label' => 'Connect Google Reviews', 'helperText' => 'Pull live rating and reviews from your Google Business profile. Requires a Google Maps API key in Global Configuration.'],
                         ['key' => 'googlePlaceId', 'type' => 'text', 'label' => 'Google Place ID', 'helperText' => 'Find this in Google Maps → your business → Share → Embed a map, or use the Place ID finder.', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => true], 'columnSpanFull' => true],
                         ['key' => 'rating', 'type' => 'text', 'label' => 'Rating (demo)', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false]],
                         ['key' => 'ratingCount', 'type' => 'text', 'label' => 'Rating count (demo)', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false]],
-                        ['key' => 'reviews', 'type' => 'repeater', 'label' => 'Demo review cards', 'helperText' => 'Shown when Google Reviews is off or cannot be loaded.', 'fields' => $reviewCardFields, 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false], 'columnSpanFull' => true],
+                        ['key' => 'reviews', 'type' => 'repeater', 'label' => 'Review cards', 'helperText' => 'Shown on the homepage when Google Reviews is off or cannot be loaded. Clear quote and name to hide a card. Remove every card to hide the section.', 'fields' => $reviewCardFields, 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false], 'columnSpanFull' => true],
                     ],
                 ],
                 'guestHousesHighlight' => [

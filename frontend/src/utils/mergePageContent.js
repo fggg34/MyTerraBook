@@ -11,22 +11,18 @@ export function mergePageContent(defaults = {}, apiData = {}) {
 
 function deepMerge(base, patch) {
   if (Array.isArray(patch)) {
-    return patch.length ? patch.map((item, i) => (typeof item === 'object' && item !== null ? deepMerge(base?.[i] ?? {}, item) : item)) : base
+    return patch
   }
 
   const result = { ...base }
 
   for (const [key, value] of Object.entries(patch)) {
-    if (value === null || value === undefined || value === '') {
+    if (value === null || value === undefined) {
       continue
     }
 
     if (Array.isArray(value)) {
-      result[key] = value.length
-        ? value.map((item, i) =>
-            typeof item === 'object' && item !== null ? deepMerge(base?.[i] ?? {}, item) : item,
-          )
-        : result[key]
+      result[key] = value
       continue
     }
 

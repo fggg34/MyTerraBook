@@ -46,6 +46,26 @@ function mergeFeatures(features, fallbackFeatures, useImageFallbacks) {
   }))
 }
 
+function visibleReviews(reviews = []) {
+  return reviews.filter((review) => {
+    const quote = String(review?.quote ?? '').trim()
+    const name = String(review?.name ?? '').trim()
+    return quote !== '' || name !== ''
+  })
+}
+
+function mergeReviews(section, fallbackReviews, useImageFallbacks) {
+  if (Array.isArray(section?.reviews)) {
+    return visibleReviews(section.reviews)
+  }
+
+  if (section && Object.keys(section).length && section.isDemo === false) {
+    return []
+  }
+
+  return useImageFallbacks ? fallbackReviews : []
+}
+
 function mergeTrustItems(items, fallbackItems, useImageFallbacks) {
   if (!Array.isArray(items) || !items.length) return useImageFallbacks ? fallbackItems : []
   return items.map((item, index) => ({
@@ -244,13 +264,7 @@ export function mergeHomepageData(apiData = {}, { useImageFallbacks = true } = {
     hostCtaSection,
     reviewsSection: {
       ...withDefaults(defaults.reviewsSection, apiData.reviewsSection),
-      reviews: apiData.reviewsSection?.reviews?.length
-        ? apiData.reviewsSection.reviews
-        : apiData.reviewsSection?.isDemo === false
-          ? []
-          : useImageFallbacks
-            ? defaults.reviewsSection.reviews
-            : [],
+      reviews: mergeReviews(apiData.reviewsSection, defaults.reviewsSection.reviews, useImageFallbacks),
     },
     guestHousesHighlight: apiData.guestHousesHighlight || null,
     faqSection: withDefaults(defaults.faqSection, apiData.faqSection),
