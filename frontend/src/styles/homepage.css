@@ -695,7 +695,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   }
 
   /* ---------- Hand-picked carousel ---------- */
-  .picks{background:#e7eef8;padding:96px 0 104px;}
+  .picks{background:#efefef;padding:96px 0 104px;}
   .picks-head{
     display:flex;align-items:flex-end;justify-content:space-between;gap:30px;
     margin-bottom:34px;
