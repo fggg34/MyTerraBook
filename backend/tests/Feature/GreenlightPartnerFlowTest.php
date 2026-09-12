@@ -85,6 +85,9 @@ class GreenlightPartnerFlowTest extends TestCase
                     'totalUnits' => 3,
                     'description' => 'Ready for the highlands.',
                     'photos' => ['https://greenlight.test/uploads/rav4.jpg'],
+                    'homeLocationId' => 'loc_1',
+                    'availableAtAllLocations' => false,
+                    'locationIds' => ['loc_1'],
                 ]],
             ]),
             'https://greenlight.test/api/partner/v1/availability*' => Http::response([
@@ -127,6 +130,9 @@ class GreenlightPartnerFlowTest extends TestCase
 
         $pickup = Location::query()->where('external_id', 'loc_1')->first();
         $this->assertNotNull($pickup);
+        $this->assertTrue($car->locations()->whereKey($pickup->id)->exists());
+        $this->assertTrue((bool) $car->locations()->whereKey($pickup->id)->first()?->pivot->allows_pickup);
+        $this->assertTrue((bool) $car->locations()->whereKey($pickup->id)->first()?->pivot->allows_dropoff);
 
         $quote = $this->postJson('/api/orders/quote', [
             'car_id' => $car->id,
@@ -164,6 +170,123 @@ class GreenlightPartnerFlowTest extends TestCase
             ['ins_1'],
             app(GreenlightSettings::class)->insurancePlanIds(),
         );
+    }
+
+    public function test_sync_assigns_each_vehicle_only_its_greenlight_locations(): void
+    {
+        Setting::putValue('partners.greenlight', [
+            'enabled' => true,
+            'base_url' => 'https://greenlight.test/api/partner/v1',
+            'api_key' => 'glpk_test',
+            'insurance_plan_ids' => [],
+        ]);
+        MainCategory::ensureBySlug('car', ['name' => 'Car']);
+
+        Http::fake([
+            'https://greenlight.test/api/partner/v1/locations' => Http::response([
+                'data' => [
+                    ['id' => 'loc_kef', 'name' => 'Keflavik Airport', 'city' => 'Keflavik'],
+                    ['id' => 'loc_rvk', 'name' => 'Reykjavik Office', 'city' => 'Reykjavik'],
+                ],
+            ]),
+            'https://greenlight.test/api/partner/v1/categories' => Http::response(['data' => []]),
+            'https://greenlight.test/api/partner/v1/insurance-plans' => Http::response(['data' => []]),
+            'https://greenlight.test/api/partner/v1/vehicles' => Http::response([
+                'data' => [
+                    [
+                        'id' => 'veh_kef',
+                        'name' => 'Toyota RAV4',
+                        'make' => 'Toyota',
+                        'model' => 'RAV4',
+                        'categoryName' => '4x4',
+                        'categorySlug' => '4x4',
+                        'baseDailyRateIsk' => 15000,
+                        'homeLocationId' => 'loc_kef',
+                        'availableAtAllLocations' => false,
+                        'locationIds' => ['loc_kef'],
+                    ],
+                    [
+                        'id' => 'veh_rvk',
+                        'name' => 'Toyota Yaris',
+                        'make' => 'Toyota',
+                        'model' => 'Yaris',
+                        'categoryName' => 'Economy',
+                        'categorySlug' => 'economy',
+                        'baseDailyRateIsk' => 9000,
+                        'homeLocationId' => 'loc_rvk',
+                        'availableAtAllLocations' => false,
+                        'locationIds' => ['loc_rvk'],
+                    ],
+                ],
+            ]),
+        ]);
+
+        app(GreenlightVehicleSyncService::class)->sync();
+
+        $kef = Location::query()->where('external_id', 'loc_kef')->first();
+        $rvk = Location::query()->where('external_id', 'loc_rvk')->first();
+        $rav4 = Car::query()->where('external_vehicle_id', 'veh_kef')->first();
+        $yaris = Car::query()->where('external_vehicle_id', 'veh_rvk')->first();
+
+        $this->assertNotNull($kef);
+        $this->assertNotNull($rvk);
+        $this->assertNotNull($rav4);
+        $this->assertNotNull($yaris);
+        $this->assertEqualsCanonicalizing([$kef->id], $rav4->locations()->pluck('locations.id')->all());
+        $this->assertEqualsCanonicalizing([$rvk->id], $yaris->locations()->pluck('locations.id')->all());
+    }
+
+    public function test_sync_reuses_an_existing_storefront_location_with_the_same_name(): void
+    {
+        Setting::putValue('partners.greenlight', [
+            'enabled' => true,
+            'base_url' => 'https://greenlight.test/api/partner/v1',
+            'api_key' => 'glpk_test',
+            'insurance_plan_ids' => [],
+        ]);
+        MainCategory::ensureBySlug('car', ['name' => 'Car']);
+
+        $existing = Location::query()->create([
+            'name' => 'Keflavik Airport',
+            'is_active' => true,
+        ]);
+
+        Http::fake([
+            'https://greenlight.test/api/partner/v1/locations' => Http::response([
+                'data' => [[
+                    'id' => 'loc_1',
+                    'name' => 'Keflavik Airport',
+                    'address' => 'Airport road',
+                    'city' => 'Keflavik',
+                ]],
+            ]),
+            'https://greenlight.test/api/partner/v1/categories' => Http::response(['data' => []]),
+            'https://greenlight.test/api/partner/v1/insurance-plans' => Http::response(['data' => []]),
+            'https://greenlight.test/api/partner/v1/vehicles' => Http::response([
+                'data' => [[
+                    'id' => 'veh_1',
+                    'name' => 'Toyota RAV4',
+                    'make' => 'Toyota',
+                    'model' => 'RAV4',
+                    'categoryName' => '4x4',
+                    'categorySlug' => '4x4',
+                    'baseDailyRateIsk' => 15000,
+                    'homeLocationId' => 'loc_1',
+                    'locationIds' => ['loc_1'],
+                ]],
+            ]),
+        ]);
+
+        app(GreenlightVehicleSyncService::class)->sync();
+
+        $this->assertSame(1, Location::query()->count());
+        $existing->refresh();
+        $this->assertSame('greenlight', $existing->external_provider);
+        $this->assertSame('loc_1', $existing->external_id);
+
+        $car = Car::query()->where('external_vehicle_id', 'veh_1')->first();
+        $this->assertNotNull($car);
+        $this->assertTrue($car->locations()->whereKey($existing->id)->exists());
     }
 
     public function test_native_cars_do_not_call_greenlight(): void

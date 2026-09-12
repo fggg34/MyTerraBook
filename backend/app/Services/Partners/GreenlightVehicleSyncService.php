@@ -70,27 +70,42 @@ class GreenlightVehicleSyncService
     {
         $map = [];
         foreach ($rows as $row) {
-            $externalId = (string) ($row['id'] ?? '');
+            $externalId = (string) ($row['id'] ?? $row['locationId'] ?? '');
             if ($externalId === '') {
                 continue;
             }
 
-            $name = (string) ($row['name'] ?? 'Greenlight location');
+            $name = trim((string) ($row['name'] ?? '')) ?: 'Greenlight location';
             $location = Location::query()->firstOrNew([
                 'external_provider' => GreenlightSettings::PROVIDER,
                 'external_id' => $externalId,
             ]);
 
+            if (! $location->exists) {
+                $matched = $this->matchExistingLocation($name);
+                if ($matched) {
+                    $location = $matched;
+                    $location->external_provider = GreenlightSettings::PROVIDER;
+                    $location->external_id = $externalId;
+                }
+            }
+
+            $address = trim(implode(', ', array_filter([
+                (string) ($row['address'] ?? ''),
+                (string) ($row['city'] ?? ''),
+                (string) ($row['postalCode'] ?? ''),
+            ])));
+
             $location->fill([
-                'name' => $name,
-                'address' => trim(implode(', ', array_filter([
-                    (string) ($row['address'] ?? ''),
-                    (string) ($row['city'] ?? ''),
-                    (string) ($row['postalCode'] ?? ''),
-                ]))),
                 'is_active' => true,
-                'host_user_id' => null,
+                'host_user_id' => $location->host_user_id,
             ]);
+            if (! $location->exists || ! filled($location->name)) {
+                $location->name = $name;
+            }
+            if (! filled($location->address) && $address !== '') {
+                $location->address = $address;
+            }
             if (! $location->exists) {
                 $location->slug = Location::uniqueSlugFromName($name);
             }
@@ -139,17 +154,110 @@ class GreenlightVehicleSyncService
         }
         $car->save();
 
-        $locationIds = collect($locations)->mapWithKeys(
-            fn (Location $location) => [$location->id => ['allows_pickup' => true, 'allows_dropoff' => true]]
-        )->all();
-        if ($locationIds !== []) {
-            $car->locations()->sync($locationIds);
-        }
+        $this->syncVehicleLocations($car, $product, $locations);
 
         $this->syncFares($car, (int) ($product['baseDailyRateIsk'] ?? 0));
         $this->ensureUnit($car);
 
         return $car;
+    }
+
+    private function matchExistingLocation(string $name): ?Location
+    {
+        $slug = Str::slug($name);
+
+        return Location::query()
+            ->whereNull('host_user_id')
+            ->where(function ($query): void {
+                $query->whereNull('external_id')
+                    ->orWhere('external_id', '');
+            })
+            ->where(function ($query) use ($name, $slug): void {
+                $query->whereRaw('LOWER(name) = ?', [mb_strtolower($name)]);
+                if ($slug !== '') {
+                    $query->orWhere('slug', $slug);
+                }
+            })
+            ->orderBy('id')
+            ->first();
+    }
+
+    /**
+     * @param  array<string, mixed>  $product
+     * @param  array<string, Location>  $locations
+     */
+    private function syncVehicleLocations(Car $car, array $product, array $locations): void
+    {
+        if ($locations === []) {
+            return;
+        }
+
+        $attachIds = $this->resolveVehicleLocationIds($product, $locations);
+        $pivot = collect($attachIds)
+            ->unique()
+            ->mapWithKeys(fn (int $id): array => [$id => ['allows_pickup' => true, 'allows_dropoff' => true]])
+            ->all();
+
+        $car->locations()->sync($pivot);
+    }
+
+    /**
+     * @param  array<string, mixed>  $product
+     * @param  array<string, Location>  $locations
+     * @return list<int>
+     */
+    private function resolveVehicleLocationIds(array $product, array $locations): array
+    {
+        $allIds = array_values(array_map(fn (Location $location): int => $location->id, $locations));
+
+        if (filter_var($product['availableAtAllLocations'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            return $allIds;
+        }
+
+        $resolved = [];
+        foreach ($this->externalLocationIdsFromProduct($product) as $externalId) {
+            if (isset($locations[$externalId])) {
+                $resolved[] = $locations[$externalId]->id;
+            }
+        }
+
+        return $resolved !== [] ? array_values(array_unique($resolved)) : $allIds;
+    }
+
+    /**
+     * @param  array<string, mixed>  $product
+     * @return list<string>
+     */
+    private function externalLocationIdsFromProduct(array $product): array
+    {
+        $ids = collect();
+
+        foreach ($product['locationIds'] ?? [] as $id) {
+            $ids->push((string) $id);
+        }
+
+        foreach ($product['locations'] ?? [] as $row) {
+            if (is_string($row) || is_numeric($row)) {
+                $ids->push((string) $row);
+
+                continue;
+            }
+            if (is_array($row)) {
+                $ids->push((string) ($row['id'] ?? $row['locationId'] ?? ''));
+            }
+        }
+
+        $home = (string) ($product['homeLocationId'] ?? '');
+        if ($home !== '') {
+            $ids->push($home);
+        }
+
+        return $ids
+            ->map(fn (string $id): string => trim($id))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**
