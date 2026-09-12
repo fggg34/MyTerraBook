@@ -6,48 +6,29 @@ export default function HeroSection(props) {
     heading,
     subtitle,
     backgroundImage,
-    mobileHeading,
-    mobileSubtitle,
-    mobileBackgroundImage,
     ...bookingProps
   } = props
 
-  const desktopImage = backgroundImage || null
-  const mobileImage = mobileBackgroundImage || desktopImage
+  const image = backgroundImage || null
 
   return (
     <section className="hero">
       <div className="hero-bg-wrap">
-        {desktopImage ? (
-          <picture>
-            {mobileBackgroundImage && mobileImage !== desktopImage && (
-              <source media="(max-width: 768px)" srcSet={mobileImage} />
-            )}
-            <CmsImage
-              className="hero-bg"
-              src={desktopImage}
-              alt="Campervan parked beneath Icelandic mountains"
-              loading="eager"
-            />
-          </picture>
+        {image ? (
+          <CmsImage
+            className="hero-bg"
+            src={image}
+            alt="Campervan parked beneath Icelandic mountains"
+            loading="eager"
+          />
         ) : (
           <div className="hero-bg hero-bg--placeholder" aria-hidden="true" />
         )}
       </div>
       <div className="hero-inner">
         <div className="hero-copy">
-          {(heading || mobileHeading) && (
-            <h1>
-              {heading && <span className="hero-heading hero-heading--desktop">{heading}</span>}
-              <span className="hero-heading hero-heading--mobile">{mobileHeading || heading}</span>
-            </h1>
-          )}
-          {(subtitle || mobileSubtitle) && (
-            <p>
-              {subtitle && <span className="hero-subtitle hero-subtitle--desktop">{subtitle}</span>}
-              <span className="hero-subtitle hero-subtitle--mobile">{mobileSubtitle || subtitle}</span>
-            </p>
-          )}
+          {heading && <h1>{heading}</h1>}
+          {subtitle && <p>{subtitle}</p>}
         </div>
         <BookingModule {...bookingProps} />
       </div>

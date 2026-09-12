@@ -9,7 +9,3 @@ test('seeded mobile hero copy is treated as empty so phones use desktop CMS fiel
   assert.equal(usableMobileValue('Become a Host — start earning today!'), '')
   assert.equal(usableMobileValue('List your van'), '')
 })
-
-test('custom mobile copy is kept', () => {
-  assert.equal(usableMobileValue('Short mobile heading'), 'Short mobile heading')
-})

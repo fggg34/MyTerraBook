@@ -47,9 +47,8 @@ export function SiteContentProvider({ children }) {
       })
       .catch(() => {
         if (cancelled) return
-        if (hadInstantContentRef.current) return
-        setPages(defaultSiteContentData)
-        setUseDefaults(true)
+        // Keep bootstrap or cache. Never swap in bundled demo copy when the
+        // API is unreachable (common on phones hitting 127.0.0.1).
       })
       .finally(() => {
         if (!cancelled) setLoading(false)

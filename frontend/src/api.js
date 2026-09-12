@@ -8,8 +8,9 @@ function isLoopbackHostname(hostname) {
 }
 
 function isLoopbackUrl(url) {
+  if (!url || url.startsWith('/')) return false
   try {
-    return isLoopbackHostname(new URL(url, 'http://localhost').hostname)
+    return isLoopbackHostname(new URL(url).hostname)
   } catch {
     return false
   }
@@ -26,20 +27,28 @@ function isLoopbackUrl(url) {
  */
 export function resolveApiBaseUrl() {
   const fromEnv = import.meta.env.VITE_API_URL
-  if (fromEnv) {
-    const cleaned = fromEnv.replace(/\/$/, '')
-    if (import.meta.env.PROD && isLoopbackUrl(cleaned) && typeof window !== 'undefined') {
-      const host = window.location.hostname
-      if (host && !isLoopbackHostname(host)) {
-        return PROD_API_BASE
-      }
-    }
-    return cleaned
+  const fallback = import.meta.env.PROD ? PROD_API_BASE : DEV_API_BASE
+  const candidate = fromEnv ? fromEnv.replace(/\/$/, '') : fallback
+
+  if (typeof window === 'undefined') {
+    return candidate
   }
+
+  const host = window.location.hostname
+  if (!host || isLoopbackHostname(host) || !isLoopbackUrl(candidate)) {
+    return candidate
+  }
+
   if (import.meta.env.PROD) {
     return PROD_API_BASE
   }
-  return DEV_API_BASE
+
+  try {
+    const parsed = new URL(candidate)
+    return `${window.location.protocol}//${host}:${parsed.port || '8080'}${parsed.pathname}`.replace(/\/$/, '')
+  } catch {
+    return `${window.location.protocol}//${host}:8080/api`
+  }
 }
 
 const API_BASE_URL = resolveApiBaseUrl()
@@ -103,6 +112,7 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
+  config.baseURL = resolveApiBaseUrl()
   config.headers['Accept-Language'] = 'en'
   const token = typeof localStorage !== 'undefined' ? localStorage.getItem('terrabook_token') : null
   if (token) {

@@ -1,7 +1,6 @@
 import { resolveCmsImage, resolveStorageUrl } from '../api'
 import { defaultHomepageData } from '../data/defaultHomepageData'
 import { normalizeHomepageHref, normalizeLinkList } from './normalizeHomepageHref'
-import { usableMobileValue } from './seededMobileFallbacks'
 
 function mergeCards(cards, fallbackCards, useImageFallbacks) {
   if (!Array.isArray(cards) || !cards.length) return useImageFallbacks ? fallbackCards : []
@@ -117,19 +116,15 @@ export function mergeHomepageData(apiData = {}, { useImageFallbacks = true } = {
   const withDefaults = (sectionDefaults, sectionData = {}) =>
     useImageFallbacks ? { ...sectionDefaults, ...sectionData } : { ...sectionData }
 
-  const rawMobileBg = usableMobileValue(apiData.hero?.mobileBackgroundImage)
   const hero = {
     ...withDefaults(defaults.hero, apiData.hero),
-    mobileHeading: usableMobileValue(apiData.hero?.mobileHeading),
-    mobileSubtitle: usableMobileValue(apiData.hero?.mobileSubtitle),
+    mobileHeading: '',
+    mobileSubtitle: '',
     backgroundImage: resolveCmsImage(
       apiData.hero?.backgroundImage,
       useImageFallbacks ? defaults.hero.backgroundImage : null,
     ),
-    mobileBackgroundImage:
-      rawMobileBg === ''
-        ? ''
-        : resolveCmsImage(rawMobileBg, null),
+    mobileBackgroundImage: '',
     footerLinkHref: normalizeHomepageHref(
       apiData.hero?.footerLinkHref ?? (useImageFallbacks ? defaults.hero.footerLinkHref : undefined),
     ),
@@ -186,8 +181,8 @@ export function mergeHomepageData(apiData = {}, { useImageFallbacks = true } = {
 
   const topbar = {
     ...withDefaults(defaults.topbar, apiData.topbar),
-    mobileText: usableMobileValue(apiData.topbar?.mobileText),
-    mobileLinkLabel: usableMobileValue(apiData.topbar?.mobileLinkLabel),
+    mobileText: '',
+    mobileLinkLabel: '',
     linkHref: normalizeHomepageHref(
       apiData.topbar?.linkHref ?? (useImageFallbacks ? defaults.topbar.linkHref : undefined),
     ),
