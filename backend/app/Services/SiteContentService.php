@@ -141,7 +141,8 @@ class SiteContentService
      *     siteContent: array<string, array<string, mixed>>,
      *     homepage: array<string, mixed>,
      *     sitePages: array<string, array<string, mixed>>,
-     *     blogPosts: list<array<string, mixed>>
+     *     blogPosts: list<array<string, mixed>>,
+     *     preview: array{comingSoon: bool, guestUnlocked: bool}
      * }
      */
     public function bootstrapPayload(): array
@@ -151,6 +152,8 @@ class SiteContentService
             'homepage' => $this->homepagePayloadCached(),
             'sitePages' => $this->allSitePagesCached(),
             'blogPosts' => $this->blogPostsBootstrapCached(),
+            // Never cached: the storefront must see a Coming Soon toggle at once.
+            'preview' => app(SitePreviewService::class)->publicState(),
         ];
     }
 
@@ -244,6 +247,10 @@ class SiteContentService
         Cache::forget('site_content.homepage');
         Cache::forget('site_content.site_pages');
         Cache::forget('site_content.blog_posts_bootstrap');
+
+        foreach (SpaShellService::cacheKeys() as $key) {
+            Cache::forget($key);
+        }
     }
 
     /**

@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Data\SiteContentDefaults;
+use App\Models\Setting;
 use App\Models\SiteContentPage;
+use App\Services\Admin\GlobalConfigurationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
@@ -35,7 +38,10 @@ class SpaShellTest extends TestCase
 </html>
 HTML);
 
-        config(['spa.index_path' => $this->indexPath]);
+        config([
+            'spa.index_path' => $this->indexPath,
+            'app.site_preview_force_open' => false,
+        ]);
     }
 
     protected function tearDown(): void
@@ -99,6 +105,39 @@ HTML);
 
         $response->assertOk();
         $response->assertSee('Storefront is temporarily unavailable', false);
+    }
+
+    public function test_spa_shell_injects_the_coming_soon_gate_state(): void
+    {
+        Setting::putValue('system.coming_soon', ['enabled' => true]);
+
+        $response = $this->get('/spa-shell');
+
+        $response->assertOk();
+        $response->assertSee('"preview":{"comingSoon":true,"guestUnlocked":false}', false);
+    }
+
+    public function test_cached_shell_never_survives_the_coming_soon_toggle(): void
+    {
+        Setting::putValue('system.coming_soon', ['enabled' => false]);
+        $this->get('/spa-shell')->assertSee('"guestUnlocked":true', false);
+
+        Setting::putValue('system.coming_soon', ['enabled' => true]);
+        $this->get('/spa-shell')->assertSee('"guestUnlocked":false', false);
+
+        Setting::putValue('system.coming_soon', ['enabled' => false]);
+        $this->get('/spa-shell')->assertSee('"guestUnlocked":true', false);
+    }
+
+    public function test_saving_configuration_drops_the_cached_shell(): void
+    {
+        $this->get('/spa-shell')->assertSee('MyTerraBook', false);
+
+        $this->assertNotNull(Cache::get('spa.shell.open'));
+
+        app(GlobalConfigurationService::class)->save(['company_name' => 'MyTerra']);
+
+        $this->assertNull(Cache::get('spa.shell.open'));
     }
 
     public function test_spa_shell_does_not_start_a_session(): void

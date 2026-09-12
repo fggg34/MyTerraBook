@@ -4,6 +4,7 @@ namespace App\Services\Admin;
 
 use App\Models\Setting;
 use App\Services\Partners\GreenlightSettings;
+use App\Services\SiteContentService;
 
 class GlobalConfigurationService
 {
@@ -211,5 +212,9 @@ class GlobalConfigurationService
         Setting::putValue('orders.footer_text_order_email', ['content' => (string) ($state['footer_text_order_email'] ?? '')]);
         Setting::putValue('orders.allow_documents_upload', ['enabled' => (bool) ($state['allow_documents_upload'] ?? false)]);
         Setting::putValue('orders.upload_instructions', ['content' => (string) ($state['upload_instructions'] ?? '')]);
+
+        // Coming Soon, branding and colors are baked into the cached storefront
+        // shell, so a save has to drop it.
+        app(SiteContentService::class)->clearCache();
     }
 }

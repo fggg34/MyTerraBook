@@ -42,6 +42,24 @@ class SitePreviewService
         return false;
     }
 
+    /**
+     * Gate state for the HTML shell and /api/bootstrap. Session free, so it
+     * describes what an anonymous visitor must see. Admins and designers are
+     * unlocked afterwards by the SPA calling /api/site-preview with their
+     * session or token.
+     *
+     * @return array{comingSoon: bool, guestUnlocked: bool}
+     */
+    public function publicState(): array
+    {
+        $comingSoon = $this->isComingSoonEnabled();
+
+        return [
+            'comingSoon' => $comingSoon,
+            'guestUnlocked' => ! $comingSoon || (bool) config('app.site_preview_force_open'),
+        ];
+    }
+
     public function isComingSoonEnabled(): bool
     {
         $enabled = data_get(

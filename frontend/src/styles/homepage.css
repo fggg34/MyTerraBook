@@ -70,8 +70,6 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     color:#8fd3a9;font-weight:600;
   }
   .topbar a.bannerlink svg{width:14px;height:14px;}
-  .topbar-text--mobile{display:none;}
-  .bannerlink-text--mobile{display:none;}
 
   /* ---------- Header / nav ---------- */
   header.nav{
@@ -286,10 +284,6 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   .hero-bg-wrap{
     position:absolute;inset:0;width:100%;height:100%;display:block;
   }
-  .hero-heading--mobile,
-  .hero-subtitle--mobile,
-  .hero-heading--desktop,
-  .hero-subtitle--desktop{display:contents;}
   .hero::after{
     display:none;
   }
@@ -1292,12 +1286,8 @@ body.homepage-active { margin: 0; overflow-x: clip; }
       flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:center;
       gap:6px 10px;text-align:center;
     }
-    .topbar-text,
-    .topbar-text--desktop,
-    .topbar-text--mobile{display:inline;width:auto;line-height:1.35;}
-    .bannerlink-text,
-    .bannerlink-text--desktop,
-    .bannerlink-text--mobile{display:inline;}
+    .topbar-text{display:inline;width:auto;line-height:1.35;}
+    .bannerlink-text{display:inline;}
     .topbar a.bannerlink{
       display:inline-flex;align-items:center;gap:6px;
       white-space:nowrap;max-width:100%;
@@ -1409,10 +1399,6 @@ body.homepage-active { margin: 0; overflow-x: clip; }
       margin-bottom:0;
       line-height:1.35;
     }
-    .hero-heading--desktop,
-    .hero-heading--mobile,
-    .hero-subtitle--desktop,
-    .hero-subtitle--mobile{display:inline;}
     .hero-copy p:empty{display:none;}
     .hero-copy h1:empty + p{margin-top:0;}
     .booking{margin-top:0;}

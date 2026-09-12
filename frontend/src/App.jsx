@@ -52,6 +52,7 @@ import CampsiteMapPage from './pages/CampsiteMapPage'
 import NewsletterUnsubscribePage from './pages/NewsletterUnsubscribePage'
 import GoodToKnowPostPage from './pages/GoodToKnowPostPage'
 import { ADMIN_CALENDAR_EMBED_PATH } from './utils/routerBasename'
+import { getBootstrappedPreview } from './utils/siteBootstrap'
 
 function RedirectGuestHouseSlug() {
   const { slug } = useParams()
@@ -77,8 +78,14 @@ function ProtectedRoute({ children, role, customerOnly = false }) {
 }
 
 function AppRoutes() {
-  const [previewUnlocked, setPreviewUnlocked] = useState(true)
-  const [previewChecked, setPreviewChecked] = useState(false)
+  // Laravel renders the gate state into the HTML shell, so the decision is
+  // already made before any request goes out. Guests get the right page even
+  // when the API is unreachable, which is what kept breaking on phones.
+  const serverPreview = getBootstrappedPreview()
+  const serverLocked = serverPreview?.guestUnlocked === false
+
+  const [previewUnlocked, setPreviewUnlocked] = useState(!serverLocked)
+  const [previewChecked, setPreviewChecked] = useState(Boolean(serverPreview))
   const token = getStoredToken()
   setAuthToken(token)
 
@@ -92,14 +99,13 @@ function AppRoutes() {
       })
       setPreviewUnlocked(data?.preview_unlocked !== false)
     } catch {
-      // Never lock the storefront because the check failed (common on mobile
-      // when 127.0.0.1 / local-network requests are blocked). Coming Soon
-      // only applies when the API explicitly says the site is closed.
-      setPreviewUnlocked(true)
+      // Fall back to what the server already told us. Coming Soon has to hold
+      // when it is on, and a failed check must not lock a site that is open.
+      setPreviewUnlocked(!serverLocked)
     } finally {
       setPreviewChecked(true)
     }
-  }, [token])
+  }, [token, serverLocked])
 
   useEffect(() => {
     refreshPreview()

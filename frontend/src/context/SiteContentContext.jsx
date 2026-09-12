@@ -22,7 +22,9 @@ export function SiteContentProvider({ children }) {
   const hadInstantContentRef = useRef(Boolean(getInstantSiteContent()))
   const [pages, setPages] = useState(() => getInstantSiteContent() ?? {})
   const [loading, setLoading] = useState(() => !hadInstantContentRef.current)
-  const [useDefaults, setUseDefaults] = useState(false)
+  // Bundled demo copy and images are never shown. Real CMS content arrives via
+  // the injected bootstrap, the client cache, or the API, and nothing else.
+  const useDefaults = false
 
   useEffect(() => {
     let cancelled = false

@@ -41,6 +41,17 @@ export function getBootstrappedSitePage(slug) {
   return getBootstrappedSitePages()?.[slug] ?? null
 }
 
+/**
+ * Coming Soon state injected by Laravel, decided before the page was sent.
+ * Guest level only: an admin or designer still unlocks via /api/site-preview.
+ */
+export function getBootstrappedPreview() {
+  const preview = readSiteBootstrap()?.preview
+  if (!preview || typeof preview !== 'object') return null
+  if (typeof preview.guestUnlocked !== 'boolean') return null
+  return preview
+}
+
 export function getBootstrappedBlogPosts() {
   const bootstrap = readSiteBootstrap()
   const posts = bootstrap?.blogPosts

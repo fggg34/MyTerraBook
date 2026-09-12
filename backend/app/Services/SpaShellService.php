@@ -3,14 +3,33 @@
 namespace App\Services;
 
 use App\Support\SiteColors;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class SpaShellService
 {
+    /**
+     * How long a rendered storefront shell is reused. Editing CMS content or
+     * flipping Coming Soon clears it, so this is only a floor for traffic
+     * spikes, not a delay on publishing.
+     */
+    private const CACHE_TTL = 600;
+
     public function __construct(
         private readonly SiteContentService $siteContent,
     ) {}
+
+    /**
+     * Both shell variants. The gate state is part of the key so toggling
+     * Coming Soon can never serve the wrong page from cache.
+     *
+     * @return list<string>
+     */
+    public static function cacheKeys(): array
+    {
+        return ['spa.shell.open', 'spa.shell.locked'];
+    }
 
     /**
      * @return array{siteContent: array<string, array<string, mixed>>, homepage: array<string, mixed>}
@@ -23,14 +42,39 @@ class SpaShellService
     public function renderShell(): string
     {
         $indexPath = config('spa.index_path');
-        $marker = (string) config('spa.bootstrap_marker');
 
         if (! is_string($indexPath) || $indexPath === '' || ! File::isFile($indexPath)) {
             Log::warning('SPA index.html not found for bootstrap shell.', ['path' => $indexPath]);
 
+            // Left uncached so the storefront recovers as soon as the build lands.
             return $this->fallbackHtml();
         }
 
+        $unlocked = app(SitePreviewService::class)->publicState()['guestUnlocked'];
+        $key = $unlocked ? 'spa.shell.open' : 'spa.shell.locked';
+
+        $cached = Cache::get($key);
+        if (is_string($cached) && $cached !== '') {
+            return $cached;
+        }
+
+        $html = $this->buildShell($indexPath);
+
+        if ($html === null) {
+            // Never 500 the storefront: serve the static shell so the SPA boots
+            // and fetches content from the API itself. Not cached, because this
+            // copy has no injected content or gate state.
+            return str_replace((string) config('spa.bootstrap_marker'), '', File::get($indexPath));
+        }
+
+        Cache::put($key, $html, self::CACHE_TTL);
+
+        return $html;
+    }
+
+    private function buildShell(string $indexPath): ?string
+    {
+        $marker = (string) config('spa.bootstrap_marker');
         $html = File::get($indexPath);
 
         try {
@@ -40,9 +84,7 @@ class SpaShellService
                 'error' => $e->getMessage(),
             ]);
 
-            // Never 500 the storefront: serve the static shell so the SPA boots and
-            // fetches content from the API itself.
-            return str_replace($marker, '', $html);
+            return null;
         }
 
         if (! str_contains($html, $marker)) {
