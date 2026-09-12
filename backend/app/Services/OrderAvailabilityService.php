@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\AvailabilityBlock;
 use App\Enums\OrderStatus;
+use App\Models\Car;
 use App\Models\Order;
+use App\Services\Partners\GreenlightSettings;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
@@ -78,6 +80,10 @@ class OrderAvailabilityService
 
     public function hasCapacity(int $carId, int $unitsAvailable, CarbonInterface $pickup, CarbonInterface $dropoff, ?int $excludeOrderId = null): bool
     {
+        if (Car::query()->whereKey($carId)->where('external_provider', GreenlightSettings::PROVIDER)->exists()) {
+            return true;
+        }
+
         $booked = $this->confirmedUnitsBookedForCarInRange($carId, $pickup, $dropoff, $excludeOrderId)
             + $this->lockedStandbyUnitsForCarInRange($carId, $pickup, $dropoff)
             + $this->blockedUnitsForCarInRange($carId, $pickup, $dropoff);

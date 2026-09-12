@@ -78,7 +78,10 @@ export default function ListingTabPanels({
       .then((res) => {
         if (cancelled) return
         const windows = [...(res.data?.booked ?? []), ...(res.data?.blocked ?? [])]
-        setBlockedDates(expandBlockedWindows(windows))
+        setBlockedDates([...new Set([
+          ...expandBlockedWindows(windows),
+          ...(res.data?.blocked_dates ?? []),
+        ])])
       })
       .catch(() => {
         if (!cancelled) setBlockedDates([])

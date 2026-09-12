@@ -60,6 +60,7 @@ class CarDetailResource extends JsonResource
             'sleeps' => $car->sleeps,
             'bags' => $car->bags,
             'units_available' => $car->units_available,
+            'external_provider' => $car->external_provider,
             'host' => $car->host ? HostProfileResource::make($car->host) : null,
             'main_image_path' => $car->main_image_path,
             'details_image_paths' => $car->details_image_paths ?? [],

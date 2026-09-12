@@ -3,6 +3,7 @@
 namespace App\Services\Admin;
 
 use App\Models\Setting;
+use App\Services\Partners\GreenlightSettings;
 
 class GlobalConfigurationService
 {
@@ -52,6 +53,9 @@ class GlobalConfigurationService
             'calendar_type' => (string) data_get(Setting::getValue('system.calendar_type', ['type' => 'jquery_ui']), 'type', 'jquery_ui'),
             'google_maps_api_key' => (string) data_get(Setting::getValue('system.google_maps_api_key', ['key' => '']), 'key', ''),
             'ipinfo_api_token' => (string) data_get(Setting::getValue('system.ipinfo_api_token', ['token' => '']), 'token', ''),
+            'greenlight_enabled' => app(GreenlightSettings::class)->all()['enabled'],
+            'greenlight_base_url' => app(GreenlightSettings::class)->all()['base_url'],
+            'greenlight_api_key' => app(GreenlightSettings::class)->all()['api_key'],
             'backup_export_type' => (string) data_get(Setting::getValue('backup.export_type', ['type' => 'full']), 'type', 'full'),
             'backup_folder_path' => (string) data_get(Setting::getValue('backup.folder_path', ['path' => '/tmp']), 'path', '/tmp'),
             'currency_name' => (string) data_get(Setting::getValue('shop.currency', ['name' => 'Euro']), 'name', 'Euro'),
@@ -151,6 +155,7 @@ class GlobalConfigurationService
         Setting::putValue('system.calendar_type', ['type' => (string) ($state['calendar_type'] ?? 'jquery_ui')]);
         Setting::putValue('system.google_maps_api_key', ['key' => (string) ($state['google_maps_api_key'] ?? '')]);
         Setting::putValue('system.ipinfo_api_token', ['token' => (string) ($state['ipinfo_api_token'] ?? '')]);
+        app(GreenlightSettings::class)->saveFromAdmin($state);
         Setting::putValue('backup.export_type', ['type' => (string) ($state['backup_export_type'] ?? 'full')]);
         Setting::putValue('backup.folder_path', ['path' => (string) ($state['backup_folder_path'] ?? '/tmp')]);
         Setting::putValue('shop.currency', [

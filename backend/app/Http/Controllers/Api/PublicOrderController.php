@@ -16,8 +16,11 @@ use App\Models\Order;
 use App\Models\OrderLineItem;
 use App\Models\OrderRentalOption;
 use App\Models\Setting;
+use App\Exceptions\GreenlightPartnerException;
+use App\Models\Location;
 use App\Services\Email\OrderEmailNotifier;
 use App\Services\OrderAvailabilityService;
+use App\Services\Partners\GreenlightBookingService;
 use App\Services\RentalQuoteService;
 use App\Support\Money;
 use App\Support\QuotePresentation;
@@ -32,6 +35,7 @@ class PublicOrderController extends Controller
         private readonly RentalQuoteService $quoteService,
         private readonly OrderAvailabilityService $availabilityService,
         private readonly OrderEmailNotifier $orderEmails,
+        private readonly GreenlightBookingService $greenlight,
     ) {}
 
     public function quote(OrderQuoteRequest $request): JsonResponse
@@ -40,12 +44,8 @@ class PublicOrderController extends Controller
         $pickup = Carbon::parse($request->string('pickup_at'));
         $dropoff = Carbon::parse($request->string('dropoff_at'));
 
-        if (! $this->availabilityService->hasCapacity($car->id, $car->units_available, $pickup, $dropoff)) {
-            return response()->json(['message' => 'No availability for these dates.'], 422);
-        }
-
         try {
-            $quote = $this->quoteService->quote(
+            [$quote, $split] = $this->resolveQuote(
                 $car,
                 $request->integer('price_type_id'),
                 $pickup,
@@ -55,21 +55,11 @@ class PublicOrderController extends Controller
                 $request->input('rental_options', []),
                 $request->input('coupon_code'),
             );
-        } catch (InvalidArgumentException $e) {
+        } catch (BookingUnavailableException) {
+            return response()->json(['message' => 'No availability for these dates.'], 422);
+        } catch (GreenlightPartnerException|InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
-
-        $split = $this->quoteService->splitRentalSubtotal(
-            $car,
-            $request->integer('price_type_id'),
-            $pickup,
-            $dropoff,
-            $request->integer('pickup_location_id'),
-            $request->integer('dropoff_location_id'),
-            $request->input('rental_options', []),
-            $request->input('coupon_code'),
-            (int) $quote['base_rental_cents'],
-        );
 
         return response()->json([
             'rental_subtotal' => Money::formatDecimalFromCents($quote['base_rental_cents']),
@@ -112,10 +102,6 @@ class PublicOrderController extends Controller
         $pickup = Carbon::parse($request->string('pickup_at'));
         $dropoff = Carbon::parse($request->string('dropoff_at'));
 
-        if (! $this->availabilityService->hasCapacity($car->id, $car->units_available, $pickup, $dropoff)) {
-            return response()->json(['message' => 'No availability for these dates.'], 422);
-        }
-
         if (! $car->locations()->whereKey($request->integer('pickup_location_id'))->where('car_location.allows_pickup', true)->exists()) {
             return response()->json(['message' => 'Pick-up not allowed at this location for this vehicle.'], 422);
         }
@@ -124,7 +110,7 @@ class PublicOrderController extends Controller
         }
 
         try {
-            $quote = $this->quoteService->quote(
+            [$quote] = $this->resolveQuote(
                 $car,
                 $request->integer('price_type_id'),
                 $pickup,
@@ -134,8 +120,35 @@ class PublicOrderController extends Controller
                 $request->input('rental_options', []),
                 $request->input('coupon_code'),
             );
-        } catch (InvalidArgumentException $e) {
+        } catch (BookingUnavailableException) {
+            return response()->json(['message' => 'No availability for these dates.'], 422);
+        } catch (GreenlightPartnerException|InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        $partnerReservation = null;
+        if ($this->greenlight->isPartnerCar($car)) {
+            $pickupLocation = Location::query()->findOrFail($request->integer('pickup_location_id'));
+            $dropoffLocation = Location::query()->findOrFail($request->integer('dropoff_location_id'));
+            try {
+                $partnerReservation = $this->greenlight->createReservation(
+                    $car,
+                    $request->integer('price_type_id'),
+                    $pickup,
+                    $dropoff,
+                    $pickupLocation,
+                    $dropoffLocation,
+                    $request->input('rental_options', []),
+                    (string) $request->string('customer_name'),
+                    (string) $request->string('customer_email'),
+                    (string) $request->string('customer_phone'),
+                    (string) $request->string('customer_date_of_birth'),
+                    $request->input('customer_country'),
+                    $request->input('notes'),
+                );
+            } catch (GreenlightPartnerException $e) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
         }
 
         // Card payments are settled on Rapyd's hosted checkout, so the order is
@@ -144,7 +157,7 @@ class PublicOrderController extends Controller
         $awaitsOnlinePayment = in_array($paymentMethod, ['card', 'rapyd_card'], true);
 
         try {
-            $order = DB::transaction(function () use ($request, $car, $pickup, $dropoff, $quote, $awaitsOnlinePayment) {
+            $order = DB::transaction(function () use ($request, $car, $pickup, $dropoff, $quote, $awaitsOnlinePayment, $partnerReservation) {
             // Serialize concurrent bookings for this car so the capacity
             // re-check below is atomic and cannot be raced (double-booking).
             // Use the freshly locked row's fleet size, not the stale value read
@@ -171,6 +184,9 @@ class PublicOrderController extends Controller
                 'customer_email' => $request->string('customer_email'),
                 'customer_phone' => $request->input('customer_phone'),
                 'customer_country' => $request->input('customer_country'),
+                'customer_date_of_birth' => $request->input('customer_date_of_birth'),
+                'external_provider' => $partnerReservation ? 'greenlight' : null,
+                'external_reference' => $partnerReservation['reference'] ?? null,
                 'custom_field_values' => $this->sanitizeCustomFieldValues($request->input('custom_field_values', [])),
                 'base_rental_cents' => $quote['base_rental_cents'],
                 'extras_cents' => $quote['extras_cents'],
@@ -202,13 +218,15 @@ class PublicOrderController extends Controller
                     'sort_order' => $i + 1,
                 ]);
 
-                OrderRentalOption::query()->create([
-                    'order_id' => $order->id,
-                    'rental_option_id' => $line['rental_option_id'],
-                    'quantity' => $line['quantity'],
-                    'unit_price_cents' => (int) $line['unit_price_cents'],
-                    'total_cents' => $line['total_cents'],
-                ]);
+                if (! empty($line['rental_option_id'])) {
+                    OrderRentalOption::query()->create([
+                        'order_id' => $order->id,
+                        'rental_option_id' => $line['rental_option_id'],
+                        'quantity' => $line['quantity'],
+                        'unit_price_cents' => (int) $line['unit_price_cents'],
+                        'total_cents' => $line['total_cents'],
+                    ]);
+                }
             }
 
             foreach ($quote['fees_lines'] as $j => $feeLine) {
@@ -254,7 +272,13 @@ class PublicOrderController extends Controller
             return $order;
             });
         } catch (BookingUnavailableException) {
+            $this->rollbackPartnerReservation($partnerReservation);
+
             return response()->json(['message' => 'No availability for these dates.'], 422);
+        } catch (\Throwable $e) {
+            $this->rollbackPartnerReservation($partnerReservation);
+
+            throw $e;
         }
 
         // For card orders, the confirmation email is sent once Rapyd confirms
@@ -296,5 +320,84 @@ class PublicOrderController extends Controller
         }
 
         return $sanitized;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $partnerReservation
+     */
+    private function rollbackPartnerReservation(?array $partnerReservation): void
+    {
+        if (! is_array($partnerReservation) || ! filled($partnerReservation['reference'] ?? null)) {
+            return;
+        }
+
+        $this->greenlight->cancelIfNeeded(new Order([
+            'external_provider' => 'greenlight',
+            'external_reference' => $partnerReservation['reference'],
+        ]));
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $rentalOptions
+     * @return array{0: array<string, mixed>, 1: array{basic_rental_cents: int, protection_upgrade_cents: int}}
+     */
+    private function resolveQuote(
+        Car $car,
+        int $priceTypeId,
+        Carbon $pickup,
+        Carbon $dropoff,
+        int $pickupLocationId,
+        int $dropoffLocationId,
+        array $rentalOptions,
+        ?string $couponCode,
+    ): array {
+        if ($this->greenlight->isPartnerCar($car)) {
+            $pickupLocation = Location::query()->findOrFail($pickupLocationId);
+            $dropoffLocation = Location::query()->findOrFail($dropoffLocationId);
+            if (! $this->greenlight->hasAvailability($car, $pickupLocation, $pickup, $dropoff)) {
+                throw new BookingUnavailableException();
+            }
+
+            $quote = $this->greenlight->quote(
+                $car,
+                $priceTypeId,
+                $pickup,
+                $dropoff,
+                $pickupLocation,
+                $dropoffLocation,
+                $rentalOptions,
+            );
+
+            return [$quote, $this->greenlight->split($quote)];
+        }
+
+        if (! $this->availabilityService->hasCapacity($car->id, $car->units_available, $pickup, $dropoff)) {
+            throw new BookingUnavailableException();
+        }
+
+        $quote = $this->quoteService->quote(
+            $car,
+            $priceTypeId,
+            $pickup,
+            $dropoff,
+            $pickupLocationId,
+            $dropoffLocationId,
+            $rentalOptions,
+            $couponCode,
+        );
+
+        $split = $this->quoteService->splitRentalSubtotal(
+            $car,
+            $priceTypeId,
+            $pickup,
+            $dropoff,
+            $pickupLocationId,
+            $dropoffLocationId,
+            $rentalOptions,
+            $couponCode,
+            (int) $quote['base_rental_cents'],
+        );
+
+        return [$quote, $split];
     }
 }

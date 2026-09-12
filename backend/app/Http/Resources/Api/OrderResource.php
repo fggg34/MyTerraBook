@@ -14,6 +14,8 @@ class OrderResource extends JsonResource
         return [
             'id' => $this->id,
             'reference' => $this->reference,
+            'external_provider' => $this->external_provider,
+            'external_reference' => $this->external_reference,
             'confirmation_token' => $this->confirmation_token,
             'confirmation_url' => $this->confirmation_url,
             'order_status' => $this->order_status->value,

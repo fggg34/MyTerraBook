@@ -18,7 +18,9 @@ use App\Models\MainCategory;
 use App\Models\Order;
 use App\Models\PriceType;
 use App\Models\SubCategory;
+use App\Exceptions\GreenlightPartnerException;
 use App\Services\OrderAvailabilityService;
+use App\Services\Partners\GreenlightBookingService;
 use App\Services\RentalQuoteService;
 use App\Support\DailyFarePricing;
 use App\Support\Money;
@@ -33,6 +35,7 @@ class CatalogController extends Controller
     public function __construct(
         private readonly OrderAvailabilityService $availabilityService,
         private readonly RentalQuoteService $quoteService,
+        private readonly GreenlightBookingService $greenlight,
     ) {}
 
     public function mainCategories(): JsonResponse
@@ -243,8 +246,31 @@ class CatalogController extends Controller
         ]);
     }
 
-    public function availabilityCalendar(Car $car): JsonResponse
+    public function availabilityCalendar(Car $car, Request $request): JsonResponse
     {
+        if ($this->greenlight->isPartnerCar($car)) {
+            try {
+                $pickup = $request->filled('pickup_location_id')
+                    ? Location::query()->find($request->integer('pickup_location_id'))
+                    : null;
+                $calendar = $this->greenlight->availabilityCalendar(
+                    $car,
+                    $request->query('from'),
+                    $request->query('to'),
+                    $pickup,
+                );
+
+                return response()->json($calendar);
+            } catch (GreenlightPartnerException $e) {
+                return response()->json([
+                    'booked' => [],
+                    'blocked' => [],
+                    'blocked_dates' => [],
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+        }
+
         $orders = Order::query()
             ->where('car_id', $car->id)
             ->where('order_status', OrderStatus::Confirmed)
@@ -283,6 +309,7 @@ class CatalogController extends Controller
         return response()->json([
             'booked' => $booked,
             'blocked' => $blocked->merge($locks)->values(),
+            'blocked_dates' => [],
         ]);
     }
 

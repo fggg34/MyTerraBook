@@ -34,6 +34,9 @@ class Order extends Model
         'customer_email',
         'customer_phone',
         'customer_country',
+        'customer_date_of_birth',
+        'external_provider',
+        'external_reference',
         'base_rental_cents',
         'extras_cents',
         'fees_cents',
@@ -65,6 +68,7 @@ class Order extends Model
             'total_cents' => 'integer',
             'pricing_snapshot' => 'array',
             'custom_field_values' => 'array',
+            'customer_date_of_birth' => 'date',
             'payment_lock_expires_at' => 'datetime',
         ];
     }
@@ -181,6 +185,10 @@ class Order extends Model
         }
 
         $this->save();
+
+        if ($to === OrderStatus::Cancelled) {
+            app(\App\Services\Partners\GreenlightBookingService::class)->cancelIfNeeded($this);
+        }
     }
 
     public static function isAllowedOrderTransition(OrderStatus $from, OrderStatus $to): bool

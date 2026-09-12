@@ -85,7 +85,7 @@
 }
 
 .pcard-foot {
-  background: #f2f4f8;
+  background: transparent;
   border-radius: 16px;
   padding: 14px 16px 12px;
   display: flex;

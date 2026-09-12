@@ -296,6 +296,23 @@
                 </article>
 
                 <article class="ir-global-card">
+                    <h2 class="ir-global-card__title">Greenlight car rental</h2>
+                    <div class="ir-global-fields">
+                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.greenlight_enabled"> Connect Greenlight vehicles to MyTerra checkout</label>
+                        <div class="ir-global-field">
+                            <label class="ir-global-label">Partner API URL</label>
+                            <input class="ir-global-input" type="text" wire:model.live="state.greenlight_base_url" />
+                        </div>
+                        <div class="ir-global-field">
+                            <label class="ir-global-label">API key</label>
+                            <input class="ir-global-input" type="password" wire:model.live="state.greenlight_api_key" autocomplete="new-password" />
+                            <p class="ir-global-hint">Create the key in Greenlight Admin → Settings → API keys. Guests book on MyTerra. The reservation is created on Greenlight in the background.</p>
+                        </div>
+                        <button class="ir-global-save" type="button" wire:click="syncGreenlight">Sync vehicles now</button>
+                    </div>
+                </article>
+
+                <article class="ir-global-card">
                     <h2 class="ir-global-card__title">Backup</h2>
                     <div class="ir-global-fields">
                         <div class="ir-global-field">

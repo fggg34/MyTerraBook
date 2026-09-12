@@ -39,6 +39,8 @@ class Car extends Model
         'units_available',
         'ical_import_url',
         'integration_token',
+        'external_provider',
+        'external_vehicle_id',
         'pickup_time_from',
         'pickup_time_to',
         'dropoff_time_from',

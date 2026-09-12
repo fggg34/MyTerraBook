@@ -26,6 +26,8 @@ class Location extends Model
         'suggested_preselected_time',
         'is_active',
         'host_user_id',
+        'external_provider',
+        'external_id',
     ];
 
     protected function casts(): array

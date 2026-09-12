@@ -105,7 +105,12 @@ export default function Step3YourDetails({
           <div className="frow tri">
             <div className="field">
               <label>Date of birth <span className="req">*</span></label>
-              <select className="sel" value={form.dobYear} onChange={(e) => updateForm({ dobYear: e.target.value })}>
+              <select
+                data-field="customer_date_of_birth"
+                className={`sel${errors.customer_date_of_birth ? ' inp-error' : ''}`}
+                value={form.dobYear}
+                onChange={(e) => updateForm({ dobYear: e.target.value })}
+              >
                 <option value="">Year</option>
                 {Array.from({ length: 50 }, (_, i) => 2005 - i).map((y) => (
                   <option key={y} value={y}>{y}</option>
@@ -130,6 +135,11 @@ export default function Step3YourDetails({
                 ))}
               </select>
             </div>
+            {errors.customer_date_of_birth && (
+              <div className="field full">
+                <span className="hint" style={{ color: 'var(--rtb-red)' }}>{errors.customer_date_of_birth}</span>
+              </div>
+            )}
           </div>
         )}
       </div>

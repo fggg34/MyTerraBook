@@ -3,10 +3,12 @@
 namespace App\Filament\Pages;
 
 use App\Services\Admin\GlobalConfigurationService;
+use App\Services\Partners\GreenlightVehicleSyncService;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Throwable;
 
 class GlobalConfiguration extends Page
 {
@@ -38,5 +40,23 @@ class GlobalConfiguration extends Page
             ->title('Configuration saved')
             ->success()
             ->send();
+    }
+
+    public function syncGreenlight(GreenlightVehicleSyncService $sync): void
+    {
+        try {
+            $result = $sync->sync();
+            Notification::make()
+                ->title('Greenlight sync finished')
+                ->body($result['locations'].' locations, '.$result['vehicles'].' vehicles.')
+                ->success()
+                ->send();
+        } catch (Throwable $e) {
+            Notification::make()
+                ->title('Greenlight sync failed')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 }

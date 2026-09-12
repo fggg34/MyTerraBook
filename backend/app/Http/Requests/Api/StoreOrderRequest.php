@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Models\Car;
 use App\Models\CustomField;
+use App\Services\Partners\GreenlightSettings;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -26,6 +28,7 @@ class StoreOrderRequest extends FormRequest
             'customer_email' => ['required', 'email', 'max:255'],
             'customer_phone' => ['nullable', 'string', 'max:32'],
             'customer_country' => ['nullable', 'string', 'max:4'],
+            'customer_date_of_birth' => ['nullable', 'date_format:Y-m-d'],
             'rental_options' => ['nullable', 'array'],
             'rental_options.*' => ['integer', 'min:1'],
             'coupon_code' => ['nullable', 'string', 'max:64'],
@@ -48,6 +51,16 @@ class StoreOrderRequest extends FormRequest
                 $validator->errors()->add('custom_field_values', 'Custom field values must be an object.');
 
                 return;
+            }
+
+            $car = Car::query()->find($this->integer('car_id'));
+            if ($car?->external_provider === GreenlightSettings::PROVIDER) {
+                if (! filled($this->input('customer_phone'))) {
+                    $validator->errors()->add('customer_phone', 'Phone is required.');
+                }
+                if (! filled($this->input('customer_date_of_birth'))) {
+                    $validator->errors()->add('customer_date_of_birth', 'Date of birth is required.');
+                }
             }
 
             foreach ($fields as $field) {

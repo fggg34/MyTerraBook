@@ -263,15 +263,32 @@ export default function useRequestToBook() {
         setLoadState(data ? 'ok' : 'error')
       })
       .catch(() => setLoadState('error'))
-
-    api
-      .get(`/cars/${carId}/availability-calendar`)
-      .then((res) => {
-        const windows = [...(res.data?.booked ?? []), ...(res.data?.blocked ?? [])]
-        setBlockedDates(expandBlockedWindows(windows))
-      })
-      .catch(() => setBlockedDates([]))
   }, [bookingType, carId, slug])
+
+  useEffect(() => {
+    if (bookingType === 'guesthouse' || !carId) return undefined
+    let cancelled = false
+    api
+      .get(`/cars/${carId}/availability-calendar`, {
+        params: form.pickup_location_id
+          ? { pickup_location_id: form.pickup_location_id }
+          : undefined,
+      })
+      .then((res) => {
+        if (cancelled) return
+        const windows = [...(res.data?.booked ?? []), ...(res.data?.blocked ?? [])]
+        setBlockedDates([...new Set([
+          ...expandBlockedWindows(windows),
+          ...(res.data?.blocked_dates ?? []),
+        ])])
+      })
+      .catch(() => {
+        if (!cancelled) setBlockedDates([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [bookingType, carId, form.pickup_location_id])
 
   useEffect(() => {
     if (bookingType !== 'guesthouse' && pickupLocations.length && item) {
@@ -427,11 +444,12 @@ export default function useRequestToBook() {
         if (!form.customer_name.trim()) e.customer_name = 'Required'
         if (!form.customer_email.trim()) e.customer_email = 'Required'
         else if (!/\S+@\S+\.\S+/.test(form.customer_email)) e.customer_email = 'Invalid email'
-        const phoneError = validatePhone(form.customer_phone, { required: bookingType === 'guesthouse' })
+        const phoneError = validatePhone(form.customer_phone, { required: true })
         if (phoneError) e.customer_phone = phoneError
         if (bookingType !== 'guesthouse') {
           if (!form.customer_country) e.customer_country = 'Required'
           if (!form.licenceNumber.trim()) e.licenceNumber = 'Required'
+          if (!form.dobYear || !form.dobMonth || !form.dobDay) e.customer_date_of_birth = 'Required'
         }
         for (const field of customFields) {
           if (!field.is_required) continue
@@ -546,6 +564,10 @@ export default function useRequestToBook() {
           customer_email: form.customer_email,
           customer_phone: formatPhoneForApi(form.customer_phone) || undefined,
           customer_country: form.customer_country || undefined,
+          customer_date_of_birth:
+            form.dobYear && form.dobMonth && form.dobDay
+              ? `${form.dobYear}-${form.dobMonth}-${form.dobDay}`
+              : undefined,
           rental_options: form.rental_option_ids.map(Number),
           coupon_code: form.coupon_code.trim() || undefined,
           custom_field_values: form.custom_field_values,

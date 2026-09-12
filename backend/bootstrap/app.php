@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('calendar:import-external')->dailyAt('02:15');
+        $schedule->command('greenlight:sync-vehicles')->hourly();
+        $schedule->command('greenlight:expire-pending')->everyFifteenMinutes();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(function (Request $request): string {
