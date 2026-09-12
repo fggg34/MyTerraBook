@@ -1,14 +1,16 @@
-import { useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import useSectionReveal from '../../hooks/useSectionReveal'
 import ReviewDetailDialog from './ReviewDetailDialog'
 
 const AVATAR_FILLS = ['#a9d4e6', '#bcdcab', '#f1d79a', '#cdbbea', '#a4ddcd', '#f4c1a4']
 const MARQUEE_CARD_PITCH = 320
-const MARQUEE_MIN_SET_PX = 1800
 
-function fillReviewSet(reviews, minPx = MARQUEE_MIN_SET_PX) {
+function fillReviewSet(reviews, minPx) {
   if (!reviews.length) return []
-  const needed = Math.max(reviews.length, Math.ceil(minPx / MARQUEE_CARD_PITCH))
+  const needed = Math.max(
+    reviews.length * 3,
+    Math.ceil(Math.max(minPx, 2800) / MARQUEE_CARD_PITCH),
+  )
   return Array.from({ length: needed }, (_, index) => reviews[index % reviews.length])
 }
 
@@ -110,8 +112,12 @@ export default function ReviewsSection({
   trustLine = 'Trusted by travellers worldwide',
 }) {
   const sectionRef = useRef(null)
+  const wrapRef = useRef(null)
+  const setRef = useRef(null)
   const [activeReview, setActiveReview] = useState(null)
   const [marqueePaused, setMarqueePaused] = useState(false)
+  const [minSetPx, setMinSetPx] = useState(2800)
+  const [shiftPx, setShiftPx] = useState(0)
   const showMarquee = reviews.length > 1
 
   useSectionReveal(sectionRef, { revealDoneMs: 1800 })
@@ -126,13 +132,29 @@ export default function ReviewsSection({
   const resolvedCtaLabel = ctaLabel || (source === 'google' && !isDemo ? 'Leave a Google Review' : null)
 
   const marqueeSet = useMemo(
-    () => (showMarquee ? fillReviewSet(reviews) : reviews),
-    [reviews, showMarquee],
+    () => (showMarquee ? fillReviewSet(reviews, minSetPx) : reviews),
+    [reviews, showMarquee, minSetPx],
   )
   const trackSets = useMemo(
     () => (showMarquee ? [marqueeSet, marqueeSet] : [marqueeSet]),
     [marqueeSet, showMarquee],
   )
+
+  useLayoutEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap || !showMarquee) return undefined
+
+    const measure = () => {
+      setMinSetPx(Math.max(2800, wrap.clientWidth * 2 + 400))
+      setShiftPx(setRef.current?.scrollWidth ?? 0)
+    }
+
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(wrap)
+    if (setRef.current) observer.observe(setRef.current)
+    return () => observer.disconnect()
+  }, [showMarquee, reviews, minSetPx, marqueeSet.length])
 
   const openReview = (review) => {
     if (showMarquee) setMarqueePaused(true)
@@ -201,11 +223,18 @@ export default function ReviewsSection({
 
         {showMarquee ? (
           <div className="rv-carousel-panel">
-            <div className={`rv-track-wrap${marqueePaused ? ' is-paused' : ''}`}>
-              <div className="rv-track rv-track--marquee">
+            <div
+              ref={wrapRef}
+              className={`rv-track-wrap${marqueePaused ? ' is-paused' : ''}`}
+            >
+              <div
+                className="rv-track rv-track--marquee"
+                style={shiftPx ? { '--rv-shift': `${shiftPx}px` } : undefined}
+              >
                 {trackSets.map((set, setIndex) => (
                   <div
                     key={setIndex}
+                    ref={setIndex === 0 ? setRef : undefined}
                     className="rv-track-set"
                     aria-hidden={setIndex > 0 || undefined}
                   >
