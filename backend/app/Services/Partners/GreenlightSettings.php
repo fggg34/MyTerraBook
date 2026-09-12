@@ -31,9 +31,7 @@ class GreenlightSettings
 
     public function enabled(): bool
     {
-        $all = $this->all();
-
-        return $all['enabled'] && $all['api_key'] !== '';
+        return $this->apiKey() !== '';
     }
 
     public function baseUrl(): string
@@ -62,10 +60,16 @@ class GreenlightSettings
         $current = $this->all();
         $incomingKey = trim((string) ($state['greenlight_api_key'] ?? ''));
 
+        $apiKey = $incomingKey !== '' ? $incomingKey : $current['api_key'];
+        $enabled = (bool) ($state['greenlight_enabled'] ?? false);
+        if ($apiKey !== '') {
+            $enabled = true;
+        }
+
         Setting::putValue('partners.greenlight', [
-            'enabled' => (bool) ($state['greenlight_enabled'] ?? false),
+            'enabled' => $enabled,
             'base_url' => rtrim((string) ($state['greenlight_base_url'] ?? self::DEFAULT_BASE_URL), '/') ?: self::DEFAULT_BASE_URL,
-            'api_key' => $incomingKey !== '' ? $incomingKey : $current['api_key'],
+            'api_key' => $apiKey,
             'insurance_plan_ids' => $current['insurance_plan_ids'],
         ]);
     }

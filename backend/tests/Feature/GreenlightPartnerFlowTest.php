@@ -19,6 +19,22 @@ class GreenlightPartnerFlowTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_saving_an_api_key_connects_greenlight_without_the_checkbox(): void
+    {
+        $settings = app(GreenlightSettings::class);
+
+        $this->assertFalse($settings->enabled());
+
+        $settings->saveFromAdmin([
+            'greenlight_enabled' => false,
+            'greenlight_base_url' => GreenlightSettings::DEFAULT_BASE_URL,
+            'greenlight_api_key' => 'glpk_from_form',
+        ]);
+
+        $this->assertTrue($settings->enabled());
+        $this->assertSame('glpk_from_form', $settings->apiKey());
+    }
+
     public function test_sync_creates_listings_and_checkout_creates_greenlight_reservation(): void
     {
         Setting::putValue('shop.currency', ['code' => 'ISK']);
@@ -237,5 +253,164 @@ class GreenlightPartnerFlowTest extends TestCase
             ->assertJsonPath('units_available', 3);
 
         $this->assertSame(3, $car->fresh()->units_available);
+    }
+
+    public function test_card_checkout_creates_a_greenlight_hold_until_payment(): void
+    {
+        Setting::putValue('shop.currency', ['code' => 'ISK']);
+        Setting::putValue('shop.default_tax', ['basis_points' => 0]);
+        Setting::putValue('partners.greenlight', [
+            'enabled' => true,
+            'base_url' => 'https://greenlight.test/api/partner/v1',
+            'api_key' => 'glpk_test',
+            'insurance_plan_ids' => ['ins_1'],
+        ]);
+
+        $main = MainCategory::ensureBySlug('car', ['name' => 'Car']);
+        $category = \App\Models\SubCategory::query()->create([
+            'main_category_id' => $main->id,
+            'name' => '4x4',
+            'is_active' => true,
+            'is_search_filter' => true,
+        ]);
+        $car = Car::query()->create([
+            'sub_category_id' => $category->id,
+            'name' => 'Toyota RAV4',
+            'units_available' => 2,
+            'is_active' => true,
+            'external_provider' => 'greenlight',
+            'external_vehicle_id' => 'veh_1',
+        ]);
+        $pickup = Location::query()->create([
+            'name' => 'Keflavik',
+            'is_active' => true,
+            'external_provider' => 'greenlight',
+            'external_id' => 'loc_1',
+        ]);
+        $car->locations()->attach($pickup->id, ['allows_pickup' => true, 'allows_dropoff' => true]);
+        $priceType = PriceType::query()->create(['name' => 'Basic', 'is_active' => true]);
+
+        Http::fake([
+            'https://greenlight.test/api/partner/v1/availability*' => Http::response([
+                'data' => ['vehicleId' => 'veh_1', 'available' => true, 'freeCount' => 2],
+            ]),
+            'https://greenlight.test/api/partner/v1/quote' => Http::response([
+                'data' => [
+                    'currency' => 'ISK',
+                    'days' => 3,
+                    'baseRateIsk' => 45000,
+                    'extrasTotalIsk' => 0,
+                    'addonsTotalIsk' => 0,
+                    'oneWayFeeIsk' => 0,
+                    'outOfHoursFeeIsk' => 0,
+                    'locationFeeIsk' => 0,
+                    'discountIsk' => 0,
+                    'totalIsk' => 45000,
+                    'lines' => [],
+                ],
+            ]),
+            'https://greenlight.test/api/partner/v1/reservations' => Http::response([
+                'data' => [
+                    'id' => 'res_hold',
+                    'reference' => 'GL-1003',
+                    'status' => 'QUOTE',
+                ],
+            ], 201),
+            'https://greenlight.test/api/partner/v1/reservations/GL-1003/confirm' => Http::response([
+                'data' => ['reference' => 'GL-1003', 'status' => 'CONFIRMED'],
+            ]),
+        ]);
+
+        $this->postJson('/api/orders', [
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $pickup->id,
+            'pickup_at' => now()->addDays(2)->toDateTimeString(),
+            'dropoff_at' => now()->addDays(5)->toDateTimeString(),
+            'customer_name' => 'Anna Jonsdottir',
+            'customer_email' => 'anna@example.com',
+            'customer_phone' => '+3545551234',
+            'customer_date_of_birth' => '1990-05-01',
+            'payment_method' => 'card',
+        ])->assertCreated()
+            ->assertJsonPath('data.external_reference', 'GL-1003');
+
+        $order = Order::query()->first();
+        $this->assertSame(OrderStatus::Pending, $order->order_status);
+
+        Http::assertSent(function ($request) {
+            if (! str_ends_with($request->url(), '/reservations')) {
+                return false;
+            }
+
+            $body = $request->data();
+
+            return ($body['holdUntilPaid'] ?? false) === true
+                && ! empty($body['holdExpiresAt']);
+        });
+
+        $order->transitionOrderStatus(OrderStatus::Confirmed);
+        app(\App\Services\Partners\GreenlightBookingService::class)->confirmIfNeeded($order);
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/reservations/GL-1003/confirm'));
+    }
+
+    public function test_expire_pending_cancels_unpaid_greenlight_holds_immediately(): void
+    {
+        Setting::putValue('partners.greenlight', [
+            'enabled' => true,
+            'base_url' => 'https://greenlight.test/api/partner/v1',
+            'api_key' => 'glpk_test',
+            'insurance_plan_ids' => ['ins_1'],
+        ]);
+
+        $main = MainCategory::ensureBySlug('car', ['name' => 'Car']);
+        $category = \App\Models\SubCategory::query()->create([
+            'main_category_id' => $main->id,
+            'name' => '4x4',
+            'is_active' => true,
+            'is_search_filter' => true,
+        ]);
+        $car = Car::query()->create([
+            'sub_category_id' => $category->id,
+            'name' => 'Toyota RAV4',
+            'units_available' => 1,
+            'is_active' => true,
+            'external_provider' => 'greenlight',
+            'external_vehicle_id' => 'veh_1',
+        ]);
+        $priceType = PriceType::query()->create(['name' => 'Basic', 'is_active' => true]);
+        $pickup = Location::query()->create(['name' => 'P1', 'is_active' => true]);
+
+        $order = Order::query()->create([
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $pickup->id,
+            'pickup_at' => now()->addDays(2),
+            'dropoff_at' => now()->addDays(5),
+            'order_status' => OrderStatus::Pending,
+            'customer_name' => 'Anna',
+            'customer_email' => 'anna@example.com',
+            'external_provider' => 'greenlight',
+            'external_reference' => 'GL-UNPAID',
+            'base_rental_cents' => 1000,
+            'total_cents' => 1000,
+            'currency' => 'ISK',
+            'payment_lock_expires_at' => now()->addMinutes(15),
+        ]);
+
+        Http::fake([
+            'https://greenlight.test/api/partner/v1/reservations/GL-UNPAID/cancel' => Http::response([
+                'data' => ['reference' => 'GL-UNPAID', 'status' => 'CANCELLED'],
+            ]),
+        ]);
+
+        $this->artisan('greenlight:expire-pending', ['--immediate' => true])
+            ->assertSuccessful();
+
+        $this->assertSame(OrderStatus::Cancelled, $order->fresh()->order_status);
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/reservations/GL-UNPAID/cancel'));
     }
 }

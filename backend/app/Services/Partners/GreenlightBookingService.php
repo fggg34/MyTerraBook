@@ -143,6 +143,8 @@ class GreenlightBookingService
         string $dateOfBirth,
         ?string $customerCountry = null,
         ?string $notes = null,
+        bool $holdUntilPaid = false,
+        ?CarbonInterface $holdExpiresAt = null,
     ): array {
         $parts = preg_split('/\s+/', trim($customerName)) ?: [];
         $firstName = $parts[0] ?? 'Guest';
@@ -150,6 +152,8 @@ class GreenlightBookingService
 
         return $this->client->createReservation([
             ...$this->tripPayload($car, $priceTypeId, $pickupAt, $dropoffAt, $pickup, $dropoff, $rentalOptions),
+            'holdUntilPaid' => $holdUntilPaid,
+            'holdExpiresAt' => $holdExpiresAt?->toIso8601String(),
             'driver' => [
                 'firstName' => $firstName,
                 'lastName' => $lastName,
@@ -157,9 +161,26 @@ class GreenlightBookingService
                 'phone' => $customerPhone,
                 'dateOfBirth' => $dateOfBirth,
                 'country' => $customerCountry,
-                'comments' => $notes ?: 'Booked on MyTerra',
+                'comments' => $notes ?: ($holdUntilPaid ? 'Booked on MyTerra, awaiting card payment' : 'Booked on MyTerra'),
             ],
         ]);
+    }
+
+    public function confirmIfNeeded(Order $order): void
+    {
+        if ($order->external_provider !== GreenlightSettings::PROVIDER || ! filled($order->external_reference)) {
+            return;
+        }
+
+        try {
+            $this->client->confirmReservation((string) $order->external_reference);
+        } catch (GreenlightPartnerException $e) {
+            Log::warning('Greenlight confirm failed', [
+                'order_id' => $order->id,
+                'reference' => $order->external_reference,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function cancelIfNeeded(Order $order): void

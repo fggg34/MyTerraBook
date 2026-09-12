@@ -92,6 +92,11 @@ class GreenlightPartnerClient
     /**
      * @return array<string, mixed>
      */
+    public function confirmReservation(string $reference): array
+    {
+        return $this->post('reservations/'.rawurlencode($reference).'/confirm', []);
+    }
+
     public function cancelReservation(string $reference): array
     {
         return $this->post('reservations/'.rawurlencode($reference).'/cancel', []);
@@ -132,8 +137,8 @@ class GreenlightPartnerClient
 
     private function request(): \Illuminate\Http\Client\PendingRequest
     {
-        if (! $this->settings->enabled()) {
-            throw new GreenlightPartnerException('Greenlight is not connected. Add the API key in Global Configuration.');
+        if ($this->settings->apiKey() === '') {
+            throw new GreenlightPartnerException('Greenlight API key is missing. Paste it in Global Configuration, then Save or Sync.');
         }
 
         return Http::acceptJson()

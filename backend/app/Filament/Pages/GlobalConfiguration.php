@@ -42,8 +42,11 @@ class GlobalConfiguration extends Page
             ->send();
     }
 
-    public function syncGreenlight(GreenlightVehicleSyncService $sync): void
+    public function syncGreenlight(GlobalConfigurationService $service, GreenlightVehicleSyncService $sync): void
     {
+        $this->state['greenlight_enabled'] = true;
+        $service->save($this->state);
+
         try {
             $result = $sync->sync();
             Notification::make()

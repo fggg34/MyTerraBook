@@ -305,8 +305,8 @@
                         </div>
                         <div class="ir-global-field">
                             <label class="ir-global-label">API key</label>
-                            <input class="ir-global-input" type="password" wire:model.live="state.greenlight_api_key" autocomplete="new-password" />
-                            <p class="ir-global-hint">Create the key in Greenlight Admin → Settings → API keys. Guests book on MyTerra. The reservation is created on Greenlight in the background.</p>
+                            <input class="ir-global-input" type="text" wire:model.live="state.greenlight_api_key" autocomplete="off" spellcheck="false" />
+                            <p class="ir-global-hint">Paste the glpk_ key from Greenlight Admin → Settings → API keys, then click Sync vehicles now. Guests book on MyTerra. The reservation is created on Greenlight in the background.</p>
                         </div>
                         <button class="ir-global-save" type="button" wire:click="syncGreenlight">Sync vehicles now</button>
                     </div>

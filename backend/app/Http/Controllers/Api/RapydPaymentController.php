@@ -385,6 +385,7 @@ class RapydPaymentController extends Controller
             }
             if ($order->order_status === OrderStatus::Pending) {
                 $order->transitionOrderStatus(OrderStatus::Confirmed);
+                app(\App\Services\Partners\GreenlightBookingService::class)->confirmIfNeeded($order);
                 // Car rentals use their own confirmation email (not the cash-on-arrival split).
                 app(\App\Services\Email\OrderEmailNotifier::class)->notifyCreated($order->load('car.host'));
             }

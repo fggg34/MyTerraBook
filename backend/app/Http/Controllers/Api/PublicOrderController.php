@@ -126,6 +126,12 @@ class PublicOrderController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
+        // Card payments are settled on Rapyd's hosted checkout, so the order is
+        // held as "pending" until the payment webhook confirms it.
+        $paymentMethod = (string) ($request->input('payment_method') ?? '');
+        $awaitsOnlinePayment = in_array($paymentMethod, ['card', 'rapyd_card'], true);
+        $lockMinutes = max(1, (int) data_get(Setting::getValue('shop.payment_lock_minutes', ['minutes' => 20]), 'minutes', 20));
+
         $partnerReservation = null;
         if ($this->greenlight->isPartnerCar($car)) {
             $pickupLocation = Location::query()->findOrFail($request->integer('pickup_location_id'));
@@ -145,19 +151,16 @@ class PublicOrderController extends Controller
                     (string) $request->string('customer_date_of_birth'),
                     $request->input('customer_country'),
                     $request->input('notes'),
+                    $awaitsOnlinePayment,
+                    $awaitsOnlinePayment ? now()->addMinutes($lockMinutes) : null,
                 );
             } catch (GreenlightPartnerException $e) {
                 return response()->json(['message' => $e->getMessage()], 422);
             }
         }
 
-        // Card payments are settled on Rapyd's hosted checkout, so the order is
-        // held as "pending" until the payment webhook confirms it.
-        $paymentMethod = (string) ($request->input('payment_method') ?? '');
-        $awaitsOnlinePayment = in_array($paymentMethod, ['card', 'rapyd_card'], true);
-
         try {
-            $order = DB::transaction(function () use ($request, $car, $pickup, $dropoff, $quote, $awaitsOnlinePayment, $partnerReservation) {
+            $order = DB::transaction(function () use ($request, $car, $pickup, $dropoff, $quote, $awaitsOnlinePayment, $partnerReservation, $lockMinutes) {
             // Serialize concurrent bookings for this car so the capacity
             // re-check below is atomic and cannot be raced (double-booking).
             // Use the freshly locked row's fleet size, not the stale value read
@@ -167,8 +170,6 @@ class PublicOrderController extends Controller
             if (! $this->availabilityService->hasCapacity($car->id, (int) ($lockedCar->units_available ?? 0), $pickup, $dropoff)) {
                 throw new BookingUnavailableException();
             }
-
-            $lockMinutes = max(1, (int) data_get(Setting::getValue('shop.payment_lock_minutes', ['minutes' => 20]), 'minutes', 20));
 
             $order = Order::query()->create([
                 'user_id' => $request->user()?->id,
