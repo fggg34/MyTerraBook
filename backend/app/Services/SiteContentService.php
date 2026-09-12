@@ -437,8 +437,74 @@ class SiteContentService
         $content = $this->normalizeUploadFields($content);
         $content = $this->normalizeColorFields($pageKey, $content);
         $content = $this->stripEmptyArrayKeys($content);
+        $content = $this->forgetSeededMobileFallbacks($content);
 
         return $this->fillEmptyRepeatersFromDefaults($pageKey, $content);
+    }
+
+    /**
+     * Seeded mobile-only copy used to hide the live desktop CMS fields on phones.
+     *
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function forgetSeededMobileFallbacks(array $content): array
+    {
+        if (isset($content['hero']) && is_array($content['hero'])) {
+            $content['hero'] = $this->blankSeededMobileFields($content['hero'], [
+                'mobileHeading',
+                'mobileSubtitle',
+                'mobileBackgroundImage',
+            ]);
+        }
+
+        if (isset($content['topbar']) && is_array($content['topbar'])) {
+            $content['topbar'] = $this->blankSeededMobileFields($content['topbar'], [
+                'mobileText',
+                'mobileLinkLabel',
+            ]);
+        }
+
+        return $this->blankSeededMobileFields($content, [
+            'mobileHeading',
+            'mobileSubtitle',
+            'mobileBackgroundImage',
+            'mobileText',
+            'mobileLinkLabel',
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $section
+     * @param  list<string>  $keys
+     * @return array<string, mixed>
+     */
+    private function blankSeededMobileFields(array $section, array $keys): array
+    {
+        foreach ($keys as $key) {
+            if (! array_key_exists($key, $section)) {
+                continue;
+            }
+
+            $value = trim((string) $section[$key]);
+            if ($value !== '' && $this->isSeededMobileFallback($value)) {
+                $section[$key] = '';
+            }
+        }
+
+        return $section;
+    }
+
+    private function isSeededMobileFallback(string $value): bool
+    {
+        return in_array($value, [
+            'Iceland road trips, one booking.',
+            'Campervans, 4×4s & guesthouses for the Ring Road.',
+            '/images/homepage/cardcamper.jpg',
+            'Become a Host — start earning today!',
+            'Become a Host - start earning today!',
+            'List your van',
+        ], true);
     }
 
     /**

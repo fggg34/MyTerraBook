@@ -310,4 +310,23 @@ class SiteContentServiceTest extends TestCase
         $this->assertSame('Updated card copy.', $normalized['features'][0]['text']);
         $this->assertSame('site-content/become-a-host/feature-one.jpg', $normalized['features'][0]['image']);
     }
+
+    public function test_normalize_clears_seeded_mobile_demo_copy(): void
+    {
+        $service = new SiteContentService;
+
+        $normalized = $service->normalizePageContent('home', [
+            'hero' => [
+                'heading' => 'Live heading from admin',
+                'mobileHeading' => 'Iceland road trips, one booking.',
+                'mobileSubtitle' => 'Campervans, 4×4s & guesthouses for the Ring Road.',
+                'mobileBackgroundImage' => '/images/homepage/cardcamper.jpg',
+            ],
+        ]);
+
+        $this->assertSame('Live heading from admin', $normalized['hero']['heading']);
+        $this->assertSame('', $normalized['hero']['mobileHeading']);
+        $this->assertSame('', $normalized['hero']['mobileSubtitle']);
+        $this->assertSame('', $normalized['hero']['mobileBackgroundImage']);
+    }
 }
