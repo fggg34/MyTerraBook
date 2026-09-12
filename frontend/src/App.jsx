@@ -90,10 +90,12 @@ function AppRoutes() {
         withCredentials: true,
         headers,
       })
-      setPreviewUnlocked(!!data.preview_unlocked)
+      setPreviewUnlocked(data?.preview_unlocked !== false)
     } catch {
-      // Keep the storefront available if the preview endpoint is unreachable in local dev.
-      setPreviewUnlocked(!!import.meta.env.DEV)
+      // Never lock the storefront because the check failed (common on mobile
+      // when 127.0.0.1 / local-network requests are blocked). Coming Soon
+      // only applies when the API explicitly says the site is closed.
+      setPreviewUnlocked(true)
     } finally {
       setPreviewChecked(true)
     }

@@ -97,10 +97,10 @@ function normalizeFooterColumns(columns = []) {
   }))
 }
 
-function mapFeaturedBlogPost(post) {
+function mapFeaturedBlogPost(post, index = 0) {
   return {
     slug: post.slug,
-    featured: post.is_featured,
+    featured: index === 0,
     title: post.title,
     description: post.excerpt,
     meta: post.read_time,
@@ -235,7 +235,7 @@ export function mergeHomepageData(apiData = {}, { useImageFallbacks = true } = {
         : [],
   }
 
-  const blogPosts = apiData.featuredBlogPosts?.length
+  const blogPosts = Array.isArray(apiData.featuredBlogPosts)
     ? apiData.featuredBlogPosts.map(mapFeaturedBlogPost)
     : useImageFallbacks
       ? defaults.blogSection.posts

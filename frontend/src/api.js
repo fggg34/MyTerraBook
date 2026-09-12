@@ -1,19 +1,45 @@
 import axios from 'axios'
 
+const PROD_API_BASE = '/backend/api'
+const DEV_API_BASE = 'http://127.0.0.1:8080/api'
+
+function isLoopbackHostname(hostname) {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1'
+}
+
+function isLoopbackUrl(url) {
+  try {
+    return isLoopbackHostname(new URL(url, 'http://localhost').hostname)
+  } catch {
+    return false
+  }
+}
+
 /**
  * Dev: local Laravel. Prod (no env): same-origin `/backend/api` so the bundle never
- * calls 127.0.0.1 on visitors’ devices (avoids Chrome “local network” permission prompts).
+ * calls 127.0.0.1 on visitors' devices (avoids Chrome "local network" permission prompts).
  * Set VITE_API_URL when the API is on another host or path.
+ *
+ * Production builds that still have a loopback VITE_API_URL are rewritten when the
+ * page is on a real host. Phones otherwise call their own 127.0.0.1 and the
+ * storefront used to treat that failed check as Coming Soon.
  */
-function resolveApiBaseUrl() {
+export function resolveApiBaseUrl() {
   const fromEnv = import.meta.env.VITE_API_URL
   if (fromEnv) {
-    return fromEnv.replace(/\/$/, '')
+    const cleaned = fromEnv.replace(/\/$/, '')
+    if (import.meta.env.PROD && isLoopbackUrl(cleaned) && typeof window !== 'undefined') {
+      const host = window.location.hostname
+      if (host && !isLoopbackHostname(host)) {
+        return PROD_API_BASE
+      }
+    }
+    return cleaned
   }
   if (import.meta.env.PROD) {
-    return '/backend/api'
+    return PROD_API_BASE
   }
-  return 'http://127.0.0.1:8080/api'
+  return DEV_API_BASE
 }
 
 const API_BASE_URL = resolveApiBaseUrl()

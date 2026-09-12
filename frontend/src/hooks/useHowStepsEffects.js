@@ -8,10 +8,17 @@ function prefersClickToOpen() {
   return window.matchMedia(CLICK_ONLY_MQ).matches
 }
 
+function syncStage(wrap, index) {
+  const frames = wrap.closest('.how-layout')?.querySelectorAll('.how-stage-frame')
+  frames?.forEach((frame, idx) => {
+    frame.classList.toggle('active', idx === index)
+  })
+}
+
 function syncOpenHeights(wrap, steps) {
   const section = wrap.closest('.how')
 
-  if (!window.matchMedia(DESKTOP_MQ).matches) {
+  if (!window.matchMedia(DESKTOP_MQ).matches || wrap.closest('.how-layout')) {
     wrap.style.removeProperty('--how-step-height')
     wrap.style.removeProperty('--how-step-body-height')
     section?.style.removeProperty('--how-section-height')
@@ -96,6 +103,7 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
         step.classList.toggle('active', idx === index)
         step.setAttribute('aria-expanded', idx === index ? 'true' : 'false')
       })
+      syncStage(wrap, index)
       bars.forEach((bar, idx) => {
         if (idx !== index && bar) {
           bar.style.transition = 'height .3s ease'
@@ -139,6 +147,7 @@ export default function useHowStepsEffects(wrapRef, stepCount, { duration = DURA
         step.classList.toggle('active', idx === index)
         step.setAttribute('aria-expanded', idx === index ? 'true' : 'false')
       })
+      syncStage(wrap, index)
       bars.forEach((bar, idx) => {
         if (!bar) return
         if (idx !== index) {

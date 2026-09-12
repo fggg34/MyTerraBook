@@ -44,10 +44,12 @@ class SitePreviewService
 
     public function isComingSoonEnabled(): bool
     {
-        return (bool) data_get(
+        $enabled = data_get(
             Setting::getValue('system.coming_soon', ['enabled' => false]),
             'enabled',
             false,
         );
+
+        return filter_var($enabled, FILTER_VALIDATE_BOOLEAN);
     }
 }

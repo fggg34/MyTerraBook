@@ -44,7 +44,7 @@ class BlogPostForm
                 ->maxSize(8192),
             TextInput::make('image_alt')->maxLength(255),
             TextInput::make('read_time')->label('Read time label')->placeholder('12 min read'),
-            Toggle::make('is_featured')->label('Featured on homepage'),
+            Toggle::make('is_featured')->label('Featured on the blog page'),
             Toggle::make('aurora')->label('Aurora card style'),
             Section::make('SEO')
                 ->schema([

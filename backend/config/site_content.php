@@ -96,19 +96,6 @@ $howStepFields = [
     ['key' => 'tags', 'type' => 'tags', 'label' => 'Tags'],
 ];
 
-$blogPostFields = [
-    ['key' => 'slug', 'type' => 'text', 'label' => 'Slug'],
-    ['key' => 'featured', 'type' => 'toggle', 'label' => 'Featured layout'],
-    ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
-    ['key' => 'description', 'type' => 'textarea', 'label' => 'Description', 'columnSpanFull' => true],
-    ['key' => 'meta', 'type' => 'text', 'label' => 'Meta line'],
-    ['key' => 'metaExtra', 'type' => 'text', 'label' => 'Meta extra'],
-    ['key' => 'image', 'type' => 'image', 'label' => 'Photo'],
-    ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Photo alt text'],
-    ['key' => 'kicker', 'type' => 'text', 'label' => 'Kicker'],
-    ['key' => 'aurora', 'type' => 'toggle', 'label' => 'Aurora effect (no image)'],
-];
-
 $reviewCardFields = [
     ['key' => 'quote', 'type' => 'textarea', 'label' => 'Quote', 'columnSpanFull' => true],
     ['key' => 'name', 'type' => 'text', 'label' => 'Name'],
@@ -436,11 +423,10 @@ return [
                 'blogSection' => [
                     'label' => 'Blog bento',
                     'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading'],
+                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'helperText' => 'Cards come from the five newest published posts in Blog. Publish or update a post there to change this section.'],
                         ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
                         ['key' => 'allLabel', 'type' => 'text', 'label' => 'View all label'],
                         ['key' => 'allHref', 'type' => 'text', 'label' => 'View all link'],
-                        ['key' => 'posts', 'type' => 'repeater', 'label' => 'Fallback posts', 'fields' => $blogPostFields, 'columnSpanFull' => true],
                     ],
                 ],
                 'hostCtaSection' => [

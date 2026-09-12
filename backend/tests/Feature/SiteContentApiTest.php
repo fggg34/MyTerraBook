@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Data\SiteContentDefaults;
+use App\Enums\BlogPostStatus;
+use App\Models\BlogPost;
 use App\Models\Setting;
 use App\Models\SiteContentPage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -657,5 +659,52 @@ class SiteContentApiTest extends TestCase
         $response->assertOk();
         $response->assertJsonPath('data.home.rentSection.cards.0.listingStats.count', 1);
         $response->assertJsonPath('data.home.rentSection.cards.0.listingStats.minPriceCents', 12500);
+    }
+
+    public function test_homepage_blog_uses_the_newest_published_posts(): void
+    {
+        SiteContentPage::query()->create([
+            'page_key' => 'global',
+            'label' => 'Global',
+            'content' => SiteContentDefaults::forPage('global'),
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        SiteContentPage::query()->create([
+            'page_key' => 'home',
+            'label' => 'Home',
+            'content' => SiteContentDefaults::forPage('home'),
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        BlogPost::query()->create([
+            'slug' => 'old-featured',
+            'title' => 'Old featured',
+            'status' => BlogPostStatus::Published,
+            'is_featured' => true,
+            'published_at' => now()->subMonths(2),
+        ]);
+        BlogPost::query()->create([
+            'slug' => 'newest-guide',
+            'title' => 'Newest guide',
+            'status' => BlogPostStatus::Published,
+            'is_featured' => false,
+            'published_at' => now()->subHour(),
+        ]);
+        BlogPost::query()->create([
+            'slug' => 'draft-hidden',
+            'title' => 'Draft hidden',
+            'status' => BlogPostStatus::Draft,
+            'published_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/homepage');
+
+        $response->assertOk();
+        $response->assertJsonPath('featuredBlogPosts.0.slug', 'newest-guide');
+        $response->assertJsonPath('featuredBlogPosts.1.slug', 'old-featured');
+        $this->assertCount(2, $response->json('featuredBlogPosts'));
     }
 }

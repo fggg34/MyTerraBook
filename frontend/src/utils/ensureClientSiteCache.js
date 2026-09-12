@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '../api'
 import {
   preloadAllCachedAssets,
   preloadSiteAssets,
@@ -17,14 +18,7 @@ import {
 } from './siteBootstrap'
 
 function resolveBootstrapApiUrl() {
-  const fromEnv = import.meta.env.VITE_API_URL
-  if (fromEnv) {
-    return `${fromEnv.replace(/\/$/, '')}/bootstrap`
-  }
-  if (import.meta.env.PROD) {
-    return '/backend/api/bootstrap'
-  }
-  return 'http://127.0.0.1:8080/api/bootstrap'
+  return `${resolveApiBaseUrl()}/bootstrap`
 }
 
 function isHomepageCacheComplete() {
