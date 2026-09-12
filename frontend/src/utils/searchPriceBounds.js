@@ -7,17 +7,42 @@ export function computePriceBounds(cards) {
   return { min, max: Math.max(max, min + step), step }
 }
 
-export function isPriceFilterActive(filters, bounds) {
-  if (!bounds) return false
-  return filters.minPrice > bounds.min || filters.maxPrice < bounds.max
+/**
+ * null means the traveller has not touched the price slider, so no price
+ * filter applies. Listings settle in ISK, where a daily rate is five figures,
+ * so any hardcoded starting range would hide the entire fleet until the
+ * real bounds arrived.
+ */
+export function defaultPriceFilters() {
+  return { minPrice: null, maxPrice: null }
 }
 
-export function defaultPriceFilters(bounds) {
-  return { minPrice: bounds.min, maxPrice: bounds.max }
+export function isPriceFilterActive(filters, bounds) {
+  if (!bounds || !filters) return false
+  const { minPrice, maxPrice } = filters
+  return (
+    (minPrice != null && minPrice > bounds.min)
+    || (maxPrice != null && maxPrice < bounds.max)
+  )
+}
+
+export function matchesPriceFilter(price, filters) {
+  if (price == null || price === '') return true
+
+  const value = Number(price)
+  if (!Number.isFinite(value)) return true
+  if (filters?.minPrice != null && value < filters.minPrice) return false
+  if (filters?.maxPrice != null && value > filters.maxPrice) return false
+  return true
 }
 
 export function clampPriceFilters(filters, bounds) {
-  const minPrice = Math.max(bounds.min, Math.min(filters.minPrice ?? bounds.min, bounds.max))
-  const maxPrice = Math.max(minPrice, Math.min(filters.maxPrice ?? bounds.max, bounds.max))
+  const minPrice = filters?.minPrice == null
+    ? null
+    : Math.max(bounds.min, Math.min(filters.minPrice, bounds.max))
+  const maxPrice = filters?.maxPrice == null
+    ? null
+    : Math.max(minPrice ?? bounds.min, Math.min(filters.maxPrice, bounds.max))
+
   return { minPrice, maxPrice }
 }

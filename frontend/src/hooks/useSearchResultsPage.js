@@ -20,15 +20,12 @@ import {
   computePriceBounds,
   defaultPriceFilters,
   isPriceFilterActive,
+  matchesPriceFilter,
 } from '../utils/searchPriceBounds'
 
 function matchesTransmission(car, value) {
   if (!value) return true
   return String(car.transmission || '').toLowerCase().includes(value.toLowerCase())
-}
-
-function matchesPrice(car, minPrice, maxPrice) {
-  return car.sortPrice >= minPrice && car.sortPrice <= maxPrice
 }
 
 const SEARCH_PAGE_KEYS = {
@@ -53,8 +50,7 @@ export default function useSearchResultsPage(vehicleType) {
   const [sort, setSort] = useState('rec')
   const [quickFilters, setQuickFilters] = useState([])
   const [filters, setFilters] = useState({
-    minPrice: 0,
-    maxPrice: 500,
+    ...defaultPriceFilters(),
     transmission: '',
     minSeats: 0,
     minSleeps: 0,
@@ -149,12 +145,11 @@ export default function useSearchResultsPage(vehicleType) {
     return values
   }, [vehicleCards])
 
+  // The real range is only known once results arrive, so re-clamp a range the
+  // traveller set. Never invent one: an unset range must stay unset.
   useEffect(() => {
     setFilters((prev) => {
-      const atInitialDefaults = prev.minPrice === 0 && prev.maxPrice === 500
-      const next = atInitialDefaults
-        ? defaultPriceFilters(priceBounds)
-        : clampPriceFilters(prev, priceBounds)
+      const next = clampPriceFilters(prev, priceBounds)
       if (next.minPrice === prev.minPrice && next.maxPrice === prev.maxPrice) return prev
       return { ...prev, ...next }
     })
@@ -168,7 +163,7 @@ export default function useSearchResultsPage(vehicleType) {
     let list = vehicleCards
 
     list = list.filter((car) => matchesTransmission(car, filters.transmission))
-    list = list.filter((car) => matchesPrice(car, filters.minPrice, filters.maxPrice))
+    list = list.filter((car) => matchesPriceFilter(car.sortPrice, filters))
     if (filters.minSeats) list = list.filter((car) => car.sortSeats >= filters.minSeats)
     if (filters.minSleeps) list = list.filter((car) => car.sortSleeps >= filters.minSleeps)
     list = applyQuickFilters(list, quickFilters, quickFilterOptions)
@@ -207,7 +202,7 @@ export default function useSearchResultsPage(vehicleType) {
   }
 
   const clearFilters = () => {
-    setFilters({ ...defaultPriceFilters(priceBounds), transmission: '', minSeats: 0, minSleeps: 0 })
+    setFilters({ ...defaultPriceFilters(), transmission: '', minSeats: 0, minSleeps: 0 })
     setQuickFilters([])
     setVisibleCount(PAGE_SIZE)
   }

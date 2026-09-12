@@ -20,11 +20,8 @@ import {
   computePriceBounds,
   defaultPriceFilters,
   isPriceFilterActive,
+  matchesPriceFilter,
 } from '../utils/searchPriceBounds'
-
-function matchesPrice(card, minPrice, maxPrice) {
-  return card.sortPrice >= minPrice && card.sortPrice <= maxPrice
-}
 
 function formatDateRange(checkIn, checkOut) {
   if (!checkIn || !checkOut) return 'Select dates'
@@ -49,8 +46,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
   const [sort, setSort] = useState('rec')
   const [quickFilters, setQuickFilters] = useState([])
   const [filters, setFilters] = useState({
-    minPrice: 0,
-    maxPrice: 500,
+    ...defaultPriceFilters(),
     minGuests: 0,
   })
 
@@ -112,12 +108,11 @@ export default function useGuesthouseSearchPage(enabled = true) {
 
   const priceBounds = useMemo(() => computePriceBounds(allCards), [allCards])
 
+  // The real range is only known once results arrive, so re-clamp a range the
+  // traveller set. Never invent one: an unset range must stay unset.
   useEffect(() => {
     setFilters((prev) => {
-      const atInitialDefaults = prev.minPrice === 0 && prev.maxPrice === 500
-      const next = atInitialDefaults
-        ? defaultPriceFilters(priceBounds)
-        : clampPriceFilters(prev, priceBounds)
+      const next = clampPriceFilters(prev, priceBounds)
       if (next.minPrice === prev.minPrice && next.maxPrice === prev.maxPrice) return prev
       return { ...prev, ...next }
     })
@@ -130,7 +125,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
   const cards = useMemo(() => {
     let list = [...allCards]
 
-    list = list.filter((card) => matchesPrice(card, filters.minPrice, filters.maxPrice))
+    list = list.filter((card) => matchesPriceFilter(card.sortPrice, filters))
     if (filters.minGuests) list = list.filter((card) => card.sortGuests >= filters.minGuests)
     list = applyQuickFilters(list, quickFilters, quickFilterOptions)
 
@@ -165,7 +160,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
   }
 
   const clearFilters = () => {
-    setFilters({ ...defaultPriceFilters(priceBounds), minGuests: 0 })
+    setFilters({ ...defaultPriceFilters(), minGuests: 0 })
     setQuickFilters([])
     setVisibleCount(PAGE_SIZE)
   }

@@ -25,45 +25,15 @@ $sendHtml = static function (string $html): void {
 };
 
 /**
- * Last resort before the empty static shell: ask Laravel over HTTP. Slower than
- * booting in process, but it still ships CMS content and the Coming Soon gate.
- * .htaccess never rewrites /backend, so this cannot loop back into this file.
+ * Deliberately no outbound request to /backend/spa-shell here. It would only
+ * help when Laravel cannot boot in process, and it would add a second origin
+ * request during exactly the incident that caused the failure. The log line
+ * below is what makes this path diagnosable.
  */
-$fetchShellOverHttp = static function (): ?string {
-    $host = $_SERVER['HTTP_HOST'] ?? '';
-    if ($host === '' || ! function_exists('curl_init')) {
-        return null;
-    }
-
-    $https = ($_SERVER['HTTPS'] ?? 'off') !== 'off' || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
-
-    $curl = curl_init(($https ? 'https' : 'http').'://'.$host.'/backend/spa-shell');
-    curl_setopt_array($curl, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_MAXREDIRS => 2,
-        CURLOPT_CONNECTTIMEOUT => 2,
-        CURLOPT_TIMEOUT => 6,
-    ]);
-
-    $body = curl_exec($curl);
-    $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    curl_close($curl);
-
-    return ($status === 200 && is_string($body) && $body !== '') ? $body : null;
-};
-
-$serveStatic = static function (string $reason) use ($indexHtml, $sendHtml, $fetchShellOverHttp): void {
-    error_log('[myterrabook] storefront shell could not be rendered in process: '.$reason);
-
-    $remote = $fetchShellOverHttp();
-    if ($remote !== null) {
-        $sendHtml($remote);
-
-        return;
-    }
-
-    error_log('[myterrabook] serving static index.html with no CMS content and no Coming Soon gate.');
+$serveStatic = static function (string $reason) use ($indexHtml, $sendHtml): void {
+    error_log(
+        '[myterrabook] serving static index.html with no CMS content and no Coming Soon gate: '.$reason
+    );
 
     if (is_file($indexHtml)) {
         $sendHtml(file_get_contents($indexHtml));

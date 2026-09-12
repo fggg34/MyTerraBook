@@ -144,10 +144,14 @@ export default function SearchResultsChrome({
   const priceActive = isPriceFilterActive(filters, priceBounds)
   const perLabel = isGuesthouse ? 'night' : 'day'
 
+  // An untouched slider has no value of its own, so it sits at the full range.
+  const sliderMin = filters.minPrice ?? priceBounds.min
+  const sliderMax = filters.maxPrice ?? priceBounds.max
+
   const priceChipLabel = useMemo(() => {
     if (!priceActive) return 'Price'
-    return `${priceFormatter.format(filters.minPrice)} – ${priceFormatter.format(filters.maxPrice)}`
-  }, [priceActive, filters.minPrice, filters.maxPrice, priceFormatter])
+    return `${priceFormatter.format(sliderMin)} – ${priceFormatter.format(sliderMax)}`
+  }, [priceActive, sliderMin, sliderMax, priceFormatter])
 
   const transmissionChipLabel = useMemo(() => {
     if (!filters.transmission) return 'Transmission'
@@ -204,7 +208,7 @@ export default function SearchResultsChrome({
   }
 
   const resetPriceFilter = () => {
-    setFilters((prev) => ({ ...prev, ...defaultPriceFilters(priceBounds) }))
+    setFilters((prev) => ({ ...prev, ...defaultPriceFilters() }))
   }
 
   const handleTransmissionSelect = (transmission) => {
@@ -391,8 +395,8 @@ export default function SearchResultsChrome({
                   min={priceBounds.min}
                   max={priceBounds.max}
                   step={priceBounds.step}
-                  valueMin={filters.minPrice}
-                  valueMax={filters.maxPrice}
+                  valueMin={sliderMin}
+                  valueMax={sliderMax}
                   onChange={handlePriceChange}
                   formatPrice={priceFormatter.format}
                   perLabel={perLabel}
@@ -582,8 +586,8 @@ export default function SearchResultsChrome({
                     min={priceBounds.min}
                     max={priceBounds.max}
                     step={priceBounds.step}
-                    valueMin={filters.minPrice}
-                    valueMax={filters.maxPrice}
+                    valueMin={sliderMin}
+                    valueMax={sliderMax}
                     onChange={handlePriceChange}
                     formatPrice={priceFormatter.format}
                     perLabel={perLabel}
