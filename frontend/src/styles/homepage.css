@@ -1725,30 +1725,20 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     }
     .user-avatar{width:36px;height:36px;font-size:15px;}
 
-    .reviews .wrap{overflow:visible;}
     .reviews .rv-carousel-panel{
-      width:100vw;
-      margin-left:calc(50% - 50vw);
-      padding-inline:20px;
+      width:100%;
+      margin:0;
+      padding:0;
+      overflow:hidden;
     }
     .reviews .rv-track-wrap{
-      margin:0 -20px;
-      padding:6px 20px 10px;
-      scroll-padding-inline:20px;
+      margin:0;
+      padding:6px 0 10px;
     }
-    .reviews .rv-track-wrap.rv-track-wrap--carousel{
-      scroll-snap-type:x mandatory;
-      scroll-behavior:auto;
-    }
-    .reviews .rv-track--marquee.rv-track--carousel .rv-card{
-      scroll-snap-align:start;
-    }
-    .reviews-carousel-controls{margin-top:20px;}
-    .reviews .rv-track--marquee.rv-track--carousel{gap:12px;}
-    .reviews .rv-track--carousel .rv-track-set{gap:12px;padding-right:0;}
-    .reviews .rv-track--marquee.rv-track--carousel .rv-card{
-      flex:0 0 calc(100vw - 56px);
-      width:calc(100vw - 56px);
+    .reviews .rv-track-set{gap:12px;padding-right:12px;}
+    .reviews .rv-track--marquee .rv-card{
+      flex:0 0 min(260px,82%);
+      width:min(260px,82%);
       min-width:0;
     }
 
@@ -1807,13 +1797,12 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     .hero-copy h1{font-size:30px;}
     .hero-copy p{font-size:15px;}
     .reviews .rv-track-wrap{
-      margin:0 -16px;
-      padding:6px 16px 10px;
-      scroll-padding-inline:16px;
+      margin:0;
+      padding:6px 0 10px;
     }
-    .reviews .rv-track--marquee.rv-track--carousel .rv-card{
-      flex:0 0 calc(100vw - 48px);
-      width:calc(100vw - 48px);
+    .reviews .rv-track--marquee .rv-card{
+      flex:0 0 min(240px,82%);
+      width:min(240px,82%);
     }
   }
 
@@ -2349,7 +2338,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
 
   /* ---------- Traveller reviews (clean social proof) ---------- */
   .reviews{
-    position:relative;background:#fff;padding:96px 0 104px;overflow:visible;
+    position:relative;background:#fff;padding:96px 0 104px;overflow-x:clip;
   }
   .reviews .eyebrow{margin-bottom:14px;color:var(--green);}
   .rv-head{
@@ -2406,39 +2395,24 @@ body.homepage-active { margin: 0; overflow-x: clip; }
   .reviews .wrap{overflow:visible;}
   .reviews .rv-carousel-panel{
     position:relative;
-    width:100vw;
-    margin-left:calc(50% - 50vw);
-    padding-inline:max(20px,calc(50vw - 50% + 20px));
-    overflow:visible;
+    width:100%;
+    margin:0;
+    padding:0;
+    overflow:hidden;
   }
-  .reviews .rv-carousel-panel .carousel-nav.prev{left:max(8px,calc(50vw - 50% + 4px));}
-  .reviews .rv-carousel-panel .carousel-nav.next{right:max(8px,calc(50vw - 50% + 4px));}
   .reviews .rv-track-wrap{
-    overflow-x:auto;
-    overflow-y:hidden;
-    scroll-behavior:auto;
-    -ms-overflow-style:none;
-    scrollbar-width:none;
+    overflow:hidden;
     padding:6px 0 10px;
-    touch-action:pan-x;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior-x:contain;
   }
-  .reviews .rv-track-wrap:not(.rv-track-wrap--carousel){
-    overflow-x:hidden;
-  }
-  .reviews .rv-track-wrap::-webkit-scrollbar{display:none;}
   .reviews .rv-track--marquee{
     display:flex;
     gap:0;
     width:max-content;
-  }
-  .reviews .rv-track--marquee:not(.rv-track--carousel){
-    animation:rvMarquee 100s linear infinite;
+    animation:rvMarquee 80s linear infinite;
     will-change:transform;
   }
-  .reviews .rv-track-wrap:hover .rv-track--marquee:not(.rv-track--carousel),
-  .reviews .rv-track-wrap.is-paused .rv-track--marquee:not(.rv-track--carousel){
+  .reviews .rv-track-wrap:hover .rv-track--marquee,
+  .reviews .rv-track-wrap.is-paused .rv-track--marquee{
     animation-play-state:paused;
   }
   .reviews .rv-track-set{
@@ -2451,7 +2425,7 @@ body.homepage-active { margin: 0; overflow-x: clip; }
     to{transform:translateX(-50%);}
   }
   @media (prefers-reduced-motion:reduce){
-    .reviews .rv-track--marquee:not(.rv-track--carousel){animation:none;}
+    .reviews .rv-track--marquee{animation:none;}
   }
   .reviews .rv-track--marquee .rv-card{
     flex:0 0 auto;
