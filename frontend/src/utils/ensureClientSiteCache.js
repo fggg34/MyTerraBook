@@ -2,9 +2,6 @@ import { resolveApiBaseUrl } from '../api'
 import {
   preloadAllCachedAssets,
   preloadSiteAssets,
-  readBlogPostsCache,
-  readHomepageCache,
-  readSitePagesCache,
   seedClientCacheFromBootstrap,
 } from './siteContentCache'
 import {
@@ -12,26 +9,12 @@ import {
   getBootstrappedHomepage,
   getBootstrappedSiteContent,
   getBootstrappedSitePages,
-  getInstantHomepage,
   hasInstantSiteData,
   readSiteBootstrap,
 } from './siteBootstrap'
 
 function resolveBootstrapApiUrl() {
   return `${resolveApiBaseUrl()}/bootstrap`
-}
-
-function isHomepageCacheComplete() {
-  const homepage = readHomepageCache() ?? getInstantHomepage()
-  return Boolean(homepage?.hero?.heading || homepage?.hero?.backgroundImage)
-}
-
-function needsBootstrapTopUp() {
-  return (
-    !readSitePagesCache()?.about
-    || !readBlogPostsCache()?.length
-    || !isHomepageCacheComplete()
-  )
 }
 
 export async function ensureClientSiteCache() {
@@ -47,13 +30,15 @@ export async function ensureClientSiteCache() {
     return bootstrap
   }
 
+  // No server bootstrap, so the cache is all this device has. Paint from it at
+  // once, then always revalidate behind it. This used to refresh only when
+  // something was missing, which left a complete but stale cache on screen
+  // until it expired days later.
   if (hasInstantSiteData()) {
     preloadAllCachedAssets()
-    if (needsBootstrapTopUp()) {
-      fetchBootstrapPayload().then((payload) => {
-        if (payload) seedClientCacheFromBootstrap(payload)
-      })
-    }
+    fetchBootstrapPayload().then((payload) => {
+      if (payload) seedClientCacheFromBootstrap(payload)
+    })
     return null
   }
 

@@ -17,26 +17,81 @@ define('LARAVEL_START', microtime(true));
 
 $indexHtml = __DIR__.'/index.html';
 
-$sendHtml = static function (string $html): void {
+/**
+ * The status header carries a short reason code, never a path. It is the only
+ * way to tell a healthy shell from a degraded one from outside the server:
+ * curl -sI https://myterrabook.com/ | grep -i x-myterrabook-shell
+ */
+$sendHtml = static function (string $html, string $status = 'rendered'): void {
     header('Content-Type: text/html; charset=UTF-8');
     header('Cache-Control: no-cache, no-store, must-revalidate');
     header('Pragma: no-cache');
+    header('X-Myterrabook-Shell: '.$status);
     echo $html;
 };
 
 /**
- * Deliberately no outbound request to /backend/spa-shell here. It would only
- * help when Laravel cannot boot in process, and it would add a second origin
- * request during exactly the incident that caused the failure. The log line
- * below is what makes this path diagnosable.
+ * Laravel already renders this exact shell at /backend/spa-shell, and .htaccess
+ * never rewrites /backend, so this cannot loop back into this file.
+ *
+ * Only reached when booting in process fails. The result is kept in a temp file
+ * so a broken deploy cannot turn every page view into a second origin request:
+ * at worst one request per minute, whatever the traffic. Cost of that is up to
+ * a minute of staleness on a path that is already degraded.
  */
-$serveStatic = static function (string $reason) use ($indexHtml, $sendHtml): void {
-    error_log(
-        '[myterrabook] serving static index.html with no CMS content and no Coming Soon gate: '.$reason
-    );
+$fetchShellOverHttp = static function (): ?string {
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    if ($host === '' || ! function_exists('curl_init')) {
+        return null;
+    }
+
+    // An empty file means "the last attempt failed", so failures are throttled too.
+    $cacheFile = sys_get_temp_dir().'/myterrabook-shell-'.md5(__DIR__.'|'.$host).'.html';
+    if (is_file($cacheFile) && (time() - (int) filemtime($cacheFile)) < 60) {
+        $cached = (string) file_get_contents($cacheFile);
+
+        return $cached === '' ? null : $cached;
+    }
+
+    $https = ($_SERVER['HTTPS'] ?? 'off') !== 'off' || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+
+    $curl = curl_init(($https ? 'https' : 'http').'://'.$host.'/backend/spa-shell');
+    curl_setopt_array($curl, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 2,
+        CURLOPT_CONNECTTIMEOUT => 2,
+        CURLOPT_TIMEOUT => 6,
+    ]);
+
+    $body = curl_exec($curl);
+    $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+
+    $html = ($status === 200 && is_string($body) && $body !== '') ? $body : '';
+    @file_put_contents($cacheFile, $html, LOCK_EX);
+
+    return $html === '' ? null : $html;
+};
+
+/**
+ * A storefront with no CMS content and no Coming Soon gate looks like a working
+ * site, so every step down is logged and reported in the response header.
+ */
+$degrade = static function (string $code, string $detail) use ($indexHtml, $sendHtml, $fetchShellOverHttp): void {
+    error_log('[myterrabook] shell not rendered in process ('.$code.'): '.$detail);
+
+    $remote = $fetchShellOverHttp();
+    if ($remote !== null) {
+        $sendHtml($remote, 'http-fallback');
+
+        return;
+    }
+
+    error_log('[myterrabook] serving static index.html: no CMS content and no Coming Soon gate.');
 
     if (is_file($indexHtml)) {
-        $sendHtml(file_get_contents($indexHtml));
+        $sendHtml(file_get_contents($indexHtml), 'static; reason='.$code);
 
         return;
     }
@@ -46,9 +101,10 @@ $serveStatic = static function (string $reason) use ($indexHtml, $sendHtml): voi
 };
 
 /**
- * The Laravel app root sits in a different place on every host. public_html/backend
- * is often only the framework public directory (or a symlink to it), so try the
- * usual layouts instead of assuming one.
+ * The Laravel app root sits in a different place on every host, and a deploy
+ * that syncs dist/ over public_html can move or remove public_html/backend. So
+ * search the plausible layouts rather than assuming one: this entry point going
+ * blind is invisible from the outside, the site just quietly loses its content.
  *
  * @return list<string>
  */
@@ -69,9 +125,20 @@ $backendRootCandidates = static function (): array {
         $candidates[] = dirname($linked);
     }
 
-    // App root as a sibling of public_html.
-    $candidates[] = dirname(__DIR__).'/backend';
-    $candidates[] = dirname(__DIR__).'/laravel';
+    // Walk up from public_html and try the usual names at each level, so the
+    // app root can be a sibling, an uncle, or the account home itself.
+    $level = __DIR__;
+    for ($depth = 0; $depth < 3; $depth++) {
+        $level = dirname($level);
+        if ($level === '' || $level === '/' || $level === '.') {
+            break;
+        }
+
+        $candidates[] = $level;
+        foreach (['backend', 'laravel', 'api', 'myterrabook'] as $name) {
+            $candidates[] = $level.'/'.$name;
+        }
+    }
 
     return array_values(array_unique(array_filter(array_map(
         static fn (string $path): string => rtrim($path, '/'),
@@ -91,8 +158,9 @@ try {
     }
 
     if ($backendRoot === null) {
-        $serveStatic(
-            'Laravel app root not found. Set MYTERRABOOK_BACKEND_ROOT to the directory holding vendor/ and bootstrap/. Tried: '
+        $degrade(
+            'app-root-not-found',
+            'Set MYTERRABOOK_BACKEND_ROOT to the directory holding vendor/ and bootstrap/. Tried: '
             .implode(', ', $tried)
         );
 
@@ -113,5 +181,5 @@ try {
 
     $sendHtml($app->make(App\Services\SpaShellService::class)->renderShell());
 } catch (\Throwable $e) {
-    $serveStatic($e->getMessage());
+    $degrade('boot-failed', $e->getMessage());
 }
