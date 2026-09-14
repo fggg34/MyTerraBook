@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { usePageContent } from '../context/SiteContentContext'
@@ -42,6 +42,9 @@ export default function useGuesthouseSearchPage(enabled = true) {
 
   const [houses, setHouses] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [reloadKey, setReloadKey] = useState(0)
+  const retry = useCallback(() => setReloadKey((key) => key + 1), [])
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [sort, setSort] = useState('rec')
   const [quickFilters, setQuickFilters] = useState([])
@@ -56,7 +59,10 @@ export default function useGuesthouseSearchPage(enabled = true) {
       return undefined
     }
 
+    let cancelled = false
     setLoading(true)
+    setError(null)
+
     const params = { per_page: 100 }
     if (query.city) params.city = query.city
     if (query.type) params.type = query.type
@@ -81,10 +87,20 @@ export default function useGuesthouseSearchPage(enabled = true) {
           if (query.max_price) fallbackParams.max_price = query.max_price
           data = await fetchHouses(fallbackParams)
         }
-        setHouses(data)
+        if (!cancelled) setHouses(data)
       })
-      .catch(() => setHouses([]))
-      .finally(() => setLoading(false))
+      .catch((err) => {
+        if (cancelled) return
+        setHouses([])
+        setError(err)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [
     enabled,
     query.city,
@@ -94,6 +110,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
     query.check_out,
     query.min_price,
     query.max_price,
+    reloadKey,
   ])
 
   const allCards = useMemo(
@@ -173,6 +190,8 @@ export default function useGuesthouseSearchPage(enabled = true) {
   return {
     config,
     loading,
+    error,
+    retry,
     cards,
     visibleCards,
     visibleCount,

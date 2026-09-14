@@ -111,6 +111,44 @@ export const api = axios.create({
   withCredentials: true,
 })
 
+/**
+ * Public GETs retry on transient failures: a dropped connection, a timeout, or
+ * an origin that briefly answered 502/503/504/508 (shared hosting under a
+ * burst). Phones on cellular hit these far more often than desktops on wifi,
+ * and a single miss used to leave a page reading "0 vans found" until reload.
+ *
+ * Only GET is retried, and only twice, so nothing is ever double-submitted and
+ * a real outage still surfaces within a couple of seconds.
+ */
+const RETRY_DELAYS_MS = [400, 1200]
+const RETRY_STATUSES = new Set([502, 503, 504, 508])
+
+function isTransientFailure(error) {
+  const config = error?.config
+  if (!config || axios.isCancel(error)) return false
+  if ((config.method || 'get').toLowerCase() !== 'get') return false
+  if (!error.response) return true
+  return RETRY_STATUSES.has(error.response.status)
+}
+
+export function installTransientRetry(instance) {
+  instance.interceptors.response.use(undefined, async (error) => {
+    if (!isTransientFailure(error)) throw error
+
+    const config = error.config
+    const attempt = config.__retryAttempt ?? 0
+    if (attempt >= RETRY_DELAYS_MS.length) throw error
+
+    config.__retryAttempt = attempt + 1
+    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[attempt]))
+    return instance.request(config)
+  })
+}
+
+installTransientRetry(api)
+// The Coming Soon check in App.jsx goes through the default instance.
+installTransientRetry(axios)
+
 api.interceptors.request.use((config) => {
   config.baseURL = resolveApiBaseUrl()
   config.headers['Accept-Language'] = 'en'

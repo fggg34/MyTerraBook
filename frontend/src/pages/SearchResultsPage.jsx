@@ -27,6 +27,8 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
   const {
     config,
     loading,
+    error,
+    retry,
     visibleCards,
     visibleCount,
     setVisibleCount,
@@ -84,6 +86,8 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
   const locationShort = isGuesthouse
     ? config.introLocationDefault || pickupLabel || 'Iceland'
     : pickupLabel.split('(').pop()?.replace(')', '').trim() || 'Keflavík'
+  const locationWord = locationShort.split(' ')[0]
+  const unitPlural = config.unitPlural || 'results'
 
   const seo = usePageSeo(searchPageKey, {
     source: {
@@ -108,6 +112,8 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
               query={query}
               updateSearch={updateSearch}
               totalCount={totalCount}
+              loading={loading}
+              loadFailed={Boolean(error)}
               config={config}
               sort={sort}
               setSort={setSort}
@@ -144,10 +150,20 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
                   <h1 className="reveal-title" data-reveal-now="1">
                     {config.titleLead}
                     <br />
-                    <span className="ri-count" id="introCount">
-                      {totalCount}
-                    </span>{' '}
-                    ready near {locationShort.split(' ')[0]}.
+                    {/* Never print a count before the results are in: on a slow
+                        connection "0 ready" reads as an empty fleet. */}
+                    {loading ? (
+                      <span className="ri-status">Finding {unitPlural} near {locationWord}…</span>
+                    ) : error ? (
+                      <span className="ri-status">{`Couldn't load ${unitPlural} right now.`}</span>
+                    ) : (
+                      <>
+                        <span className="ri-count" id="introCount">
+                          {totalCount}
+                        </span>{' '}
+                        ready near {locationWord}.
+                      </>
+                    )}
                   </h1>
                   <p className="ri-sub reveal-desc" data-reveal-now="1">
                     {config.subtitle}
@@ -159,7 +175,41 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
 
           <div className="wrap">
             <section className="results-wrap">
-              {!loading && (
+              {loading && (
+                <div className="results-grid results-grid--loading" aria-busy="true" aria-label={`Loading ${unitPlural}`}>
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <div key={index} className="cell">
+                      <ResultCardSkeleton />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!loading && error && (
+                <div className="results-state" role="alert">
+                  <p className="results-state-title">{`We couldn't load the ${unitPlural}.`}</p>
+                  <p className="results-state-text">Check your connection and try again.</p>
+                  <button className="loadmore" type="button" onClick={retry}>
+                    Try again
+                  </button>
+                </div>
+              )}
+
+              {!loading && !error && totalCount === 0 && (
+                <div className="results-state">
+                  <p className="results-state-title">No {unitPlural} match this search.</p>
+                  <p className="results-state-text">
+                    {hasActiveFilters ? 'Loosen a filter or clear them all.' : 'Try different dates or a different location.'}
+                  </p>
+                  {hasActiveFilters && (
+                    <button className="loadmore" type="button" onClick={clearFilters}>
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {!loading && !error && totalCount > 0 && (
                 <div className="results-grid" id="resultsGrid">
                   {visibleCards.map((card, index) => (
                     <div key={card.id} className="cell reveal" style={{ '--d': `${(index % 9) * 0.05}s` }}>
@@ -206,6 +256,22 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
         </div>
       </div>
     </SearchResultsChromeProvider>
+  )
+}
+
+function ResultCardSkeleton() {
+  return (
+    <div className="pcard-skeleton" aria-hidden="true">
+      <div className="skeleton pcard-skeleton__media" />
+      <div className="skeleton pcard-skeleton__line pcard-skeleton__line--title" />
+      <div className="skeleton pcard-skeleton__line pcard-skeleton__line--short" />
+      <div className="pcard-skeleton__chips">
+        <div className="skeleton pcard-skeleton__chip" />
+        <div className="skeleton pcard-skeleton__chip" />
+        <div className="skeleton pcard-skeleton__chip" />
+      </div>
+      <div className="skeleton pcard-skeleton__price" />
+    </div>
   )
 }
 

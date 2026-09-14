@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { usePageContent } from '../context/SiteContentContext'
@@ -46,6 +46,9 @@ export default function useSearchResultsPage(vehicleType) {
   const [categories, setCategories] = useState([])
   const [locations, setLocations] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [reloadKey, setReloadKey] = useState(0)
+  const retry = useCallback(() => setReloadKey((key) => key + 1), [])
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [sort, setSort] = useState('rec')
   const [quickFilters, setQuickFilters] = useState([])
@@ -62,7 +65,10 @@ export default function useSearchResultsPage(vehicleType) {
       return undefined
     }
 
+    let cancelled = false
     setLoading(true)
+    setError(null)
+
     const params = {}
     if (query.pickup_location_id) params.pickup_location_id = query.pickup_location_id
     if (query.dropoff_location_id) params.dropoff_location_id = query.dropoff_location_id
@@ -72,28 +78,61 @@ export default function useSearchResultsPage(vehicleType) {
     const carParams = { ...params }
     if (config.mainCategorySlug) carParams.main_category = config.mainCategorySlug
 
-    const fetchCars = (params) => api.get('/cars', { params }).then((res) => res.data.data || [])
+    const fetchCars = (params) => api.get('/cars', { params }).then((res) => res.data?.data || [])
+
+    const fetchResults = async () => {
+      let carData = await fetchCars(carParams)
+      const hasLocationFilter = query.pickup_location_id || query.dropoff_location_id
+      if (carData.length === 0 && hasLocationFilter) {
+        const fallbackParams = { ...carParams }
+        delete fallbackParams.pickup_location_id
+        delete fallbackParams.dropoff_location_id
+        carData = await fetchCars(fallbackParams)
+      }
+      return carData
+    }
+
+    // The vehicles are the one request that matters. Categories and locations
+    // only decorate them (filter chips, labels), so a miss there falls back to
+    // empty lookups instead of blanking the whole page.
+    const fetchLookup = (url, requestParams) =>
+      api.get(url, { params: requestParams }).then((res) => res.data?.data || []).catch(() => [])
 
     Promise.all([
-      fetchCars(carParams),
-      api.get('/sub-categories', { params: config.mainCategorySlug ? { main_category: config.mainCategorySlug, search_filters_only: 1 } : {} }),
-      api.get('/locations'),
+      fetchResults(),
+      fetchLookup(
+        '/sub-categories',
+        config.mainCategorySlug ? { main_category: config.mainCategorySlug, search_filters_only: 1 } : {},
+      ),
+      fetchLookup('/locations'),
     ])
-      .then(async ([carData, catRes, locRes]) => {
-        const hasLocationFilter = query.pickup_location_id || query.dropoff_location_id
-        if (carData.length === 0 && hasLocationFilter) {
-          const fallbackParams = { ...carParams }
-          delete fallbackParams.pickup_location_id
-          delete fallbackParams.dropoff_location_id
-          carData = await fetchCars(fallbackParams)
-        }
-
+      .then(([carData, categoryData, locationData]) => {
+        if (cancelled) return
         setCars(carData)
-        setCategories(catRes.data.data || [])
-        setLocations(locRes.data.data || [])
+        setCategories(categoryData)
+        setLocations(locationData)
       })
-      .finally(() => setLoading(false))
-  }, [vehicleType, config.mainCategorySlug, query.pickup_location_id, query.dropoff_location_id, query.pickup_at, query.dropoff_at])
+      .catch((err) => {
+        if (cancelled) return
+        setCars([])
+        setError(err)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [
+    vehicleType,
+    config.mainCategorySlug,
+    query.pickup_location_id,
+    query.dropoff_location_id,
+    query.pickup_at,
+    query.dropoff_at,
+    reloadKey,
+  ])
 
   const categoryMap = useMemo(() => {
     const m = {}
@@ -219,6 +258,8 @@ export default function useSearchResultsPage(vehicleType) {
   return {
     config,
     loading,
+    error,
+    retry,
     cards,
     visibleCards,
     visibleCount,

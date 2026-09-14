@@ -495,6 +495,7 @@ nav.main a.nav-collapsible{
   text-wrap:balance;
 }
 .results-intro h1 .ri-count{color:var(--green);}
+.results-intro h1 .ri-status{color:var(--slate);}
 .results-intro .ri-sub{font-size:16.5px;color:var(--slate);margin-top:14px;line-height:1.55;max-width:560px;}
 
 /* ---------- Results grid ---------- */
@@ -513,6 +514,33 @@ nav.main a.nav-collapsible{
     transform .85s cubic-bezier(.33,1,.68,1) var(--d,0s),
     opacity .55s ease var(--d,0s);
 }
+
+/* ---------- Loading, error and empty states ---------- */
+/* Same footprint as a .pcard so the grid does not jump when results land. */
+.pcard-skeleton{
+  display:flex;flex-direction:column;gap:12px;
+  background:#fff;border:1px solid var(--line);border-radius:22px;padding:12px;min-height:360px;
+}
+.results-grid .cell > .pcard-skeleton{flex:1;width:100%;}
+.pcard-skeleton .skeleton{border-radius:10px;}
+.pcard-skeleton__media{aspect-ratio:16/9;border-radius:14px;}
+.pcard-skeleton__line{height:14px;width:60%;}
+.pcard-skeleton__line--title{height:20px;width:75%;margin-top:6px;}
+.pcard-skeleton__line--short{width:45%;}
+.pcard-skeleton__chips{display:flex;gap:8px;}
+.pcard-skeleton__chip{height:24px;width:64px;border-radius:999px;}
+.pcard-skeleton__price{height:30px;width:40%;margin-top:auto;}
+@media (prefers-reduced-motion: reduce){
+  .pcard-skeleton .skeleton{animation:none;}
+}
+
+.results-state{
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;
+  padding:56px 16px 40px;
+}
+.results-state-title{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.2;color:var(--navy);}
+.results-state-text{font-size:15px;color:var(--slate);max-width:420px;}
+.results-state .loadmore{margin-top:10px;}
 
 /* ---------- Load more ---------- */
 .results-foot{display:flex;flex-direction:column;align-items:center;gap:18px;padding:46px 0 8px;}

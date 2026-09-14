@@ -52,6 +52,8 @@ export default function SearchResultsChrome({
   query,
   updateSearch,
   totalCount,
+  loading = false,
+  loadFailed = false,
   config,
   sort,
   setSort,
@@ -611,7 +613,15 @@ export default function SearchResultsChrome({
 
           <div className="fb-right">
             <span className="result-count" id="resultCount">
-              <b>{totalCount}</b> {totalCount === 1 ? config.unitSingular : config.unitPlural}
+              {loading ? (
+                'Loading…'
+              ) : loadFailed ? (
+                'Unavailable'
+              ) : (
+                <>
+                  <b>{totalCount}</b> {totalCount === 1 ? config.unitSingular : config.unitPlural}
+                </>
+              )}
             </span>
             <div className="sortwrap">
               <button className={`sortbtn ${sortOpen ? 'open' : ''}`} type="button" id="sortBtn" onClick={() => setSortOpen(!sortOpen)}>
@@ -640,7 +650,15 @@ export default function SearchResultsChrome({
           </div>
         </div>
         <div className="filterbar-mobile-count" aria-live="polite">
-          <b>{totalCount}</b> {totalCount === 1 ? config.unitSingular : config.unitPlural} found
+          {loading ? (
+            `Loading ${config.unitPlural}…`
+          ) : loadFailed ? (
+            `Couldn't load ${config.unitPlural}`
+          ) : (
+            <>
+              <b>{totalCount}</b> {totalCount === 1 ? config.unitSingular : config.unitPlural} found
+            </>
+          )}
         </div>
       </div>
     </>
