@@ -83,7 +83,9 @@ $degrade = static function (string $code, string $detail) use ($indexHtml, $send
 
     $remote = $fetchShellOverHttp();
     if ($remote !== null) {
-        $sendHtml($remote, 'http-fallback');
+        // Carry the reason even when the fallback rescues the page, otherwise
+        // a healthy looking site hides the fact that it is doing two requests.
+        $sendHtml($remote, 'http-fallback; reason='.$code);
 
         return;
     }

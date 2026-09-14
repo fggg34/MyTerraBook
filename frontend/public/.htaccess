@@ -12,6 +12,28 @@
   Require all denied
 </Files>
 
+# Caching. index.php sets these itself, but Apache serves index.html directly
+# whenever index.php cannot run, and with no Cache-Control a browser is free to
+# apply heuristic freshness. That is how a phone ends up pinned to an old shell
+# for hours, still showing Coming Soon after it was switched off.
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header always set Cache-Control "no-cache, no-store, must-revalidate"
+    Header always set Pragma "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# Vite puts a content hash in every /assets/ filename, so a change always means
+# a new name. Safe to cache forever, and it leaves the shell as the only thing a
+# browser ever has to refetch. Each directive is guarded on its own module so a
+# host missing either one degrades instead of returning 500 for the whole site.
+<IfModule mod_setenvif.c>
+  SetEnvIf Request_URI "^/assets/" HASHED_ASSET
+</IfModule>
+<IfModule mod_headers.c>
+  Header always set Cache-Control "public, max-age=31536000, immutable" env=HASHED_ASSET
+</IfModule>
+
 # MIME: module scripts require a JS MIME type; empty/wrong type breaks <script type="module">
 <IfModule mod_mime.c>
   AddType application/javascript js mjs
