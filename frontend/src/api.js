@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { resolvePublicStorageUrl } from './utils/publicStorageUrl'
 import { firstPartyApiBase } from './utils/firstPartyApiBase'
 
 const PROD_API_BASE = '/backend/api'
@@ -73,33 +74,8 @@ export function getSitePreviewUrl() {
  * Build a public URL for a path stored via Filament disk (e.g. `cars/photo.jpg`).
  * Absolute URLs are returned unchanged.
  */
-function normalizeStoragePath(path) {
-  if (path == null || path === '') return ''
-  if (Array.isArray(path)) {
-    const first = path.find((item) => item != null && item !== '')
-    return first == null ? '' : String(first).trim()
-  }
-  return String(path).trim()
-}
-
 export function resolveStorageUrl(path) {
-  const p = normalizeStoragePath(path)
-  if (!p) return ''
-  // Bundled frontend assets (Vite public folder)
-  if (p.startsWith('/images/')) return p
-  const appBase = resolveApiBaseUrl().replace(/\/api\/?$/i, '')
-  // Rewrite API absolute storage URLs to the current app base (fixes wrong APP_URL on live).
-  if (/^https?:\/\//i.test(p)) {
-    const storageMatch = p.match(/\/storage\/(.+)$/i)
-    if (storageMatch) {
-      return `${appBase}/storage/${storageMatch[1]}`
-    }
-    return p
-  }
-  if (p.startsWith('/storage/')) {
-    return `${appBase}${p}`
-  }
-  return `${appBase}/storage/${p.replace(/^\/+/, '')}`
+  return resolvePublicStorageUrl(path, resolveApiBaseUrl())
 }
 
 /** Resolve a CMS upload path, falling back to bundled defaults when empty. */
