@@ -55,13 +55,16 @@
       "ctaHref": "/become-a-host",
       "currencyLabel": "€ EUR",
       "signInLabel": "Sign in",
-      "signInHref": "/login"
+      "signInHref": "/login",
+      "currencyMenuLabel": "Currency",
+      "hostSignInLabel": "Sign in as a host"
     },
     "footer": {
       "tagline": "Campervans, cars and guesthouses across Iceland, booked in minutes, hosted with care.",
       "address": "MyTerraBook ehf. · Laugavegur 178 · 105 Reykjavík · Iceland",
       "columns": [
         {
+          "key": "book",
           "title": "Book",
           "links": [
             {
@@ -79,6 +82,7 @@
           ]
         },
         {
+          "key": "company",
           "title": "Company",
           "links": [
             {
@@ -104,6 +108,7 @@
           ]
         },
         {
+          "key": "account",
           "title": "Account",
           "links": [
             {
@@ -138,7 +143,10 @@
           "href": "/cardholder-terms"
         }
       ],
-      "social": []
+      "social": [],
+      "paymentsLabel": "We accept",
+      "logoutLabel": "Log out",
+      "hostSubtitle": "List your van or guesthouse"
     },
     "newsSection": {
       "eyebrow": "Field notes from Iceland",
@@ -147,7 +155,12 @@
       "lead": "Aurora forecasts, last-minute van openings and local tips you won't find on a map, once a month, from our Reykjavík team.",
       "backgroundImage": "/images/homepage/hero.jpg",
       "placeholder": "you@somewhere-cold.is",
-      "successMessage": "Takk! Check your inbox to confirm."
+      "successMessage": "Takk! Check your inbox to confirm.",
+      "buttonLabel": "Subscribe",
+      "buttonLoadingLabel": "Subscribing…",
+      "footnote": "",
+      "backgroundAlt": "Iceland terrain, campervan beneath dramatic peaks",
+      "errorMessage": "Could not subscribe right now"
     },
     "faqSection": {
       "eyebrow": "Good to know",
@@ -189,6 +202,60 @@
       "titleSuffix": " | MyTerraBook",
       "defaultDescription": "Book campervans, cars, 4×4s and guesthouses across Iceland, transparent pricing, gravel cover included, and a Reykjavík team behind every trip.",
       "defaultOgImage": "/images/homepage/hero.jpg"
+    },
+    "searchForm": {
+      "pickupLabel": "Pick-up location",
+      "dropoffLabel": "Drop-off location",
+      "locationPlaceholder": "Select location",
+      "vehicleDatesLabel": "Pick-up → Drop-off",
+      "pickupDateLabel": "Pick-up",
+      "dropoffDateLabel": "Drop-off",
+      "cityLabel": "City or area",
+      "cityPlaceholder": "e.g. Reykjavík, Akureyri",
+      "cityPlaceholderShort": "e.g. Reykjavík",
+      "stayDatesLabel": "Check-in → Check-out",
+      "checkInLabel": "Check-in",
+      "checkOutLabel": "Check-out",
+      "guestsLabel": "Guests",
+      "guestSingular": "guest",
+      "guestPlural": "guests",
+      "guestsAria": "Number of guests",
+      "emptyLocationsHint": "Pickup locations are being configured. Assign locations to vehicles in admin to enable search.",
+      "emptyLocationsHintShort": "Pickup locations are being configured. Assign locations to vehicles in admin.",
+      "updateLabel": "Update",
+      "priceChipLabel": "Price",
+      "priceHeading": "Price per {unit}",
+      "transmissionLabel": "Transmission",
+      "anyLabel": "Any",
+      "automaticLabel": "Automatic",
+      "manualLabel": "Manual",
+      "allFiltersLabel": "All filters",
+      "filtersTitle": "Filters",
+      "vehicleTypeLabel": "Vehicle type",
+      "featuresLabel": "Features",
+      "minSeatsLabel": "Minimum seats",
+      "minSleepsLabel": "Minimum sleeps",
+      "resetRangeLabel": "Reset range",
+      "clearAllLabel": "Clear all",
+      "clearAllChipLabel": "Clear all ✕",
+      "sortPrefix": "Sort:",
+      "loadingLabel": "Loading…",
+      "unavailableLabel": "Unavailable",
+      "loadingPlural": "Loading {plural}…",
+      "loadFailedPlural": "Couldn't load {plural}",
+      "foundSuffix": "found",
+      "editLabel": "Edit",
+      "showPrefix": "Show",
+      "sortRecommended": "Recommended",
+      "sortPriceLow": "Price: low to high",
+      "sortPriceHigh": "Price: high to low",
+      "sortSeats": "Most seats",
+      "sortSleeps": "Sleeps the most",
+      "sortGuests": "Most guests"
+    },
+    "cards": {
+      "priceFromLabel": "From",
+      "bookLabel": "Book"
     }
   },
   "home": {
@@ -223,7 +290,8 @@
       "searchLabel": "Search Now",
       "footerHint": "Not sure where to start? Check out",
       "footerLinkLabel": "Things to do in Iceland",
-      "footerLinkHref": "#discover"
+      "footerLinkHref": "#discover",
+      "backgroundAlt": "Campervan parked beneath Icelandic mountains"
     },
     "trustItems": [
       {
@@ -326,7 +394,10 @@
           "description": "Real people in Reykjavík, any season, whenever the road turns.",
           "expandedText": "Flat tyre at midnight, a road closed by weather, a route rethink, one call reaches a local who knows exactly where you are and what to do."
         }
-      ]
+      ],
+      "photoAlt": "A MyTerra campervan beneath Icelandic mountains",
+      "learnMoreLabel": "Learn more",
+      "badgeFromLabel": "from"
     },
     "picksSection": {
       "heading": "Hand-picked for Iceland.",
@@ -749,7 +820,8 @@
             ]
           }
         ]
-      }
+      },
+      "emptyLabel": "No listings available yet."
     },
     "howSection": {
       "heading": "From airport to open road in three steps.",
@@ -831,7 +903,8 @@
           ],
           "price": "€112"
         }
-      ]
+      ],
+      "emptyLabel": "No guesthouses available yet."
     },
     "blogSection": {
       "heading": "Good to Know",
@@ -896,7 +969,12 @@
       "houseImage": "/images/homepage/host-van.jpg",
       "vanImage": "/images/homepage/why-photo.jpg",
       "chipAmount": "€2.4M+",
-      "chipLabel": "paid to 1,800+ hosts last year"
+      "chipLabel": "paid to 1,800+ hosts last year",
+      "earnPeriod": "",
+      "houseImageAlt": "A guesthouse you could list on MyTerra",
+      "vanImageAlt": "A campervan parked outside the guesthouse",
+      "vanTag": "",
+      "chipHeading": ""
     },
     "reviewsSection": {
       "eyebrow": "Traveller stories",
@@ -946,7 +1024,17 @@
           "rot": "9deg",
           "ty": "30px"
         }
-      ]
+      ],
+      "lead": "",
+      "trustLine": "Trusted by travellers worldwide",
+      "ratingIntro": "Average rating across",
+      "ratingOn": "on",
+      "reviewerLabel": "Traveller",
+      "googleReviewerLabel": "Google reviewer",
+      "ratingSourceLabel": "MyTerraBook",
+      "googleRatingSourceLabel": "Google",
+      "ctaLabel": "",
+      "ctaHref": ""
     },
     "guestHousesHighlight": {
       "title": "Guest houses & stays",
@@ -972,7 +1060,8 @@
       "secondaryHref": "/become-a-host",
       "image": "/images/homepage/why-photo.jpg",
       "pinTitle": "Reykjavík HQ",
-      "pinSubtitle": "Local team · Iceland time"
+      "pinSubtitle": "Local team · Iceland time",
+      "imageAlt": "Iceland landscape seen from the road"
     },
     "storySection": {
       "heading": "Built for travellers who want the whole island, not just a rental counter."
@@ -1165,7 +1254,9 @@
       "phone": "+354 519 1010",
       "email": "support@myterrabook.is",
       "buttonLabel": "Send a message",
-      "buttonHref": "/contact"
+      "buttonHref": "/contact",
+      "phoneLabel": "Call us",
+      "emailLabel": "Email"
     },
     "quickLinks": [
       {
@@ -1201,7 +1292,8 @@
       "title": "Questions & Answers",
       "description": "Driving licence, gravel cover, campsites, pickup near Keflavík, answers from our Reykjavík team before you book.",
       "robots": "index"
-    }
+    },
+    "allCategoryLabel": "All questions"
   },
   "contact": {
     "hero": {
@@ -1218,13 +1310,18 @@
       "name": "Your name",
       "email": "Email address",
       "message": "Message",
-      "submit": "Send message"
+      "submit": "Send message",
+      "sending": "Sending…"
     },
     "seo": {
       "title": "Contact Us",
       "description": "Questions about a booking, a listing, or planning your Iceland trip? Reach our Reykjavík team seven days a week.",
       "robots": "index"
-    }
+    },
+    "phoneLabel": "Phone",
+    "emailLabel": "Email",
+    "addressLabel": "Address",
+    "hoursLabel": "Hours"
   },
   "terms": {
     "hero": {
@@ -1288,7 +1385,30 @@
       "submitLabel": "Start hosting",
       "earnAmount": "€1,900",
       "image": "/images/homepage/host-van.jpg",
-      "imageAlt": "A campervan on an Iceland road"
+      "imageAlt": "A campervan on an Iceland road",
+      "earnSuffix": "/ month on average",
+      "points": [
+        "Free to list, no upfront costs",
+        "You keep 85% of every booking",
+        "Insurance and 24/7 support included"
+      ],
+      "submittingLabel": "Creating…",
+      "signupTitle": "Create your host account",
+      "individualLabel": "Individual",
+      "businessLabel": "Business",
+      "signupLead": "Free to list. No commitment. Earn on your own schedule.",
+      "nameLabel": "Your name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "your@email.com",
+      "phoneLabel": "Phone",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "loginPrompt": "Already a host?",
+      "loginLink": "Log in",
+      "forgotPasswordLabel": "Forgot your password?"
     },
     "proof": {
       "chipAmount": "€2.4M+",
@@ -1417,7 +1537,14 @@
     "features": [
       {
         "title": "Reach travellers",
-        "text": "Featured across 30,000+ monthly Iceland trip searches."
+        "text": "Featured across 30,000+ monthly Iceland trip searches.",
+        "widgetLabel": "Iceland",
+        "widgetChips": [
+          "Ring Road",
+          "Search",
+          "Email",
+          "Social"
+        ]
       },
       {
         "title": "Marketing included",
@@ -1478,7 +1605,11 @@
           "quote": "\"Payouts land within a day and the dashboard shows me exactly what's booking. No guesswork, no chasing invoices.\"",
           "fill": "#f4c1a4"
         }
-      ]
+      ],
+      "heading": "Our hosts talk about us.",
+      "subheading": "Thousands of Icelanders are already turning idle vehicles and spare rooms into income. Here's what they say.",
+      "rating": "4.8/5",
+      "ratingLabel": "Based on 14K+ host reviews"
     },
     "faqItems": [
       {
@@ -1511,7 +1642,8 @@
       "title": "Ready to earn from your vehicle?",
       "lead": "Join 1,800+ Iceland hosts already earning with MyTerraBook. It's free to list, and you could be booked within the week.",
       "submitLabel": "List for free",
-      "patternImage": "/images/patterns/myterrabook-mark.png"
+      "patternImage": "/images/patterns/myterrabook-mark.png",
+      "secondaryLabel": "See how it works"
     },
     "footer": {
       "tagline": "MyTerraBook host programme",
@@ -1521,6 +1653,15 @@
       "title": "Become a Host",
       "description": "List your campervan, car or guesthouse on MyTerraBook and earn between trips, bookings, payments and insurance handled for you.",
       "robots": "index"
+    },
+    "howSection": {
+      "heading": "From idle to earning, in four simple steps."
+    },
+    "faqSection": {
+      "heading": "Questions, answered.",
+      "subheading": "Thinking about hosting but not sure where to start? Our team in Reykjavík is one message away.",
+      "contactLabel": "Talk to the host team",
+      "contactEmail": "hosts@myterrabook.com"
     }
   },
   "good-to-know": {
@@ -1701,7 +1842,8 @@
       "pickupDropoff": "Where and when you can collect and return the camper.",
       "roomDetails": "Sleeping arrangements and layout inside the camper.",
       "location": "Approximate location where you pick up the camper."
-    }
+    },
+    "shareLabel": "Share"
   },
   "listing-car": {
     "id": "car",
@@ -1783,7 +1925,8 @@
       "conditions": "Rules and requirements set by the host for this rental.",
       "pickupDropoff": "Where and when you can collect and return the vehicle.",
       "location": "Approximate location where you pick up the car."
-    }
+    },
+    "shareLabel": "Share"
   },
   "listing-guesthouse": {
     "id": "guesthouse",
@@ -1857,7 +2000,8 @@
       "conditions": "Guidelines from the host during your visit.",
       "roomDetails": "Sleeping arrangements and room layout.",
       "location": "Approximate location of the guesthouse."
-    }
+    },
+    "shareLabel": "Share"
   },
   "checkout": {
     "stepperSteps": [
@@ -1909,14 +2053,92 @@
       "title": "Sign In",
       "description": "Sign in to your MyTerraBook account.",
       "robots": "noindex"
+    },
+    "forgotPasswordLabel": "Forgot your password?",
+    "signingInLabel": "Signing in…",
+    "heroTitle": "Sign in to MyTerraBook",
+    "heroText": "Pick up where you left off. Your bookings, saved listings and trip details are waiting.",
+    "orLabel": "or",
+    "hostSignInLabel": "Sign in as a host",
+    "hostLogin": {
+      "title": "Host sign in",
+      "subtitle": "Manage your listings, bookings and payouts.",
+      "submitLabel": "Sign in to host panel",
+      "signingInLabel": "Signing in…",
+      "forgotPasswordLabel": "Forgot your password?",
+      "registerPrompt": "New host?",
+      "registerLink": "Create a host account",
+      "heroTitle": "Welcome back, host",
+      "heroText": "Manage your guesthouses, campervans and bookings from one dashboard."
+    },
+    "forgot": {
+      "title": "Forgot password?",
+      "hostTitle": "Forgot host password?",
+      "subtitle": "Enter the email address linked to your account.",
+      "hostSubtitle": "Enter your host account email and we will send reset instructions.",
+      "heroTitle": "Reset your password",
+      "hostHeroTitle": "Reset host password",
+      "heroText": "We will email you a secure link to choose a new password.",
+      "emailLabel": "Email address",
+      "submitLabel": "Send reset link",
+      "sendingLabel": "Sending…",
+      "sentMessage": "If an account exists for that email, we sent a password reset link.",
+      "retryHint": "Did not receive it? Check spam or try again in a few minutes.",
+      "backLabel": "Back to sign in",
+      "rememberPrompt": "Remember your password?",
+      "signInLabel": "Sign in"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Enter your email and choose a new password.",
+      "heroTitle": "Choose a new password",
+      "heroText": "Pick a strong password you have not used on MyTerraBook before.",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "New password",
+      "confirmLabel": "Confirm password",
+      "passwordHint": "At least 8 characters",
+      "submitLabel": "Update password",
+      "submittingLabel": "Updating…",
+      "backPrompt": "Back to",
+      "guestSignInLabel": "guest sign in",
+      "orLabel": "or",
+      "hostSignInLabel": "host sign in"
     }
   },
   "auth-register": {
     "title": "Create your account",
     "subtitle": "Book across Iceland.",
+    "heroTitle": "Create your account",
+    "heroText": "Join travelers who book guesthouses, campervans and cars across Iceland, all in one trusted marketplace.",
+    "nameLabel": "Full name",
+    "namePlaceholder": "Jane Smith",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "555 1234",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm password",
+    "passwordHint": "At least 8 characters",
     "submitLabel": "Create account",
+    "submittingLabel": "Creating account…",
     "loginPrompt": "Already have an account?",
     "loginLink": "Sign in",
+    "forgotPasswordLabel": "Forgot your password?",
+    "features": [
+      {
+        "title": "One account, every trip",
+        "text": "Book guesthouses, campervans and cars without juggling multiple logins."
+      },
+      {
+        "title": "Secure & simple",
+        "text": "Your details are protected so you can focus on planning your adventure."
+      },
+      {
+        "title": "Trip-ready in minutes",
+        "text": "Create an account and start browsing Iceland’s best stays and rentals."
+      }
+    ],
     "seo": {
       "title": "Create Account",
       "description": "Create a MyTerraBook account.",
@@ -2004,6 +2226,14 @@
     "title": "Newsletter",
     "successMessage": "You have been unsubscribed.",
     "errorMessage": "Invalid link.",
-    "backLabel": "Back to homepage"
+    "backLabel": "Back to homepage",
+    "missingMessage": "Missing unsubscribe link."
+  },
+  "under-construction": {
+    "badge": "Under construction",
+    "title": "A smoother way to rent is almost here",
+    "subtitle": "We are building a refined booking experience for MyTerraBook, easy pickup, fair pricing, and the right car when you need it.",
+    "hint": "Thank you for your patience. Check back soon.",
+    "footer": "© MyTerraBook Rentals"
   }
 }

@@ -21,7 +21,7 @@ function FeatureIcon({ name, image }) {
   return <Icon size={25} strokeWidth={1.7} aria-hidden />
 }
 
-function FeatureRow({ feature }) {
+function FeatureRow({ feature, learnMoreLabel = 'Learn more' }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -38,7 +38,7 @@ function FeatureRow({ feature }) {
               <p>{feature.expandedText}</p>
             </div>
             <button className="wf-more" type="button" onClick={() => setOpen((v) => !v)}>
-              Learn more{' '}
+              {learnMoreLabel}{' '}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 6l6 6-6 6" />
               </svg>
@@ -50,7 +50,7 @@ function FeatureRow({ feature }) {
   )
 }
 
-function WhyMobileStep({ feature, index = 0 }) {
+function WhyMobileStep({ feature, index = 0, learnMoreLabel = 'Learn more' }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -67,7 +67,7 @@ function WhyMobileStep({ feature, index = 0 }) {
               <p>{feature.expandedText}</p>
             </div>
             <button className="wf-more" type="button" onClick={() => setOpen((v) => !v)}>
-              Learn more{' '}
+              {learnMoreLabel}{' '}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 6l6 6-6 6" />
               </svg>
@@ -79,20 +79,20 @@ function WhyMobileStep({ feature, index = 0 }) {
   )
 }
 
-function WhyMobileStory({ features, photo, badge = {} }) {
+function WhyMobileStory({ features, photo, photoAlt = '', badge = {}, learnMoreLabel, badgeFromLabel = 'from' }) {
   if (!features.length) return null
 
   return (
     <div className="why-mobile-story">
       <div className="why-mobile-story__photo">
-        <CmsImage src={photo} alt="" />
+        <CmsImage src={photo} alt={photoAlt || ''} />
         {(badge.rating || badge.reviewBold) && (
           <div className="badge">
             {badge.rating && <span className="num">{badge.rating}</span>}
             <span className="lbl">
-              from <b>{badge.reviewBold || '12,400+ travellers'}</b>
+              {badgeFromLabel} <b>{badge.reviewBold}</b>
               <br />
-              {badge.reviewRest || 'who booked with us'}
+              {badge.reviewRest}
             </span>
           </div>
         )}
@@ -101,7 +101,7 @@ function WhyMobileStory({ features, photo, badge = {} }) {
       <div className="why-mobile-story__panel">
         <div className="why-mobile-story__panel-inner">
           {features.map((feature, index) => (
-            <WhyMobileStep key={feature.title} feature={feature} index={index} />
+            <WhyMobileStep key={feature.title} feature={feature} index={index} learnMoreLabel={learnMoreLabel} />
           ))}
         </div>
       </div>
@@ -113,6 +113,9 @@ export default function WhyMyTerraSection({
   heading,
   subheading,
   photo,
+  photoAlt,
+  learnMoreLabel = 'Learn more',
+  badgeFromLabel = 'from',
   badge = {},
   featuresLeft = [],
   featuresRight = [],
@@ -132,24 +135,31 @@ export default function WhyMyTerraSection({
         </div>
 
         {isMobile ? (
-          <WhyMobileStory features={allFeatures} photo={photo} badge={badge} />
+          <WhyMobileStory
+            features={allFeatures}
+            photo={photo}
+            photoAlt={photoAlt}
+            badge={badge}
+            learnMoreLabel={learnMoreLabel}
+            badgeFromLabel={badgeFromLabel}
+          />
         ) : (
           <div className="why-split why-split--desktop" ref={splitRef}>
             <div className="why-col left">
               {featuresLeft.map((feature) => (
-                <FeatureRow key={feature.title} feature={feature} />
+                <FeatureRow key={feature.title} feature={feature} learnMoreLabel={learnMoreLabel} />
               ))}
             </div>
 
             <div className="why-photo">
-              <CmsImage src={photo} alt="A MyTerra campervan beneath Icelandic mountains" />
+              <CmsImage src={photo} alt={photoAlt || 'A MyTerra campervan beneath Icelandic mountains'} />
               {(badge.rating || badge.reviewBold) && (
                 <div className="badge">
                   {badge.rating && <span className="num">{badge.rating}</span>}
                   <span className="lbl">
-                    from <b>{badge.reviewBold || '12,400+ travellers'}</b>
+                    {badgeFromLabel} <b>{badge.reviewBold}</b>
                     <br />
-                    {badge.reviewRest || 'who booked with us'}
+                    {badge.reviewRest}
                   </span>
                 </div>
               )}
@@ -157,7 +167,7 @@ export default function WhyMyTerraSection({
 
             <div className="why-col right">
               {featuresRight.map((feature) => (
-                <FeatureRow key={feature.title} feature={feature} />
+                <FeatureRow key={feature.title} feature={feature} learnMoreLabel={learnMoreLabel} />
               ))}
             </div>
           </div>

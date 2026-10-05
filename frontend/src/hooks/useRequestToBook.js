@@ -75,7 +75,15 @@ export default function useRequestToBook() {
   const { prepayPercent } = useShopConfig()
   const priceFormatter = useFormatPrice()
   const config = useMemo(() => {
-    const base = getRequestToBookConfig(bookingType || 'car', prepayPercent)
+    const defaults = getRequestToBookConfig(bookingType || 'car', prepayPercent)
+    const labels = checkoutPage?.labels ?? {}
+    const base = {
+      ...defaults,
+      step1: { ...defaults.step1, title: labels.tripTitle ?? defaults.step1.title },
+      step2: { ...defaults.step2, title: labels.extrasTitle ?? defaults.step2.title },
+      step3: { ...defaults.step3, title: labels.detailsTitle ?? defaults.step3.title },
+      step4: { ...defaults.step4, title: labels.paymentTitle ?? defaults.step4.title },
+    }
     if (checkoutPage?.stepperSteps?.length) {
       return {
         ...base,

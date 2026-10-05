@@ -83,30 +83,30 @@ export default function SitePagePage({ forcedSlug }) {
             <div className="content-contact-cards">
               {content.phone && (
                 <div className="content-contact-card">
-                  <strong>Phone</strong>
+                  <strong>{content.phoneLabel || 'Phone'}</strong>
                   <a href={`tel:${content.phone.replace(/\s/g, '')}`}>{content.phone}</a>
                 </div>
               )}
               {content.email && (
                 <div className="content-contact-card">
-                  <strong>Email</strong>
+                  <strong>{content.emailLabel || 'Email'}</strong>
                   <a href={`mailto:${content.email}`}>{content.email}</a>
                 </div>
               )}
               {content.address && (
                 <div className="content-contact-card">
-                  <strong>Address</strong>
+                  <strong>{content.addressLabel || 'Address'}</strong>
                   <span style={{ whiteSpace: 'pre-line' }}>{content.address}</span>
                 </div>
               )}
               {content.hours && (
                 <div className="content-contact-card">
-                  <strong>Hours</strong>
+                  <strong>{content.hoursLabel || 'Hours'}</strong>
                   <span>{content.hours}</span>
                 </div>
               )}
             </div>
-            {content.show_form !== false && <ContactForm />}
+            {content.show_form !== false && <ContactForm labels={content.formLabels} />}
           </div>
         </section>
       )}

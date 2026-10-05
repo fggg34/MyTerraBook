@@ -10,6 +10,8 @@ import useSearchChromeDraft from '../../hooks/useSearchChromeDraft'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { SORT_OPTIONS } from '../../data/searchResultsConfig'
+import { SEARCH_FORM_COPY, cmsText, fillTemplate } from '../../data/searchFormCopy'
+import { usePageContent } from '../../context/SiteContentContext'
 import { defaultPriceFilters, isPriceFilterActive } from '../../utils/searchPriceBounds'
 
 const SEAT_OPTIONS = [0, 2, 4, 5, 7, 9]
@@ -39,11 +41,11 @@ const CARET_ICON = (
   </svg>
 )
 
-function formatTransmissionLabel(value) {
-  if (!value) return 'Any'
+function formatTransmissionLabel(value, copy) {
+  if (!value) return copy.anyLabel
   const lower = String(value).toLowerCase()
-  if (lower.includes('auto')) return 'Automatic'
-  if (lower.includes('manual')) return 'Manual'
+  if (lower.includes('auto')) return copy.automaticLabel
+  if (lower.includes('manual')) return copy.manualLabel
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
@@ -72,6 +74,9 @@ export default function SearchResultsChrome({
   priceBounds = { min: 0, max: 500, step: 10 },
   transmissionOptions = ['automatic', 'manual'],
 }) {
+  const { page: globalPage } = usePageContent('global')
+  const searchCopy = { ...SEARCH_FORM_COPY, ...(globalPage.searchForm || {}) }
+  const label = (key) => cmsText(searchCopy[key], SEARCH_FORM_COPY[key])
   const [sortOpen, setSortOpen] = useState(false)
   const [openPop, setOpenPop] = useState(null)
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false)
@@ -151,14 +156,14 @@ export default function SearchResultsChrome({
   const sliderMax = filters.maxPrice ?? priceBounds.max
 
   const priceChipLabel = useMemo(() => {
-    if (!priceActive) return 'Price'
+    if (!priceActive) return label('priceChipLabel')
     return `${priceFormatter.format(sliderMin)} – ${priceFormatter.format(sliderMax)}`
-  }, [priceActive, sliderMin, sliderMax, priceFormatter])
+  }, [priceActive, sliderMin, sliderMax, priceFormatter, searchCopy])
 
   const transmissionChipLabel = useMemo(() => {
-    if (!filters.transmission) return 'Transmission'
-    return formatTransmissionLabel(filters.transmission)
-  }, [filters.transmission])
+    if (!filters.transmission) return label('transmissionLabel')
+    return formatTransmissionLabel(filters.transmission, searchCopy)
+  }, [filters.transmission, searchCopy])
 
   const activeCategory = useMemo(
     () => categoryFilterOptions.find((option) => quickFilters.includes(option.id)),
@@ -237,11 +242,11 @@ export default function SearchResultsChrome({
     <>
       {hasActiveFilters && (
         <button className="filter-side-clear" type="button" onClick={clearFilters}>
-          Clear all
+          {label('clearAllLabel')}
         </button>
       )}
       <button className="filter-side-apply" type="button" onClick={closeAllFilters}>
-        Show {totalCount} {totalCount === 1 ? config.unitSingular : config.unitPlural}
+        {label('showPrefix')} {totalCount} {totalCount === 1 ? config.unitSingular : config.unitPlural}
       </button>
     </>
   )
@@ -252,7 +257,7 @@ export default function SearchResultsChrome({
         <div className="hsearch-inner">
           {!isGuesthouse && pickupEmpty && showMobileDetails && (
             <p className="location-empty-hint" role="status">
-              Pickup locations are being configured. Assign locations to vehicles in admin.
+              {label('emptyLocationsHintShort')}
             </p>
           )}
           <div
@@ -261,14 +266,14 @@ export default function SearchResultsChrome({
             {isGuesthouse ? (
               <>
                 <div className="hfield hfield--control hfield--primary">
-                  <span className="hf-label">City or area</span>
+                  <span className="hf-label">{label('cityLabel')}</span>
                   <PredictiveSearchField
                     {...GUESTHOUSE_CITY_SEARCH_PROPS}
                     value={guestDraft.city}
                     displayValue={guestCityLabel}
-                    placeholder="e.g. Reykjavík"
+                    placeholder={label('cityPlaceholderShort')}
                     icon={PIN_ICON}
-                    ariaLabel="City or area"
+                    ariaLabel={label('cityLabel')}
                     onFocus={expandMobileDetails}
                     onChange={({ value, label }) => {
                       setGuestCityLabel(label)
@@ -278,12 +283,12 @@ export default function SearchResultsChrome({
                   />
                 </div>
                 <div className="hfield hfield--control hfield--dates hfield--detail">
-                  <span className="hf-label">Check-in → Check-out</span>
+                  <span className="hf-label">{label('stayDatesLabel')}</span>
                   <DateRangePicker
                     variant="embedded compact"
                     fixedPopper
-                    startLabel="Check-in"
-                    endLabel="Check-out"
+                    startLabel={label('checkInLabel')}
+                    endLabel={label('checkOutLabel')}
                     startDate={guestStartDate}
                     endDate={guestEndDate}
                     minNights={1}
@@ -292,24 +297,24 @@ export default function SearchResultsChrome({
                   />
                 </div>
                 <div className="hfield hfield--control hfield--guests hfield--detail">
-                  <span className="hf-label">Guests</span>
+                  <span className="hf-label">{label('guestsLabel')}</span>
                   <FieldSelect
                     value={guestDraft.guests}
                     onChange={(value) => setGuestDraft((prev) => ({ ...prev, guests: value }))}
                     options={guestPeopleOptions.map((n) => ({
                       value: String(n),
-                      label: `${n} ${n === 1 ? 'guest' : 'guests'}`,
+                      label: `${n} ${n === 1 ? label('guestSingular') : label('guestPlural')}`,
                     }))}
-                    placeholder="Guests"
+                    placeholder={label('guestsLabel')}
                     icon={PERSON_ICON}
-                    ariaLabel="Number of guests"
+                    ariaLabel={label('guestsAria')}
                   />
                 </div>
               </>
             ) : (
               <>
                 <div className="hfield hfield--control hfield--primary">
-                  <span className="hf-label">Pick-up location</span>
+                  <span className="hf-label">{label('pickupLabel')}</span>
                   <FieldSelect
                     value={vehicleDraft.pickup_location_id}
                     onChange={(value) => {
@@ -322,33 +327,33 @@ export default function SearchResultsChrome({
                       expandMobileDetails()
                     }}
                     options={pickupOptions}
-                    placeholder="Select location"
+                    placeholder={label('locationPlaceholder')}
                     icon={PIN_ICON}
-                    ariaLabel="Pick-up location"
+                    ariaLabel={label('pickupLabel')}
                     disabled={pickupEmpty}
                     onOpen={expandMobileDetails}
                   />
                 </div>
                 <div className="hfield hfield--control hfield--detail">
-                  <span className="hf-label">Drop-off location</span>
+                  <span className="hf-label">{label('dropoffLabel')}</span>
                   <FieldSelect
                     value={vehicleDraft.dropoff_location_id}
                     onChange={(value) => setVehicleDraft((prev) => ({ ...prev, dropoff_location_id: value }))}
                     options={dropoffOptions}
-                    placeholder="Select location"
+                    placeholder={label('locationPlaceholder')}
                     icon={PIN_ICON}
-                    ariaLabel="Drop-off location"
+                    ariaLabel={label('dropoffLabel')}
                     disabled={!vehicleDraft.pickup_location_id || pickupEmpty}
                     onOpen={expandMobileDetails}
                   />
                 </div>
                 <div className="hfield hfield--control hfield--dates hfield--detail">
-                  <span className="hf-label">Pick-up → Drop-off</span>
+                  <span className="hf-label">{label('vehicleDatesLabel')}</span>
                   <DateRangePicker
                     variant="embedded compact"
                     fixedPopper
-                    startLabel="Pick-up"
-                    endLabel="Drop-off"
+                    startLabel={label('pickupDateLabel')}
+                    endLabel={label('dropoffDateLabel')}
                     startDate={vehicleStartDate}
                     endDate={vehicleEndDate}
                     minNights={minRentalDays}
@@ -371,7 +376,7 @@ export default function SearchResultsChrome({
                 <circle cx="11" cy="11" r="7" />
                 <path d="m20 20-3.2-3.2" />
               </svg>
-              Update
+              {label('updateLabel')}
             </button>
           </div>
         </div>
@@ -392,7 +397,7 @@ export default function SearchResultsChrome({
                 {CARET_ICON}
               </button>
               <FilterPopover open={openPop === 'price'}>
-                <h5>Price per {perLabel}</h5>
+                <h5>{fillTemplate(label('priceHeading'), { unit: perLabel })}</h5>
                 <PriceRangeFilter
                   min={priceBounds.min}
                   max={priceBounds.max}
@@ -406,7 +411,7 @@ export default function SearchResultsChrome({
                 {priceActive && (
                   <div className="fpop-foot fpop-foot--start">
                     <button className="fpop-reset" type="button" onClick={resetPriceFilter}>
-                      Reset range
+                      {label('resetRangeLabel')}
                     </button>
                   </div>
                 )}
@@ -425,14 +430,14 @@ export default function SearchResultsChrome({
                   {CARET_ICON}
                 </button>
                 <FilterPopover open={openPop === 'trans'}>
-                  <h5>Transmission</h5>
+                  <h5>{label('transmissionLabel')}</h5>
                   <div className="fopts">
                     <button
                       type="button"
                       className={`fopt ${!filters.transmission ? 'sel' : ''}`}
                       onClick={() => handleTransmissionSelect('')}
                     >
-                      Any
+                      {label('anyLabel')}
                     </button>
                     {transmissionOptions.map((t) => (
                       <button
@@ -441,7 +446,7 @@ export default function SearchResultsChrome({
                         className={`fopt ${filters.transmission === t ? 'sel' : ''}`}
                         onClick={() => handleTransmissionSelect(t)}
                       >
-                        {formatTransmissionLabel(t)}
+                        {formatTransmissionLabel(t, searchCopy)}
                       </button>
                     ))}
                   </div>
@@ -469,7 +474,7 @@ export default function SearchResultsChrome({
                   aria-expanded={openPop === 'all'}
                   onClick={() => togglePop('all')}
                 >
-                  <span className="chip-label">All filters</span>
+                  <span className="chip-label">{label('allFiltersLabel')}</span>
                   {panelActiveCount > 0 && <span className="chip-count">{panelActiveCount}</span>}
                 </button>
               </div>
@@ -479,21 +484,21 @@ export default function SearchResultsChrome({
               <FilterSidePanel
                 open={openPop === 'all'}
                 onClose={closeAllFilters}
-                title="Filters"
+                title={label('filtersTitle')}
                 side="right"
                 panelRef={allFiltersMenuRef}
                 footer={allFiltersFooter}
               >
                 {categoryFilterOptions.length > 0 && (
                   <div className="fpop-section">
-                    <h5>Vehicle type</h5>
+                    <h5>{label('vehicleTypeLabel')}</h5>
                     <div className="fopts">
                       <button
                         type="button"
                         className={`fopt ${!activeCategory ? 'sel' : ''}`}
                         onClick={() => { if (activeCategory) toggleQuick(activeCategory.id) }}
                       >
-                        Any
+                        {label('anyLabel')}
                       </button>
                       {categoryFilterOptions.map((option) => (
                         <button
@@ -511,7 +516,7 @@ export default function SearchResultsChrome({
 
                 {attributeQuickFilters.length > 0 && (
                   <div className="fpop-section">
-                    <h5>Features</h5>
+                    <h5>{label('featuresLabel')}</h5>
                     <div className="fopts">
                       {attributeQuickFilters.map((qf) => (
                         <button
@@ -528,14 +533,14 @@ export default function SearchResultsChrome({
                 )}
 
                 <div className="fpop-section">
-                  <h5>Transmission</h5>
+                  <h5>{label('transmissionLabel')}</h5>
                   <div className="fopts">
                     <button
                       type="button"
                       className={`fopt ${!filters.transmission ? 'sel' : ''}`}
                       onClick={() => setFilters((prev) => ({ ...prev, transmission: '' }))}
                     >
-                      Any
+                      {label('anyLabel')}
                     </button>
                     {transmissionOptions.map((t) => (
                       <button
@@ -544,14 +549,14 @@ export default function SearchResultsChrome({
                         className={`fopt ${filters.transmission === t ? 'sel' : ''}`}
                         onClick={() => setFilters((prev) => ({ ...prev, transmission: t }))}
                       >
-                        {formatTransmissionLabel(t)}
+                        {formatTransmissionLabel(t, searchCopy)}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="fpop-section">
-                  <h5>Minimum seats</h5>
+                  <h5>{label('minSeatsLabel')}</h5>
                   <div className="fopts">
                     {SEAT_OPTIONS.map((value) => (
                       <button
@@ -560,14 +565,14 @@ export default function SearchResultsChrome({
                         className={`fopt ${filters.minSeats === value ? 'sel' : ''}`}
                         onClick={() => handleSeatsSelect(value)}
                       >
-                        {value ? `${value}+` : 'Any'}
+                        {value ? `${value}+` : label('anyLabel')}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="fpop-section">
-                  <h5>Minimum sleeps</h5>
+                  <h5>{label('minSleepsLabel')}</h5>
                   <div className="fopts">
                     {SLEEP_OPTIONS.map((value) => (
                       <button
@@ -576,14 +581,14 @@ export default function SearchResultsChrome({
                         className={`fopt ${filters.minSleeps === value ? 'sel' : ''}`}
                         onClick={() => handleSleepsSelect(value)}
                       >
-                        {value ? `${value}+` : 'Any'}
+                        {value ? `${value}+` : label('anyLabel')}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="fpop-section">
-                  <h5>Price per {perLabel}</h5>
+                  <h5>{fillTemplate(label('priceHeading'), { unit: perLabel })}</h5>
                   <PriceRangeFilter
                     min={priceBounds.min}
                     max={priceBounds.max}
@@ -596,7 +601,7 @@ export default function SearchResultsChrome({
                   />
                   {priceActive && (
                     <button className="fpop-reset fpop-reset--block" type="button" onClick={resetPriceFilter}>
-                      Reset range
+                      {label('resetRangeLabel')}
                     </button>
                   )}
                 </div>
@@ -605,7 +610,7 @@ export default function SearchResultsChrome({
 
             {hasActiveFilters && (
               <button className="chip clear" type="button" onClick={clearFilters}>
-                Clear all ✕
+                {label('clearAllChipLabel')}
               </button>
             )}
             </div>
@@ -614,9 +619,9 @@ export default function SearchResultsChrome({
           <div className="fb-right">
             <span className="result-count" id="resultCount">
               {loading ? (
-                'Loading…'
+                label('loadingLabel')
               ) : loadFailed ? (
-                'Unavailable'
+                label('unavailableLabel')
               ) : (
                 <>
                   <b>{totalCount}</b> {totalCount === 1 ? config.unitSingular : config.unitPlural}
@@ -625,7 +630,7 @@ export default function SearchResultsChrome({
             </span>
             <div className="sortwrap">
               <button className={`sortbtn ${sortOpen ? 'open' : ''}`} type="button" id="sortBtn" onClick={() => setSortOpen(!sortOpen)}>
-                Sort: <b id="sortLabel">{sortLabel}</b>
+                {label('sortPrefix')} <b id="sortLabel">{sortLabel}</b>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m6 9 6 6 6-6" />
                 </svg>
@@ -651,12 +656,12 @@ export default function SearchResultsChrome({
         </div>
         <div className="filterbar-mobile-count" aria-live="polite">
           {loading ? (
-            `Loading ${config.unitPlural}…`
+            fillTemplate(label('loadingPlural'), { plural: config.unitPlural })
           ) : loadFailed ? (
-            `Couldn't load ${config.unitPlural}`
+            fillTemplate(label('loadFailedPlural'), { plural: config.unitPlural })
           ) : (
             <>
-              <b>{totalCount}</b> {totalCount === 1 ? config.unitSingular : config.unitPlural} found
+              <b>{totalCount}</b> {totalCount === 1 ? config.unitSingular : config.unitPlural} {label('foundSuffix')}
             </>
           )}
         </div>
@@ -666,6 +671,9 @@ export default function SearchResultsChrome({
 }
 
 export function SearchResultsHeaderPill({ pillText }) {
+  const { page: globalPage } = usePageContent('global')
+  const editLabel = cmsText(globalPage.searchForm?.editLabel, SEARCH_FORM_COPY.editLabel)
+
   return (
     <button className="hsearch-pill" id="hsearchPill" type="button">
       <span className="hsp-ic">
@@ -675,7 +683,7 @@ export function SearchResultsHeaderPill({ pillText }) {
         </svg>
       </span>
       <span className="hsp-text">{pillText}</span>
-      <span className="hsp-edit">Edit</span>
+      <span className="hsp-edit">{editLabel}</span>
     </button>
   )
 }

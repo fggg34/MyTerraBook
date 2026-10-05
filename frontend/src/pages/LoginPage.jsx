@@ -11,20 +11,8 @@ import '../styles/auth-pages.css'
 
 export default function LoginPage({ hostIntent = false }) {
   useRedirectIfAuthenticated(hostIntent)
-  const { page: copy } = usePageContent(hostIntent ? 'auth-host-register' : 'auth-login')
-  const loginCopy = hostIntent
-    ? {
-        title: 'Host sign in',
-        subtitle: 'Manage your listings, bookings and payouts.',
-        submitLabel: 'Sign in to host panel',
-        forgotPasswordLabel: 'Forgot your password?',
-        registerPrompt: 'New host?',
-        registerLink: 'Create a host account',
-        heroTitle: 'Welcome back, host',
-        heroText: 'Manage your guesthouses, campervans and bookings from one dashboard.',
-      }
-    : {}
-  const mergedCopy = { ...copy, ...loginCopy }
+  const { page: authPage } = usePageContent('auth-login')
+  const mergedCopy = hostIntent ? (authPage.hostLogin ?? {}) : authPage
   const seo = usePageSeo('auth-login', {
     source: mergedCopy,
     robots: 'noindex',
@@ -71,12 +59,14 @@ export default function LoginPage({ hostIntent = false }) {
       <PageHead {...seo} />
       <AuthPageLayout
       variant="login"
-      heroTitle={mergedCopy.heroTitle ?? 'Sign in to MyTerraBook'}
-      heroText={mergedCopy.heroText ?? 'Pick up where you left off. Your bookings, saved listings and trip details are waiting.'}
+      heroTitle={mergedCopy.heroTitle ?? (hostIntent ? 'Welcome back, host' : 'Sign in to MyTerraBook')}
+      heroText={mergedCopy.heroText ?? (hostIntent
+        ? 'Manage your guesthouses, campervans and bookings from one dashboard.'
+        : 'Pick up where you left off. Your bookings, saved listings and trip details are waiting.')}
     >
       <div className="auth-form-head">
-        <h1>{mergedCopy.title ?? 'Sign in'}</h1>
-        <p>{mergedCopy.subtitle ?? 'Enter your details to access your account.'}</p>
+        <h1>{mergedCopy.title ?? (hostIntent ? 'Host sign in' : 'Sign in')}</h1>
+        <p>{mergedCopy.subtitle ?? (hostIntent ? 'Manage your listings, bookings and payouts.' : 'Enter your details to access your account.')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="auth-form">
@@ -128,25 +118,25 @@ export default function LoginPage({ hostIntent = false }) {
         </div>
 
         <button type="submit" className="auth-submit" disabled={loading}>
-          {loading ? 'Signing in…' : (mergedCopy.submitLabel ?? 'Sign in')}
+          {loading ? (mergedCopy.signingInLabel ?? 'Signing in…') : (mergedCopy.submitLabel ?? (hostIntent ? 'Sign in to host panel' : 'Sign in'))}
         </button>
       </form>
 
       <footer className="auth-layout__footer">
         <p className="auth-switch">
-          {mergedCopy.registerPrompt ?? 'New here?'}{' '}
+          {mergedCopy.registerPrompt ?? (hostIntent ? 'New host?' : 'New here?')}{' '}
           <Link to={hostIntent ? '/host/register' : '/register'}>
             {mergedCopy.registerLink ?? (hostIntent ? 'Create a host account' : 'Create an account')}
           </Link>
         </p>
         {!hostIntent && (
           <>
-            <div className="auth-divider" aria-hidden="true">or</div>
+            <div className="auth-divider" aria-hidden="true">{mergedCopy.orLabel ?? 'or'}</div>
             <Link to="/host/login" className="auth-host-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
                 <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5Z" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              Sign in as a host
+              {authPage.header?.hostSignInLabel || authPage.hostSignInLabel || 'Sign in as a host'}
             </Link>
           </>
         )}

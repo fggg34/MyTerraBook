@@ -2,14 +2,6 @@ import { useEffect } from 'react'
 
 const SPARK = [0.45, 0.6, 0.52, 0.72, 0.66, 0.85, 0.78, 1.0]
 
-const PINGS = [
-  { n: 'Anna', c: 'Reykjavík', a: '+€240' },
-  { n: 'Jón', c: 'Akureyri', a: '+€180' },
-  { n: 'Eva', c: 'Vík', a: '+€310' },
-  { n: 'Ólafur', c: 'Höfn', a: '+€155' },
-  { n: 'Sara', c: 'Selfoss', a: '+€275' },
-]
-
 export default function useHostCtaEffects(sectionRef) {
   useEffect(() => {
     const sec = sectionRef.current
@@ -18,12 +10,10 @@ export default function useHostCtaEffects(sectionRef) {
     if (sec.dataset.hostFxInit === '1') return undefined
     sec.dataset.hostFxInit = '1'
 
-    const heAmt = sec.querySelector('#heAmt')
     const spark = sec.querySelector('#hcSpark')
     const stage = sec.querySelector('.host-stage')
     const photoImg = sec.querySelector('.host-photo img')
     const vanImg = sec.querySelector('.host-van img')
-    const pingHost = sec.querySelector('#hostPings')
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     if (spark && !spark.children.length) {
@@ -34,24 +24,9 @@ export default function useHostCtaEffects(sectionRef) {
       })
     }
 
-    let pingIx = 0
-    let pingTimer = null
     let io
     let scrollRaf = false
     let revealDoneTimer = null
-
-    const spawnPing = () => {
-      if (reduce || !pingHost) return
-      const d = PINGS[pingIx % PINGS.length]
-      pingIx += 1
-      const el = document.createElement('div')
-      el.className = 'host-ping'
-      el.style.left = `${32 + Math.random() * 40}%`
-      el.innerHTML = `<span class="pg-av">${d.n.charAt(0)}</span><span>${d.n} · ${d.c}</span><span class="pg-amt">${d.a}</span>`
-      pingHost.appendChild(el)
-      requestAnimationFrame(() => el.classList.add('show'))
-      window.setTimeout(() => el.remove(), 4400)
-    }
 
     const parallax = () => {
       scrollRaf = false
@@ -90,26 +65,7 @@ export default function useHostCtaEffects(sectionRef) {
         })
       }
 
-      if (heAmt) {
-        if (reduce) {
-          heAmt.textContent = '€1,900'
-        } else {
-          const target = 1900
-          const t0 = performance.now()
-          const dur = 1100
-          const step = (now) => {
-            const p = Math.min((now - t0) / dur, 1)
-            const e = 1 - (1 - p) ** 3
-            heAmt.textContent = `€${Math.round(target * e).toLocaleString('en-US')}`
-            if (p < 1) requestAnimationFrame(step)
-          }
-          requestAnimationFrame(step)
-        }
-      }
-
       if (!reduce) {
-        window.setTimeout(spawnPing, 1200)
-        pingTimer = window.setInterval(spawnPing, 2600)
         parallax()
         window.addEventListener('scroll', onParallaxScroll, { passive: true })
       }
@@ -149,7 +105,6 @@ export default function useHostCtaEffects(sectionRef) {
 
     return () => {
       if (io) io.disconnect()
-      if (pingTimer) window.clearInterval(pingTimer)
       if (revealDoneTimer) window.clearTimeout(revealDoneTimer)
       window.removeEventListener('scroll', maybeReveal)
       window.removeEventListener('resize', maybeReveal)

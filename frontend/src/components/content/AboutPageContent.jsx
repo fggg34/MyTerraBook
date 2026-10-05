@@ -192,7 +192,7 @@ export default function AboutPageContent() {
           </div>
           <div className="about-hero-visual">
             <div className="about-hero-frame">
-              <CmsImage src={heroImage} alt="Iceland landscape seen from the road" loading="eager" />
+              <CmsImage src={heroImage} alt={hero.imageAlt || 'Iceland landscape seen from the road'} loading="eager" />
             </div>
             {(hero.pinTitle || hero.pinSubtitle) && (
               <div className="about-hero-pin">

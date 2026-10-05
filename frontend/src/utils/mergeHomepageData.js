@@ -1,5 +1,6 @@
 import { resolveCmsImage, resolveStorageUrl } from '../api'
 import { defaultHomepageData } from '../data/defaultHomepageData'
+import { usableMobileValue } from './seededMobileFallbacks'
 import { normalizeHomepageHref, normalizeLinkList } from './normalizeHomepageHref'
 
 function mergeCards(cards, fallbackCards, useImageFallbacks) {
@@ -24,7 +25,7 @@ function mergeSteps(steps, fallbackSteps, useImageFallbacks) {
       ...step,
       title: fixIcelandicPlaceNames(step.title ?? fallback.title),
       description: fixIcelandicPlaceNames(step.description ?? fallback.description),
-      tags: mergedTags?.length ? mergedTags : fallback.tags,
+      tags: mergedTags ?? (useImageFallbacks ? fallback.tags : []),
       image: resolveCmsImage(step.image, useImageFallbacks ? fallback.image : null),
     }
   })
@@ -40,9 +41,10 @@ function mergeFeatures(features, fallbackFeatures, useImageFallbacks) {
     return Array.isArray(features) ? features : []
   }
   if (!Array.isArray(features) || !features.length) return useImageFallbacks ? fallbackFeatures : []
-  return fallbackFeatures.map((feature, index) => ({
+  return features.map((feature, index) => ({
+    ...(useImageFallbacks ? fallbackFeatures[index] : {}),
     ...feature,
-    ...(features[index] || {}),
+    iconImage: resolveCmsImage(feature.iconImage, null),
   }))
 }
 
@@ -69,9 +71,9 @@ function mergeReviews(section, fallbackReviews, useImageFallbacks) {
 function mergeTrustItems(items, fallbackItems, useImageFallbacks) {
   if (!Array.isArray(items) || !items.length) return useImageFallbacks ? fallbackItems : []
   return items.map((item, index) => ({
-    ...fallbackItems[index],
+    ...(useImageFallbacks ? fallbackItems[index] : {}),
     ...item,
-    iconImage: item.iconImage ? resolveStorageUrl(item.iconImage) : fallbackItems[index]?.iconImage,
+    iconImage: item.iconImage ? resolveStorageUrl(item.iconImage) : (useImageFallbacks ? fallbackItems[index]?.iconImage : null),
   }))
 }
 
@@ -118,13 +120,13 @@ export function mergeHomepageData(apiData = {}, { useImageFallbacks = true } = {
 
   const hero = {
     ...withDefaults(defaults.hero, apiData.hero),
-    mobileHeading: '',
-    mobileSubtitle: '',
+    mobileHeading: usableMobileValue(apiData.hero?.mobileHeading),
+    mobileSubtitle: usableMobileValue(apiData.hero?.mobileSubtitle),
     backgroundImage: resolveCmsImage(
       apiData.hero?.backgroundImage,
       useImageFallbacks ? defaults.hero.backgroundImage : null,
     ),
-    mobileBackgroundImage: '',
+    mobileBackgroundImage: resolveCmsImage(usableMobileValue(apiData.hero?.mobileBackgroundImage), null),
     footerLinkHref: normalizeHomepageHref(
       apiData.hero?.footerLinkHref ?? (useImageFallbacks ? defaults.hero.footerLinkHref : undefined),
     ),
@@ -181,8 +183,8 @@ export function mergeHomepageData(apiData = {}, { useImageFallbacks = true } = {
 
   const topbar = {
     ...withDefaults(defaults.topbar, apiData.topbar),
-    mobileText: '',
-    mobileLinkLabel: '',
+    mobileText: usableMobileValue(apiData.topbar?.mobileText),
+    mobileLinkLabel: usableMobileValue(apiData.topbar?.mobileLinkLabel),
     linkHref: normalizeHomepageHref(
       apiData.topbar?.linkHref ?? (useImageFallbacks ? defaults.topbar.linkHref : undefined),
     ),

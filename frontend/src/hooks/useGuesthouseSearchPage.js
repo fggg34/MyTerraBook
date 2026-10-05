@@ -7,6 +7,7 @@ import {
   PAGE_SIZE,
   VEHICLE_TYPES,
 } from '../data/searchResultsConfig'
+import { applySortLabels } from '../data/searchFormCopy'
 import { mergePageContent } from '../utils/mergePageContent'
 import { mapGuestHouseToResultCard } from '../utils/mapGuestHouseToResultCard'
 import {
@@ -35,7 +36,12 @@ function formatDateRange(checkIn, checkOut) {
 export default function useGuesthouseSearchPage(enabled = true) {
   const staticConfig = VEHICLE_TYPES.guesthouse
   const { page: cmsPage } = usePageContent('search-guesthouse', staticConfig)
+  const { page: globalPage } = usePageContent('global')
   const config = useMemo(() => mergePageContent(staticConfig, cmsPage), [staticConfig, cmsPage])
+  const sortOptions = useMemo(
+    () => applySortLabels(GUESTHOUSE_SORT_OPTIONS, globalPage.searchForm),
+    [globalPage.searchForm],
+  )
   const [searchParams, setSearchParams] = useSearchParams()
   const query = Object.fromEntries(searchParams.entries())
   const searchQuery = searchParams.toString()
@@ -157,7 +163,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
   }, [allCards, filters, quickFilters, quickFilterOptions, sort])
 
   const visibleCards = cards.slice(0, visibleCount)
-  const cityLabel = query.city || 'Iceland'
+  const cityLabel = query.city || config.introLocationDefault || 'Iceland'
   const dateLabel = formatDateRange(query.check_in, query.check_out)
   const guestsLabel = query.guests || ''
 
@@ -185,7 +191,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
   const hasActiveFilters =
     quickFilters.length > 0 || filters.minGuests > 0 || isPriceFilterActive(filters, priceBounds)
 
-  const sortLabel = GUESTHOUSE_SORT_OPTIONS.find((o) => o.id === sort)?.label || 'Recommended'
+  const sortLabel = sortOptions.find((o) => o.id === sort)?.label || sortOptions[0]?.label || 'Recommended'
 
   return {
     config,
@@ -205,7 +211,7 @@ export default function useGuesthouseSearchPage(enabled = true) {
     sort,
     setSort,
     sortLabel,
-    sortOptions: GUESTHOUSE_SORT_OPTIONS,
+    sortOptions,
     quickFilterOptions,
     filters,
     setFilters,

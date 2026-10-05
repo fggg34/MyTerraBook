@@ -97,7 +97,7 @@ export default function ListingPageContent({
               <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
               <path d="M12 3v13M8 7l4-4 4 4" />
             </svg>
-            <span>Share</span>
+            <span>{typeConfig.shareLabel || 'Share'}</span>
           </button>
         </div>
       </div>

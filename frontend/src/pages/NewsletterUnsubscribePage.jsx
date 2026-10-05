@@ -49,8 +49,8 @@ export default function NewsletterUnsubscribePage() {
         <div className="auth-intro">
           <SiteLogo variant="auth" className="logo-text" />
           <h1>{copy.title ?? 'Newsletter'}</h1>
-          {status === 'missing' && <p>Missing unsubscribe link.</p>}
-          {(status === 'success' || status === 'error') && <p>{message}</p>}
+          {status === 'missing' && <p>{copy.missingMessage || 'Missing unsubscribe link.'}</p>}
+          {(status === 'success' || status === 'error') && <p>{(status === 'success' ? copy.successMessage : copy.errorMessage) ?? message}</p>}
         </div>
         <p className="auth-switch">
           <Link to="/">{copy.backLabel ?? 'Back to homepage'}</Link>

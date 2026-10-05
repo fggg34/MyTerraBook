@@ -4,12 +4,18 @@ import CmsImage from '../cms/CmsImage'
 import { useToast } from '../../context/ToastContext'
 
 export default function NewsSection({
+  eyebrow,
+  buttonLabel,
+  footnote,
   heading,
   headingAccent,
   lead,
   backgroundImage,
   placeholder,
   successMessage,
+  backgroundAlt,
+  buttonLoadingLabel,
+  errorMessage,
 }) {
   const { toast } = useToast()
   const [email, setEmail] = useState('')
@@ -24,7 +30,7 @@ export default function NewsSection({
       setSubmitted(true)
       setEmail('')
     } catch (err) {
-      toast(err.response?.data?.message || 'Could not subscribe right now', 'error')
+      toast(err.response?.data?.message || errorMessage || 'Could not subscribe right now', 'error')
     } finally {
       setLoading(false)
     }
@@ -45,11 +51,12 @@ export default function NewsSection({
       <CmsImage
         className="news-bg"
         src={backgroundImage}
-        alt="Iceland terrain, campervan beneath dramatic peaks"
+        alt={backgroundAlt || 'Iceland terrain, campervan beneath dramatic peaks'}
       />
       <div className="news-aurora" aria-hidden="true" />
       <div className="wrap">
         <div className="news-copy">
+          {eyebrow && <span className="eyebrow">{eyebrow}</span>}
           {heading && (
             <h2>
               {headingParts ? (
@@ -84,7 +91,7 @@ export default function NewsSection({
               />
             </div>
             <button type="submit" disabled={loading}>
-              {loading ? 'Subscribing…' : 'Subscribe'}
+              {loading ? (buttonLoadingLabel || 'Subscribing…') : (buttonLabel ?? 'Subscribe')}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
@@ -92,11 +99,7 @@ export default function NewsSection({
           </form>
           <div className="news-foot">
             <span className="news-default" style={{ display: submitted ? 'none' : 'flex' }}>
-              <span>One email a month</span>
-              <span className="sep" />
-              <span>No spam</span>
-              <span className="sep" />
-              <span>Unsubscribe anytime</span>
+              {footnote}
             </span>
             <span className={`news-success ${submitted ? 'show' : ''}`} id="newsOK">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">

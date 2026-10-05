@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { api } from '../../api'
 import { useToast } from '../../context/ToastContext'
 
-export default function ContactForm() {
+export default function ContactForm({ labels = {} }) {
   const { toast } = useToast()
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [loading, setLoading] = useState(false)
@@ -23,14 +23,14 @@ export default function ContactForm() {
 
   return (
     <form className="content-contact-form" onSubmit={handleSubmit}>
-      <label htmlFor="contact-name">Name</label>
+      <label htmlFor="contact-name">{labels.name || 'Name'}</label>
       <input
         id="contact-name"
         required
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
       />
-      <label htmlFor="contact-email">Email</label>
+      <label htmlFor="contact-email">{labels.email || 'Email'}</label>
       <input
         id="contact-email"
         type="email"
@@ -38,7 +38,7 @@ export default function ContactForm() {
         value={form.email}
         onChange={(e) => setForm({ ...form, email: e.target.value })}
       />
-      <label htmlFor="contact-message">Message</label>
+      <label htmlFor="contact-message">{labels.message || 'Message'}</label>
       <textarea
         id="contact-message"
         required
@@ -46,7 +46,7 @@ export default function ContactForm() {
         onChange={(e) => setForm({ ...form, message: e.target.value })}
       />
       <button type="submit" disabled={loading}>
-        {loading ? 'Sending…' : 'Send message'}
+        {loading ? (labels.sending || 'Sending…') : (labels.submit || 'Send message')}
       </button>
     </form>
   )

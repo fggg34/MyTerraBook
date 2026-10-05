@@ -6,6 +6,7 @@ export default function HostFaqSection({
   heading = 'Questions, answered.',
   subheading = 'Thinking about hosting but not sure where to start? Our team in Reykjavík is one message away.',
   contactEmail = 'hosts@myterrabook.com',
+  contactLabel = 'Talk to the host team',
 }) {
   const sectionRef = useRef(null)
   const [openIndex, setOpenIndex] = useState(0)
@@ -28,7 +29,7 @@ export default function HostFaqSection({
               </svg>
             </span>
             <span className="host-faq-contact-tx">
-              Talk to the host team
+              {contactLabel}
               <b>
                 <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
               </b>

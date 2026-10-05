@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { CURRENCIES } from '../../data/localePreferences'
 import { useLocalePreferences } from '../../context/LocalePreferencesContext'
+import { usePageContent } from '../../context/SiteContentContext'
+import { cmsText } from '../../data/searchFormCopy'
 
-function CurrencyPanel({ currency, onSelectCurrency }) {
+function CurrencyPanel({ currency, onSelectCurrency, heading }) {
   return (
     <div className="lc-section">
-      <h5>Currency</h5>
+      <h5>{heading}</h5>
       <div className="lc-opts">
         {CURRENCIES.map((item) => (
           <button
@@ -32,6 +34,8 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
   const rootRef = useRef(null)
   const [open, setOpen] = useState(false)
   const { currency, setCurrency } = useLocalePreferences()
+  const { page: globalPage } = usePageContent('global')
+  const currencyHeading = cmsText(globalPage.header?.currencyMenuLabel, 'Currency')
 
   useEffect(() => {
     if (!open) return undefined
@@ -58,7 +62,7 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
         <button
           className={`lang-cur lang-cur--menu ${open ? 'open' : ''}`}
           type="button"
-          aria-label={`Currency: ${currency.label}`}
+          aria-label={`${currencyHeading}: ${currency.label}`}
           aria-haspopup="dialog"
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
@@ -66,8 +70,9 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
           <span>{currency.label}</span>
         </button>
 
-        <div className={`lang-cur-panel lang-cur-panel--mobile ${open ? 'show' : ''}`} role="dialog" aria-label="Currency">
+        <div className={`lang-cur-panel lang-cur-panel--mobile ${open ? 'show' : ''}`} role="dialog" aria-label={currencyHeading}>
           <CurrencyPanel
+            heading={currencyHeading}
             currency={currency}
             onSelectCurrency={(item) => {
               setCurrency(item)
@@ -86,7 +91,7 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
       <button
         className={`lang-cur ${open ? 'open' : ''}`}
         type="button"
-        aria-label="Currency"
+        aria-label={currencyHeading}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
@@ -94,8 +99,9 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
         <span>{currency.label}</span>
       </button>
 
-      <div className={`lang-cur-panel ${open ? 'show' : ''}`} role="dialog" aria-label="Currency">
+      <div className={`lang-cur-panel ${open ? 'show' : ''}`} role="dialog" aria-label={currencyHeading}>
         <CurrencyPanel
+          heading={currencyHeading}
           currency={currency}
           onSelectCurrency={(item) => {
             setCurrency(item)

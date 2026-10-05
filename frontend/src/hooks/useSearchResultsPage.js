@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import { usePageContent } from '../context/SiteContentContext'
 import { PAGE_SIZE, SORT_OPTIONS, VEHICLE_TYPES } from '../data/searchResultsConfig'
+import { applySortLabels } from '../data/searchFormCopy'
 import { mergePageContent } from '../utils/mergePageContent'
 import { useFormatPrice } from './useFormatPrice'
 import { mapCarToResultCard } from '../utils/mapCarToResultCard'
@@ -37,7 +38,12 @@ const SEARCH_PAGE_KEYS = {
 export default function useSearchResultsPage(vehicleType) {
   const staticConfig = VEHICLE_TYPES[vehicleType] || VEHICLE_TYPES.campervan
   const { page: cmsPage } = usePageContent(SEARCH_PAGE_KEYS[vehicleType] || 'search-campervan', staticConfig)
+  const { page: globalPage } = usePageContent('global')
   const config = useMemo(() => mergePageContent(staticConfig, cmsPage), [staticConfig, cmsPage])
+  const sortOptions = useMemo(
+    () => applySortLabels(SORT_OPTIONS, globalPage.searchForm),
+    [globalPage.searchForm],
+  )
   const [searchParams, setSearchParams] = useSearchParams()
   const query = Object.fromEntries(searchParams.entries())
   const searchQuery = searchParams.toString()
@@ -253,7 +259,7 @@ export default function useSearchResultsPage(vehicleType) {
     filters.minSleeps > 0 ||
     isPriceFilterActive(filters, priceBounds)
 
-  const sortLabel = SORT_OPTIONS.find((o) => o.id === sort)?.label || 'Recommended'
+  const sortLabel = sortOptions.find((o) => o.id === sort)?.label || sortOptions[0]?.label || 'Recommended'
 
   return {
     config,
@@ -273,7 +279,7 @@ export default function useSearchResultsPage(vehicleType) {
     sort,
     setSort,
     sortLabel,
-    sortOptions: SORT_OPTIONS,
+    sortOptions,
     quickFilterOptions,
     attributeQuickFilters,
     categoryFilterOptions,

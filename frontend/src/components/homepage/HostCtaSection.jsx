@@ -6,14 +6,22 @@ import useHostCtaEffects from '../../hooks/useHostCtaEffects'
 export default function HostCtaSection({
   heading,
   lead,
-  earnAmount = '€1,900',
+  eyebrow,
+  earnAmount,
+  earnNote,
+  earnPeriod,
+  vanTag,
+  chipHeading,
+  chipLabel,
   points = [],
   primaryLabel,
   primaryHref = '/become-a-host',
   secondaryLabel,
   secondaryHref,
   houseImage,
+  houseImageAlt,
   vanImage,
+  vanImageAlt,
   chipAmount,
 }) {
   const sectionRef = useRef(null)
@@ -26,46 +34,49 @@ export default function HostCtaSection({
           <div className="host-stage">
             <div className="host-photo">
               <div className="ph-zoom">
-                <CmsImage src={houseImage} alt="A guesthouse you could list on MyTerra" />
+                <CmsImage src={houseImage} alt={houseImageAlt || 'A guesthouse you could list on MyTerra'} />
               </div>
             </div>
             <div className="host-van">
-              <CmsImage src={vanImage} alt="A campervan parked outside the guesthouse" />
-              <span className="van-tag">
-                <span className="vt-dot" />
-                Parked &amp; earning
-              </span>
+              <CmsImage src={vanImage} alt={vanImageAlt || 'A campervan parked outside the guesthouse'} />
+              {vanTag && (
+                <span className="van-tag">
+                  <span className="vt-dot" />
+                  {vanTag}
+                </span>
+              )}
             </div>
-            <div className="host-chip">
+            {(chipAmount || chipLabel) && <div className="host-chip">
               <div>
-                <div className="hc-head">
-                  <span className="hc-live">
-                    <span className="lv-dot" />
-                    Live payouts
-                  </span>
-                </div>
+                {chipHeading && (
+                  <div className="hc-head">
+                    <span className="hc-live">
+                      <span className="lv-dot" />
+                      {chipHeading}
+                    </span>
+                  </div>
+                )}
                 <div className="hc-amt">{chipAmount}</div>
                 <div className="hc-lab">
-                  paid to <b>1,800+ hosts</b> last year
+                  {chipLabel}
                 </div>
               </div>
-              <div className="hc-spark" id="hcSpark" />
-            </div>
-            <div className="host-pings" id="hostPings" />
+              <div className="hc-spark" id="hcSpark" aria-hidden="true" />
+            </div>}
+
           </div>
 
           <div className="host-copy">
+            {eyebrow && <span className="eyebrow">{eyebrow}</span>}
             {heading && <h2>{heading}</h2>}
             {lead && <p className="host-lead">{lead}</p>}
-            <div className="host-earn">
+            {earnAmount && <div className="host-earn">
               <span className="he-amt" id="heAmt">
                 {earnAmount}
               </span>
-              <span className="he-per">/ month on average</span>
-            </div>
-            <p className="host-earn-note">
-              Top campervan hosts clear <b>€3,200+</b>. You keep 85%, we handle bookings, payments and insurance.
-            </p>
+              {earnPeriod && <span className="he-per">{earnPeriod}</span>}
+            </div>}
+            {earnNote && <p className="host-earn-note">{earnNote}</p>}
             <div className="host-points">
               {points.map((point) => (
                 <span className="host-point" key={point}>

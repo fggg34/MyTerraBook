@@ -12,6 +12,7 @@ export default function HostBottomCta({ cta = {} }) {
   const title = cta.title ?? 'Ready to earn from your vehicle?'
   const lead = cta.lead ?? "Join 1,800+ Iceland hosts already earning with MyTerraBook. It's free to list, and you could be booked within the week."
   const submitLabel = cta.submitLabel ?? 'List for free'
+  const secondaryLabel = cta.secondaryLabel ?? 'See how it works'
   const patternSrc = resolveCmsImage(cta.patternImage, DEFAULT_PATTERN_SRC)
 
   return (
@@ -45,7 +46,7 @@ export default function HostBottomCta({ cta = {} }) {
                 </svg>
               </a>
               <a className="host-bottom-cta-btn host-bottom-cta-btn--ghost" href="#how">
-                See how it works
+                {secondaryLabel}
               </a>
             </div>
           </div>

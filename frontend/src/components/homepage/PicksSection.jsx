@@ -36,7 +36,7 @@ function CarouselNav({ direction, disabled, onClick, label }) {
   )
 }
 
-export default function PicksSection({ heading, tabs = [] }) {
+export default function PicksSection({ heading, tabs = [], emptyLabel }) {
   const { items, loading } = usePicksListings()
   const isMobile = useMediaQuery('(max-width: 768px)')
   const tabList = useMemo(() => {
@@ -88,7 +88,7 @@ export default function PicksSection({ heading, tabs = [] }) {
                 <ProductCard key={item.id || item.name} {...item} />
               ))
             ) : !loading ? (
-              <p className="picks-empty" role="status">No listings available yet.</p>
+              <p className="picks-empty" role="status">{emptyLabel || 'No listings available yet.'}</p>
             ) : null}
           </div>
           {!showCarousel && (

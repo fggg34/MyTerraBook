@@ -106,9 +106,16 @@ export default function RegisterPage() {
       <PageHead {...seo} />
       <AuthPageLayout
       variant="register"
-      features={REGISTER_FEATURES}
-      heroTitle={copy.heroTitle ?? 'Create your account'}
-      heroText={copy.heroText ?? 'Join travelers who book guesthouses, campervans and cars across Iceland, all in one trusted marketplace.'}
+      features={REGISTER_FEATURES.map((feature, index) => {
+        const cmsFeature = Array.isArray(copy.features) ? copy.features[index] : null
+        return {
+          ...feature,
+          title: cmsFeature?.title || feature.title,
+          text: cmsFeature?.text || feature.text,
+        }
+      })}
+      heroTitle={copy.heroTitle || 'Create your account'}
+      heroText={copy.heroText || 'Join travelers who book guesthouses, campervans and cars across Iceland, all in one trusted marketplace.'}
     >
       <div className="auth-form-head">
         <h1>{copy.title ?? 'Create an account'}</h1>
@@ -119,13 +126,13 @@ export default function RegisterPage() {
         {errors.form && <div className="auth-form-error" role="alert">{errors.form}</div>}
 
         <div className="auth-field">
-          <label htmlFor="name">Full name <RequiredMark /></label>
+          <label htmlFor="name">{copy.nameLabel || 'Full name'} <RequiredMark /></label>
           <div className={`auth-input-wrap${errors.name ? ' auth-input-wrap--error' : ''}`}>
             <input
               id="name"
               type="text"
               className="auth-input"
-              placeholder="Jane Smith"
+              placeholder={copy.namePlaceholder || 'Jane Smith'}
               autoComplete="name"
               value={form.name}
               onChange={update('name')}
@@ -135,13 +142,13 @@ export default function RegisterPage() {
         </div>
 
         <div className="auth-field">
-          <label htmlFor="email">Email address <RequiredMark /></label>
+          <label htmlFor="email">{copy.emailLabel || 'Email address'} <RequiredMark /></label>
           <div className={`auth-input-wrap${errors.email ? ' auth-input-wrap--error' : ''}`}>
             <input
               id="email"
               type="email"
               className="auth-input"
-              placeholder="you@example.com"
+              placeholder={copy.emailPlaceholder || 'you@example.com'}
               autoComplete="email"
               value={form.email}
               onChange={update('email')}
@@ -153,19 +160,19 @@ export default function RegisterPage() {
         <div className="auth-field">
           <PhoneField
             id="phone"
-            label="Phone"
+            label={copy.phoneLabel || 'Phone'}
             variant="auth"
             required
             value={form.phone}
             onChange={(phone) => setForm({ ...form, phone })}
             hasError={!!errors.phone}
-            placeholder="555 1234"
+            placeholder={copy.phonePlaceholder || '555 1234'}
           />
           {errors.phone && <p className="auth-field-error">{errors.phone}</p>}
         </div>
 
         <div className="auth-field">
-          <label htmlFor="password">Password <RequiredMark /></label>
+          <label htmlFor="password">{copy.passwordLabel || 'Password'} <RequiredMark /></label>
           <PasswordInput
             id="password"
             value={form.password}
@@ -175,11 +182,11 @@ export default function RegisterPage() {
           />
           {errors.password
             ? <p className="auth-field-error">{errors.password}</p>
-            : <p className="auth-password-hint">At least 8 characters</p>}
+            : <p className="auth-password-hint">{copy.passwordHint || 'At least 8 characters'}</p>}
         </div>
 
         <div className="auth-field">
-          <label htmlFor="password_confirmation">Confirm password <RequiredMark /></label>
+          <label htmlFor="password_confirmation">{copy.confirmPasswordLabel || 'Confirm password'} <RequiredMark /></label>
           <PasswordInput
             id="password_confirmation"
             value={form.password_confirmation}
@@ -193,7 +200,7 @@ export default function RegisterPage() {
         </div>
 
         <button type="submit" className="auth-submit" disabled={loading}>
-          {loading ? 'Creating account…' : (copy.submitLabel ?? 'Create account')}
+          {loading ? (copy.submittingLabel || 'Creating account…') : (copy.submitLabel || 'Create account')}
         </button>
       </form>
 
@@ -202,7 +209,7 @@ export default function RegisterPage() {
           {copy.loginPrompt ?? 'Already have an account?'}{' '}
           <Link to="/login">{copy.loginLink ?? 'Sign in'}</Link>
           {' · '}
-          <Link to="/forgot-password">Forgot your password?</Link>
+          <Link to="/forgot-password">{copy.forgotPasswordLabel || 'Forgot your password?'}</Link>
         </p>
       </footer>
     </AuthPageLayout>

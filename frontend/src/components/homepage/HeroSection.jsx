@@ -1,3 +1,4 @@
+import useMediaQuery from '../../hooks/useMediaQuery'
 import BookingModule from './BookingModule'
 import CmsImage from '../cms/CmsImage'
 
@@ -6,10 +7,17 @@ export default function HeroSection(props) {
     heading,
     subtitle,
     backgroundImage,
+    mobileHeading,
+    mobileSubtitle,
+    mobileBackgroundImage,
+    backgroundAlt,
     ...bookingProps
   } = props
 
-  const image = backgroundImage || null
+  const isMobile = useMediaQuery('(max-width: 768px)')
+  const image = (isMobile && mobileBackgroundImage) || backgroundImage || null
+  const title = (isMobile && mobileHeading) || heading
+  const description = (isMobile && mobileSubtitle) || subtitle
 
   return (
     <section className="hero">
@@ -18,7 +26,7 @@ export default function HeroSection(props) {
           <CmsImage
             className="hero-bg"
             src={image}
-            alt="Campervan parked beneath Icelandic mountains"
+            alt={backgroundAlt || 'Campervan parked beneath Icelandic mountains'}
             loading="eager"
           />
         ) : (
@@ -27,8 +35,8 @@ export default function HeroSection(props) {
       </div>
       <div className="hero-inner">
         <div className="hero-copy">
-          {heading && <h1>{heading}</h1>}
-          {subtitle && <p>{subtitle}</p>}
+          {title && <h1>{title}</h1>}
+          {description && <p>{description}</p>}
         </div>
         <BookingModule {...bookingProps} />
       </div>

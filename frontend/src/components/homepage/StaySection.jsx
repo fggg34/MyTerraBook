@@ -35,7 +35,7 @@ function CarouselNav({ direction, disabled, onClick, label }) {
   )
 }
 
-export default function StaySection({ heading, subtitle, allLabel, allHref }) {
+export default function StaySection({ heading, subtitle, allLabel, allHref, emptyLabel }) {
   const { cards, loading } = useStayListings()
   const isMobile = useMediaQuery('(max-width: 768px)')
   const showCarousel = isMobile && cards.length > 1
@@ -81,7 +81,7 @@ export default function StaySection({ heading, subtitle, allLabel, allHref }) {
                 />
               ))
             ) : !loading ? (
-              <p className="stay-empty" role="status">No guesthouses available yet.</p>
+              <p className="stay-empty" role="status">{emptyLabel || 'No guesthouses available yet.'}</p>
             ) : null}
           </div>
           {!showCarousel && (

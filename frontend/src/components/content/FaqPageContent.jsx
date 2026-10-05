@@ -48,7 +48,7 @@ export default function FaqPageContent() {
   const emptyState = page.emptyState ?? {}
   const items = page.items || []
   const categories = [
-    { id: 'all', label: 'All questions' },
+    { id: 'all', label: page.allCategoryLabel || 'All questions' },
     ...(page.categories ?? []).map((category) => ({
       ...category,
       nums: normalizeCategoryNums(category.nums),
@@ -132,7 +132,7 @@ export default function FaqPageContent() {
                         </svg>
                       </span>
                       <span>
-                        <strong>Call us</strong>
+                        <strong>{helpCard.phoneLabel || 'Call us'}</strong>
                         <span>{phone}</span>
                       </span>
                     </a>
@@ -146,7 +146,7 @@ export default function FaqPageContent() {
                         </svg>
                       </span>
                       <span>
-                        <strong>Email</strong>
+                        <strong>{helpCard.emailLabel || 'Email'}</strong>
                         <span>{email}</span>
                       </span>
                     </a>

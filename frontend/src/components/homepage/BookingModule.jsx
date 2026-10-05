@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { usePageContent } from '../../context/SiteContentContext'
+import { SEARCH_FORM_COPY, cmsText } from '../../data/searchFormCopy'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
@@ -102,6 +104,9 @@ export default function BookingModule({
   footerLinkHref,
 }) {
   const navigate = useNavigate()
+  const { page: globalPage } = usePageContent('global')
+  const searchCopy = { ...SEARCH_FORM_COPY, ...(globalPage.searchForm || {}) }
+  const label = (key) => cmsText(searchCopy[key], SEARCH_FORM_COPY[key])
   const tabList = tabs.length
     ? tabs
     : [
@@ -232,11 +237,11 @@ export default function BookingModule({
     <>
       {!pickupLoading && pickupEmpty && (
         <p className="location-empty-hint" role="status">
-          Pickup locations are being configured. Assign locations to vehicles in admin to enable search.
+          {label('emptyLocationsHint')}
         </p>
       )}
       <div className="field field--primary">
-        <span className="flabel">Pick-up location</span>
+        <span className="flabel">{label('pickupLabel')}</span>
         <FieldSelect
           value={vehicleForm.pickup_location_id}
           onChange={(value) => {
@@ -249,35 +254,35 @@ export default function BookingModule({
             if (isMobileCompact) setMobileDetailsOpen(true)
           }}
           options={pickupFieldOptions}
-          placeholder="Select location"
+          placeholder={label('locationPlaceholder')}
           icon={PIN_ICON}
-          ariaLabel="Pick-up location"
+          ariaLabel={label('pickupLabel')}
           disabled={pickupEmpty}
           onOpen={expandMobileDetails}
         />
       </div>
 
       <div className="field field--detail">
-        <span className="flabel">Drop-off location</span>
+        <span className="flabel">{label('dropoffLabel')}</span>
         <FieldSelect
           value={vehicleForm.dropoff_location_id}
           onChange={(value) => setVehicleForm((prev) => ({ ...prev, dropoff_location_id: value }))}
           options={dropoffFieldOptions}
-          placeholder="Select location"
+          placeholder={label('locationPlaceholder')}
           icon={PIN_ICON}
-          ariaLabel="Drop-off location"
+          ariaLabel={label('dropoffLabel')}
           disabled={!vehicleForm.pickup_location_id || pickupEmpty}
           onOpen={expandMobileDetails}
         />
       </div>
 
       <div className="field dates field--detail">
-        <span className="flabel">Pick-up → Drop-off</span>
+        <span className="flabel">{label('vehicleDatesLabel')}</span>
         <DateRangePicker
           variant="embedded compact"
           fixedPopper
-          startLabel="Pick-up"
-          endLabel="Drop-off"
+          startLabel={label('pickupDateLabel')}
+          endLabel={label('dropoffDateLabel')}
           startDate={parseDateOnly(vehicleForm.pickup_at)}
           endDate={parseDateOnly(vehicleForm.dropoff_at)}
           minNights={minRentalDays}
@@ -292,14 +297,14 @@ export default function BookingModule({
   const renderGuesthouseFields = () => (
     <>
       <div className="field field--primary">
-        <span className="flabel">City or area</span>
+        <span className="flabel">{label('cityLabel')}</span>
         <PredictiveSearchField
           {...GUESTHOUSE_CITY_SEARCH_PROPS}
           value={guestForm.city}
           displayValue={guestCityLabel}
-          placeholder="e.g. Reykjavík, Akureyri"
+          placeholder={label('cityPlaceholder')}
           icon={PIN_ICON}
-          ariaLabel="City or area"
+          ariaLabel={label('cityLabel')}
           onActivate={handleGuesthouseActivate}
           onFocus={expandMobileDetails}
           onChange={({ value, label }) => {
@@ -311,12 +316,12 @@ export default function BookingModule({
       </div>
 
       <div className="field dates field--detail">
-        <span className="flabel">Check-in → Check-out</span>
+        <span className="flabel">{label('stayDatesLabel')}</span>
         <DateRangePicker
           variant="embedded compact"
           fixedPopper
-          startLabel="Check-in"
-          endLabel="Check-out"
+          startLabel={label('checkInLabel')}
+          endLabel={label('checkOutLabel')}
           startDate={parseDateOnly(guestForm.check_in)}
           endDate={parseDateOnly(guestForm.check_out)}
           minNights={1}
@@ -326,16 +331,16 @@ export default function BookingModule({
       </div>
 
       <div className="field travelers field--detail">
-        <span className="flabel">Guests</span>
+        <span className="flabel">{label('guestsLabel')}</span>
         <FieldSelect
           value={guestForm.guests}
           onChange={(value) => setGuestForm((prev) => ({ ...prev, guests: value }))}
           options={PEOPLE_OPTIONS.map((n) => ({
             value: String(n),
-            label: `${n} ${n === 1 ? 'guest' : 'guests'}`,
+            label: `${n} ${n === 1 ? label('guestSingular') : label('guestPlural')}`,
           }))}
           icon={PERSON_ICON}
-          ariaLabel="Number of guests"
+          ariaLabel={label('guestsAria')}
         />
       </div>
     </>

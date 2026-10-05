@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
+import { usePageContent } from '../../context/SiteContentContext'
+import { cmsText } from '../../data/searchFormCopy'
 import { normalizeSpec, renderProductCardSpec } from '../../utils/listingSpecIcons'
 
-function BookButton() {
+function BookButton({ label }) {
   return (
     <span className="pcard-book" aria-hidden="true">
-      Book
+      {label}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 12h14M13 6l6 6-6 6" />
       </svg>
@@ -22,6 +24,10 @@ export default function ProductCard({
   per = 'night',
   href,
 }) {
+  const { page: globalPage } = usePageContent('global')
+  const priceFromLabel = cmsText(globalPage.cards?.priceFromLabel, 'From')
+  const bookLabel = cmsText(globalPage.cards?.bookLabel, 'Book')
+
   return (
     <article className="pcard">
       {href && (
@@ -43,11 +49,11 @@ export default function ProductCard({
           {price && (
             <div className="pcard-cta">
               <div className="pcard-price">
-                <span className="ps-label">From</span>
+                <span className="ps-label">{priceFromLabel}</span>
                 <span className="pill">{price}</span>
                 <span className="ps-per">/ {per}</span>
               </div>
-              <BookButton />
+              <BookButton label={bookLabel} />
             </div>
           )}
         </div>

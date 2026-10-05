@@ -9,7 +9,7 @@ const CARD_LAYOUT = [
   { accent: 'accent-green', layout: 'stats' },
 ]
 
-function FeatureWidget() {
+function FeatureWidget({ label = 'Iceland', chips = ['Ring Road', 'Search', 'Email', 'Social'] }) {
   return (
     <div className="host-feat-widget">
       <div className="host-feat-widget-icon">
@@ -18,12 +18,11 @@ function FeatureWidget() {
           <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
         </svg>
       </div>
-      <div className="host-feat-widget-label">Iceland</div>
+      <div className="host-feat-widget-label">{label}</div>
       <div className="host-feat-chips">
-        <span className="host-feat-chip">Ring Road</span>
-        <span className="host-feat-chip">Search</span>
-        <span className="host-feat-chip">Email</span>
-        <span className="host-feat-chip">Social</span>
+        {chips.map((chip) => (
+          <span className="host-feat-chip" key={chip}>{chip}</span>
+        ))}
       </div>
     </div>
   )
@@ -63,7 +62,10 @@ export default function HostFeaturesSection({
                       <HostPhoto src={imgSrc} alt={imgAlt} />
                     </div>
                   ) : (
-                    <FeatureWidget />
+                    <FeatureWidget
+                      label={feature.widgetLabel}
+                      chips={Array.isArray(feature.widgetChips) && feature.widgetChips.length ? feature.widgetChips : undefined}
+                    />
                   )}
                   <div className="host-feat-card-body">
                     <h3>{feature.title}</h3>

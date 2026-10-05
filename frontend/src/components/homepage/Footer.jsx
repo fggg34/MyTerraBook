@@ -60,9 +60,13 @@ function FooterSocialIcon({ label }) {
   )
 }
 
-function findColumnLinks(columns, titles) {
-  const col = columns.find((c) => titles.some((t) => c.title?.toLowerCase().includes(t)))
-  return col?.links?.length ? col.links : null
+function findColumn(columns, { key, titles, index }) {
+  return (
+    columns.find((column) => key && column.key === key) ||
+    columns.find((column) => titles.some((title) => column.title?.toLowerCase().includes(title))) ||
+    columns[index] ||
+    null
+  )
 }
 
 const ACCOUNT_LINKS = [
@@ -100,6 +104,9 @@ function FooterAccountBlock({
   accountLinks,
   hostCtaLabel,
   hostCtaHref,
+  hostSubtitle,
+  logoutLabel,
+  accountTitle,
   showHostCta,
   onLogout,
 }) {
@@ -110,7 +117,7 @@ function FooterAccountBlock({
 
   return (
     <div className="ftr-account">
-      <p className="ftr-account-label">Account</p>
+      <p className="ftr-account-label">{accountTitle}</p>
 
       {user ? (
         <>
@@ -126,7 +133,7 @@ function FooterAccountBlock({
               {dashboardLabel}
             </FooterLink>
             <button type="button" className="ftr-account-btn ftr-account-btn--logout" onClick={onLogout}>
-              Log out
+              {logoutLabel}
             </button>
           </div>
         </>
@@ -155,7 +162,7 @@ function FooterAccountBlock({
           </span>
           <span className="ftr-account-host-copy">
             <strong>{hostCtaLabel}</strong>
-            <span>List your van or guesthouse</span>
+            <span>{hostSubtitle}</span>
           </span>
           <svg className="ftr-account-host-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M5 12h14M13 6l6 6-6 6" />
@@ -175,6 +182,9 @@ export default function Footer({
   social = [],
   hostCtaLabel,
   hostCtaHref,
+  paymentsLabel = 'We accept',
+  logoutLabel = 'Log out',
+  hostSubtitle = 'List your van or guesthouse',
 }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -191,9 +201,15 @@ export default function Footer({
     navigate('/')
   }
 
-  const bookLinks = findColumnLinks(columns, ['book', 'menu']) ?? BOOK_LINKS
-  const companyLinks = findColumnLinks(columns, ['company', 'pages', 'explore']) ?? COMPANY_LINKS
-  const accountLinks = findColumnLinks(columns, ['account']) ?? ACCOUNT_LINKS
+  const bookColumn = findColumn(columns, { key: 'book', titles: ['book', 'menu'], index: 0 })
+  const companyColumn = findColumn(columns, { key: 'company', titles: ['company', 'pages', 'explore'], index: 1 })
+  const accountColumn = findColumn(columns, { key: 'account', titles: ['account'], index: 2 })
+  const bookTitle = bookColumn?.title || 'Book'
+  const companyTitle = companyColumn?.title || 'Company'
+  const accountTitle = accountColumn?.title || 'Account'
+  const bookLinks = bookColumn?.links?.length ? bookColumn.links : BOOK_LINKS
+  const companyLinks = companyColumn?.links?.length ? companyColumn.links : COMPANY_LINKS
+  const accountLinks = accountColumn?.links?.length ? accountColumn.links : ACCOUNT_LINKS
   const addressLine = address?.split('\n').filter(Boolean)[0]
 
   const toggleSection = useCallback((id) => {
@@ -239,6 +255,9 @@ export default function Footer({
       accountLinks={accountLinks}
       hostCtaLabel={hostCtaLabel}
       hostCtaHref={hostCtaHref}
+      hostSubtitle={hostSubtitle}
+      logoutLabel={logoutLabel}
+      accountTitle={accountTitle}
       showHostCta={showHostCta}
       onLogout={handleLogout}
     />
@@ -252,7 +271,7 @@ export default function Footer({
         </li>
         <li>
           <button type="button" className="ftr-host-logout" onClick={handleLogout}>
-            Log out
+            {logoutLabel}
           </button>
         </li>
       </ul>
@@ -310,7 +329,7 @@ export default function Footer({
               <>
                 <FooterColumnToggle
                   id="book"
-                  title="Book"
+                  title={bookTitle}
                   open={openSections.book}
                   onToggle={() => toggleSection('book')}
                 >
@@ -318,7 +337,7 @@ export default function Footer({
                 </FooterColumnToggle>
                 <FooterColumnToggle
                   id="company"
-                  title="Company"
+                  title={companyTitle}
                   open={openSections.company}
                   onToggle={() => toggleSection('company')}
                 >
@@ -329,15 +348,15 @@ export default function Footer({
             ) : (
               <>
                 <div className="ftr-col">
-                  <h4>Book</h4>
+                  <h4>{bookTitle}</h4>
                   {bookList}
                 </div>
                 <div className="ftr-col">
-                  <h4>Company</h4>
+                  <h4>{companyTitle}</h4>
                   {companyList}
                 </div>
                 <div className="ftr-host">
-                  <h4>Account</h4>
+                  <h4>{accountTitle}</h4>
                   {desktopAccountBlock}
                 </div>
               </>
@@ -346,7 +365,7 @@ export default function Footer({
 
           <div className="ftr-meta">
             <div className="ftr-pay">
-              <span className="pay-label">We accept</span>
+              <span className="pay-label">{paymentsLabel}</span>
               <div className="pay-row">
                 <span className="pay visa">VISA</span>
                 <span className="pay mc">

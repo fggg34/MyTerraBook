@@ -310,10 +310,14 @@ class SiteContentService
             'lead' => $content['hero']['lead'] ?? '',
             'body' => $content['body'] ?? null,
             'content' => array_filter([
+                'phoneLabel' => $content['phoneLabel'] ?? null,
                 'phone' => $content['phone'] ?? null,
+                'emailLabel' => $content['emailLabel'] ?? null,
                 'email' => $content['email'] ?? null,
                 'items' => $content['items'] ?? null,
+                'addressLabel' => $content['addressLabel'] ?? null,
                 'address' => $content['address'] ?? null,
+                'hoursLabel' => $content['hoursLabel'] ?? null,
                 'hours' => $content['hours'] ?? null,
                 'show_form' => $content['show_form'] ?? null,
                 'stats' => $content['stats'] ?? null,
@@ -322,6 +326,7 @@ class SiteContentService
                 'quickLinks' => $content['quickLinks'] ?? null,
                 'cta' => $content['cta'] ?? null,
                 'formLabels' => $content['formLabels'] ?? null,
+                'helpCard' => $content['helpCard'] ?? null,
             ], fn ($value) => $value !== null),
             'published_at' => now()->toIso8601String(),
         ];
@@ -375,9 +380,7 @@ class SiteContentService
 
             if ($google !== null) {
                 return [
-                    'eyebrow' => $merged['eyebrow'] ?? '',
-                    'heading' => $merged['heading'] ?? '',
-                    'lead' => $merged['lead'] ?? '',
+                    ...$this->reviewChrome($merged),
                     'rating' => $google['rating'] ?: ($merged['rating'] ?? ''),
                     'ratingCount' => $google['ratingCount'] ?: ($merged['ratingCount'] ?? ''),
                     'reviews' => $google['reviews'],
@@ -393,14 +396,34 @@ class SiteContentService
         }
 
         return [
-            'eyebrow' => $merged['eyebrow'] ?? '',
-            'heading' => $merged['heading'] ?? '',
-            'lead' => $merged['lead'] ?? '',
+            ...$this->reviewChrome($merged),
             'rating' => $merged['rating'] ?? '',
             'ratingCount' => $merged['ratingCount'] ?? '',
             'reviews' => $this->filterBlankReviews($reviews),
             'source' => 'demo',
             'isDemo' => true,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $merged
+     * @return array<string, mixed>
+     */
+    private function reviewChrome(array $merged): array
+    {
+        return [
+            'eyebrow' => $merged['eyebrow'] ?? '',
+            'heading' => $merged['heading'] ?? '',
+            'lead' => $merged['lead'] ?? '',
+            'trustLine' => $merged['trustLine'] ?? '',
+            'ratingIntro' => $merged['ratingIntro'] ?? '',
+            'ratingOn' => $merged['ratingOn'] ?? '',
+            'reviewerLabel' => $merged['reviewerLabel'] ?? '',
+            'googleReviewerLabel' => $merged['googleReviewerLabel'] ?? '',
+            'ratingSourceLabel' => $merged['ratingSourceLabel'] ?? '',
+            'googleRatingSourceLabel' => $merged['googleRatingSourceLabel'] ?? '',
+            'ctaLabel' => $merged['ctaLabel'] ?? '',
+            'ctaHref' => $merged['ctaHref'] ?? '',
         ];
     }
 

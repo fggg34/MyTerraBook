@@ -4,6 +4,7 @@ import AuthPageLayout from '../components/auth/AuthPageLayout'
 import PasswordInput from '../components/auth/PasswordInput'
 import PageHead from '../components/seo/PageHead'
 import { useAuth } from '../context/AuthContext'
+import { usePageContent } from '../context/SiteContentContext'
 import { useToast } from '../context/ToastContext'
 import usePageSeo from '../hooks/usePageSeo'
 import '../styles/auth-pages.css'
@@ -16,11 +17,15 @@ export default function ResetPasswordPage() {
   const token = searchParams.get('token') ?? ''
   const emailFromQuery = searchParams.get('email') ?? ''
   const hostIntent = searchParams.get('intent') === 'host'
+  const { page: authPage } = usePageContent('auth-login')
+  const reset = authPage.reset ?? {}
+  const heroTitle = reset.heroTitle || 'Choose a new password'
+  const subtitle = reset.subtitle || 'Enter your email and choose a new password.'
 
   const seo = usePageSeo('auth-login', {
     source: {
-      title: 'Choose a new password',
-      subtitle: 'Enter a new password for your account.',
+      title: heroTitle,
+      subtitle,
     },
     robots: 'noindex',
   })
@@ -78,25 +83,25 @@ export default function ResetPasswordPage() {
       <PageHead {...seo} />
       <AuthPageLayout
         variant="login"
-        heroTitle="Choose a new password"
-        heroText="Pick a strong password you have not used on MyTerraBook before."
+        heroTitle={heroTitle}
+        heroText={reset.heroText || 'Pick a strong password you have not used on MyTerraBook before.'}
       >
         <div className="auth-form-head">
-          <h1>Set a new password</h1>
-          <p>Enter your email and choose a new password.</p>
+          <h1>{reset.title || 'Set a new password'}</h1>
+          <p>{subtitle}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {errors.form && <div className="auth-form-error" role="alert">{errors.form}</div>}
 
           <div className="auth-field">
-            <label htmlFor="reset-email">Email address</label>
+            <label htmlFor="reset-email">{reset.emailLabel || 'Email address'}</label>
             <div className={`auth-input-wrap${errors.email ? ' auth-input-wrap--error' : ''}`}>
               <input
                 id="reset-email"
                 type="email"
                 className="auth-input"
-                placeholder="you@example.com"
+                placeholder={reset.emailPlaceholder || 'you@example.com'}
                 autoComplete="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -106,7 +111,7 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="auth-field">
-            <label htmlFor="reset-password">New password</label>
+            <label htmlFor="reset-password">{reset.passwordLabel || 'New password'}</label>
             <PasswordInput
               id="reset-password"
               value={form.password}
@@ -116,11 +121,11 @@ export default function ResetPasswordPage() {
             />
             {errors.password
               ? <p className="auth-field-error">{errors.password}</p>
-              : <p className="auth-password-hint">At least 8 characters</p>}
+              : <p className="auth-password-hint">{reset.passwordHint || 'At least 8 characters'}</p>}
           </div>
 
           <div className="auth-field">
-            <label htmlFor="reset-password-confirm">Confirm password</label>
+            <label htmlFor="reset-password-confirm">{reset.confirmLabel || 'Confirm password'}</label>
             <PasswordInput
               id="reset-password-confirm"
               value={form.password_confirmation}
@@ -134,16 +139,16 @@ export default function ResetPasswordPage() {
           </div>
 
           <button type="submit" className="auth-submit" disabled={loading || !token}>
-            {loading ? 'Updating…' : 'Update password'}
+            {loading ? (reset.submittingLabel || 'Updating…') : (reset.submitLabel || 'Update password')}
           </button>
         </form>
 
         <footer className="auth-layout__footer">
           <p className="auth-switch">
-            Back to{' '}
-            <Link to="/login">guest sign in</Link>
-            {' or '}
-            <Link to="/host/login">host sign in</Link>
+            {reset.backPrompt || 'Back to'}{' '}
+            <Link to="/login">{reset.guestSignInLabel || 'guest sign in'}</Link>
+            {' '}{reset.orLabel || 'or'}{' '}
+            <Link to="/host/login">{reset.hostSignInLabel || 'host sign in'}</Link>
           </p>
         </footer>
       </AuthPageLayout>

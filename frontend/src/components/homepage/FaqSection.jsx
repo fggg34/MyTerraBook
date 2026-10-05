@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import useSectionReveal from '../../hooks/useSectionReveal'
 
-export default function FaqSection({ heading, lead, phone, email, items = [] }) {
+export default function FaqSection({ eyebrow, heading, lead, phone, email, items = [] }) {
   const sectionRef = useRef(null)
   const defaultOpen = items.findIndex((item) => item.open)
   const [openIndex, setOpenIndex] = useState(defaultOpen >= 0 ? defaultOpen : 0)
@@ -21,6 +21,7 @@ export default function FaqSection({ heading, lead, phone, email, items = [] }) 
           </span>
           <div className="faq-grid">
             <div className="faq-l">
+              {eyebrow && <span className="eyebrow">{eyebrow}</span>}
               {heading && (
                 <h2 className="faq-rise" style={{ '--d': '.06s' }}>
                   {heading}

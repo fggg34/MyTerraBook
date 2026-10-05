@@ -110,6 +110,12 @@ export default function ReviewsSection({
   ctaLabel,
   ctaHref,
   trustLine = 'Trusted by travellers worldwide',
+  reviewerLabel: reviewerLabelProp,
+  googleReviewerLabel = 'Google reviewer',
+  ratingSourceLabel: ratingSourceProp,
+  googleRatingSourceLabel = 'Google',
+  ratingIntro = 'Average rating across',
+  ratingOn = 'on',
 }) {
   const sectionRef = useRef(null)
   const wrapRef = useRef(null)
@@ -127,8 +133,12 @@ export default function ReviewsSection({
     return match ? match[0] : '4.9'
   }, [rating])
 
-  const reviewerLabel = source === 'google' && !isDemo ? 'Google reviewer' : 'Traveller'
-  const ratingSourceLabel = source === 'google' && !isDemo ? 'Google' : 'MyTerraBook'
+  const reviewerLabel = source === 'google' && !isDemo
+    ? googleReviewerLabel
+    : (reviewerLabelProp || 'Traveller')
+  const ratingSourceLabel = source === 'google' && !isDemo
+    ? googleRatingSourceLabel
+    : (ratingSourceProp || 'MyTerraBook')
   const resolvedCtaLabel = ctaLabel || (source === 'google' && !isDemo ? 'Leave a Google Review' : null)
 
   const marqueeSet = useMemo(
@@ -209,7 +219,7 @@ export default function ReviewsSection({
               </div>
               {ratingCount && (
                 <p className="rv-score-meta">
-                  Average rating across <strong>{ratingCount}</strong> on{' '}
+                  {ratingIntro} <strong>{ratingCount}</strong> {ratingOn}{' '}
                   <span className="rv-score-source">{ratingSourceLabel}</span>
                 </p>
               )}
