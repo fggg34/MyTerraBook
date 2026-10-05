@@ -3,6 +3,7 @@
 namespace App\Services\Partners;
 
 use App\Models\Setting;
+use Illuminate\Support\Facades\Storage;
 
 class GreenlightSettings
 {
@@ -11,7 +12,7 @@ class GreenlightSettings
     public const DEFAULT_BASE_URL = 'https://greenlightcarrental.is/api/partner/v1';
 
     /**
-     * @return array{enabled: bool, base_url: string, api_key: string, insurance_plan_ids: list<string>}
+     * @return array{enabled: bool, base_url: string, api_key: string, insurance_plan_ids: list<string>, display_name: string, logo_path: string}
      */
     public function all(): array
     {
@@ -26,7 +27,24 @@ class GreenlightSettings
             'insurance_plan_ids' => is_array($insurance)
                 ? array_values(array_filter(array_map('strval', $insurance)))
                 : [],
+            'display_name' => trim((string) data_get($stored, 'display_name', 'Green Light')) ?: 'Green Light',
+            'logo_path' => (string) data_get($stored, 'logo_path', ''),
         ];
+    }
+
+    public function displayName(): string
+    {
+        return $this->all()['display_name'];
+    }
+
+    public function logoUrl(): ?string
+    {
+        $path = $this->all()['logo_path'];
+        if ($path === '') {
+            return null;
+        }
+
+        return Storage::disk('public')->url($path);
     }
 
     public function enabled(): bool
@@ -66,11 +84,15 @@ class GreenlightSettings
             $enabled = true;
         }
 
+        $displayName = trim((string) ($state['greenlight_display_name'] ?? $current['display_name']));
+
         Setting::putValue('partners.greenlight', [
             'enabled' => $enabled,
             'base_url' => rtrim((string) ($state['greenlight_base_url'] ?? self::DEFAULT_BASE_URL), '/') ?: self::DEFAULT_BASE_URL,
             'api_key' => $apiKey,
             'insurance_plan_ids' => $current['insurance_plan_ids'],
+            'display_name' => $displayName !== '' ? $displayName : 'Green Light',
+            'logo_path' => (string) ($state['greenlight_logo_path'] ?? $current['logo_path']),
         ]);
     }
 

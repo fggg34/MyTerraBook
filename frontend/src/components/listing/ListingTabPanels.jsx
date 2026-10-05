@@ -15,6 +15,7 @@ import ListingSleepingPanel from './ListingSleepingPanel'
 import ListingSection from './ListingSection'
 import ListingWriteReview from './ListingWriteReview'
 import CatalogIcon from '../../utils/CatalogIcon'
+import { partnerInitials } from '../../utils/mapCarToResultCard'
 
 export default function ListingTabPanels({
   listing,
@@ -221,6 +222,17 @@ export default function ListingTabPanels({
     <div className="split">
       <div className="maincol">
         <header className="listing-header">
+          {listing.partner?.name && (
+            <div className="pcard-partner">
+              {listing.partner.logo ? (
+                <img src={listing.partner.logo} alt={listing.partner.name} />
+              ) : (
+                <span className="pcard-partner__mark" title={listing.partner.name}>
+                  {partnerInitials(listing.partner.name)}
+                </span>
+              )}
+            </div>
+          )}
           <h1 className="listing-title">{listing.title}</h1>
           {location?.formattedLine ? (
             <div className="listing-header__meta">

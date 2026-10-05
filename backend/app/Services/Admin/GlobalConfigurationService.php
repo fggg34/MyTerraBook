@@ -57,6 +57,8 @@ class GlobalConfigurationService
             'greenlight_enabled' => app(GreenlightSettings::class)->all()['enabled'],
             'greenlight_base_url' => app(GreenlightSettings::class)->all()['base_url'],
             'greenlight_api_key' => app(GreenlightSettings::class)->all()['api_key'],
+            'greenlight_display_name' => app(GreenlightSettings::class)->displayName(),
+            'greenlight_logo_path' => app(GreenlightSettings::class)->all()['logo_path'],
             'backup_export_type' => (string) data_get(Setting::getValue('backup.export_type', ['type' => 'full']), 'type', 'full'),
             'backup_folder_path' => (string) data_get(Setting::getValue('backup.folder_path', ['path' => '/tmp']), 'path', '/tmp'),
             'currency_name' => (string) data_get(Setting::getValue('shop.currency', ['name' => 'Euro']), 'name', 'Euro'),

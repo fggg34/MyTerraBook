@@ -204,14 +204,54 @@ export default function useSearchResultsPage(vehicleType) {
     setQuickFilters((prev) => pruneQuickFilters(prev, quickFilterOptions))
   }, [quickFilterOptions])
 
-  const cards = useMemo(() => {
+  const filteredCards = useMemo(() => {
     let list = vehicleCards
 
     list = list.filter((car) => matchesTransmission(car, filters.transmission))
     list = list.filter((car) => matchesPriceFilter(car.sortPrice, filters))
     if (filters.minSeats) list = list.filter((car) => car.sortSeats >= filters.minSeats)
     if (filters.minSleeps) list = list.filter((car) => car.sortSleeps >= filters.minSleeps)
-    list = applyQuickFilters(list, quickFilters, quickFilterOptions)
+    return applyQuickFilters(list, quickFilters, quickFilterOptions)
+  }, [vehicleCards, filters, quickFilters, quickFilterOptions])
+
+  const partners = useMemo(() => {
+    const grouped = new Map()
+    filteredCards.forEach((card) => {
+      if (!card.partner?.id || !card.partner?.name) return
+      const key = String(card.partner.id)
+      const existing = grouped.get(key)
+      if (existing) {
+        existing.count += 1
+        return
+      }
+      grouped.set(key, {
+        id: card.partner.id,
+        name: card.partner.name,
+        logo: card.partner.logo || '',
+        count: 1,
+      })
+    })
+    return [...grouped.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+  }, [filteredCards])
+
+  const selectedPartnerId = query.partner || ''
+
+  useEffect(() => {
+    if (loading || !query.partner) return
+    const stillThere = partners.some((partner) => String(partner.id) === String(query.partner))
+    if (stillThere) return
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (!next.get('partner')) return prev
+      next.delete('partner')
+      return next
+    })
+  }, [loading, partners, query.partner, setSearchParams])
+
+  const cards = useMemo(() => {
+    let list = filteredCards.filter((car) => (
+      !selectedPartnerId || String(car.partner?.id || '') === String(selectedPartnerId)
+    ))
 
     list.sort((a, b) => {
       if (sort === 'price-asc') return a.sortPrice - b.sortPrice
@@ -222,7 +262,7 @@ export default function useSearchResultsPage(vehicleType) {
     })
 
     return list
-  }, [vehicleCards, filters, quickFilters, quickFilterOptions, sort])
+  }, [filteredCards, selectedPartnerId, sort])
 
   const visibleCards = cards.slice(0, visibleCount)
   const pickupLabel = locationMap[query.pickup_location_id] || 'Keflavík Airport (KEF)'
@@ -246,13 +286,19 @@ export default function useSearchResultsPage(vehicleType) {
     setVisibleCount(PAGE_SIZE)
   }
 
+  const selectPartner = (id) => {
+    updateSearch({ partner: id ? String(id) : '' })
+  }
+
   const clearFilters = () => {
     setFilters({ ...defaultPriceFilters(), transmission: '', minSeats: 0, minSleeps: 0 })
     setQuickFilters([])
     setVisibleCount(PAGE_SIZE)
+    if (query.partner) updateSearch({ partner: '' })
   }
 
   const hasActiveFilters =
+    Boolean(query.partner) ||
     quickFilters.length > 0 ||
     filters.transmission ||
     filters.minSeats > 0 ||
@@ -289,6 +335,10 @@ export default function useSearchResultsPage(vehicleType) {
     toggleQuick,
     clearFilters,
     hasActiveFilters,
+    partners,
+    partnerTotal: filteredCards.length,
+    selectedPartnerId,
+    selectPartner,
     priceBounds,
     transmissionOptions,
     locations,

@@ -32,6 +32,7 @@ class CarListResource extends JsonResource
             'base_daily_price_cents' => (int) $minCents,
             'thumbnail_url' => $this->resource['main_image_path'],
             'units_available' => (int) $this->resource['units_available'],
+            'partner' => $this->resource['partner'] ?? null,
             'search_pricing' => $this->resource['search_pricing'] ?? null,
         ];
     }

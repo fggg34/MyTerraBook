@@ -23,6 +23,7 @@ use App\Services\OrderAvailabilityService;
 use App\Services\Partners\GreenlightBookingService;
 use App\Services\RentalQuoteService;
 use App\Support\DailyFarePricing;
+use App\Support\ListingPartner;
 use App\Support\Money;
 use App\Support\QuotePresentation;
 use Carbon\Carbon;
@@ -127,7 +128,7 @@ class CatalogController extends Controller
 
         $query = Car::query()
             ->publiclyVisible()
-            ->with(['subCategory.mainCategory']);
+            ->with(['subCategory.mainCategory', 'host']);
 
         if ($mainCategorySlug) {
             $query->whereHas('subCategory.mainCategory', fn ($builder) => $builder->where('slug', $mainCategorySlug));
@@ -175,6 +176,7 @@ class CatalogController extends Controller
                 'units_available' => $car->units_available,
                 'main_image_path' => $car->main_image_path,
                 'min_daily_price_cents' => (int) ($car->min_daily_price_cents ?? 0),
+                'partner' => app(ListingPartner::class)->fromCar($car),
             ];
 
             $searchPricing = $this->resolveSearchPricing($car, $request);

@@ -3,6 +3,7 @@ import { LISTING_TYPES } from '../data/listingConfig'
 import { splitListingDescription } from './formatListingDescription'
 import { mapApiListingReviews } from './mapListingReviews'
 import { driveLabel } from './buildVehicleCardSpecs'
+import { mapPartner } from './mapCarToResultCard'
 import { guestRentalOptionSubLabel } from './rentalOptionPricing'
 
 const FALLBACK_IMAGES = {
@@ -151,6 +152,7 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
     id: car.id,
     name: car.name,
     title: car.name,
+    partner: mapPartner(car),
     categoryName: car.category?.name || typeConfig.id,
     images,
     photoCount: Math.max(images.length, 1),

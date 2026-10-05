@@ -6,7 +6,8 @@ export default function HostSettingsPage() {
       requirePhone
       showCurrency
       showKennitala
-      profileDescription="Update your contact details and the currency used for your listing prices."
+      showCompanyLogo
+      profileDescription="Update your contact details, partner logo, and the currency used for your listing prices."
     />
   )
 }

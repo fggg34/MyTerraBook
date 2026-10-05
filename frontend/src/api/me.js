@@ -56,6 +56,18 @@ export function removeProfilePhoto() {
   return api.delete('/me/profile-photo')
 }
 
+export function uploadCompanyLogo(file) {
+  const formData = new FormData()
+  formData.append('logo', file)
+  return api.post('/me/company-logo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+export function removeCompanyLogo() {
+  return api.delete('/me/company-logo')
+}
+
 export function applyAsHost() {
   return api.post('/host/apply')
 }

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import ProductCard from '../components/homepage/ProductCard'
 import { SearchResultsChromeProvider } from '../context/SearchResultsChromeContext'
 import SearchResultsChrome, { SearchResultsHeaderPill } from '../components/search-results/SearchResultsChrome'
+import PartnerLogoStrip from '../components/search-results/PartnerLogoStrip'
 import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
 import useSearchResultsPage from '../hooks/useSearchResultsPage'
@@ -53,6 +54,10 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     guestsLabel,
     priceBounds,
     transmissionOptions,
+    partners = [],
+    partnerTotal = 0,
+    selectedPartnerId = '',
+    selectPartner,
   } = state
 
   const pillText = useMemo(() => {
@@ -175,6 +180,16 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
 
           <div className="wrap">
             <section className="results-wrap">
+              {!isGuesthouse && !loading && !error && partners.length > 0 && (
+                <PartnerLogoStrip
+                  partners={partners}
+                  totalCount={partnerTotal}
+                  unitLabel={unitPlural}
+                  selectedId={selectedPartnerId}
+                  onSelect={selectPartner}
+                />
+              )}
+
               {loading && (
                 <div className="results-grid results-grid--loading" aria-busy="true" aria-label={`Loading ${unitPlural}`}>
                   {Array.from({ length: 6 }, (_, index) => (

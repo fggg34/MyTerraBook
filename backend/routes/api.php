@@ -152,6 +152,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/me/profile', [MeProfileController::class, 'update']);
     Route::post('/me/profile-photo', [MeProfileController::class, 'updatePhoto']);
     Route::delete('/me/profile-photo', [MeProfileController::class, 'deletePhoto']);
+    Route::post('/me/company-logo', [MeProfileController::class, 'updateLogo']);
+    Route::delete('/me/company-logo', [MeProfileController::class, 'deleteLogo']);
     Route::patch('/me/password', [MeProfileController::class, 'updatePassword']);
 });
 

@@ -7,9 +7,11 @@ import { getStoredToken, storeAuth } from '../../auth'
 import { normalizeUserRole, useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
 import {
+  removeCompanyLogo,
   removeProfilePhoto,
   updatePassword,
   updateProfile,
+  uploadCompanyLogo,
   uploadProfilePhoto,
 } from '../../api/me'
 import { formatPhoneForApi, validatePhone } from '../../utils/phone'
@@ -24,6 +26,7 @@ export default function AccountSettingsForms({
   showCurrency = false,
   showKennitala = false,
   showBecomeHost = false,
+  showCompanyLogo = false,
   profileDescription = 'Update your account details.',
 }) {
   const { user, setUser, applyAsHost: applyAsHostFromAuth } = useAuth()
@@ -31,6 +34,7 @@ export default function AccountSettingsForms({
   const navigate = useNavigate()
   const { baseCurrency } = useShopConfig()
   const photoInputRef = useRef(null)
+  const logoInputRef = useRef(null)
 
   const [profile, setProfile] = useState({
     name: '',
@@ -52,10 +56,13 @@ export default function AccountSettingsForms({
   const [photoLoading, setPhotoLoading] = useState(false)
   const [hostLoading, setHostLoading] = useState(false)
   const [photoPreview, setPhotoPreview] = useState(null)
+  const [logoPreview, setLogoPreview] = useState(null)
+  const [logoLoading, setLogoLoading] = useState(false)
 
   const role = normalizeUserRole(user)
   const canBecomeHost = showBecomeHost && role === 'customer'
   const hasProfilePhoto = Boolean(getUserProfilePhotoUrl(user) || photoPreview)
+  const companyLogoUrl = logoPreview || user?.company_logo_url || ''
 
   useEffect(() => {
     if (!user) return
@@ -74,6 +81,12 @@ export default function AccountSettingsForms({
       if (photoPreview) URL.revokeObjectURL(photoPreview)
     }
   }, [photoPreview])
+
+  useEffect(() => {
+    return () => {
+      if (logoPreview) URL.revokeObjectURL(logoPreview)
+    }
+  }, [logoPreview])
 
   const syncUser = (nextUser) => {
     if (!nextUser) return
@@ -119,6 +132,64 @@ export default function AccountSettingsForms({
       toast(err.response?.data?.message || 'Could not upload photo', 'error')
     } finally {
       setPhotoLoading(false)
+    }
+  }
+
+  const handleLogoSelect = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
+    if (!allowed.includes(file.type)) {
+      toast('Please choose a JPG, PNG, WebP, or SVG logo', 'error')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast('Logo must be 5 MB or smaller', 'error')
+      return
+    }
+
+    const previewUrl = URL.createObjectURL(file)
+    setLogoPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return previewUrl
+    })
+
+    setLogoLoading(true)
+    try {
+      const res = await uploadCompanyLogo(file)
+      syncUser(res.data?.user)
+      setLogoPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return null
+      })
+      toast('Partner logo updated', 'success')
+    } catch (err) {
+      setLogoPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return null
+      })
+      toast(err.response?.data?.message || 'Could not upload logo', 'error')
+    } finally {
+      setLogoLoading(false)
+    }
+  }
+
+  const handleLogoRemove = async () => {
+    setLogoLoading(true)
+    try {
+      const res = await removeCompanyLogo()
+      syncUser(res.data?.user)
+      setLogoPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return null
+      })
+      toast('Partner logo removed', 'success')
+    } catch (err) {
+      toast(err.response?.data?.message || 'Could not remove logo', 'error')
+    } finally {
+      setLogoLoading(false)
     }
   }
 
@@ -286,6 +357,48 @@ export default function AccountSettingsForms({
               />
             </div>
           </div>
+          {showCompanyLogo && (
+            <div className="client-profile-photo">
+              <div className="client-company-logo__preview">
+                {companyLogoUrl ? (
+                  <img src={companyLogoUrl} alt="" />
+                ) : (
+                  <span>Logo</span>
+                )}
+              </div>
+              <div className="client-profile-photo__actions">
+                <p className="client-profile-photo__label">Partner logo</p>
+                <p className="client-profile-photo__hint">Shown above your vehicles on campervan and car listings. JPG, PNG, WebP, or SVG up to 5 MB.</p>
+                <div className="client-profile-photo__buttons">
+                  <button
+                    type="button"
+                    className="client-btn secondary"
+                    disabled={logoLoading}
+                    onClick={() => logoInputRef.current?.click()}
+                  >
+                    {logoLoading ? 'Uploading…' : companyLogoUrl ? 'Change logo' : 'Upload logo'}
+                  </button>
+                  {companyLogoUrl && (
+                    <button
+                      type="button"
+                      className="client-btn ghost"
+                      disabled={logoLoading}
+                      onClick={handleLogoRemove}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                  className="client-profile-photo__input"
+                  onChange={handleLogoSelect}
+                />
+              </div>
+            </div>
+          )}
           <div className="client-field">
             <label htmlFor="settings-name">Full name <RequiredMark className="client-req" /></label>
             <input

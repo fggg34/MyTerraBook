@@ -100,6 +100,37 @@
   margin-top: auto;
 }
 
+.pcard-partner {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  margin: 0 0 8px;
+}
+
+.pcard-partner img {
+  display: block;
+  height: 34px;
+  width: auto;
+  max-width: 132px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.pcard-partner__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: #f4f7fb;
+  color: #0f2036;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
 .pcard-foot h3 {
   font-size: 23px;
   letter-spacing: -0.01em;

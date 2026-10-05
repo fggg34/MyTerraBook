@@ -570,6 +570,28 @@ img.client-profile-photo__avatar {
   display: none;
 }
 
+.client-company-logo__preview {
+  flex-shrink: 0;
+  width: 120px;
+  height: 64px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e2e7ef;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #8090a4;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.client-company-logo__preview img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 .client-settings-section--host {
   grid-column: 1 / -1;
 }

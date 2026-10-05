@@ -300,6 +300,19 @@
                     <div class="ir-global-fields">
                         <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.greenlight_enabled"> Connect Greenlight vehicles to MyTerra checkout</label>
                         <div class="ir-global-field">
+                            <label class="ir-global-label">Name on listings</label>
+                            <input class="ir-global-input" type="text" wire:model.live="state.greenlight_display_name" />
+                            <p class="ir-global-hint">Shown above Greenlight vehicles and in the partner filter on campervan and car results.</p>
+                        </div>
+                        <div class="ir-global-field">
+                            <label class="ir-global-label">Partner logo</label>
+                            @if (! empty($this->state['greenlight_logo_path']))
+                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($this->state['greenlight_logo_path']) }}" alt="" style="display:block;height:40px;width:auto;max-width:160px;object-fit:contain;margin-bottom:8px;background:#fff;border:1px solid #e2e7ef;border-radius:8px;padding:4px;" />
+                            @endif
+                            <input class="ir-global-input" type="file" wire:model="greenlightLogo" accept="image/jpeg,image/png,image/webp,image/svg+xml" />
+                            <p class="ir-global-hint">JPG, PNG, WebP, or SVG up to 5 MB. Uploading replaces the logo on the public listings.</p>
+                        </div>
+                        <div class="ir-global-field">
                             <label class="ir-global-label">Partner API URL</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.greenlight_base_url" />
                         </div>

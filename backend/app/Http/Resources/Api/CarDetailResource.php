@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api;
 
 use App\Models\Car;
+use App\Support\ListingPartner;
 use App\Support\Money;
 use App\Support\VehicleSpecIconResolver;
 use Illuminate\Http\Request;
@@ -62,6 +63,7 @@ class CarDetailResource extends JsonResource
             'units_available' => $car->units_available,
             'external_provider' => $car->external_provider,
             'host' => $car->host ? HostProfileResource::make($car->host) : null,
+            'partner' => app(ListingPartner::class)->fromCar($car),
             'main_image_path' => $car->main_image_path,
             'details_image_paths' => $car->details_image_paths ?? [],
             'price_types' => collect($this->priceTypes)->map(fn (array $row) => [

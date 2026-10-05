@@ -1,5 +1,6 @@
 import { resolveStorageUrl } from '../api'
 import { buildVehicleCardSpecs } from './buildVehicleCardSpecs'
+import { mapPartner } from './mapCarToResultCard'
 
 export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceFormatter } = {}) {
   const formatPrice = (car) => {
@@ -23,6 +24,7 @@ export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceForma
     return {
       id: car.id,
       name: car.name,
+      partner: mapPartner(car),
       image: resolveStorageUrl(car.thumbnail_url || car.main_image_path) || '/images/homepage/cardcar.jpg',
       href: `${base}/${car.id}`,
       price: formatPrice(car),

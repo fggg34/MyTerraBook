@@ -3,15 +3,21 @@
 namespace App\Filament\Pages;
 
 use App\Services\Admin\GlobalConfigurationService;
+use App\Services\Partners\GreenlightSettings;
 use App\Services\Partners\GreenlightVehicleSyncService;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 use Throwable;
 
 class GlobalConfiguration extends Page
 {
+    use WithFileUploads;
+
     protected static bool $shouldRegisterNavigation = false;
 
     protected string $view = 'filament.pages.global-configuration';
@@ -27,6 +33,8 @@ class GlobalConfiguration extends Page
      */
     public array $state = [];
 
+    public ?TemporaryUploadedFile $greenlightLogo = null;
+
     public function mount(GlobalConfigurationService $service): void
     {
         $this->state = $service->load();
@@ -38,6 +46,29 @@ class GlobalConfiguration extends Page
 
         Notification::make()
             ->title('Configuration saved')
+            ->success()
+            ->send();
+    }
+
+    public function updatedGreenlightLogo(): void
+    {
+        $this->validate([
+            'greenlightLogo' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,svg', 'max:5120'],
+        ]);
+
+        $path = $this->greenlightLogo->store('company-logos', 'public');
+        $previous = (string) ($this->state['greenlight_logo_path'] ?? '');
+        $this->state['greenlight_logo_path'] = $path;
+        app(GreenlightSettings::class)->saveFromAdmin($this->state);
+
+        if ($previous !== '' && $previous !== $path && Storage::disk('public')->exists($previous)) {
+            Storage::disk('public')->delete($previous);
+        }
+
+        $this->greenlightLogo = null;
+
+        Notification::make()
+            ->title('Partner logo updated')
             ->success()
             ->send();
     }

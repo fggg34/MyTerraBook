@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { usePageContent } from '../../context/SiteContentContext'
 import { cmsText } from '../../data/searchFormCopy'
 import { normalizeSpec, renderProductCardSpec } from '../../utils/listingSpecIcons'
+import { partnerInitials } from '../../utils/mapCarToResultCard'
 
 function BookButton({ label }) {
   return (
@@ -23,6 +24,7 @@ export default function ProductCard({
   price,
   per = 'night',
   href,
+  partner,
 }) {
   const { page: globalPage } = usePageContent('global')
   const priceFromLabel = cmsText(globalPage.cards?.priceFromLabel, 'From')
@@ -38,6 +40,15 @@ export default function ProductCard({
         <img src={image} alt={imageAlt || name} draggable={false} />
       </div>
       <div className="pcard-foot">
+        {partner?.name && (
+          <div className="pcard-partner">
+            {partner.logo ? (
+              <img src={partner.logo} alt={partner.name} />
+            ) : (
+              <span className="pcard-partner__mark" title={partner.name}>{partnerInitials(partner.name)}</span>
+            )}
+          </div>
+        )}
         <h3>{name}</h3>
         <div className="pcard-details">
           <div className="specs">

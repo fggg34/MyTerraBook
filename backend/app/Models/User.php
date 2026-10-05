@@ -31,6 +31,7 @@ class User extends Authenticatable implements FilamentUser
         'phone',
         'kennitala',
         'profile_photo_path',
+        'company_logo_path',
         'locale',
         'currency',
         'integration_token',
@@ -40,11 +41,13 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'remember_token',
         'profile_photo_path',
+        'company_logo_path',
         'integration_token',
     ];
 
     protected $appends = [
         'profile_photo_url',
+        'company_logo_url',
     ];
 
     protected function casts(): array
@@ -119,6 +122,15 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return Storage::disk('public')->url($this->profile_photo_path);
+    }
+
+    public function getCompanyLogoUrlAttribute(): ?string
+    {
+        if (! $this->company_logo_path) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->company_logo_path);
     }
 
     public function pricingCurrency(): string
