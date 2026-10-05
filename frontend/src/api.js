@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { firstPartyApiBase } from './utils/firstPartyApiBase'
 
 const PROD_API_BASE = '/backend/api'
 const DEV_API_BASE = 'http://127.0.0.1:8080/api'
@@ -35,6 +36,9 @@ export function resolveApiBaseUrl() {
   }
 
   const host = window.location.hostname
+  const sameOrigin = firstPartyApiBase(candidate, host)
+  if (sameOrigin !== candidate) return sameOrigin
+
   if (!host || isLoopbackHostname(host) || !isLoopbackUrl(candidate)) {
     return candidate
   }
