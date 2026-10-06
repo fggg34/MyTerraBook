@@ -152,7 +152,11 @@ export default function useRequestToBook() {
   const slug = searchParams.get('slug')
   const vehicleType = searchParams.get('vehicle_type') || (bookingType === 'campervan' ? 'campervan' : 'car')
 
-  const pickupLocations = useMemo(() => item?.pickup_locations || [], [item])
+  const countryCode = searchParams.get('country_code') || ''
+  const pickupLocations = useMemo(
+    () => (item?.pickup_locations || []).filter((location) => !countryCode || location.country_code === countryCode),
+    [item, countryCode],
+  )
 
   const pickupTimeOptions = useMemo(
     () => resolveTimeOptions(item, 'pickup'),
@@ -259,7 +263,7 @@ export default function useRequestToBook() {
         setItem(data)
         setForm((prev) => {
           const pt = prev.price_type_id || String(data?.price_types?.[0]?.id || '')
-          const firstPickup = data?.pickup_locations?.[0]
+          const firstPickup = data?.pickup_locations?.find((location) => !countryCode || location.country_code === countryCode)
           const pickup = prev.pickup_location_id || (firstPickup ? String(firstPickup.id) : '')
           return {
             ...prev,
@@ -271,7 +275,7 @@ export default function useRequestToBook() {
         setLoadState(data ? 'ok' : 'error')
       })
       .catch(() => setLoadState('error'))
-  }, [bookingType, carId, slug])
+  }, [bookingType, carId, slug, countryCode])
 
   useEffect(() => {
     if (bookingType === 'guesthouse' || !carId) return undefined

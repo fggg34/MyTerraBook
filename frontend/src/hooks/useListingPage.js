@@ -119,14 +119,19 @@ export default function useListingPage(listingType) {
   }, [entity, listingType, typeConfig.mainCategorySlug])
 
   const priceFormatter = useFormatPrice()
+  const countryCode = queryDefaults.country_code || ''
+  const scopedEntity = useMemo(() => {
+    if (!entity || listingType === 'guesthouse' || !countryCode) return entity
+    return { ...entity, pickup_locations: (entity.pickup_locations || []).filter((location) => location.country_code === countryCode) }
+  }, [entity, listingType, countryCode])
 
   const listing = useMemo(() => {
     if (!entity) return null
     if (listingType === 'guesthouse') {
       return mapGuestHouseToListing(entity, reviews, priceFormatter)
     }
-    return mapCarToListing(entity, listingType, reviews, priceFormatter)
-  }, [entity, listingType, reviews, priceFormatter])
+    return mapCarToListing(scopedEntity, listingType, reviews, priceFormatter)
+  }, [entity, scopedEntity, listingType, reviews, priceFormatter])
 
   const reviewTarget = useMemo(() => {
     if (!id) return null
@@ -137,7 +142,7 @@ export default function useListingPage(listingType) {
     listingType,
     typeConfig,
     listing,
-    car: entity,
+    car: scopedEntity,
     related,
     loadState,
     queryDefaults,

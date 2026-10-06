@@ -60,6 +60,8 @@ Route::middleware('web')->group(function () {
     });
 });
 
+Route::get('/destinations', [CatalogController::class, 'destinations']);
+
 Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',

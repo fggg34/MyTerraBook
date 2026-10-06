@@ -18,6 +18,11 @@ class LocationsTable
                     ->label('Location Name')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('country_code')
+                    ->label('Destination')
+                    ->formatStateUsing(fn ($state) => config('destinations.'.$state, $state))
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('address')
                     ->label('Location Address')
                     ->searchable()

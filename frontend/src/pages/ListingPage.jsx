@@ -108,6 +108,7 @@ function ListingPageBody({ listingType = 'campervan' }) {
         car_id: car.id,
         price_type_id: priceTypeId,
         vehicle_type: listingType,
+        country_code: queryDefaults.country_code || '',
         pickup_location_id: queryDefaults.pickup_location_id || '',
         dropoff_location_id: queryDefaults.dropoff_location_id || queryDefaults.pickup_location_id || '',
         pickup_at,

@@ -71,6 +71,24 @@ class CatalogController extends Controller
         return $this->subCategories($request);
     }
 
+    public function destinations(Request $request): JsonResponse
+    {
+        $rows = Location::query()->where('is_active', true)
+            ->whereHas('cars', function ($cars) use ($request) {
+                $cars->publiclyVisible()->where('car_location.allows_pickup', true);
+                if ($request->filled('main_category')) {
+                    $cars->whereHas('subCategory.mainCategory', fn ($q) => $q->where('slug', $request->query('main_category')));
+                }
+            })
+            ->select('country_code')->distinct()->get()
+            ->map(fn ($location) => [
+                'code' => $location->country_code,
+                'name' => config('destinations.'.$location->country_code, $location->country_code),
+            ])->sortBy('name')->values();
+
+        return response()->json(['data' => $rows]);
+    }
+
     public function locations(): JsonResponse
     {
         $rows = Location::query()->where('is_active', true)->orderBy('name')->get();
@@ -122,6 +140,8 @@ class CatalogController extends Controller
 
     public function cars(Request $request): JsonResponse
     {
+        $request->validate(['country_code' => ['sometimes', 'nullable', \Illuminate\Validation\Rule::in(array_keys(config('destinations')))]]);
+        $countryCode = $request->query('country_code');
         $pickupId = $request->query('pickup_location_id');
         $dropoffId = $request->query('dropoff_location_id');
         $mainCategorySlug = $request->query('main_category');
@@ -134,8 +154,12 @@ class CatalogController extends Controller
             $query->whereHas('subCategory.mainCategory', fn ($builder) => $builder->where('slug', $mainCategorySlug));
         }
 
-        if ($pickupId) {
-            $query->whereHas('locations', fn ($q) => $q->where('locations.id', $pickupId)->where('car_location.allows_pickup', true));
+        if ($pickupId || $countryCode) {
+            $query->whereHas('locations', function ($q) use ($pickupId, $countryCode) {
+                $q->where('locations.is_active', true)->where('car_location.allows_pickup', true);
+                if ($pickupId) $q->where('locations.id', $pickupId);
+                if ($countryCode) $q->where('locations.country_code', $countryCode);
+            });
         }
         if ($dropoffId) {
             $query->whereHas('locations', fn ($q) => $q->where('locations.id', $dropoffId)->where('car_location.allows_dropoff', true));

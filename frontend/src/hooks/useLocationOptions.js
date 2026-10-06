@@ -8,10 +8,13 @@ export default function useLocationOptions({
   role = 'pickup',
   pickupLocationId = '',
   mainCategory = '',
+  countryCode = '',
   enabled = true,
   limit = 50,
 } = {}) {
   const [options, setOptions] = useState([])
+  const [loadedKey, setLoadedKey] = useState('')
+  const requestKey = JSON.stringify([role, pickupLocationId, mainCategory, countryCode, enabled, limit])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -30,7 +33,9 @@ export default function useLocationOptions({
     let cancelled = false
     setLoading(true)
 
+    setOptions([])
     const params = { scope: 'location', role, limit }
+    if (countryCode) params.country_code = countryCode
     if (role === 'dropoff' && pickupLocationId) {
       params.pickup_location_id = pickupLocationId
     }
@@ -41,7 +46,10 @@ export default function useLocationOptions({
     api
       .get('/search/suggestions', { params })
       .then((res) => {
-        if (!cancelled) setOptions(res.data?.data ?? [])
+        if (!cancelled) {
+          setOptions(res.data?.data ?? [])
+          setLoadedKey(requestKey)
+        }
       })
       .catch(() => {
         if (!cancelled) setOptions([])
@@ -53,11 +61,11 @@ export default function useLocationOptions({
     return () => {
       cancelled = true
     }
-  }, [role, pickupLocationId, mainCategory, enabled, limit])
+  }, [role, pickupLocationId, mainCategory, countryCode, enabled, limit, requestKey])
 
-  const isEmpty = !loading && options.length === 0
-
-  return { options, loading, isEmpty }
+  // Hide stale depot lists immediately, before the request effect runs.
+  const visibleOptions = enabled && loadedKey === requestKey ? options : []
+  return { options: visibleOptions, loading, isEmpty: !loading && visibleOptions.length === 0 }
 }
 
 export function toFieldSelectOptions(options) {

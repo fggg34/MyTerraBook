@@ -44,6 +44,14 @@ class LocationForm
                                         .'(Impact Rent → Cars List → Pickup / Drop Off Locations).'
                                     ),
 
+                                Select::make('country_code')
+                                    ->label('Destination country')
+                                    ->options(config('destinations'))
+                                    ->default('IS')
+                                    ->required()
+                                    ->searchable()
+                                    ->helperText('Assign this depot to its country. Destinations appear when linked to a public vehicle.'),
+
                                 TextInput::make('address')
                                     ->label('Location Address')
                                     ->maxLength(255),

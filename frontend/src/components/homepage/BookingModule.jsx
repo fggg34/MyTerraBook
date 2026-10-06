@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { usePageContent } from '../../context/SiteContentContext'
 import { SEARCH_FORM_COPY, cmsText } from '../../data/searchFormCopy'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
+import DestinationSelect from '../ui/DestinationSelect'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
 import { GUESTHOUSE_CITY_SEARCH_PROPS } from '../../data/guesthouseSearchField'
@@ -97,6 +98,7 @@ function dateTimeWithTime(date, time) {
 }
 
 export default function BookingModule({
+  initialCountryCode = 'IS',
   tabs = [],
   searchLabel,
   footerHint,
@@ -122,6 +124,7 @@ export default function BookingModule({
     activeTab === 'campervan' ? 'campervan' : activeTab === 'cars' ? 'car' : ''
 
   const [vehicleForm, setVehicleForm] = useState({
+    country_code: initialCountryCode,
     pickup_location_id: '',
     dropoff_location_id: '',
     pickup_at: '',
@@ -137,9 +140,10 @@ export default function BookingModule({
 
   const { options: pickupOptions, isEmpty: pickupEmpty, loading: pickupLoading } = useLocationOptions({
     role: 'pickup',
+    countryCode: vehicleForm.country_code,
     mainCategory: vehicleMainCategory,
     enabled: !isGuesthouse,
-    limit: 50,
+    limit: 500,
   })
 
   const { options: dropoffOptions } = useLocationOptions({
@@ -147,7 +151,7 @@ export default function BookingModule({
     pickupLocationId: vehicleForm.pickup_location_id,
     mainCategory: vehicleMainCategory,
     enabled: !isGuesthouse && !!vehicleForm.pickup_location_id,
-    limit: 50,
+    limit: 500,
   })
 
   useAutoSelectLocation({
@@ -157,7 +161,7 @@ export default function BookingModule({
       setVehicleForm((prev) => ({
         ...prev,
         pickup_location_id: id,
-        dropoff_location_id: prev.dropoff_location_id || id,
+        dropoff_location_id: '',
       }))
     },
   })
@@ -196,6 +200,15 @@ export default function BookingModule({
     setMobileDetailsOpen(false)
   }, [activeTab])
 
+  useEffect(() => {
+    if (!initialCountryCode) return
+    setVehicleForm((prev) => (
+      prev.country_code === initialCountryCode
+        ? prev
+        : { ...prev, country_code: initialCountryCode, pickup_location_id: '', dropoff_location_id: '' }
+    ))
+  }, [initialCountryCode])
+
   const handleVehicleDates = ({ start, end }) => {
     const pickup_at = dateTimeWithTime(start, '11:00')
     let dropoff_at = dateTimeWithTime(end, '10:00')
@@ -223,6 +236,7 @@ export default function BookingModule({
       if (guestForm.check_out) params.set('check_out', guestForm.check_out)
       if (guestForm.guests) params.set('guests', guestForm.guests)
     } else {
+      if (vehicleForm.country_code) params.set('country_code', vehicleForm.country_code)
       if (vehicleForm.pickup_location_id) params.set('pickup_location_id', vehicleForm.pickup_location_id)
       if (vehicleForm.dropoff_location_id) params.set('dropoff_location_id', vehicleForm.dropoff_location_id)
       if (vehicleForm.pickup_at) params.set('pickup_at', vehicleForm.pickup_at)
@@ -235,25 +249,27 @@ export default function BookingModule({
 
   const renderVehicleFields = () => (
     <>
-      {!pickupLoading && pickupEmpty && (
-        <p className="location-empty-hint" role="status">
-          {label('emptyLocationsHint')}
-        </p>
-      )}
+      <DestinationSelect value={vehicleForm.country_code} mainCategory={vehicleMainCategory}
+        onOpen={expandMobileDetails}
+        onChange={(country_code) => {
+          setVehicleForm((prev) => ({ ...prev, country_code, pickup_location_id: '', dropoff_location_id: '' }))
+          expandMobileDetails()
+        }} />
+
       <div className="field field--primary">
         <span className="flabel">{label('pickupLabel')}</span>
         <FieldSelect
           value={vehicleForm.pickup_location_id}
           onChange={(value) => {
-            const sameAsPickup = vehicleForm.dropoff_location_id === vehicleForm.pickup_location_id
             setVehicleForm((prev) => ({
               ...prev,
               pickup_location_id: value,
-              dropoff_location_id: sameAsPickup ? value : prev.dropoff_location_id,
+              dropoff_location_id: '',
             }))
             if (isMobileCompact) setMobileDetailsOpen(true)
           }}
           options={pickupFieldOptions}
+          searchable
           placeholder={label('locationPlaceholder')}
           icon={PIN_ICON}
           ariaLabel={label('pickupLabel')}
@@ -268,6 +284,7 @@ export default function BookingModule({
           value={vehicleForm.dropoff_location_id}
           onChange={(value) => setVehicleForm((prev) => ({ ...prev, dropoff_location_id: value }))}
           options={dropoffFieldOptions}
+          searchable
           placeholder={label('locationPlaceholder')}
           icon={PIN_ICON}
           ariaLabel={label('dropoffLabel')}
@@ -355,7 +372,12 @@ export default function BookingModule({
               key={tab.id}
               type="button"
               className={`tab ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                if (tab.id !== activeTab) {
+                  setVehicleForm((prev) => ({ ...prev, pickup_location_id: '', dropoff_location_id: '' }))
+                }
+                setActiveTab(tab.id)
+              }}
             >
               {TAB_ICONS[tab.id] || TAB_ICONS.cars}
               {tab.label}
@@ -376,6 +398,11 @@ export default function BookingModule({
               {searchLabel || 'Search Now'}
             </button>
           </div>
+          {!isGuesthouse && !pickupLoading && pickupEmpty && (
+            <p className="booking-location-empty-hint" role="status">
+              {label('emptyLocationsHint')}
+            </p>
+          )}
         </div>
 
         {(footerHint || footerLinkLabel) && (

@@ -6,6 +6,9 @@ import UserAvatar from '../account/UserAvatar'
 import { getDashboardLabel, getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
 import useScrollLock from '../../hooks/useScrollLock'
 import LangCurrencyMenu from './LangCurrencyMenu'
+import useDestinations from '../../hooks/useDestinations'
+import CountryFlag from '../ui/CountryFlag'
+import { destinationLandingPath } from '../../utils/destination'
 
 function NavLink({ href, children, onClick, className = '' }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
@@ -38,7 +41,10 @@ export default function Header({
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [destinationsOpen, setDestinationsOpen] = useState(false)
+  const { destinations, isPending: destinationsLoading } = useDestinations('campervan')
   const userMenuRef = useRef(null)
+  const destinationsRef = useRef(null)
   const headerRef = useRef(null)
   const hamburgerRef = useRef(null)
   const mobileMenuScrollRef = useRef(null)
@@ -47,7 +53,8 @@ export default function Header({
   const dashboardPath = user ? getPostLoginPath(user) : null
   const dashboardLabel = getDashboardLabel(role)
   const showHostCta = !user || (role !== 'host' && role !== 'admin')
-  const mobileNavLinks = navLinks
+  const nonDestinationLinks = navLinks.filter((link) => link.label !== 'Destinations')
+  const mobileNavLinks = nonDestinationLinks
 
   const closeMobile = () => {
     setMobileOpen(false)
@@ -77,6 +84,22 @@ export default function Header({
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [mobileOpen])
+
+  useEffect(() => {
+    if (!destinationsOpen) return undefined
+    const onPointerDown = (event) => {
+      if (!destinationsRef.current?.contains(event.target)) setDestinationsOpen(false)
+    }
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setDestinationsOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [destinationsOpen])
 
   useEffect(() => {
     if (!userMenuOpen) return undefined
@@ -114,6 +137,26 @@ export default function Header({
       >
         <div className="mobile-menu-scroll" ref={mobileMenuScrollRef}>
           <div className="mobile-menu-main">
+            <div className="mobile-destinations">
+              <Link className="mobile-menu-link mobile-menu-link--destinations" to="/destinations" onClick={closeMobile}>
+                Destinations
+              </Link>
+              <div className="mobile-destination-list" aria-label="Available destinations">
+                {destinationsLoading ? (
+                  <span className="mobile-destination-status">Loading destinations…</span>
+                ) : destinations.map(({ code, name }) => (
+                  <Link
+                    key={code}
+                    className="mobile-destination-link"
+                    to={destinationLandingPath({ name })}
+                    onClick={closeMobile}
+                  >
+                    <CountryFlag code={code} decorative />
+                    {name}
+                  </Link>
+                ))}
+              </div>
+            </div>
             {mobileNavLinks.map((link) => (
               <NavLink key={link.label} href={link.href} onClick={closeMobile} className="mobile-menu-link">
                 {link.label}
@@ -209,7 +252,58 @@ export default function Header({
         <SiteLogo variant="header" className="logo" />
 
         <nav className="main" aria-label="Main">
-          {navLinks.map((link) => (
+          <div className="destinations-menu" ref={destinationsRef}>
+            <button
+              type="button"
+              className={destinationsOpen ? 'destinations-menu-toggle open' : 'destinations-menu-toggle'}
+              aria-haspopup="menu"
+              aria-expanded={destinationsOpen}
+              onClick={() => setDestinationsOpen((open) => !open)}
+            >
+              Destinations
+              <svg viewBox="0 0 24 24" aria-hidden focusable="false">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            {destinationsOpen && (
+              <div className="destinations-menu-panel" role="menu" aria-label="Destinations">
+                <div className="destinations-menu-heading">
+                  <span>Campervan destinations</span>
+                  <strong>Choose where your road trip begins</strong>
+                </div>
+                <div className="destinations-menu-list">
+                  {destinationsLoading ? (
+                    <span className="destinations-menu-status">Loading destinations…</span>
+                  ) : destinations.length ? (
+                    destinations.map(({ code, name }) => (
+                      <Link
+                        key={code}
+                        className="destinations-menu-item"
+                        to={destinationLandingPath({ name })}
+                        role="menuitem"
+                        onClick={() => setDestinationsOpen(false)}
+                      >
+                        <span className="destinations-menu-flag"><CountryFlag code={code} decorative /></span>
+                        <span className="destinations-menu-country">
+                          <strong>{name}</strong>
+                          <small>Campervan rental</small>
+                        </span>
+                        <svg className="destinations-menu-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M5 12h13M13 6l6 6-6 6" />
+                        </svg>
+                      </Link>
+                    ))
+                  ) : (
+                    <span className="destinations-menu-status">No destinations available yet.</span>
+                  )}
+                </div>
+                <Link className="destinations-menu-all" to="/destinations" role="menuitem" onClick={() => setDestinationsOpen(false)}>
+                  Explore all destinations <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            )}
+          </div>
+          {nonDestinationLinks.map((link) => (
             <NavLink key={link.label} href={link.href} className={navLinkClass(link.href)}>
               {link.label}
             </NavLink>

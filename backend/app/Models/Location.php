@@ -17,6 +17,7 @@ class Location extends Model
         'name',
         'slug',
         'address',
+        'country_code',
         'latitude',
         'longitude',
         'tax_rate_id',

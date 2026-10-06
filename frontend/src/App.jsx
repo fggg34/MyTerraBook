@@ -25,6 +25,8 @@ import SearchResultsPage from './pages/SearchResultsPage'
 import CheckoutPage from './pages/CheckoutPage'
 import BookingConfirmationPage from './pages/BookingConfirmationPage'
 import RapydCheckout from './pages/checkout/RapydCheckout'
+import DestinationsSection from './components/homepage/DestinationsSection'
+import DestinationLandingPage from './pages/DestinationLandingPage'
 import HomePageContainer from './pages/HomePageContainer'
 import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -135,6 +137,8 @@ function AppRoutes() {
         }
       >
         <Route path="/" element={<HomePageContainer />} />
+        <Route path="/destinations" element={<main><DestinationsSection standalone /></main>} />
+        <Route path="/:countrySlug" element={<DestinationLandingPage />} />
         <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/cars/:id" element={<ListingPage listingType="car" />} />
         <Route path="/campervans/:id" element={<ListingPage listingType="campervan" />} />

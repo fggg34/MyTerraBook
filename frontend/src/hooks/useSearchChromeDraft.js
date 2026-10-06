@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import useLocationOptions from './useLocationOptions'
+import useLocationOptions, { useAutoSelectLocation } from './useLocationOptions'
 import { useBookingRules } from './useBookingRules'
 import { ensureValidDropoff } from '../utils/bookingRules'
 import { formatDateTimeLocal, parseDateTimeLocal } from '../utils/format'
@@ -29,6 +29,7 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     vehicleType === 'campervan' ? 'campervan' : vehicleType === 'car' ? 'car' : ''
 
   const [vehicleDraft, setVehicleDraft] = useState({
+    country_code: query.country_code || '',
     pickup_location_id: '',
     dropoff_location_id: '',
     pickup_at: '',
@@ -44,9 +45,10 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
 
   const { options: pickupOptions, isEmpty: pickupEmpty } = useLocationOptions({
     role: 'pickup',
+    countryCode: vehicleDraft.country_code,
     mainCategory: vehicleMainCategory,
     enabled: !isGuesthouse,
-    limit: 50,
+    limit: 500,
   })
 
   const { options: dropoffOptions } = useLocationOptions({
@@ -54,7 +56,14 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     pickupLocationId: vehicleDraft.pickup_location_id,
     mainCategory: vehicleMainCategory,
     enabled: !isGuesthouse && !!vehicleDraft.pickup_location_id,
-    limit: 50,
+    limit: 500,
+  })
+
+  useAutoSelectLocation({
+    options: dropoffOptions,
+    value: vehicleDraft.dropoff_location_id,
+    pickupValueForDropoff: vehicleDraft.pickup_location_id,
+    onSelect: (id) => setVehicleDraft((prev) => ({ ...prev, dropoff_location_id: id })),
   })
 
   const pickupLocations = pickupOptions
@@ -73,6 +82,7 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     }
 
     setVehicleDraft({
+      country_code: query.country_code || '',
       pickup_location_id: query.pickup_location_id || '',
       dropoff_location_id: query.dropoff_location_id || '',
       pickup_at: query.pickup_at || '',
@@ -84,6 +94,7 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     query.check_in,
     query.check_out,
     query.guests,
+    query.country_code,
     query.pickup_location_id,
     query.dropoff_location_id,
     query.pickup_at,
@@ -130,6 +141,7 @@ export default function useSearchChromeDraft({ vehicleType, query, updateSearch 
     }
 
     updateSearch({
+      country_code: vehicleDraft.country_code,
       pickup_location_id: vehicleDraft.pickup_location_id,
       dropoff_location_id: vehicleDraft.dropoff_location_id,
       pickup_at: vehicleDraft.pickup_at,

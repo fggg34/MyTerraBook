@@ -70,7 +70,7 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
         : 'Guests'
       return `${city} · ${dates} · ${guestPart}`
     }
-    const loc = pickupLabel.includes('(') ? pickupLabel.match(/\(([^)]+)\)/)?.[1] || 'KEF' : 'KEF'
+    const loc = pickupLabel
     const dates = query.pickup_at && query.dropoff_at ? formatShortRange(query.pickup_at, query.dropoff_at) : 'Dates'
     return `${loc} · ${dates}`
   }, [isGuesthouse, pickupLabel, query, guestsLabel])
@@ -90,14 +90,18 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
 
   const locationShort = isGuesthouse
     ? config.introLocationDefault || pickupLabel || 'Iceland'
-    : pickupLabel.split('(').pop()?.replace(')', '').trim() || 'Keflavík'
-  const locationWord = locationShort.split(' ')[0]
+    : pickupLabel || 'your destination'
+  const locationWord = locationShort
   const unitPlural = config.unitPlural || 'results'
+
+  const internationalSearch = !isGuesthouse && query.country_code !== 'IS'
+  const titleLead = internationalSearch ? (vehicleType === 'car' ? 'Cars for your next journey' : 'Campervans for your next adventure') : config.titleLead
+  const subtitle = internationalSearch ? 'Compare vehicles and rental partners for your chosen destination. Check each listing for included equipment, insurance and rental conditions.' : config.subtitle
 
   const seo = usePageSeo(searchPageKey, {
     source: {
-      titleLead: config?.titleLead,
-      subtitle: config?.subtitle,
+      titleLead,
+      subtitle,
     },
   })
 
@@ -153,7 +157,7 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
               <div className="results-intro-row">
                 <div>
                   <h1 className="reveal-title" data-reveal-now="1">
-                    {config.titleLead}
+                    {titleLead}
                     <br />
                     {/* Never print a count before the results are in: on a slow
                         connection "0 ready" reads as an empty fleet. */}
@@ -171,7 +175,7 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
                     )}
                   </h1>
                   <p className="ri-sub reveal-desc" data-reveal-now="1">
-                    {config.subtitle}
+                    {subtitle}
                   </p>
                 </div>
               </div>

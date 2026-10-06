@@ -14,7 +14,8 @@ class SearchSuggestionsController extends Controller
     public function index(Request $request): JsonResponse
     {
         $scope = $request->string('scope')->toString();
-        $limit = min(20, max(1, (int) $request->query('limit', 8)));
+        $request->validate(['country_code' => ['sometimes', 'nullable', \Illuminate\Validation\Rule::in(array_keys(config('destinations')))]]);
+        $limit = min(500, max(1, (int) $request->query('limit', 8)));
         $q = trim($request->string('q')->toString());
 
         return match ($scope) {
@@ -40,18 +41,25 @@ class SearchSuggestionsController extends Controller
             ->where('is_active', true)
             ->orderBy('name');
 
+        if ($request->filled('country_code')) {
+            $query->where('country_code', $request->query('country_code'));
+        }
+
         $mainCategory = $request->string('main_category')->toString();
 
         if ($role === 'pickup') {
             $query->whereHas('cars', function ($carQuery) use ($mainCategory) {
-                $carQuery->where('car_location.allows_pickup', true);
+                $carQuery->publiclyVisible()->where('car_location.allows_pickup', true);
                 if ($mainCategory !== '') {
                     $carQuery->whereHas('subCategory.mainCategory', fn ($builder) => $builder->where('slug', $mainCategory));
                 }
             });
         } else {
-            $query->whereHas('cars', function ($carQuery) use ($mainCategory) {
-                $carQuery->where('car_location.allows_dropoff', true);
+            $query->whereHas('cars', function ($carQuery) use ($mainCategory, $pickupLocationId) {
+                $carQuery->publiclyVisible()->where('car_location.allows_dropoff', true);
+                if ($pickupLocationId) {
+                    $carQuery->whereHas('locations', fn ($q) => $q->where('locations.id', $pickupLocationId)->where('locations.is_active', true)->where('car_location.allows_pickup', true));
+                }
                 if ($mainCategory !== '') {
                     $carQuery->whereHas('subCategory.mainCategory', fn ($builder) => $builder->where('slug', $mainCategory));
                 }
@@ -83,6 +91,7 @@ class SearchSuggestionsController extends Controller
                 'id' => (string) $location->id,
                 'label' => $location->name,
                 'subtitle' => $location->address,
+                'country_code' => $location->country_code,
                 'type' => 'location',
                 'value' => (string) $location->id,
             ])

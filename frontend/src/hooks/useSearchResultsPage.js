@@ -76,6 +76,7 @@ export default function useSearchResultsPage(vehicleType) {
     setError(null)
 
     const params = {}
+    if (query.country_code) params.country_code = query.country_code
     if (query.pickup_location_id) params.pickup_location_id = query.pickup_location_id
     if (query.dropoff_location_id) params.dropoff_location_id = query.dropoff_location_id
     if (query.pickup_at) params.pickup_at = toApiDateTime(query.pickup_at)
@@ -86,17 +87,7 @@ export default function useSearchResultsPage(vehicleType) {
 
     const fetchCars = (params) => api.get('/cars', { params }).then((res) => res.data?.data || [])
 
-    const fetchResults = async () => {
-      let carData = await fetchCars(carParams)
-      const hasLocationFilter = query.pickup_location_id || query.dropoff_location_id
-      if (carData.length === 0 && hasLocationFilter) {
-        const fallbackParams = { ...carParams }
-        delete fallbackParams.pickup_location_id
-        delete fallbackParams.dropoff_location_id
-        carData = await fetchCars(fallbackParams)
-      }
-      return carData
-    }
+    const fetchResults = () => fetchCars(carParams)
 
     // The vehicles are the one request that matters. Categories and locations
     // only decorate them (filter chips, labels), so a miss there falls back to
@@ -133,6 +124,7 @@ export default function useSearchResultsPage(vehicleType) {
   }, [
     vehicleType,
     config.mainCategorySlug,
+    query.country_code,
     query.pickup_location_id,
     query.dropoff_location_id,
     query.pickup_at,
@@ -265,7 +257,7 @@ export default function useSearchResultsPage(vehicleType) {
   }, [filteredCards, selectedPartnerId, sort])
 
   const visibleCards = cards.slice(0, visibleCount)
-  const pickupLabel = locationMap[query.pickup_location_id] || 'Keflavík Airport (KEF)'
+  const pickupLabel = locationMap[query.pickup_location_id] || (query.country_code ? new Intl.DisplayNames(['en'], { type: 'region' }).of(/^[A-Z]{2}$/.test(query.country_code) ? query.country_code : 'ZZ') : 'All destinations')
   const dropoffLabel =
     query.dropoff_location_id && query.dropoff_location_id !== query.pickup_location_id
       ? locationMap[query.dropoff_location_id] || 'Drop-off'

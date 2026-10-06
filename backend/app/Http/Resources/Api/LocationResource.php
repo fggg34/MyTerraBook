@@ -20,6 +20,8 @@ class LocationResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'address' => $this->address,
+            'country_code' => $this->country_code,
+            'country_name' => config('destinations.'.$this->country_code, $this->country_code),
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
             'pickup_fee_cents' => $pickupFeeCents ? (int) $pickupFeeCents : 0,

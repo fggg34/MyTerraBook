@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import DateRangePicker from '../ui/DateRangePicker'
+import DestinationSelect from '../ui/DestinationSelect'
 import FieldSelect from '../ui/FieldSelect'
 import PredictiveSearchField from '../ui/PredictiveSearchField'
 import { GUESTHOUSE_CITY_SEARCH_PROPS } from '../../data/guesthouseSearchField'
@@ -313,20 +314,27 @@ export default function SearchResultsChrome({
               </>
             ) : (
               <>
+                <DestinationSelect value={vehicleDraft.country_code} mainCategory={vehicleType}
+                  className="hfield hfield--control hfield--primary" labelClassName="hf-label"
+                  onOpen={expandMobileDetails}
+                  onChange={(country_code) => {
+                    setVehicleDraft((prev) => ({ ...prev, country_code, pickup_location_id: '', dropoff_location_id: '' }))
+                    expandMobileDetails()
+                  }} />
                 <div className="hfield hfield--control hfield--primary">
                   <span className="hf-label">{label('pickupLabel')}</span>
                   <FieldSelect
                     value={vehicleDraft.pickup_location_id}
                     onChange={(value) => {
-                      const sameAsPickup = vehicleDraft.dropoff_location_id === vehicleDraft.pickup_location_id
                       setVehicleDraft((prev) => ({
                         ...prev,
                         pickup_location_id: value,
-                        dropoff_location_id: sameAsPickup ? value : prev.dropoff_location_id,
+                        dropoff_location_id: '',
                       }))
                       expandMobileDetails()
                     }}
                     options={pickupOptions}
+                    searchable
                     placeholder={label('locationPlaceholder')}
                     icon={PIN_ICON}
                     ariaLabel={label('pickupLabel')}
@@ -340,6 +348,7 @@ export default function SearchResultsChrome({
                     value={vehicleDraft.dropoff_location_id}
                     onChange={(value) => setVehicleDraft((prev) => ({ ...prev, dropoff_location_id: value }))}
                     options={dropoffOptions}
+                    searchable
                     placeholder={label('locationPlaceholder')}
                     icon={PIN_ICON}
                     ariaLabel={label('dropoffLabel')}

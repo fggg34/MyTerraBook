@@ -21,6 +21,7 @@ class LocationFactory extends Factory
 
         return [
             'name' => $name,
+            'country_code' => 'AL',
             'address' => fake()->streetAddress().', '.fake()->city(),
             'latitude' => fake()->latitude(39.5, 42.5),
             'longitude' => fake()->longitude(19.0, 21.5),
