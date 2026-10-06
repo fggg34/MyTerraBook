@@ -8,6 +8,7 @@ import FilterPopover from './FilterPopover'
 import FilterSidePanel from './FilterSidePanel'
 import PriceRangeFilter from './PriceRangeFilter'
 import useSearchChromeDraft from '../../hooks/useSearchChromeDraft'
+import { toFieldSelectOptions } from '../../hooks/useLocationOptions'
 import useMediaQuery from '../../hooks/useMediaQuery'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { SORT_OPTIONS } from '../../data/searchResultsConfig'
@@ -139,15 +140,9 @@ export default function SearchResultsChrome({
     if (isMobileCompact) setMobileDetailsOpen(true)
   }
 
-  const pickupOptions = useMemo(
-    () => pickupLocations.map((loc) => ({ value: loc.value, label: loc.label, subtitle: loc.subtitle })),
-    [pickupLocations],
-  )
+  const pickupOptions = useMemo(() => toFieldSelectOptions(pickupLocations), [pickupLocations])
 
-  const dropoffOptions = useMemo(
-    () => dropoffLocations.map((loc) => ({ value: loc.value, label: loc.label, subtitle: loc.subtitle })),
-    [dropoffLocations],
-  )
+  const dropoffOptions = useMemo(() => toFieldSelectOptions(dropoffLocations), [dropoffLocations])
 
   const priceActive = isPriceFilterActive(filters, priceBounds)
   const perLabel = isGuesthouse ? 'night' : 'day'

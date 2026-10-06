@@ -302,7 +302,7 @@
                         <div class="ir-global-field">
                             <label class="ir-global-label">Name on listings</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.greenlight_display_name" />
-                            <p class="ir-global-hint">Shown above Greenlight vehicles and in the partner filter on campervan and car results.</p>
+                            <p class="ir-global-hint">Shown above Greenlight vehicles, in the partner filter, and as the heading for this partner's pickup locations.</p>
                         </div>
                         <div class="ir-global-field">
                             <label class="ir-global-label">Partner logo</label>

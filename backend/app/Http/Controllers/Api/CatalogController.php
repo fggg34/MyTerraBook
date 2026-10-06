@@ -73,20 +73,87 @@ class CatalogController extends Controller
 
     public function destinations(Request $request): JsonResponse
     {
-        $rows = Location::query()->where('is_active', true)
+        $countryCodes = Location::query()->where('is_active', true)
             ->whereHas('cars', function ($cars) use ($request) {
                 $cars->publiclyVisible()->where('car_location.allows_pickup', true);
                 if ($request->filled('main_category')) {
                     $cars->whereHas('subCategory.mainCategory', fn ($q) => $q->where('slug', $request->query('main_category')));
                 }
             })
-            ->select('country_code')->distinct()->get()
-            ->map(fn ($location) => [
-                'code' => $location->country_code,
-                'name' => config('destinations.'.$location->country_code, $location->country_code),
-            ])->sortBy('name')->values();
+            ->select('country_code')
+            ->distinct()
+            ->pluck('country_code');
+
+        $partnerLocations = Location::query()
+            ->with([
+                'host:id,name',
+                'cars' => function ($cars) {
+                    $cars->publiclyVisible()
+                        ->where('car_location.allows_pickup', true)
+                        ->where(function ($query) {
+                            $query->where(function ($partner) {
+                                $partner->whereNotNull('external_provider')->where('external_provider', '!=', '');
+                            })->orWhereNotNull('user_id');
+                        })
+                        ->with(['host:id,name', 'subCategory.mainCategory:id,slug']);
+                },
+            ])
+            ->where('is_active', true)
+            ->whereIn('country_code', $countryCodes)
+            ->whereHas('cars', function ($cars) {
+                $cars->publiclyVisible()->where('car_location.allows_pickup', true)->where(function ($query) {
+                    $query->where(function ($partner) {
+                        $partner->whereNotNull('external_provider')->where('external_provider', '!=', '');
+                    })->orWhereNotNull('user_id');
+                });
+            })
+            ->orderBy('name')
+            ->get()
+            ->groupBy('country_code');
+
+        $partners = app(ListingPartner::class);
+        $rows = $countryCodes->map(function ($code) use ($partnerLocations, $partners) {
+            $locations = ($partnerLocations->get($code) ?? collect())
+                ->map(function (Location $location) use ($partners) {
+                    $partnerName = $partners->nameForLocation($location);
+                    if ($partnerName === null) {
+                        return null;
+                    }
+
+                    return [
+                        'id' => (string) $location->id,
+                        'name' => $location->name,
+                        'partner_name' => $partnerName,
+                        'vehicle_type' => $this->destinationVehicleType($location),
+                    ];
+                })
+                ->filter()
+                ->values();
+
+            return [
+                'code' => $code,
+                'name' => config('destinations.'.$code, $code),
+                'locations' => $locations,
+            ];
+        })->sortBy('name')->values();
 
         return response()->json(['data' => $rows]);
+    }
+
+    private function destinationVehicleType(Location $location): string
+    {
+        $slugs = $location->cars
+            ->filter(fn (Car $car) => $car->user_id !== null || filled($car->external_provider))
+            ->map(fn (Car $car) => $car->subCategory?->mainCategory?->slug)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($slugs->contains('campervan') && ! $slugs->contains('car')) {
+            return 'campervan';
+        }
+
+        return 'car';
     }
 
     public function locations(): JsonResponse

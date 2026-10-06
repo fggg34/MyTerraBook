@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Car;
+use App\Models\Location;
 use App\Services\Partners\GreenlightSettings;
 
 class ListingPartner
@@ -29,6 +30,33 @@ class ListingPartner
                 'name' => $settings->displayName(),
                 'logo_url' => $settings->logoUrl(),
             ];
+        }
+
+        return null;
+    }
+
+    public function nameForLocation(Location $location): ?string
+    {
+        if ($location->external_provider === GreenlightSettings::PROVIDER) {
+            $name = app(GreenlightSettings::class)->displayName();
+
+            return $name !== '' ? $name : null;
+        }
+
+        $name = trim((string) ($location->host?->name ?? ''));
+        if ($name !== '') {
+            return $name;
+        }
+
+        $cars = $location->relationLoaded('cars')
+            ? $location->cars
+            : $location->cars()->publiclyVisible()->with('host')->get();
+
+        foreach ($cars as $car) {
+            $partner = $this->fromCar($car);
+            if ($partner !== null) {
+                return $partner['name'];
+            }
         }
 
         return null;

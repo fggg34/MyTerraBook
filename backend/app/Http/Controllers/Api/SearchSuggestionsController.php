@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\GuestHouse;
 use App\Models\Location;
+use App\Support\ListingPartner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +39,12 @@ class SearchSuggestionsController extends Controller
         $pickupLocationId = $request->query('pickup_location_id');
 
         $query = Location::query()
+            ->with([
+                'host:id,name',
+                'cars' => function ($cars) {
+                    $cars->publiclyVisible()->with('host:id,name');
+                },
+            ])
             ->where('is_active', true)
             ->orderBy('name');
 
@@ -78,9 +85,13 @@ class SearchSuggestionsController extends Controller
 
         if ($q !== '') {
             $needle = '%'.$q.'%';
-            $query->where(function ($builder) use ($needle) {
+            $countryCodes = $this->countryCodesMatchingName($q);
+            $query->where(function ($builder) use ($needle, $countryCodes) {
                 $builder->where('name', 'like', $needle)
                     ->orWhere('address', 'like', $needle);
+                if ($countryCodes !== []) {
+                    $builder->orWhereIn('country_code', $countryCodes);
+                }
             });
         }
 
@@ -92,11 +103,40 @@ class SearchSuggestionsController extends Controller
                 'label' => $location->name,
                 'subtitle' => $location->address,
                 'country_code' => $location->country_code,
+                'country_name' => config('destinations.'.$location->country_code, $location->country_code),
+                'partner_name' => $this->partnerName($location),
                 'type' => 'location',
                 'value' => (string) $location->id,
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * @return list<array{id: string, label: string, subtitle: string|null, type: string, value: string}>
+     */
+    /**
+     * @return list<string>
+     */
+    private function countryCodesMatchingName(string $q): array
+    {
+        if (mb_strlen($q) < 3) {
+            return [];
+        }
+
+        $needle = mb_strtolower($q);
+
+        return collect(config('destinations', []))
+            ->filter(fn ($name) => str_starts_with(mb_strtolower((string) $name), $needle))
+            ->keys()
+            ->map(fn ($code) => (string) $code)
+            ->values()
+            ->all();
+    }
+
+    private function partnerName(Location $location): ?string
+    {
+        return app(ListingPartner::class)->nameForLocation($location);
     }
 
     /**

@@ -27,7 +27,7 @@ class GreenlightSettings
             'insurance_plan_ids' => is_array($insurance)
                 ? array_values(array_filter(array_map('strval', $insurance)))
                 : [],
-            'display_name' => trim((string) data_get($stored, 'display_name', 'Green Light')) ?: 'Green Light',
+            'display_name' => trim((string) data_get($stored, 'display_name', 'Greenlight car rental')) ?: 'Greenlight car rental',
             'logo_path' => (string) data_get($stored, 'logo_path', ''),
         ];
     }
@@ -91,7 +91,7 @@ class GreenlightSettings
             'base_url' => rtrim((string) ($state['greenlight_base_url'] ?? self::DEFAULT_BASE_URL), '/') ?: self::DEFAULT_BASE_URL,
             'api_key' => $apiKey,
             'insurance_plan_ids' => $current['insurance_plan_ids'],
-            'display_name' => $displayName !== '' ? $displayName : 'Green Light',
+            'display_name' => $displayName !== '' ? $displayName : 'Greenlight car rental',
             'logo_path' => (string) ($state['greenlight_logo_path'] ?? $current['logo_path']),
         ]);
     }

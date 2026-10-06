@@ -8,7 +8,7 @@ import useScrollLock from '../../hooks/useScrollLock'
 import LangCurrencyMenu from './LangCurrencyMenu'
 import useDestinations from '../../hooks/useDestinations'
 import CountryFlag from '../ui/CountryFlag'
-import { destinationLandingPath } from '../../utils/destination'
+import { destinationLandingPath, destinationLocationPath, partnerDestinationGroups } from '../../utils/destination'
 
 function NavLink({ href, children, onClick, className = '' }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
@@ -144,16 +144,32 @@ export default function Header({
               <div className="mobile-destination-list" aria-label="Available destinations">
                 {destinationsLoading ? (
                   <span className="mobile-destination-status">Loading destinations…</span>
-                ) : destinations.map(({ code, name }) => (
-                  <Link
-                    key={code}
-                    className="mobile-destination-link"
-                    to={destinationLandingPath({ name })}
-                    onClick={closeMobile}
-                  >
-                    <CountryFlag code={code} decorative />
-                    {name}
-                  </Link>
+                ) : destinations.map(({ code, name, locations }) => (
+                  <div key={code} className="mobile-destination-group">
+                    <Link
+                      className="mobile-destination-link"
+                      to={destinationLandingPath({ name })}
+                      onClick={closeMobile}
+                    >
+                      <CountryFlag code={code} decorative />
+                      {name}
+                    </Link>
+                    {partnerDestinationGroups(locations).map((group) => (
+                      <div key={group.name} className="mobile-destination-partner">
+                        <span>{group.name}</span>
+                        {group.locations.map((location) => (
+                          <Link
+                            key={location.id}
+                            className="mobile-destination-location"
+                            to={destinationLocationPath(code, location)}
+                            onClick={closeMobile}
+                          >
+                            {location.name}
+                          </Link>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>
@@ -274,23 +290,40 @@ export default function Header({
                   {destinationsLoading ? (
                     <span className="destinations-menu-status">Loading destinations…</span>
                   ) : destinations.length ? (
-                    destinations.map(({ code, name }) => (
-                      <Link
-                        key={code}
-                        className="destinations-menu-item"
-                        to={destinationLandingPath({ name })}
-                        role="menuitem"
-                        onClick={() => setDestinationsOpen(false)}
-                      >
-                        <span className="destinations-menu-flag"><CountryFlag code={code} decorative /></span>
-                        <span className="destinations-menu-country">
-                          <strong>{name}</strong>
-                          <small>Campervan rental</small>
-                        </span>
-                        <svg className="destinations-menu-arrow" viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M5 12h13M13 6l6 6-6 6" />
-                        </svg>
-                      </Link>
+                    destinations.map(({ code, name, locations }) => (
+                      <div key={code} className="destinations-menu-group">
+                        <Link
+                          className="destinations-menu-item"
+                          to={destinationLandingPath({ name })}
+                          role="menuitem"
+                          onClick={() => setDestinationsOpen(false)}
+                        >
+                          <span className="destinations-menu-flag"><CountryFlag code={code} decorative /></span>
+                          <span className="destinations-menu-country">
+                            <strong>{name}</strong>
+                            <small>Campervan rental</small>
+                          </span>
+                          <svg className="destinations-menu-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M5 12h13M13 6l6 6-6 6" />
+                          </svg>
+                        </Link>
+                        {partnerDestinationGroups(locations).map((group) => (
+                          <div key={group.name} className="destinations-menu-partner">
+                            <span className="destinations-menu-partner-name">{group.name}</span>
+                            {group.locations.map((location) => (
+                              <Link
+                                key={location.id}
+                                className="destinations-menu-location"
+                                to={destinationLocationPath(code, location)}
+                                role="menuitem"
+                                onClick={() => setDestinationsOpen(false)}
+                              >
+                                {location.name}
+                              </Link>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
                     ))
                   ) : (
                     <span className="destinations-menu-status">No destinations available yet.</span>

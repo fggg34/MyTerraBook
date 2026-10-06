@@ -68,12 +68,33 @@ export default function useLocationOptions({
   return { options: visibleOptions, loading, isEmpty: !loading && visibleOptions.length === 0 }
 }
 
+function countryLabel(code) {
+  if (!/^[A-Z]{2}$/.test(code || '')) return ''
+  try {
+    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) || ''
+  } catch {
+    return ''
+  }
+}
+
 export function toFieldSelectOptions(options) {
-  return options.map((loc) => ({
+  const mapped = options.map((loc) => ({
     value: loc.value,
     label: loc.label,
     subtitle: loc.subtitle,
+    group: loc.partner_name || loc.group || '',
+    searchText: [loc.country_name, countryLabel(loc.country_code), loc.partner_name].filter(Boolean).join(' '),
   }))
+  if (!mapped.some((opt) => opt.group)) return mapped
+
+  return [...mapped].sort((a, b) => {
+    if (a.group !== b.group) {
+      if (!a.group) return 1
+      if (!b.group) return -1
+      return a.group.localeCompare(b.group)
+    }
+    return String(a.label).localeCompare(String(b.label))
+  })
 }
 
 export function suggestionToLocation(option) {

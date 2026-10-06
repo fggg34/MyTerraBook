@@ -185,8 +185,8 @@ class GreenlightPartnerFlowTest extends TestCase
         Http::fake([
             'https://greenlight.test/api/partner/v1/locations' => Http::response([
                 'data' => [
-                    ['id' => 'loc_kef', 'name' => 'Keflavik Airport', 'city' => 'Keflavik'],
-                    ['id' => 'loc_rvk', 'name' => 'Reykjavik Office', 'city' => 'Reykjavik'],
+                    ['id' => 'loc_kef', 'name' => 'Keflavik Airport', 'city' => 'Keflavik', 'country' => 'IS'],
+                    ['id' => 'loc_rvk', 'name' => 'Reykjavik Office', 'city' => 'Reykjavik', 'country' => 'IS'],
                 ],
             ]),
             'https://greenlight.test/api/partner/v1/categories' => Http::response(['data' => []]),
@@ -230,6 +230,8 @@ class GreenlightPartnerFlowTest extends TestCase
 
         $this->assertNotNull($kef);
         $this->assertNotNull($rvk);
+        $this->assertSame('IS', $kef->country_code);
+        $this->assertSame('IS', $rvk->country_code);
         $this->assertNotNull($rav4);
         $this->assertNotNull($yaris);
         $this->assertEqualsCanonicalizing([$kef->id], $rav4->locations()->pluck('locations.id')->all());

@@ -67,6 +67,11 @@ class Location extends Model
         return $this->belongsTo(TaxRate::class);
     }
 
+    public function host(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'host_user_id');
+    }
+
     public function schedules(): HasMany
     {
         return $this->hasMany(LocationSchedule::class);

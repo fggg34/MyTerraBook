@@ -33,7 +33,11 @@ export default function FieldSelect({
   const hasValue = Boolean(value && selected)
 
   const visibleOptions = searchable && query.trim()
-    ? options.filter((opt) => String(opt.label).toLowerCase().includes(query.trim().toLowerCase()))
+    ? options.filter((opt) => [opt.label, opt.subtitle, opt.group, opt.searchText]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(query.trim().toLowerCase()))
     : options
 
   const menuStyle = useFixedMenuPosition(triggerRef, open, {
@@ -132,23 +136,29 @@ export default function FieldSelect({
           {searchable && query.trim() ? 'No matches' : 'No options available'}
         </li>
       ) : (
-        visibleOptions.map((opt, index) => (
-          <li key={opt.value} role="presentation">
-            <button
-              type="button"
-              className={`field-select-item ${highlight === index ? 'highlighted' : ''} ${value === opt.value ? 'selected' : ''}`}
-              role="option"
-              aria-selected={value === opt.value}
-              onMouseEnter={() => setHighlight(index)}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => selectOption(opt)}
-            >
-              {opt.icon && <span className="field-select-opt-icon" aria-hidden>{opt.icon}</span>}
-              <span className="field-select-label">{opt.label}</span>
-              {opt.subtitle && <span className="field-select-sub">{opt.subtitle}</span>}
-            </button>
-          </li>
-        ))
+        visibleOptions.map((opt, index) => {
+          const group = opt.group || ''
+          const previous = index > 0 ? (visibleOptions[index - 1].group || '') : ''
+          const showGroup = group !== '' && group !== previous
+          return (
+            <li key={opt.value} role="presentation">
+              {showGroup && <div className="field-select-group" role="presentation">{group}</div>}
+              <button
+                type="button"
+                className={`field-select-item ${highlight === index ? 'highlighted' : ''} ${value === opt.value ? 'selected' : ''}`}
+                role="option"
+                aria-selected={value === opt.value}
+                onMouseEnter={() => setHighlight(index)}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => selectOption(opt)}
+              >
+                {opt.icon && <span className="field-select-opt-icon" aria-hidden>{opt.icon}</span>}
+                <span className="field-select-label">{opt.label}</span>
+                {opt.subtitle && <span className="field-select-sub">{opt.subtitle}</span>}
+              </button>
+            </li>
+          )
+        })
       )}
     </ul>
   )

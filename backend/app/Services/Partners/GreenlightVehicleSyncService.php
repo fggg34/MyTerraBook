@@ -109,6 +109,9 @@ class GreenlightVehicleSyncService
             if (! $location->exists) {
                 $location->slug = Location::uniqueSlugFromName($name);
             }
+            if (! $location->exists || ! filled($location->country_code)) {
+                $location->country_code = $this->countryCode($row);
+            }
             $location->save();
             $map[$externalId] = $location;
         }
@@ -160,6 +163,17 @@ class GreenlightVehicleSyncService
         $this->ensureUnit($car);
 
         return $car;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function countryCode(array $row): string
+    {
+        $code = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', (string) ($row['country'] ?? 'IS')) ?? '', 0, 2));
+        $countries = config('destinations', []);
+
+        return $code !== '' && is_array($countries) && array_key_exists($code, $countries) ? $code : 'IS';
     }
 
     private function matchExistingLocation(string $name): ?Location
