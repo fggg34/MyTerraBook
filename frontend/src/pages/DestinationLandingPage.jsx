@@ -10,7 +10,7 @@ import CountryFlag from '../components/ui/CountryFlag'
 import useDestinations from '../hooks/useDestinations'
 import useHomepageData from '../hooks/useHomepageData'
 import { mergeHomepageData } from '../utils/mergeHomepageData'
-import { destinationLocationPath, destinationSearchPath, destinationSlug, partnerDestinationGroups } from '../utils/destination'
+import { destinationLocationPath, destinationLocations, destinationSearchPath, destinationSlug } from '../utils/destination'
 
 export default function DestinationLandingPage() {
   const { countrySlug } = useParams()
@@ -27,7 +27,7 @@ export default function DestinationLandingPage() {
   if (!destination) return null
 
   const { code, name, locations } = destination
-  const locationGroups = partnerDestinationGroups(locations)
+  const pickupLocations = destinationLocations(locations)
   const searchPath = destinationSearchPath(code)
   const campervanCard = pageData.rentSection?.cards?.find((card) => card.name === 'Campervans')
     || pageData.rentSection?.cards?.[0]
@@ -65,22 +65,17 @@ export default function DestinationLandingPage() {
             <Link className="destination-landing-cta" to={searchPath}>See campervans in {name}</Link>
           </div>
         </section>
-        {locationGroups.length > 0 && (
+        {pickupLocations.length > 0 && (
           <section className="destination-landing-locations" aria-label={`Pick-up locations in ${name}`}>
             <div className="wrap">
               <h2>Pick-up locations in {name}</h2>
-              {locationGroups.map((group) => (
-                <div key={group.name} className="destination-landing-partner">
-                  <h3>{group.name}</h3>
-                  <ul>
-                    {group.locations.map((location) => (
-                      <li key={location.id}>
-                        <Link to={destinationLocationPath(code, location)}>{location.name}</Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              <ul className="destination-landing-location-list">
+                {pickupLocations.map((location) => (
+                  <li key={location.id}>
+                    <Link to={destinationLocationPath(code, location)}>{location.name}</Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </section>
         )}

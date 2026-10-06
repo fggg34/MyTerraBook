@@ -8,7 +8,7 @@ import useScrollLock from '../../hooks/useScrollLock'
 import LangCurrencyMenu from './LangCurrencyMenu'
 import useDestinations from '../../hooks/useDestinations'
 import CountryFlag from '../ui/CountryFlag'
-import { destinationLandingPath, destinationLocationPath, partnerDestinationGroups } from '../../utils/destination'
+import { destinationLandingPath, destinationLocationPath, destinationLocations } from '../../utils/destination'
 
 function NavLink({ href, children, onClick, className = '' }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
@@ -154,20 +154,15 @@ export default function Header({
                       <CountryFlag code={code} decorative />
                       {name}
                     </Link>
-                    {partnerDestinationGroups(locations).map((group) => (
-                      <div key={group.name} className="mobile-destination-partner">
-                        <span>{group.name}</span>
-                        {group.locations.map((location) => (
-                          <Link
-                            key={location.id}
-                            className="mobile-destination-location"
-                            to={destinationLocationPath(code, location)}
-                            onClick={closeMobile}
-                          >
-                            {location.name}
-                          </Link>
-                        ))}
-                      </div>
+                    {destinationLocations(locations).map((location) => (
+                      <Link
+                        key={location.id}
+                        className="mobile-destination-location"
+                        to={destinationLocationPath(code, location)}
+                        onClick={closeMobile}
+                      >
+                        {location.name}
+                      </Link>
                     ))}
                   </div>
                 ))}
@@ -307,21 +302,16 @@ export default function Header({
                             <path d="M5 12h13M13 6l6 6-6 6" />
                           </svg>
                         </Link>
-                        {partnerDestinationGroups(locations).map((group) => (
-                          <div key={group.name} className="destinations-menu-partner">
-                            <span className="destinations-menu-partner-name">{group.name}</span>
-                            {group.locations.map((location) => (
-                              <Link
-                                key={location.id}
-                                className="destinations-menu-location"
-                                to={destinationLocationPath(code, location)}
-                                role="menuitem"
-                                onClick={() => setDestinationsOpen(false)}
-                              >
-                                {location.name}
-                              </Link>
-                            ))}
-                          </div>
+                        {destinationLocations(locations).map((location) => (
+                          <Link
+                            key={location.id}
+                            className="destinations-menu-location"
+                            to={destinationLocationPath(code, location)}
+                            role="menuitem"
+                            onClick={() => setDestinationsOpen(false)}
+                          >
+                            {location.name}
+                          </Link>
                         ))}
                       </div>
                     ))

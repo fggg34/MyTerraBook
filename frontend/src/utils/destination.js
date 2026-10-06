@@ -25,18 +25,6 @@ export function destinationLocationPath(countryCode, location) {
   return '/' + type + '?' + params.toString()
 }
 
-export function partnerDestinationGroups(locations = []) {
-  const groups = []
-  const index = new Map()
-  locations.forEach((location) => {
-    if (!location?.id || !location?.name || !location?.partner_name) return
-    const key = location.partner_name
-    if (!index.has(key)) {
-      const group = { name: key, locations: [] }
-      index.set(key, group)
-      groups.push(group)
-    }
-    index.get(key).locations.push(location)
-  })
-  return groups
+export function destinationLocations(locations = []) {
+  return locations.filter((location) => location?.id && location?.name)
 }

@@ -108,9 +108,10 @@ class DestinationSearchTest extends TestCase
 
         $iceland = collect($this->getJson('/api/destinations?main_category=campervan')->assertOk()->json('data'))
             ->firstWhere('code', 'IS');
+        $names = array_column($iceland['locations'], 'name');
 
-        $this->assertSame('Keflavik Airport', $iceland['locations'][0]['name']);
-        $this->assertSame('Greenlight car rental', $iceland['locations'][0]['partner_name']);
+        $this->assertContains('Keflavik Airport', $names);
+        $this->assertGreaterThan(1, count($names));
     }
 
     public function test_greenlight_locations_are_destinations_inside_their_country(): void
@@ -144,10 +145,10 @@ class DestinationSearchTest extends TestCase
             ->firstWhere('code', 'IS');
 
         $this->assertNotNull($iceland);
-        $this->assertCount(1, $iceland['locations']);
-        $this->assertSame('Keflavik Airport', $iceland['locations'][0]['name']);
-        $this->assertSame('Greenlight car rental', $iceland['locations'][0]['partner_name']);
-        $this->assertSame('car', $iceland['locations'][0]['vehicle_type']);
+        $keflavik = collect($iceland['locations'])->firstWhere('name', 'Keflavik Airport');
+        $this->assertNotNull($keflavik);
+        $this->assertSame('car', $keflavik['vehicle_type']);
+        $this->assertGreaterThan(1, count($iceland['locations']));
     }
 
     public function test_greenlight_depots_are_labeled_with_the_partner_section(): void

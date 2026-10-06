@@ -84,50 +84,30 @@ class CatalogController extends Controller
             ->distinct()
             ->pluck('country_code');
 
-        $partnerLocations = Location::query()
+        $countryLocations = Location::query()
             ->with([
-                'host:id,name',
                 'cars' => function ($cars) {
                     $cars->publiclyVisible()
                         ->where('car_location.allows_pickup', true)
-                        ->where(function ($query) {
-                            $query->where(function ($partner) {
-                                $partner->whereNotNull('external_provider')->where('external_provider', '!=', '');
-                            })->orWhereNotNull('user_id');
-                        })
-                        ->with(['host:id,name', 'subCategory.mainCategory:id,slug']);
+                        ->with('subCategory.mainCategory:id,slug');
                 },
             ])
             ->where('is_active', true)
             ->whereIn('country_code', $countryCodes)
             ->whereHas('cars', function ($cars) {
-                $cars->publiclyVisible()->where('car_location.allows_pickup', true)->where(function ($query) {
-                    $query->where(function ($partner) {
-                        $partner->whereNotNull('external_provider')->where('external_provider', '!=', '');
-                    })->orWhereNotNull('user_id');
-                });
+                $cars->publiclyVisible()->where('car_location.allows_pickup', true);
             })
             ->orderBy('name')
             ->get()
             ->groupBy('country_code');
 
-        $partners = app(ListingPartner::class);
-        $rows = $countryCodes->map(function ($code) use ($partnerLocations, $partners) {
-            $locations = ($partnerLocations->get($code) ?? collect())
-                ->map(function (Location $location) use ($partners) {
-                    $partnerName = $partners->nameForLocation($location);
-                    if ($partnerName === null) {
-                        return null;
-                    }
-
-                    return [
-                        'id' => (string) $location->id,
-                        'name' => $location->name,
-                        'partner_name' => $partnerName,
-                        'vehicle_type' => $this->destinationVehicleType($location),
-                    ];
-                })
-                ->filter()
+        $rows = $countryCodes->map(function ($code) use ($countryLocations) {
+            $locations = ($countryLocations->get($code) ?? collect())
+                ->map(fn (Location $location) => [
+                    'id' => (string) $location->id,
+                    'name' => $location->name,
+                    'vehicle_type' => $this->destinationVehicleType($location),
+                ])
                 ->values();
 
             return [
@@ -143,7 +123,6 @@ class CatalogController extends Controller
     private function destinationVehicleType(Location $location): string
     {
         $slugs = $location->cars
-            ->filter(fn (Car $car) => $car->user_id !== null || filled($car->external_provider))
             ->map(fn (Car $car) => $car->subCategory?->mainCategory?->slug)
             ->filter()
             ->unique()
