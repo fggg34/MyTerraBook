@@ -268,7 +268,6 @@ export default function Header({
             {destinationsOpen && (
               <div className="destinations-menu-panel" role="menu" aria-label="Destinations">
                 <div className="destinations-menu-heading">
-                  <span>Campervan destinations</span>
                   <strong>Choose where your road trip begins</strong>
                 </div>
                 <div className="destinations-menu-list">
@@ -297,9 +296,6 @@ export default function Header({
                     <span className="destinations-menu-status">No destinations available yet.</span>
                   )}
                 </div>
-                <Link className="destinations-menu-all" to="/destinations" role="menuitem" onClick={() => setDestinationsOpen(false)}>
-                  Explore all destinations <span aria-hidden="true">→</span>
-                </Link>
               </div>
             )}
           </div>
