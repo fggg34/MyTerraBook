@@ -29,6 +29,7 @@ class User extends Authenticatable implements FilamentUser
         'role',
         'host_account_type',
         'phone',
+        'country_code',
         'kennitala',
         'profile_photo_path',
         'company_logo_path',

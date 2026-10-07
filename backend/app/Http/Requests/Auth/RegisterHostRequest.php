@@ -14,12 +14,22 @@ class RegisterHostRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('country_code')) {
+            $this->merge([
+                'country_code' => strtoupper((string) $this->input('country_code')),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:32'],
+            'country_code' => ['required', 'string', 'size:2', Rule::in(array_keys(config('destinations', [])))],
             'host_account_type' => ['required', Rule::enum(HostAccountType::class)],
             'kennitala' => ['nullable', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],

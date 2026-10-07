@@ -94,6 +94,7 @@ class HostCatalogController extends Controller
         $location = Location::query()->create([
             'name' => $data['name'],
             'address' => $data['address'] ?? null,
+            'country_code' => $this->hostCountryCode($request),
             'is_active' => true,
             'host_user_id' => $request->user()->id,
         ]);
@@ -108,6 +109,17 @@ class HostCatalogController extends Controller
             'suggested_preselected_time' => self::formatTime($location->suggested_preselected_time),
             'schedules' => [],
         ]], 201);
+    }
+
+    private function hostCountryCode(Request $request): string
+    {
+        $code = strtoupper((string) $request->user()?->country_code);
+
+        if ($code !== '' && array_key_exists($code, config('destinations', []))) {
+            return $code;
+        }
+
+        return 'IS';
     }
 
     private static function formatTime(mixed $value): ?string

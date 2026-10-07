@@ -26,6 +26,13 @@ class RegisteredHostsTable
                 TextColumn::make('phone')
                     ->placeholder('—')
                     ->toggleable(),
+                TextColumn::make('country_code')
+                    ->label('Country')
+                    ->formatStateUsing(fn (?string $state): string => $state
+                        ? (string) config('destinations.'.$state, $state)
+                        : '—')
+                    ->placeholder('—')
+                    ->sortable(),
                 TextColumn::make('cars_count')
                     ->label('Vehicles')
                     ->numeric()

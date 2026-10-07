@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthPageLayout from '../../components/auth/AuthPageLayout'
 import PasswordInput from '../../components/auth/PasswordInput'
+import CountrySelect from '../../components/forms/CountrySelect'
 import PhoneField from '../../components/forms/PhoneField'
 import RequiredMark from '../../components/forms/RequiredMark'
 import PageHead from '../../components/seo/PageHead'
@@ -60,6 +61,7 @@ export default function HostRegisterPage() {
     name: '',
     email: '',
     phone: '',
+    country_code: '',
     currency: baseCurrency || 'EUR',
     password: '',
     password_confirmation: '',
@@ -74,6 +76,7 @@ export default function HostRegisterPage() {
     if (!form.email.trim()) e2.email = 'Email is required'
     const phoneError = validatePhone(form.phone)
     if (phoneError) e2.phone = phoneError
+    if (!form.country_code) e2.country_code = 'Select the country you operate in'
     if (!form.currency) e2.currency = 'Pricing currency is required'
     if (!hostAccountType) e2.host_account_type = 'Select individual or business'
     if (!form.password) e2.password = 'Password is required'
@@ -203,6 +206,23 @@ export default function HostRegisterPage() {
               placeholder="555 1234"
             />
             {errors.phone && <p className="auth-field-error">{errors.phone}</p>}
+          </div>
+
+          <div className="auth-field">
+            <label htmlFor="host-reg-country">Country you operate in <RequiredMark /></label>
+            <p className="auth-field-hint">Your listings appear under this destination.</p>
+            <div className={`auth-input-wrap${errors.country_code ? ' auth-input-wrap--error' : ''}`}>
+              <CountrySelect
+                id="host-reg-country"
+                className="auth-input"
+                includeOther={false}
+                required
+                value={form.country_code}
+                onChange={(e) => setForm({ ...form, country_code: e.target.value })}
+                placeholder="Select country"
+              />
+            </div>
+            {errors.country_code && <p className="auth-field-error">{errors.country_code}</p>}
           </div>
 
           <div className="auth-field">

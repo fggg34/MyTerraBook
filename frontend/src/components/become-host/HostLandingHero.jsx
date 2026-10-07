@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import CmsImage from '../cms/CmsImage'
+import CountrySelect from '../forms/CountrySelect'
 import PhoneField from '../forms/PhoneField'
 import { getPostLoginPath, useAuth } from '../../context/AuthContext'
 import { useToast } from '../../context/ToastContext'
@@ -25,6 +26,7 @@ export default function HostLandingHero({ hero = {} }) {
     name: '',
     email: '',
     phone: '',
+    country_code: '',
     password: '',
     password_confirmation: '',
   })
@@ -46,6 +48,10 @@ export default function HostLandingHero({ hero = {} }) {
       toast('Select individual or business', 'error')
       return
     }
+    if (!signup.country_code) {
+      toast('Select the country you operate in', 'error')
+      return
+    }
     if (signup.password !== signup.password_confirmation) {
       toast('Passwords do not match', 'error')
       return
@@ -57,6 +63,7 @@ export default function HostLandingHero({ hero = {} }) {
         name,
         email: signup.email,
         phone: formatPhoneForApi(signup.phone),
+        country_code: signup.country_code,
         password: signup.password,
         password_confirmation: signup.password_confirmation,
         host_account_type: hostAccountType,
@@ -152,6 +159,17 @@ export default function HostLandingHero({ hero = {} }) {
                 value={signup.phone}
                 onChange={(phone) => setSignup({ ...signup, phone })}
                 placeholder="555 1234"
+              />
+            </div>
+            <div className="host-landing-field">
+              <label htmlFor="host-su-country">{text(hero.countryLabel, 'Country you operate in')} <span className="host-landing-req">*</span></label>
+              <CountrySelect
+                id="host-su-country"
+                includeOther={false}
+                required
+                value={signup.country_code}
+                onChange={(e) => setSignup({ ...signup, country_code: e.target.value })}
+                placeholder={text(hero.countryPlaceholder, 'Select country')}
               />
             </div>
             <div className="host-landing-field">

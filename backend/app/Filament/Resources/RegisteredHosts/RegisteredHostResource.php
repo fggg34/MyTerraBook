@@ -66,6 +66,12 @@ class RegisteredHostResource extends Resource
                 TextEntry::make('name'),
                 TextEntry::make('email')->copyable(),
                 TextEntry::make('phone')->placeholder('—'),
+                TextEntry::make('country_code')
+                    ->label('Operating country')
+                    ->formatStateUsing(fn (?string $state): string => $state
+                        ? (string) config('destinations.'.$state, $state)
+                        : '—')
+                    ->placeholder('—'),
                 TextEntry::make('locale')
                     ->label('Language')
                     ->formatStateUsing(fn (mixed $state): string => strtoupper((string) $state)),

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ListingApprovalStatus;
+use App\Models\Car;
 use App\Models\Location;
 use App\Models\MainCategory;
 use App\Models\SubCategory;
@@ -75,7 +77,48 @@ class HostCatalogPublicFallbackTest extends TestCase
         $this->assertDatabaseHas('locations', [
             'name' => 'My driveway',
             'host_user_id' => $host->id,
+            'country_code' => 'IS',
             'is_active' => true,
         ]);
+    }
+
+    public function test_host_operating_country_is_used_for_locations_and_destinations(): void
+    {
+        $host = User::factory()->host()->create(['country_code' => 'AL']);
+        Sanctum::actingAs($host);
+
+        $created = $this->postJson('/api/host/catalog/locations', [
+            'name' => 'Tirana depot',
+        ])->assertCreated();
+
+        $locationId = $created->json('data.id');
+        $this->assertDatabaseHas('locations', [
+            'id' => $locationId,
+            'country_code' => 'AL',
+            'host_user_id' => $host->id,
+        ]);
+
+        $this->getJson('/api/destinations')->assertOk()->assertJsonCount(0, 'data');
+
+        $main = MainCategory::query()->firstOrCreate(['slug' => 'campervan'], ['name' => 'Campervan', 'is_active' => true]);
+        $category = SubCategory::query()->create([
+            'main_category_id' => $main->id,
+            'name' => 'Host vans',
+            'is_active' => true,
+        ]);
+        $car = Car::query()->create([
+            'user_id' => $host->id,
+            'sub_category_id' => $category->id,
+            'name' => 'Albania van',
+            'is_active' => true,
+            'listing_status' => ListingApprovalStatus::Approved,
+        ]);
+        $car->locations()->attach($locationId, ['allows_pickup' => true, 'allows_dropoff' => true]);
+
+        $this->getJson('/api/destinations?main_category=campervan')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.code', 'AL')
+            ->assertJsonPath('data.0.name', 'Albania');
     }
 }

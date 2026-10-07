@@ -40,12 +40,27 @@ class HostPanelTest extends TestCase
             ->assertJsonValidationErrors(['phone']);
     }
 
+    public function test_register_host_requires_operating_country(): void
+    {
+        $this->postJson('/api/auth/register-host', [
+            'name' => 'Host User',
+            'email' => 'host@example.test',
+            'phone' => '+354 555 1234',
+            'host_account_type' => 'individual',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['country_code']);
+    }
+
     public function test_register_host_creates_host_user(): void
     {
         $response = $this->postJson('/api/auth/register-host', [
             'name' => 'Host User',
             'email' => 'host@example.test',
             'phone' => '+354 555 1234',
+            'country_code' => 'AL',
             'host_account_type' => 'individual',
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -57,6 +72,7 @@ class HostPanelTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'host@example.test',
             'role' => UserRole::Host->value,
+            'country_code' => 'AL',
         ]);
     }
 
@@ -812,6 +828,7 @@ class HostPanelTest extends TestCase
             'name' => 'Fresh Host',
             'email' => 'fresh-host@example.test',
             'phone' => '+354 555 9999',
+            'country_code' => 'IS',
             'host_account_type' => 'business',
             'password' => 'password123',
             'password_confirmation' => 'password123',
