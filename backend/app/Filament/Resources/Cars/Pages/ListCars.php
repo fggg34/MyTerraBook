@@ -26,8 +26,17 @@ class ListCars extends ListRecords
             'pending_review' => Tab::make('Pending review')
                 ->badge($pendingCount ?: null)
                 ->modifyQueryUsing(fn ($query) => $query->where('listing_status', ListingApprovalStatus::PendingReview)),
-            'all' => Tab::make('All'),
+            'all' => Tab::make('All vehicles'),
+            'active' => Tab::make('Active')
+                ->modifyQueryUsing(fn ($query) => $query->where('is_active', true)),
+            'inactive' => Tab::make('Inactive')
+                ->modifyQueryUsing(fn ($query) => $query->where('is_active', false)),
         ];
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'Manage fleet details, host ownership and listing approvals. Fleet size shows total units, not live availability.';
     }
 
     public function getDefaultActiveTab(): string|int|null
@@ -51,18 +60,18 @@ class ListCars extends ListRecords
         return [
             ListingReviewPage::makeApprovalQueueHeaderAction(),
             Action::make('editViewFares')
-                ->label('Edit/View Fares')
+                ->label('Manage fares')
                 ->icon(Heroicon::OutlinedCurrencyDollar)
                 ->color('gray')
                 ->url(DailyFareResource::getUrl('index'))
                 ->tooltip('Open Fares Table'),
             Action::make('carsCalendar')
-                ->label('Cars Calendar')
+                ->label('Bookings')
                 ->icon(Heroicon::OutlinedCalendarDays)
                 ->color('gray')
                 ->url(OrderResource::getUrl('index'))
                 ->tooltip('Open Orders (calendar-style scheduling from bookings)'),
-            CreateAction::make(),
+            CreateAction::make()->label('Add vehicle'),
         ];
     }
 }

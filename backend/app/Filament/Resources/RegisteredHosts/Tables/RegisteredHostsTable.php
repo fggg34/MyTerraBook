@@ -3,11 +3,15 @@
 namespace App\Filament\Resources\RegisteredHosts\Tables;
 
 use App\Models\User;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 
@@ -16,16 +20,25 @@ class RegisteredHostsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->searchPlaceholder('Search hosts by name or email')
+            ->striped()
+            ->emptyStateHeading('No hosts found')
+            ->emptyStateDescription('Try another search or clear the filters to see more hosts.')
             ->columns([
                 TextColumn::make('name')
+                    ->label('Host / partner')
+                    ->weight('semibold')
+                    ->description(fn (User $record): string => $record->email)
+                    ->wrap()
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('email')
                     ->searchable()
-                    ->copyable(),
+                    ->copyable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('phone')
                     ->placeholder('—')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('country_code')
                     ->label('Country')
                     ->formatStateUsing(fn (?string $state): string => $state
@@ -41,19 +54,42 @@ class RegisteredHostsTable
                     ->label('Guesthouses')
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('partner_api_enabled')
+                    ->label('Partner API')
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Enabled' : 'Disabled')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'gray')
+                    ->sortable(),
+                TextColumn::make('partner_commission_rate')
+                    ->label('Commission')
+                    ->state(fn (User $record): string => $record->partner_commission_rate !== null
+                        ? rtrim(rtrim($record->partner_commission_rate, '0'), '.').'%'
+                        : ((float) config('rapyd.commission_rate', 0.15) * 100).'% · Default')
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->label('Registered')
-                    ->dateTime()
-                    ->sortable(),
+                    ->date()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('email_verified_at')
                     ->label('Verified')
                     ->dateTime()
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filters([
+                SelectFilter::make('country_code')->label('Operating country')
+                    ->options(config('destinations', []))->searchable(),
+                SelectFilter::make('partner_provider')->label('Connection type')
+                    ->options(['greenlight' => 'Greenlight', 'custom' => 'Custom API']),
+                TernaryFilter::make('partner_api_enabled')->label('API enabled'),
+            ])
             ->recordActions([
-                ViewAction::make(),
-                self::makeDeleteAction(),
+                EditAction::make()->label('Manage host')->icon('heroicon-o-cog-6-tooth'),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    self::makeDeleteAction(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

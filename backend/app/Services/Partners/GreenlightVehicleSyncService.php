@@ -27,6 +27,7 @@ class GreenlightVehicleSyncService
     public function sync(): array
     {
         $locations = $this->syncLocations($this->client->locations());
+        $partnerHostId = $this->settings->host()?->id;
         $this->settings->storeInsurancePlanIds(
             array_values(array_filter(array_map(
                 fn (array $plan): string => (string) ($plan['id'] ?? ''),
@@ -41,7 +42,7 @@ class GreenlightVehicleSyncService
             if ($externalId === '') {
                 continue;
             }
-            $this->upsertVehicle($product, $locations);
+            $this->upsertVehicle($product, $locations, $partnerHostId);
             $seenIds[] = $externalId;
             $vehicleCount++;
         }
@@ -98,7 +99,7 @@ class GreenlightVehicleSyncService
 
             $location->fill([
                 'is_active' => true,
-                'host_user_id' => $location->host_user_id,
+                'host_user_id' => $this->settings->host()?->id ?? $location->host_user_id,
             ]);
             if (! $location->exists || ! filled($location->name)) {
                 $location->name = $name;
@@ -123,7 +124,7 @@ class GreenlightVehicleSyncService
      * @param  array<string, mixed>  $product
      * @param  array<string, Location>  $locations
      */
-    private function upsertVehicle(array $product, array $locations): Car
+    private function upsertVehicle(array $product, array $locations, ?int $partnerHostId): Car
     {
         $externalId = (string) $product['id'];
         $name = trim((string) ($product['name'] ?? (trim(($product['make'] ?? '').' '.($product['model'] ?? ''))))) ?: 'Greenlight vehicle';
@@ -135,7 +136,7 @@ class GreenlightVehicleSyncService
         ]);
 
         $car->fill([
-            'user_id' => null,
+            'user_id' => $partnerHostId,
             'sub_category_id' => $this->resolveSubCategory($product)->id,
             'name' => $name,
             'description' => $product['description'] ?? $car->description,

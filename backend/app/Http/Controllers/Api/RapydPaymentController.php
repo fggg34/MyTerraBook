@@ -10,6 +10,9 @@ use App\Models\GuestHouseBooking;
 use App\Models\Order;
 use App\Models\RapydPayment;
 use App\Models\RapydWebhookLog;
+use App\Models\User;
+use App\Services\Email\OrderEmailNotifier;
+use App\Services\Partners\GreenlightBookingService;
 use App\Services\RapydService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,14 +45,19 @@ class RapydPaymentController extends Controller
         $currency = strtoupper($validated['currency'] ?? (string) config('rapyd.currency', 'ISK'));
         $decimals = RapydService::decimalsFor($currency);
 
-        $commissionRate = (float) config('rapyd.commission_rate', 0.15);
+        $hostId = $validated['host_id'] ?? $booking?->guestHouse?->user_id;
+        $partnerCommission = $hostId
+            ? User::query()->whereKey($hostId)->value('partner_commission_rate')
+            : null;
+        $commissionRate = $partnerCommission !== null
+            ? (float) $partnerCommission / 100
+            : (float) config('rapyd.commission_rate', 0.15);
         $totalPrice = round((float) $validated['total_price'], $decimals);
         // Round the online fee to the currency's precision so the amount charged
         // matches what Rapyd accepts (e.g. whole krónur for ISK).
         $platformFee = round($totalPrice * $commissionRate, $decimals);
         $cashDueOnArrival = round($totalPrice - $platformFee, $decimals);
 
-        $hostId = $validated['host_id'] ?? $booking?->guestHouse?->user_id;
         $userId = $request->user()?->id ?? $booking?->user_id;
 
         $metadata = [
@@ -385,9 +393,9 @@ class RapydPaymentController extends Controller
             }
             if ($order->order_status === OrderStatus::Pending) {
                 $order->transitionOrderStatus(OrderStatus::Confirmed);
-                app(\App\Services\Partners\GreenlightBookingService::class)->confirmIfNeeded($order);
+                app(GreenlightBookingService::class)->confirmIfNeeded($order);
                 // Car rentals use their own confirmation email (not the cash-on-arrival split).
-                app(\App\Services\Email\OrderEmailNotifier::class)->notifyCreated($order->load('car.host'));
+                app(OrderEmailNotifier::class)->notifyCreated($order->load('car.host'));
             }
 
             return;

@@ -2,7 +2,9 @@
 
 namespace App\Services\Partners;
 
+use App\Enums\UserRole;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
 class GreenlightSettings
@@ -17,18 +19,19 @@ class GreenlightSettings
     public function all(): array
     {
         $stored = Setting::getValue('partners.greenlight', []);
+        $host = $this->host();
 
         $insurance = data_get($stored, 'insurance_plan_ids', []);
 
         return [
-            'enabled' => (bool) data_get($stored, 'enabled', false),
-            'base_url' => rtrim((string) data_get($stored, 'base_url', self::DEFAULT_BASE_URL), '/'),
-            'api_key' => (string) data_get($stored, 'api_key', ''),
+            'enabled' => $host ? $host->partner_api_enabled : (bool) data_get($stored, 'enabled', false),
+            'base_url' => rtrim((string) ($host?->partner_api_base_url ?? data_get($stored, 'base_url', self::DEFAULT_BASE_URL)), '/'),
+            'api_key' => (string) ($host?->partner_api_key ?? data_get($stored, 'api_key', '')),
             'insurance_plan_ids' => is_array($insurance)
                 ? array_values(array_filter(array_map('strval', $insurance)))
                 : [],
-            'display_name' => trim((string) data_get($stored, 'display_name', 'Greenlight car rental')) ?: 'Greenlight car rental',
-            'logo_path' => (string) data_get($stored, 'logo_path', ''),
+            'display_name' => trim((string) ($host?->name ?? data_get($stored, 'display_name', 'Greenlight car rental'))) ?: 'Greenlight car rental',
+            'logo_path' => (string) ($host?->company_logo_path ?? data_get($stored, 'logo_path', '')),
         ];
     }
 
@@ -50,6 +53,14 @@ class GreenlightSettings
     public function enabled(): bool
     {
         return $this->apiKey() !== '';
+    }
+
+    public function host(): ?User
+    {
+        return User::query()
+            ->where('role', UserRole::Host)
+            ->where('partner_provider', self::PROVIDER)
+            ->first();
     }
 
     public function baseUrl(): string
@@ -85,6 +96,19 @@ class GreenlightSettings
         }
 
         $displayName = trim((string) ($state['greenlight_display_name'] ?? $current['display_name']));
+
+        $host = $this->host();
+        if ($host) {
+            $host->forceFill([
+                'name' => $displayName !== '' ? $displayName : 'Greenlight car rental',
+                'partner_api_enabled' => $enabled,
+                'partner_api_base_url' => rtrim((string) ($state['greenlight_base_url'] ?? self::DEFAULT_BASE_URL), '/') ?: self::DEFAULT_BASE_URL,
+                'partner_api_key' => $apiKey,
+                'company_logo_path' => (string) ($state['greenlight_logo_path'] ?? $current['logo_path']),
+            ])->save();
+
+            return;
+        }
 
         Setting::putValue('partners.greenlight', [
             'enabled' => $enabled,

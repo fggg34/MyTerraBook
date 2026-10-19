@@ -3,6 +3,7 @@
 namespace App\Services\Partners;
 
 use App\Exceptions\GreenlightPartnerException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
@@ -135,10 +136,10 @@ class GreenlightPartnerClient
         return $this->unwrap($response, $ok);
     }
 
-    private function request(): \Illuminate\Http\Client\PendingRequest
+    private function request(): PendingRequest
     {
         if ($this->settings->apiKey() === '') {
-            throw new GreenlightPartnerException('Greenlight API key is missing. Paste it in Global Configuration, then Save or Sync.');
+            throw new GreenlightPartnerException('Greenlight API key is missing. Open Registered Hosts, select Greenlight car rental, then use Manage partner API to add and save the key.');
         }
 
         return Http::acceptJson()

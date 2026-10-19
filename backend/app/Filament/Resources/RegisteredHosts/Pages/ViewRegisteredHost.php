@@ -4,6 +4,7 @@ namespace App\Filament\Resources\RegisteredHosts\Pages;
 
 use App\Filament\Resources\RegisteredHosts\RegisteredHostResource;
 use App\Filament\Resources\RegisteredHosts\Tables\RegisteredHostsTable;
+use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewRegisteredHost extends ViewRecord
@@ -13,6 +14,7 @@ class ViewRegisteredHost extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            EditAction::make()->label('Manage host'),
             RegisteredHostsTable::makeDeleteAction(),
         ];
     }

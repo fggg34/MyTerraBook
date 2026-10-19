@@ -3,8 +3,11 @@
 namespace App\Filament\Pages;
 
 use App\Data\SiteContentDefaults;
+use App\Models\HomepageSection;
 use App\Models\SiteContentPage;
+use App\Models\SitePage;
 use App\Services\SiteContentFormBuilder;
+use App\Services\SiteContentService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Navigation\NavigationItem;
@@ -21,6 +24,7 @@ use UnitEnum;
 class SiteContentHub extends Page
 {
     private const GROUP_ORDER = ['Global', 'Marketing', 'Transactional', 'App'];
+
     protected static ?string $navigationLabel = 'Site content';
 
     protected static ?string $title = 'Site content';
@@ -163,7 +167,7 @@ class SiteContentHub extends Page
 
         $page = SiteContentPage::query()->where('page_key', $this->activePageKey)->first();
         $defaults = SiteContentDefaults::forPage($this->activePageKey);
-        $service = app(\App\Services\SiteContentService::class);
+        $service = app(SiteContentService::class);
 
         $this->data = $service->prepareFormUploadState(
             $service->normalizePageContent(
@@ -181,7 +185,7 @@ class SiteContentHub extends Page
 
     public function save(): void
     {
-        $service = app(\App\Services\SiteContentService::class);
+        $service = app(SiteContentService::class);
         $existing = SiteContentPage::query()->where('page_key', $this->activePageKey)->first();
         $defaults = SiteContentDefaults::forPage($this->activePageKey);
         $baseline = $service->normalizePageContent(
@@ -280,15 +284,16 @@ class SiteContentHub extends Page
             Form::make([EmbeddedSchema::make('form')])
                 ->id('site-content-form-'.$this->activePageKey)
                 ->livewireSubmitHandler('save')
-                ->extraAttributes(['novalidate' => true])
+                ->extraAttributes(['novalidate' => true, 'class' => 'site-content-form'])
                 ->footer([
                     Actions::make([
                         Action::make('save')
-                            ->label('Save page')
+                            ->label('Save all page changes')
+                            ->icon(Heroicon::OutlinedCheck)
                             ->submit('save')
                             ->action(null)
                             ->keyBindings(['mod+s']),
-                    ]),
+                    ])->sticky()->extraAttributes(['class' => 'site-content-save-bar']),
                 ]),
         ]);
     }
@@ -308,7 +313,7 @@ class SiteContentHub extends Page
         if ($this->activePageKey === 'global') {
             foreach (['topbar', 'header', 'footer'] as $key) {
                 if (isset($data[$key])) {
-                    \App\Models\HomepageSection::query()->updateOrCreate(
+                    HomepageSection::query()->updateOrCreate(
                         ['section_key' => $key],
                         ['content' => $data[$key], 'is_active' => true, 'sort_order' => 1],
                     );
@@ -333,7 +338,7 @@ class SiteContentHub extends Page
 
         $slug = $slugMap[$this->activePageKey];
 
-        \App\Models\SitePage::query()->where('slug', $slug)->update([
+        SitePage::query()->where('slug', $slug)->update([
             'title' => $data['hero']['title'] ?? null,
             'eyebrow' => $data['hero']['eyebrow'] ?? null,
             'lead' => $data['hero']['lead'] ?? null,

@@ -15,6 +15,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Support\Str;
 
 class SiteContentFormBuilder
 {
@@ -47,6 +48,8 @@ class SiteContentFormBuilder
         return [
             Tabs::make('Page sections')
                 ->tabs($tabs)
+                ->vertical()
+                ->extraAttributes(['class' => 'site-content-sections'])
                 ->contained()
                 ->persistTabInQueryString('section')
                 ->dehydratedWhenHidden(),
@@ -117,7 +120,7 @@ class SiteContentFormBuilder
         $statePath = $this->statePath($sectionKey, $key, $field, $isRootSection);
 
         $component = match ($type) {
-            'textarea' => Textarea::make($statePath)->rows(3),
+            'textarea' => Textarea::make($statePath)->rows(3)->autosize(),
             'richtext' => RichEditor::make($statePath)
                 ->fileAttachmentsDisk('public')
                 ->fileAttachmentsDirectory("site-content/{$pageKey}/attachments")
@@ -138,6 +141,10 @@ class SiteContentFormBuilder
             $component->live();
         }
 
+        if ($sectionKey === '' && in_array($key, ['title', 'heading', 'name', 'label', 'question'], true) && $type === 'text') {
+            $component->live(onBlur: true);
+        }
+
         if (isset($field['label'])) {
             $component->label($field['label']);
         }
@@ -146,7 +153,7 @@ class SiteContentFormBuilder
             $component->required();
         }
 
-        if ($field['columnSpanFull'] ?? false) {
+        if ($field['columnSpanFull'] ?? in_array($type, ['repeater', 'richtext', 'textarea', 'image', 'file'], true)) {
             $component->columnSpanFull();
         }
 
@@ -225,6 +232,13 @@ class SiteContentFormBuilder
     {
         $repeater = Repeater::make($statePath)
             ->collapsible()
+            ->collapsed()
+            ->columns(2)
+            ->itemNumbers()
+            ->truncateItemLabel()
+            ->reorderableWithButtons()
+            ->addActionLabel('Add '.Str::lower(Str::singular($field['label'] ?? 'item')))
+            ->helperText('Expand an item to edit it. Drag or use the arrows to change its display order.')
             ->defaultItems(0);
 
         $subFields = $field['fields'] ?? [];
@@ -234,15 +248,25 @@ class SiteContentFormBuilder
             $repeater->label($field['label']);
         }
 
-        $repeater->itemLabel(function (array $state) use ($subFields): ?string {
-            foreach ($subFields as $subField) {
+        // Prefer a human-readable heading over IDs, icon names, URLs or image paths.
+        $labelFields = collect($subFields)->sortBy(function (array $subField): int {
+            $key = Str::afterLast($subField['path'] ?? $subField['key'] ?? '', '.');
+
+            return array_search($key, ['title', 'heading', 'name', 'label', 'question', 'text', 'caption'], true) === false
+                ? 99
+                : array_search($key, ['title', 'heading', 'name', 'label', 'question', 'text', 'caption'], true);
+        })->filter(fn (array $subField): bool => in_array($subField['type'] ?? 'text', ['text', 'textarea', 'richtext'], true)
+            && ! preg_match('/(?:id|url|href|icon|image|alt|color|type)$/i', $subField['key'] ?? ''));
+
+        $repeater->itemLabel(function (array $state) use ($labelFields): ?string {
+            foreach ($labelFields as $subField) {
                 $label = $this->resolveRepeaterItemLabelValue($state, $subField);
-                if ($label !== null && $label !== '') {
-                    return $label;
+                if ($label !== null && trim(strip_tags($label)) !== '') {
+                    return Str::limit(trim(strip_tags($label)), 80);
                 }
             }
 
-            return 'Item';
+            return 'Untitled item';
         });
 
         return $repeater;

@@ -15,6 +15,6 @@ class ListRegisteredHosts extends ListRecords
     {
         $count = User::query()->where('role', UserRole::Host)->count();
 
-        return $count === 1 ? '1 registered host' : "{$count} registered hosts";
+        return ($count === 1 ? '1 registered host' : "{$count} registered hosts").' · Manage partner profiles, API connections and commissions.';
     }
 }

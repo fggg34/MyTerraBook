@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\UserRole;
 use App\Filament\Resources\RegisteredHosts\Pages\ListRegisteredHosts;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
@@ -46,6 +45,26 @@ class RegisteredHostsAdminTest extends TestCase
             'tokenable_type' => User::class,
             'tokenable_id' => $host->id,
         ]);
+    }
+
+    public function test_admin_can_find_hosts_by_email_and_filter_api_status(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        $enabled = User::factory()->host()->create([
+            'email' => 'fleet-search@example.test',
+            'partner_api_enabled' => true,
+        ]);
+        $disabled = User::factory()->host()->create(['partner_api_enabled' => false]);
+
+        Livewire::test(ListRegisteredHosts::class)
+            ->searchTable('fleet-search@example.test')
+            ->assertCanSeeTableRecords([$enabled])
+            ->assertCanNotSeeTableRecords([$disabled]);
+
+        Livewire::test(ListRegisteredHosts::class)
+            ->filterTable('partner_api_enabled', true)
+            ->assertCanSeeTableRecords([$enabled])
+            ->assertCanNotSeeTableRecords([$disabled]);
     }
 
     public function test_non_admin_cannot_access_registered_hosts_page(): void
