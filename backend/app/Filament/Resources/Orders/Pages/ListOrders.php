@@ -10,6 +10,12 @@ class ListOrders extends ListRecords
 {
     protected static string $resource = OrderResource::class;
 
+    protected static ?string $title = 'Vehicle Rental';
+
+    protected array $extraBodyAttributes = [
+        'class' => 'ir-orders-page',
+    ];
+
     protected function getHeaderActions(): array
     {
         return [

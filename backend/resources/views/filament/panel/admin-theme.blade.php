@@ -569,4 +569,89 @@
             gap: 1rem;
         }
     }
+
+    /* Vehicle rental orders: filters stay on the page, and the list wraps instead of scrolling sideways. */
+    body.ir-orders-page .fi-ta-filters-above-content-ctn {
+        margin: 0.25rem 0 0.25rem;
+        padding: 1rem 1.1rem 1.15rem;
+        border: 1px solid #d5e0ea;
+        border-radius: 0.9rem;
+        background: #f8fafc;
+        overflow: visible;
+    }
+
+    body.ir-orders-page .fi-ta-filters {
+        gap: 0.9rem;
+    }
+
+    body.ir-orders-page .fi-ta-filters-heading {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #627d98;
+    }
+
+    body.ir-orders-page .fi-ta-filters .fi-fo-field-wrp-label span {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #334e68;
+    }
+
+    body.ir-orders-page .fi-ta-filters .fi-input-wrp,
+    body.ir-orders-page .fi-ta-filters .fi-select-input {
+        background: #fff;
+    }
+
+    body.ir-orders-page .fi-ta-content-ctn,
+    body.ir-orders-page .fi-ta-ctn {
+        overflow-x: visible;
+    }
+
+    body.ir-orders-page .fi-ta-table > tbody,
+    body.ir-orders-page .fi-ta-header-cell,
+    body.ir-orders-page .fi-ta-text,
+    body.ir-orders-page .fi-ta-text .fi-ta-text-description {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    @media (min-width: 640px) {
+        body.ir-orders-page .fi-ta-table {
+            width: 100%;
+            min-width: 0;
+            table-layout: fixed;
+        }
+
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(1),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(1) { width: 4%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(2),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(2) { width: 8%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(3),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(3) { width: 5%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(4),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(4) { width: 8%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(5),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(5) { width: 14%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(6),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(6) { width: 13%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(7),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(7) { width: 11%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(8),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(8) { width: 11%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(9),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(9) { width: 5%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(10),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(10) { width: 8%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(11),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(11) { width: 7%; }
+        body.ir-orders-page .fi-ta-table > thead > tr > th:nth-child(12),
+        body.ir-orders-page .fi-ta-table > tbody > tr > td:nth-child(12) { width: 6%; }
+    }
+
+    @media (max-width: 768px) {
+        body.ir-orders-page .fi-ta-table {
+            min-width: 0;
+        }
+    }
 </style>

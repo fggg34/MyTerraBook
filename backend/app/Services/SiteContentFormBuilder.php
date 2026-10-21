@@ -183,15 +183,24 @@ class SiteContentFormBuilder
         return $component;
     }
 
+    private function containedImagePreview(FileUpload $upload): FileUpload
+    {
+        return $upload
+            ->imagePreviewHeight('168')
+            ->extraAttributes(['class' => 'site-content-image-upload'], merge: true);
+    }
+
     /**
      * @param  array<string, mixed>  $field
      */
     private function buildImageUpload(string $statePath, string $pageKey, array $field): FileUpload
     {
-        $upload = FileUpload::make($statePath)
-            ->disk('public')
-            ->directory("site-content/{$pageKey}")
-            ->visibility('public');
+        $upload = $this->containedImagePreview(
+            FileUpload::make($statePath)
+                ->disk('public')
+                ->directory("site-content/{$pageKey}")
+                ->visibility('public'),
+        );
 
         if (isset($field['acceptedFileTypes']) && is_array($field['acceptedFileTypes'])) {
             return $upload->acceptedFileTypes($field['acceptedFileTypes']);
@@ -215,10 +224,12 @@ class SiteContentFormBuilder
      */
     private function buildFileUpload(string $statePath, string $pageKey, array $field): FileUpload
     {
-        $upload = FileUpload::make($statePath)
-            ->disk('public')
-            ->directory("site-content/{$pageKey}")
-            ->visibility('public');
+        $upload = $this->containedImagePreview(
+            FileUpload::make($statePath)
+                ->disk('public')
+                ->directory("site-content/{$pageKey}")
+                ->visibility('public'),
+        );
 
         $types = $field['acceptedFileTypes'] ?? ['image/svg+xml', 'image/png', 'image/x-icon', 'image/vnd.microsoft.icon'];
 

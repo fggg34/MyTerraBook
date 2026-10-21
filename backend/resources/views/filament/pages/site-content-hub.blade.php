@@ -26,7 +26,22 @@
     .site-content-editor .site-content-sections { align-items: flex-start; overflow: visible; }
     .site-content-editor .site-content-sections > .fi-tabs { position: sticky; top: 5rem; flex: 0 0 14rem; max-height: calc(100dvh - 12rem); padding: .75rem; border: 0; }
     .site-content-editor .site-content-sections > .fi-tabs .fi-tabs-item { white-space: normal; text-align: start; min-height: 2.75rem; }
-    .site-content-editor .site-content-sections > .fi-tabs .fi-tabs-item.fi-active { background: #e8eff5; box-shadow: inset 3px 0 #334e68; }
+    .site-content-editor .site-content-sections > .fi-tabs .fi-tabs-item.fi-active { background: #e8eff5; }
+    .site-content-editor .site-content-image-upload { width: min(100%, 18rem); }
+    .site-content-editor .site-content-image-upload .filepond--root { margin-bottom: 0; }
+    .site-content-editor .site-content-image-upload .filepond--drop-label { min-height: 7.5rem; }
+    .site-content-editor .site-content-image-upload .filepond--image-preview { justify-content: center; background: #f8fafc; }
+    .site-content-editor .site-content-image-upload .filepond--image-preview-wrapper {
+      background-color: #f8fafc;
+      background-image:
+        linear-gradient(45deg, #e4edf5 25%, transparent 25%),
+        linear-gradient(-45deg, #e4edf5 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #e4edf5 75%),
+        linear-gradient(-45deg, transparent 75%, #e4edf5 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    }
+    .site-content-editor .site-content-image-upload .filepond--image-preview-overlay { display: none; }
     .site-content-editor .site-content-sections > .fi-tabs .fi-tabs-item:focus-visible { outline: 2px solid #334e68; outline-offset: 2px; }
     .site-content-editor .site-content-sections > .fi-sc-tabs-tab.fi-active { min-width: 0; margin: 0; padding: 1.5rem; border-left: 1px solid #e2e8f0; }
     .site-content-editor .site-content-save-bar > .fi-ac { z-index: 20; padding: 1rem; border: 1px solid #c5d0dc; border-radius: .75rem; background: #fff; box-shadow: 0 4px 20px rgb(36 59 83 / .12); }
