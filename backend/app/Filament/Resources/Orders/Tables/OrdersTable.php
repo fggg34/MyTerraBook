@@ -22,6 +22,8 @@ class OrdersTable
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['car', 'pickupLocation', 'dropoffLocation', 'payments']))
             ->defaultSort('created_at', 'desc')
             ->columns([
+                TextColumn::make('partner_sync_state')->label('Partner sync')->badge()->toggleable()
+                    ->description(fn ($record) => $record->partner_sync_error),
                 TextColumn::make('id')
                     ->label('ID')
                     ->badge()

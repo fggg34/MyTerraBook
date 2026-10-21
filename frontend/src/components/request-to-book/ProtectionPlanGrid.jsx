@@ -9,6 +9,14 @@ export default function ProtectionPlanGrid({ priceTypes, selectedId, onSelect })
     <div className="plan-grid" role="radiogroup" aria-label="Protection plan">
       {priceTypes.map((pt, idx) => {
         const sel = String(pt.id) === String(selectedId)
+        if (pt.slug === 'caren-standard') return (
+          <button key={pt.id} type="button" role="radio" aria-checked={sel}
+            className={`plan${sel ? ' sel' : ''}`} onClick={() => onSelect(String(pt.id))}>
+            <span className="pname">{pt.name}</span>
+            <span className="pprice">Live rental rate shown in your quote</span>
+            <span className="pdep">Caren rental terms apply. Optional protection upgrades are not offered here.</span>
+          </button>
+        )
         const pres = getProtectionPresentation(pt, idx)
         const dailyCents = pt.from_price_per_day_cents || 0
         const daily = dailyCents ? price.formatCents(dailyCents) : price.format(0)

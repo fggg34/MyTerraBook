@@ -13,10 +13,12 @@ use App\Models\RapydWebhookLog;
 use App\Models\User;
 use App\Services\Email\OrderEmailNotifier;
 use App\Services\Partners\GreenlightBookingService;
+use App\Services\Partners\CarenBookingService;
 use App\Services\RapydService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 class RapydPaymentController extends Controller
@@ -29,6 +31,21 @@ class RapydPaymentController extends Controller
      */
     public function initiateCheckout(Request $request): JsonResponse
     {
+        $order = $request->input('order_type') === 'car'
+            ? Order::whereKey($request->integer('order_id'))->where('external_provider', 'caren')->first() : null;
+        if ($order) {
+            try {
+                return Cache::lock('caren-order:'.$order->id, 180)->block(5, fn () => $this->performCheckout($request));
+            } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
+                return response()->json(['message' => 'This reservation is processing. Retry shortly.'], 409);
+            }
+        }
+
+        return $this->performCheckout($request);
+    }
+
+    private function performCheckout(Request $request): JsonResponse
+    {
         $validated = $request->validate([
             'order_id' => ['required', 'integer'],
             'total_price' => ['required', 'numeric', 'min:0.01'],
@@ -38,6 +55,30 @@ class RapydPaymentController extends Controller
         ]);
 
         $orderType = $validated['order_type'] ?? 'guesthouse';
+        $carenOrder = $orderType === 'car'
+            ? Order::whereKey($validated['order_id'])->where('external_provider', 'caren')->first() : null;
+        if ($carenOrder) {
+            if (! is_string($request->input('confirmation_token'))
+                || ! hash_equals((string) $carenOrder->confirmation_token, $request->input('confirmation_token'))) {
+                return response()->json(['message' => 'This checkout link is not valid.'], 403);
+            }
+            if ($carenOrder->order_status !== OrderStatus::Pending || $carenOrder->partner_sync_state !== 'reserved'
+                || ! $carenOrder->payment_lock_expires_at?->isFuture()) {
+                return response()->json(['message' => 'This Caren reservation cannot start payment. Contact support.'], 409);
+            }
+            $previous = RapydPayment::where('order_id', $carenOrder->id)->where('metadata->order_type', 'car')->latest()->first();
+            if ($previous) {
+                $url = data_get($previous->metadata, 'checkout_url');
+                if (in_array($previous->status, ['pending', 'failed'], true) && $url) {
+                    return response()->json(['checkout_url' => $url, 'checkout_id' => $previous->checkout_id, 'order_id' => $carenOrder->id]);
+                }
+                return response()->json(['message' => 'Payment for this reservation is already processing.'], 409);
+            }
+            // Never let browser-supplied amounts, currency or host control a Caren charge.
+            $validated['total_price'] = $carenOrder->total_cents / 100;
+            $validated['currency'] = $carenOrder->currency;
+            $validated['host_id'] = (int) data_get($carenOrder->pricing_snapshot, 'caren.host_id');
+        }
         $booking = $orderType === 'guesthouse'
             ? GuestHouseBooking::query()->find($validated['order_id'])
             : null;
@@ -69,6 +110,9 @@ class RapydPaymentController extends Controller
             'platform_fee' => (string) $platformFee,
             'cash_due_on_arrival' => (string) $cashDueOnArrival,
         ];
+        if ($carenOrder) {
+            $metadata['caren_order_reference'] = $carenOrder->reference;
+        }
 
         // Rapyd does not substitute placeholders in the return URL, so we attach
         // the identifiers we already know and let the SPA poll the status by them.
@@ -92,6 +136,9 @@ class RapydPaymentController extends Controller
             ], 503);
         }
 
+        if ($carenOrder) {
+            $carenOrder->update(['partner_sync_state' => 'checkout_creating']);
+        }
         try {
             $checkout = $this->rapyd->createCheckoutPage([
                 'amount' => $platformFee, // ONLY the platform fee is charged online.
@@ -105,6 +152,12 @@ class RapydPaymentController extends Controller
             ]);
         } catch (Throwable $e) {
             Log::error('Rapyd initiateCheckout failed', ['error' => $e->getMessage()]);
+            if ($carenOrder) {
+                $carenOrder->update(['partner_sync_state' => 'checkout_unknown',
+                    'partner_sync_error' => 'Rapyd checkout result unknown; reconcile before starting another payment.']);
+
+                return response()->json(['message' => 'The payment checkout could not be verified. Contact support with reference '.$carenOrder->reference.'. Do not submit another booking.'], 422);
+            }
 
             // 422 keeps the JSON body visible through Cloudflare (502s get replaced).
             return response()->json([
@@ -116,6 +169,9 @@ class RapydPaymentController extends Controller
         }
 
         if (empty($checkout['redirect_url'])) {
+            if ($carenOrder) {
+                $carenOrder->update(['partner_sync_state' => 'checkout_unknown', 'partner_sync_error' => 'Rapyd did not return a usable checkout URL.']);
+            }
             Log::error('Rapyd initiateCheckout returned empty redirect_url', [
                 'checkout_id' => $checkout['checkout_id'] ?? null,
             ]);
@@ -126,6 +182,9 @@ class RapydPaymentController extends Controller
             ], 422);
         }
 
+        if ($carenOrder) {
+            $metadata['checkout_url'] = $checkout['redirect_url'];
+        }
         $payment = RapydPayment::create([
             'order_id' => $validated['order_id'],
             'user_id' => $userId,
@@ -139,6 +198,9 @@ class RapydPaymentController extends Controller
             'status' => 'pending',
             'metadata' => $metadata,
         ]);
+        if ($carenOrder) {
+            $carenOrder->update(['partner_sync_state' => 'reserved', 'partner_sync_error' => null]);
+        }
 
         if ($booking) {
             $booking->forceFill([
@@ -236,10 +298,19 @@ class RapydPaymentController extends Controller
             $payment->refresh();
         }
 
+        $carenOrder = $payment && data_get($payment->metadata, 'order_type') === 'car'
+            ? Order::whereKey($payment->order_id)->where('external_provider', 'caren')->first() : null;
+        if ($carenOrder && $payment->status === 'paid') {
+            $this->confirmOrder($payment);
+            $carenOrder->refresh();
+        }
+        $awaitingCaren = $carenOrder && $payment->status === 'paid' && $carenOrder->partner_sync_state !== 'confirmed';
+
         return [
             'checkout_id' => $payment?->checkout_id,
             'order_id' => $payment?->order_id,
-            'status' => $payment?->status ?? 'pending',
+            'status' => $awaitingCaren ? 'awaiting_partner_confirmation' : ($payment?->status ?? 'pending'),
+            'partner_sync_state' => $carenOrder?->partner_sync_state,
             'rapyd_status' => $paymentStatus,
             'total_price' => $payment?->total_price,
             'platform_fee' => $payment?->platform_fee,
@@ -247,7 +318,7 @@ class RapydPaymentController extends Controller
             'currency' => $payment?->currency,
             'paid_at' => $payment?->paid_at,
             // Lets the SPA redirect to the existing confirmation page after payment.
-            'confirmation_token' => $payment ? $this->confirmationTokenFor($payment) : null,
+            'confirmation_token' => $payment && ! $awaitingCaren ? $this->confirmationTokenFor($payment) : null,
         ];
     }
 
@@ -310,10 +381,14 @@ class RapydPaymentController extends Controller
                     // and trigger the appropriate confirmation email(s).
                     $this->confirmOrder($payment, is_string($paymentId) ? $paymentId : null);
                 }
+                if ($payment && $payment->status === 'paid' && data_get($payment->metadata, 'order_type') === 'car'
+                    && Order::whereKey($payment->order_id)->where('external_provider', 'caren')->exists()) {
+                    $this->confirmOrder($payment);
+                }
                 break;
 
             case 'PAYMENT_FAILED':
-                if ($payment) {
+                if ($payment && $payment->status !== 'paid') {
                     $payment->update(['status' => 'failed']);
                     // Leave the booking/order pending; the guest can retry payment.
                 }
@@ -389,6 +464,15 @@ class RapydPaymentController extends Controller
         if ($orderType === 'car') {
             $order = Order::query()->find($payment->order_id);
             if (! $order) {
+                return;
+            }
+            if ($order->external_provider === 'caren') {
+                try {
+                    app(CarenBookingService::class)->confirmPaid($order, $payment);
+                } catch (Throwable) {
+                    Log::warning('Caren paid reservation requires reconciliation', ['order_id' => $order->id]);
+                }
+
                 return;
             }
             if ($order->order_status === OrderStatus::Pending) {

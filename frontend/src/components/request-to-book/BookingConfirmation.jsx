@@ -45,7 +45,7 @@ export default function BookingConfirmation({
   const listingPath = config.backLink(item, bookingType)
 
   const protectionSummary = isVehicle && selectedPriceType
-    ? `${selectedPriceType.name} protection · ${selectedPriceType.attribute_value_per_day || getProtectionPresentation(selectedPriceType).deposit}`
+    ? (selectedPriceType.slug === 'caren-standard' ? selectedPriceType.name : `${selectedPriceType.name} protection · ${selectedPriceType.attribute_value_per_day || getProtectionPresentation(selectedPriceType).deposit}`)
     : null
 
   const hostMessageHref = buildHostMessageHref({

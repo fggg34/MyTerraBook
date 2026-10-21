@@ -18,6 +18,12 @@ class EditOrder extends EditRecord
 
     protected function beforeSave(): void
     {
+        if ($this->record->external_provider === 'caren') {
+            Notification::make()->title('Caren reservation')
+                ->body('Direct edits are disabled to keep Caren and TerraBook consistent. Use Cancel Caren reservation or contact support for amendments.')
+                ->warning()->send();
+            $this->halt();
+        }
         $original = $this->record->getOriginal('order_status');
         $from = $original instanceof OrderStatus ? $original : OrderStatus::tryFrom((string) $original);
 
@@ -42,6 +48,18 @@ class EditOrder extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('cancelCarenReservation')->label('Cancel Caren reservation')->color('danger')
+                ->visible(fn () => $this->record->external_provider === 'caren' && $this->record->partner_sync_state !== 'cancelled')
+                ->requiresConfirmation()->modalDescription('Cancel this reservation in Caren and TerraBook. Any payment refund must be handled separately.')
+                ->action(function (): void {
+                    try {
+                        $this->record->transitionOrderStatus(OrderStatus::Cancelled);
+                        $this->refreshFormData(['order_status', 'rental_status']);
+                        Notification::make()->title('Caren reservation cancelled')->success()->send();
+                    } catch (\InvalidArgumentException $e) {
+                        Notification::make()->title('Cancellation pending')->body($e->getMessage())->danger()->send();
+                    }
+                }),
             Action::make('editReservation')
                 ->label('Edit Reservation')
                 ->color('primary'),
@@ -111,14 +129,14 @@ class EditOrder extends EditRecord
             Action::make('confirm')
                 ->label('Confirm order')
                 ->color('success')
-                ->visible(fn () => $this->record->order_status === OrderStatus::Pending
-                    || $this->record->order_status === OrderStatus::StandBy)
+                ->visible(fn () => $this->record->external_provider !== 'caren' && ($this->record->order_status === OrderStatus::Pending
+                    || $this->record->order_status === OrderStatus::StandBy))
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $this->record->transitionOrderStatus(OrderStatus::Confirmed);
                     $this->refreshFormData(['order_status']);
                 }),
-            DeleteAction::make(),
+            DeleteAction::make()->visible(fn () => $this->record->external_provider !== 'caren'),
         ];
     }
 }

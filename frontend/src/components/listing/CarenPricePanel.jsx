@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../../api'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { carenPriceLabel, formatCarenPrice } from '../../utils/carenPricing'
 
 export default function CarenPricePanel({ car }) {
   const [query] = useSearchParams()
+  const navigate = useNavigate()
   const formatter = useFormatPrice()
   const [trip, setTrip] = useState(() => ({
     pickup_location_id: query.get('pickup_location_id') || '',
@@ -73,7 +74,11 @@ export default function CarenPricePanel({ car }) {
         ) : <p>{complete && trip.dropoff_at <= trip.pickup_at ? 'Drop-off must be after pick-up.' : carenPriceLabel(result?.status)}</p>}
       </div>
       {result?.status === 'error' && <button type="button" className="book-btn" onClick={() => setAttempt((value) => value + 1)}>Retry price check</button>}
-      <p className="listing-fees-note">Rental estimate only. Extras and additional charges may apply. Online booking is not yet available for this vehicle.</p>
+      {car.caren_booking_enabled && pricing && <button className="book-btn" type="button" onClick={() => {
+        const params = new URLSearchParams({ ...trip, car_id: String(car.id), price_type_id: String(car.price_types?.[0]?.id || '') })
+        navigate(`/checkout?${params}`)
+      }}>Continue to booking</button>}
+      <p className="listing-fees-note">Rental estimate only. Extras and additional charges may apply. {car.caren_booking_enabled ? 'Final price and availability are checked again at checkout.' : 'Online booking is not yet available for this vehicle.'}</p>
     </div>
   )
 }

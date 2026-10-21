@@ -37,7 +37,8 @@ Publishing does not add booking availability or prices. An empty catalogue does
 not deactivate existing cars. Missing cars in a nonempty successful catalogue are deactivated.
 
 Date-specific rental estimates are fetched live for search results and the vehicle detail price
-checker. Caren reservation/payment lifecycle integration is not yet implemented; Caren imports
+checker. A separately gated Caren reservation lifecycle is available (see below); it is disabled
+until the rental's payment configuration and an end-to-end test have been verified. Caren imports
 cannot be booked through local pricing.
 No placeholder fares or fleet-unit counts are invented.
 
@@ -74,6 +75,65 @@ Equivalent exact-match redirects are included in the nginx example.
 These configuration changes must be deployed/reloaded to affect the live server.
 
 API reference: https://apidocs.caren.io/
+
+## Reservation lifecycle (disabled pending Caren setup)
+
+The account currently has no configured Prepaid - Offline option supplied to TerraBook.
+Keep `CAREN_BOOKINGS_ENABLED=false`. Read-only prices/imports continue to work independently.
+Do not treat mocked tests as verification that live holds/payment options work for this account.
+
+After pulling this version, run `php artisan migrate --force` and `php artisan optimize:clear`
+in `backend`, rebuild/publish the storefront, and ensure Laravel's scheduler runs every minute.
+The migration adds durable reservation state and a Caren standard rate type, not a fixed fare.
+
+Before enabling bookings:
+
+1. Obtain the rental's **Prepaid - Offline** payment option ID from Caren. Confirm the online
+   Rapyd fee is to be credited against the rental balance and the rest collected on arrival.
+2. Obtain a test account/environment and a vehicle/date/location combination with valid rates.
+3. Set `CAREN_PAYMENT_OPTIONS` to a JSON object mapping each rental ID to its verified option ID
+   (for example `{"120":VERIFIED_OPTION_ID}`, replacing the placeholder with a number).
+4. Enable `CAREN_BOOKINGS_ENABLED=true` in the test environment and clear configuration cache.
+5. Verify create → pay → confirm and create → expire → cancel in both systems, including the
+   provider GUID, amount, currency, class, dates, locations, inventory hold and remaining balance.
+6. Only after those checks, apply the verified configuration to live. No live test booking or
+   payment was made during implementation.
+
+The checkout rechecks `class/checkavailable` and `price/getprices` without the search cache,
+verifies the configured `payment/getoptions` entry, and compares the total/currency against the
+guest's quote. Local location IDs must belong to the same vehicle, host and rental. Optional
+extras/coupon selections are not yet mapped; they are rejected rather than silently ignored.
+Provider-supplied mandatory extras/insurance totals are included in the checked quote.
+
+Each checkout has a UUID retry token and a durable local order before `reservation/add`.
+The provider receives TerraBook's order reference and customer/driver information. Reservations
+are created with `confirmReservation=false`, then verified through `reservation/getitem` before
+any payment checkout begins. Duplicate submissions reuse the existing order. An uncertain
+create response is not automatically retried, since the provider may have accepted it.
+
+Rapyd uses server-stored order totals/currency/host, requires the private confirmation token,
+and reuses an existing hosted checkout. Only a verified paid Rapyd record causes
+`payment/addprepaid`, for the online amount actually collected (not the full rental total).
+Then `reservation/confirm` uses `CheckPayment=true`. The local order becomes confirmed only
+after Caren acknowledges it. A paid but unconfirmed reservation displays a pending-provider
+message and does not redirect to a success confirmation. No card numbers are sent to Caren.
+
+`caren:reconcile-orders` runs every minute. It retries confirmation/cancellation and cancels
+expired unpaid reservations. A failed payment can retry the existing hosted checkout until
+expiry. Verified paid orders are not expired automatically. Late payments received after a
+cancellation need manual review/refund; they do not recreate a reservation.
+
+Admin Orders shows **Partner sync** and any reconciliation message. Use **Cancel Caren
+reservation** on the order page; TerraBook waits for provider acknowledgement before marking
+it cancelled. Cancellation does not issue a Rapyd refund. Refunds, amendments and optional
+protection upgrades require separate handling; direct edits/deletion are blocked for Caren
+orders to preserve reservation and payment reconciliation records.
+
+States requiring manual review include `create_unknown`, `checkout_unknown`, `payment_unknown`
+and interrupted `creating`/`checkout_creating`/`payment_recording` operations. Find the reservation
+in Caren using the TerraBook order reference and reconcile Rapyd/prepaid records before any retry.
+Never clear those states and blindly repeat a write. `verify_pending` blocks payment and will
+be cancelled if its unpaid hold expires. `confirm_pending` and `cancel_pending` are retryable.
 
 ## Repeated imports and Caren error 10000
 

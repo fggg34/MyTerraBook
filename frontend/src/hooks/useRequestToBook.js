@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api, resolveStorageUrl } from '../api'
 import { initiateRapydCheckout } from '../api/rapyd'
+import { carenCheckoutToken } from '../utils/carenCheckoutToken'
 import { useAuth } from '../context/AuthContext'
 import { useShopConfig } from '../context/ShopConfigContext'
 import { useToast } from '../context/ToastContext'
@@ -565,7 +566,7 @@ export default function useRequestToBook() {
         })
         created = data?.data
       } else {
-        const { data } = await api.post('/orders', {
+        const orderPayload = {
           car_id: Number(carId),
           price_type_id: Number(form.price_type_id),
           pickup_location_id: Number(form.pickup_location_id),
@@ -584,7 +585,15 @@ export default function useRequestToBook() {
           coupon_code: form.coupon_code.trim() || undefined,
           custom_field_values: form.custom_field_values,
           payment_method: form.paymentMethod,
-        })
+        }
+        if (item?.external_provider === 'caren') {
+          orderPayload.customer_license_number = form.licenceNumber.trim()
+          orderPayload.expected_total_cents = quote.total_cents
+          orderPayload.expected_currency = quote.currency
+          orderPayload.terms_accepted = form.agreed
+          orderPayload.checkout_token = await carenCheckoutToken(orderPayload)
+        }
+        const { data } = await api.post('/orders', orderPayload)
         created = data?.data
       }
 
@@ -601,6 +610,7 @@ export default function useRequestToBook() {
             total_price: Number(totalCents) / 100,
             currency: created.currency || quote?.currency || undefined,
             order_type: bookingType === 'guesthouse' ? 'guesthouse' : 'car',
+            confirmation_token: created.confirmation_token,
           })
           if (rapyd?.checkout_url) {
             window.location.href = rapyd.checkout_url
@@ -627,7 +637,7 @@ export default function useRequestToBook() {
     } finally {
       setSaving(false)
     }
-  }, [validateStep, form, quote, bookingType, slug, carId, dropoffLocationId, pickupAt, dropoffAt, toast, navigate])
+  }, [validateStep, form, quote, bookingType, slug, carId, dropoffLocationId, pickupAt, dropoffAt, toast, navigate, item?.external_provider])
 
   const itemImage = useMemo(() => {
     if (!item) return ''
@@ -730,7 +740,9 @@ export default function useRequestToBook() {
     submit,
     rules,
     customFields,
-    paymentMethods,
+    paymentMethods: item?.external_provider === 'caren'
+      ? [{ code: 'card', name: 'Card (Rapyd)' }]
+      : paymentMethods,
     prepayPercent,
     slug,
     carId,

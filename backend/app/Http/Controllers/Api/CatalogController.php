@@ -305,6 +305,12 @@ class CatalogController extends Controller
             ->values()
             ->all();
 
+        if ($car->external_provider === 'caren' && app(\App\Services\Partners\CarenBookingService::class)->enabled($car)) {
+            $standard = PriceType::where('slug', 'caren-standard')->where('is_active', true)->first();
+            $priceTypes = $standard ? [['id' => $standard->id, 'name' => $standard->name, 'slug' => $standard->slug,
+                'attribute_label' => 'Live Caren rate', 'attribute_value_per_day' => null, 'from_price_per_day_cents' => 0]] : [];
+        }
+
         $locationFees = LocationFee::query()
             ->where('is_active', true)
             ->when(

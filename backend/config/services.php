@@ -2,6 +2,12 @@
 
 return [
 
+    'caren' => [
+        // Enable only after the rental supplies its Prepaid - Offline option ID.
+        'bookings_enabled' => env('CAREN_BOOKINGS_ENABLED', false),
+        'payment_options' => json_decode(env('CAREN_PAYMENT_OPTIONS', '{}'), true) ?: [],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

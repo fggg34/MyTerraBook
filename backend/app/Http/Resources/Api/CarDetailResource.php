@@ -62,6 +62,8 @@ class CarDetailResource extends JsonResource
             'bags' => $car->bags,
             'units_available' => $car->units_available,
             'external_provider' => $car->external_provider,
+            'caren_booking_enabled' => $car->external_provider === 'caren'
+                && app(\App\Services\Partners\CarenBookingService::class)->enabled($car),
             'host' => $car->host ? HostProfileResource::make($car->host) : null,
             'partner' => app(ListingPartner::class)->fromCar($car),
             'main_image_path' => $car->main_image_path,

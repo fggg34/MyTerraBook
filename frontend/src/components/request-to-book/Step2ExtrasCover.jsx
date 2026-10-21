@@ -26,7 +26,7 @@ export default function Step2ExtrasCover({
         <div className="block">
           <div className="block-head">
             <span className="bnum">1</span>
-            <h3>Protection plan</h3>
+            <h3>{item?.external_provider === 'caren' ? 'Rental rate' : 'Protection plan'}</h3>
             <span className="bh-sub">{config.step2.protectionSubtitle}</span>
           </div>
           <ProtectionPlanGrid

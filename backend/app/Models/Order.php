@@ -37,6 +37,9 @@ class Order extends Model
         'customer_date_of_birth',
         'external_provider',
         'external_reference',
+        'partner_checkout_token',
+        'partner_sync_state',
+        'partner_sync_error',
         'base_rental_cents',
         'extras_cents',
         'fees_cents',
@@ -75,6 +78,25 @@ class Order extends Model
 
     protected static function booted(): void
     {
+        static::updating(function (Order $order): void {
+            if ($order->getOriginal('external_provider') !== 'caren') {
+                return;
+            }
+            if ($order->isDirty(['car_id', 'pickup_location_id', 'dropoff_location_id', 'pickup_at', 'dropoff_at',
+                'customer_name', 'customer_email', 'customer_phone', 'customer_date_of_birth', 'price_type_id',
+                'base_rental_cents', 'extras_cents', 'fees_cents', 'discount_cents', 'tax_cents', 'total_cents', 'currency', 'external_provider'])) {
+                throw new \InvalidArgumentException('Caren reservation amendments must be synchronized with the provider; direct changes are disabled.');
+            }
+            if ($order->isDirty('order_status') && (($order->order_status === OrderStatus::Confirmed && $order->partner_sync_state !== 'confirmed')
+                || ($order->order_status === OrderStatus::Cancelled && $order->partner_sync_state !== 'cancelled'))) {
+                throw new \InvalidArgumentException('Caren must acknowledge this status change first.');
+            }
+        });
+        static::deleting(function (Order $order): void {
+            if ($order->external_provider === 'caren') {
+                throw new \InvalidArgumentException('Keep Caren orders for reservation and payment reconciliation; cancel them instead.');
+            }
+        });
         static::creating(function (Order $order): void {
             if ($order->reference === null || $order->reference === '') {
                 $order->reference = static::generateUniqueReference();
@@ -159,6 +181,15 @@ class Order extends Model
 
     public function transitionOrderStatus(OrderStatus $to): void
     {
+        if ($this->external_provider === 'caren' && $to === OrderStatus::Cancelled) {
+            app(\App\Services\Partners\CarenBookingService::class)->cancel($this);
+
+            return;
+        }
+        if ($this->external_provider === 'caren' && $to === OrderStatus::Confirmed
+            && $this->partner_sync_state !== 'confirmed') {
+            throw new \InvalidArgumentException('Caren must confirm this reservation after verified payment first.');
+        }
         $from = $this->order_status;
         if ($from === $to) {
             return;

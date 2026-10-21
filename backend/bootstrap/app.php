@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('calendar:import-external')->dailyAt('02:15');
         $schedule->command('greenlight:sync-vehicles')->hourly();
         $schedule->command('greenlight:expire-pending')->everyFifteenMinutes();
+        $schedule->command('caren:reconcile-orders')->everyMinute()->withoutOverlapping();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(function (Request $request): string {

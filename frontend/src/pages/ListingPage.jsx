@@ -60,7 +60,7 @@ function ListingPageBody({ listingType = 'campervan' }) {
     ({ pickupDate, dropoffDate } = {}) => {
       if (!car) return
       if (car.external_provider === 'caren') {
-        toast('You can check rental prices on this page. Online booking is not yet available for this vehicle.', 'info')
+        toast(car.caren_booking_enabled ? 'Choose your trip in the rental price checker, then continue to booking.' : 'You can check rental prices on this page. Online booking is not yet available for this vehicle.', 'info')
         return
       }
 

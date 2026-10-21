@@ -21,6 +21,7 @@ use App\Models\Location;
 use App\Services\Email\OrderEmailNotifier;
 use App\Services\OrderAvailabilityService;
 use App\Services\Partners\GreenlightBookingService;
+use App\Services\Partners\CarenBookingService;
 use App\Services\RentalQuoteService;
 use App\Support\Money;
 use App\Support\QuotePresentation;
@@ -36,6 +37,7 @@ class PublicOrderController extends Controller
         private readonly OrderAvailabilityService $availabilityService,
         private readonly OrderEmailNotifier $orderEmails,
         private readonly GreenlightBookingService $greenlight,
+        private readonly CarenBookingService $caren,
     ) {}
 
     public function quote(OrderQuoteRequest $request): JsonResponse
@@ -99,6 +101,17 @@ class PublicOrderController extends Controller
     public function store(StoreOrderRequest $request): JsonResponse
     {
         $car = Car::query()->findOrFail($request->integer('car_id'));
+        if ($car->external_provider === 'caren') {
+            try {
+                $order = $this->caren->create($car, $request->validated(), $request->user()?->id);
+
+                return response()->json(['data' => OrderResource::make($order)], 201);
+            } catch (InvalidArgumentException $e) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
+                return response()->json(['message' => 'This booking is still processing. Retry this same checkout shortly.'], 409);
+            }
+        }
         $pickup = Carbon::parse($request->string('pickup_at'));
         $dropoff = Carbon::parse($request->string('dropoff_at'));
 
@@ -352,6 +365,15 @@ class PublicOrderController extends Controller
         array $rentalOptions,
         ?string $couponCode,
     ): array {
+        if ($car->external_provider === 'caren') {
+            $quote = $this->caren->quote($car, [
+                'price_type_id' => $priceTypeId, 'pickup_at' => $pickup, 'dropoff_at' => $dropoff,
+                'pickup_location_id' => $pickupLocationId, 'dropoff_location_id' => $dropoffLocationId,
+                'rental_options' => $rentalOptions, 'coupon_code' => $couponCode,
+            ]);
+
+            return [$quote, ['basic_rental_cents' => $quote['base_rental_cents'], 'protection_upgrade_cents' => 0]];
+        }
         if ($this->greenlight->isPartnerCar($car)) {
             $pickupLocation = Location::query()->findOrFail($pickupLocationId);
             $dropoffLocation = Location::query()->findOrFail($dropoffLocationId);

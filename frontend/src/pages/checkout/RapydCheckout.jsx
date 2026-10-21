@@ -48,6 +48,12 @@ export default function RapydCheckout({ outcome = 'success' }) {
         }
         return
       }
+      if (data?.status === 'awaiting_partner_confirmation') {
+        setStatus('partner_pending')
+        pollsRef.current += 1
+        if (pollsRef.current < MAX_POLLS) timerRef.current = setTimeout(poll, POLL_INTERVAL_MS)
+        return
+      }
       if (data?.status === 'failed') {
         setStatus('failed')
         return
@@ -74,13 +80,13 @@ export default function RapydCheckout({ outcome = 'success' }) {
     }
   }, [outcome, poll])
 
-  if (status === 'loading' || status === 'pending') {
+  if (status === 'loading' || status === 'pending' || status === 'partner_pending') {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-teal-200 border-t-teal-600" />
-        <h1 className="mt-6 text-xl font-semibold text-gray-900">Confirming your payment…</h1>
+        <h1 className="mt-6 text-xl font-semibold text-gray-900">{status === 'partner_pending' ? 'Payment received; reservation awaiting confirmation' : 'Confirming your payment…'}</h1>
         <p className="mt-2 text-sm text-gray-500">
-          {status === 'pending'
+          {status === 'partner_pending' ? 'Your payment was received, but the rental provider has not confirmed the reservation yet. Do not pay again. Contact support if this status remains.' : status === 'pending'
             ? 'Your payment is being processed. This can take a moment — you can safely check "My Bookings" shortly.'
             : 'Please wait while we confirm your card payment.'}
         </p>

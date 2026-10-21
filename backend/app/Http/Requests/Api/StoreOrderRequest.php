@@ -17,6 +17,8 @@ class StoreOrderRequest extends FormRequest
 
     public function rules(): array
     {
+        $caren = Car::whereKey($this->integer('car_id'))->where('external_provider', 'caren')->exists();
+
         return [
             'car_id' => ['required', 'integer', 'exists:cars,id'],
             'price_type_id' => ['required', 'integer', 'exists:price_types,id'],
@@ -26,13 +28,18 @@ class StoreOrderRequest extends FormRequest
             'dropoff_at' => ['required', 'date', 'after:pickup_at'],
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_email' => ['required', 'email', 'max:255'],
-            'customer_phone' => ['nullable', 'string', 'max:32'],
+            'customer_phone' => [$caren ? 'required' : 'nullable', 'string', 'max:32'],
             'customer_country' => ['nullable', 'string', 'max:4'],
-            'customer_date_of_birth' => ['nullable', 'date_format:Y-m-d'],
+            'customer_date_of_birth' => [$caren ? 'required' : 'nullable', 'date_format:Y-m-d', 'before:today'],
+            'customer_license_number' => [$caren ? 'required' : 'nullable', 'string', 'max:100'],
+            'checkout_token' => [$caren ? 'required' : 'nullable', 'uuid'],
+            'expected_total_cents' => [$caren ? 'required' : 'nullable', 'integer', 'min:1'],
+            'expected_currency' => [$caren ? 'required' : 'nullable', 'string', 'size:3'],
+            'terms_accepted' => [$caren ? 'accepted' : 'nullable'],
             'rental_options' => ['nullable', 'array'],
             'rental_options.*' => ['integer', 'min:1'],
             'coupon_code' => ['nullable', 'string', 'max:64'],
-            'payment_method' => ['nullable', 'string', 'max:64'],
+            'payment_method' => $caren ? ['required', 'in:card,rapyd_card'] : ['nullable', 'string', 'max:64'],
             'custom_field_values' => ['nullable', 'array'],
             'custom_field_values.*' => ['nullable', 'string', 'max:2000'],
         ];

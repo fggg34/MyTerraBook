@@ -248,7 +248,7 @@ class GreenlightBookingService
             throw new GreenlightPartnerException('Greenlight has no insurance plans to attach to this booking.');
         }
 
-        $typeIds = PriceType::query()->where('is_active', true)->orderBy('id')->pluck('id')->all();
+        $typeIds = PriceType::query()->where('is_active', true)->where('slug', '!=', 'caren-standard')->orderBy('id')->pluck('id')->all();
         $index = array_search($priceTypeId, $typeIds, true);
         if ($index === false) {
             $index = 0;

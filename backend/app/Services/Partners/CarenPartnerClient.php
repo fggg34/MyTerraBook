@@ -12,6 +12,17 @@ class CarenPartnerClient
 {
     public const BASE_URL = 'https://booking.caren.is';
 
+    public function bookingRequest(User $host, string $path, array $payload): array
+    {
+        if (! in_array($path, ['class/checkavailable', 'price/getprices', 'payment/getoptions',
+            'reservation/add', 'reservation/getitem', 'reservation/confirm', 'reservation/cancel', 'payment/addprepaid'], true)) {
+            throw new RuntimeException('Unsupported Caren booking operation.');
+        }
+
+        // No automatic retries: a timed-out reservation/payment write may have succeeded.
+        return $this->withSession($host, fn (string $session) => $this->request($host, $path, ['Session' => $session] + $payload));
+    }
+
     public function prices(User $host, int $rentalId, int $pickupId, int $dropoffId, CarbonInterface $from, CarbonInterface $to, string $currency): array
     {
         return $this->withSession($host, function (string $session) use ($host, $rentalId, $pickupId, $dropoffId, $from, $to, $currency): array {

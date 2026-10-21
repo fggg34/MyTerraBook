@@ -132,7 +132,7 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
   const priceFromCents = priceType?.from_price_per_day_cents
   const priceFromDecimal = priceType?.from_price_per_day
   const priceFromAmount =
-    priceFromCents != null
+    car.external_provider === 'caren' ? null : priceFromCents != null
       ? Number(priceFromCents) / 100
       : priceFromDecimal != null
         ? Number.parseFloat(priceFromDecimal)
