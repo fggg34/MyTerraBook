@@ -156,7 +156,7 @@ class FoxiePartnerClient
     private function assertHost(User $host): void
     {
         if ($host->partner_provider !== 'foxie' || ! $host->partner_api_enabled || blank($host->partner_api_key)) {
-            throw new RuntimeException('Foxie is not connected for this host.');
+            throw new RuntimeException('Turn on the Foxie connection and save the API key before importing.');
         }
         $base = rtrim((string) $host->partner_api_base_url, '/');
         if ($base !== '' && $base !== self::BASE_URL) {

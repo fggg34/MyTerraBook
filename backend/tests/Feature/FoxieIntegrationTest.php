@@ -142,6 +142,55 @@ class FoxieIntegrationTest extends TestCase
         Http::assertNotSent(fn (Request $request) => str_contains($request->url(), '/bookings'));
     }
 
+    public function test_import_turns_the_connection_on_and_keeps_a_saved_key(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        $host = $this->host();
+        $host->update([
+            'partner_api_enabled' => false,
+            'partner_api_base_url' => 'https://foxiecampers.is/api/v1',
+        ]);
+        Http::preventStrayRequests();
+        Http::fake(fn (Request $request) => $this->catalogueResponse($request));
+        Livewire::test(EditRegisteredHost::class, ['record' => $host->id])
+            ->fillForm([
+                'partner_provider' => 'foxie',
+                'partner_api_enabled' => false,
+                'partner_api_base_url' => 'https://foxiecampers.is/api/v1',
+                'partner_api_key' => '',
+            ])
+            ->callAction(TestAction::make('saveAndImportFoxieVehicles')->schemaComponent('form-actions', 'content'))
+            ->assertHasNoFormErrors()
+            ->assertNotified('Foxie fleet imported');
+        $fresh = $host->fresh();
+        $this->assertTrue($fresh->partner_api_enabled);
+        $this->assertSame('foxie', $fresh->partner_provider);
+        $this->assertSame(FoxiePartnerClient::BASE_URL, $fresh->partner_api_base_url);
+        $this->assertSame('test-foxie-key', $fresh->partner_api_key);
+        $this->assertSame(1, $host->cars()->count());
+    }
+
+    public function test_import_asks_for_a_key_when_none_is_saved(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        $host = $this->host();
+        $host->update(['partner_api_key' => null, 'partner_api_enabled' => false]);
+        Http::preventStrayRequests();
+        Http::fake();
+        Livewire::test(EditRegisteredHost::class, ['record' => $host->id])
+            ->fillForm([
+                'partner_provider' => 'foxie',
+                'partner_api_enabled' => false,
+                'partner_api_key' => '',
+            ])
+            ->callAction(TestAction::make('saveAndImportFoxieVehicles')->schemaComponent('form-actions', 'content'))
+            ->assertNotified('Host saved, but Foxie import failed');
+        Http::assertNothingSent();
+        $this->assertSame(0, $host->cars()->count());
+        $this->assertTrue($host->fresh()->partner_api_enabled);
+        $this->assertNull($host->fresh()->partner_api_key);
+    }
+
     public function test_connect_command_imports_only_after_foxie_accepts_the_key(): void
     {
         Http::preventStrayRequests();

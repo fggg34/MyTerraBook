@@ -71,13 +71,33 @@ class EditRegisteredHost extends EditRecord
             ->visible(fn (): bool => ($this->data['partner_provider'] ?? $this->record->partner_provider) === 'foxie')
             ->requiresConfirmation()
             ->modalHeading('Save host and import Foxie vehicles')
-            ->modalDescription('Save the form and import vehicles and locations from Foxie Campers. Imported vehicles are published. This does not create a reservation.')
+            ->modalDescription('Save the form, turn the Foxie connection on, and import vehicles and locations. The Foxie API address is set for you. Imported vehicles are published. This does not create a reservation.')
             ->action(function (FoxieVehicleSyncService $sync): void {
+                $typedKey = trim((string) ($this->data['partner_api_key'] ?? ''));
+                $this->data['partner_provider'] = 'foxie';
+                $this->data['partner_api_enabled'] = true;
+                $this->data['partner_api_base_url'] = FoxiePartnerClient::BASE_URL;
+                if ($typedKey !== '') {
+                    $this->data['partner_api_key'] = $typedKey;
+                }
                 $this->save(shouldRedirect: false, shouldSendSavedNotification: false);
                 $this->record->refresh();
-                $this->refreshFormData(['partner_api_key']);
+                $this->record->forceFill([
+                    'partner_provider' => 'foxie',
+                    'partner_api_enabled' => true,
+                    'partner_api_base_url' => FoxiePartnerClient::BASE_URL,
+                    ...($typedKey !== '' ? ['partner_api_key' => $typedKey] : []),
+                ])->save();
+                $this->refreshFormData(['partner_api_key', 'partner_api_enabled', 'partner_api_base_url', 'partner_provider']);
+                if (blank($this->record->partner_api_key)) {
+                    Notification::make()->title('Host saved, but Foxie import failed')
+                        ->body('Enter the Foxie API key, then use this button again.')
+                        ->danger()->persistent()->send();
+
+                    return;
+                }
                 try {
-                    $result = $sync->sync($this->record);
+                    $result = $sync->sync($this->record->fresh());
                     Notification::make()->title('Foxie fleet imported')
                         ->body($result['vehicles'].' vehicles, '.$result['locations'].' locations; '.$result['skipped'].' test entries skipped. Imported vehicles are published.')
                         ->success()->send();
