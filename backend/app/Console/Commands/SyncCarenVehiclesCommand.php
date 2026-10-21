@@ -11,7 +11,7 @@ class SyncCarenVehiclesCommand extends Command
 {
     protected $signature = 'caren:sync-vehicles {host : Registered host ID}';
 
-    protected $description = 'Import a registered Caren host catalogue; new vehicles are inactive drafts.';
+    protected $description = 'Import and automatically publish a registered Caren host catalogue.';
 
     public function handle(CarenVehicleSyncService $sync): int
     {

@@ -41,7 +41,7 @@ class EditRegisteredHost extends EditRecord
             ->visible(fn (): bool => ($this->data['partner_provider'] ?? $this->record->partner_provider) === 'caren')
             ->requiresConfirmation()
             ->modalHeading('Save host and import Caren vehicles')
-            ->modalDescription('Save the form and import vehicles and locations from Caren. New vehicles are inactive drafts. For Konvin, enter rental ID 120.')
+            ->modalDescription('Save the form and import vehicles and locations from Caren. Imported vehicles, including existing listings, are automatically published. For Konvin, enter rental ID 120.')
             ->action(function (CarenVehicleSyncService $sync): void {
                 // Let validation errors return to the form rather than treating them as API failures.
                 $this->save(shouldRedirect: false, shouldSendSavedNotification: false);

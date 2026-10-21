@@ -90,9 +90,10 @@ class CarenVehicleSyncService
                     'bags' => (int) ($row['LargeBags'] ?? 0) + (int) ($row['SmallBags'] ?? 0),
                     'year' => preg_match('/\b(19|20)\d{2}\b/', (string) ($row['Model'] ?? ''), $year) ? (int) $year[0] : null,
                     'main_image_path' => $photos[0] ?? null, 'details_image_paths' => $photos,
+                    'is_active' => true, 'listing_status' => ListingApprovalStatus::Approved,
                 ]);
                 if (! $car->exists) {
-                    $car->fill(['is_active' => false, 'listing_status' => ListingApprovalStatus::Draft, 'units_available' => 0]);
+                    $car->fill(['units_available' => 0]);
                 }
                 $car->save();
                 $car->locations()->sync($locations);

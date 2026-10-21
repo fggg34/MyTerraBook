@@ -31,7 +31,9 @@ not authenticate twice. An API failure on the edit page preserves the saved conn
 Repeat an import with `php artisan caren:sync-vehicles HOST_ID` or the host's import action.
 Imports update existing host/rental/class records without creating duplicates. Pickup/drop-off
 permissions are imported separately. Names beginning with the word Test are skipped.
-New cars are inactive drafts; existing review status is preserved. An empty catalogue does
+All returned non-test vehicles are automatically active and approved, including existing
+drafts, rejected or inactive listings. Reimport to publish previously imported vehicles.
+Publishing does not add booking availability or prices. An empty catalogue does
 not deactivate existing cars. Missing cars in a nonempty successful catalogue are deactivated.
 
 This is a catalogue integration. Date-specific pricing, availability and Caren reservation/payment

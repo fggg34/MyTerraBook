@@ -133,7 +133,7 @@ class CarenIntegrationTest extends TestCase
         Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/rental/list'));
     }
 
-    public function test_import_is_idempotent_scoped_and_preserves_review_status(): void
+    public function test_import_is_idempotent_scoped_and_automatically_publishes(): void
     {
         $this->fakeCatalogue();
         $host = $this->host();
@@ -142,8 +142,9 @@ class CarenIntegrationTest extends TestCase
         $result = app(CarenVehicleSyncService::class)->sync($host);
         $this->assertSame(['vehicles' => 1, 'locations' => 2, 'skipped' => 1, 'deactivated' => 0], $result);
         $car = $host->cars()->sole();
-        $this->assertFalse($car->is_active);
-        $this->assertSame(ListingApprovalStatus::Draft, $car->listing_status);
+        $this->assertTrue($car->is_active);
+        $this->assertSame(ListingApprovalStatus::Approved, $car->listing_status);
+        $this->assertTrue(Car::publiclyVisible()->whereKey($car->id)->exists());
         $this->assertSame('hybrid', $car->fuel_type);
         $this->assertSame('automatic', $car->transmission);
         $this->assertSame('campervan', $car->subCategory->mainCategory->slug);
@@ -154,10 +155,12 @@ class CarenIntegrationTest extends TestCase
         $pickup = $car->locations()->where('external_id', '120:10')->sole();
         $this->assertTrue((bool) $pickup->pivot->allows_pickup);
         $this->assertFalse((bool) $pickup->pivot->allows_dropoff);
-        $car->update(['listing_status' => ListingApprovalStatus::PendingReview]);
+        $car->update(['is_active' => false, 'listing_status' => ListingApprovalStatus::Draft]);
         app(CarenVehicleSyncService::class)->sync($host);
         $this->assertSame(1, $host->cars()->count());
-        $this->assertSame(ListingApprovalStatus::PendingReview, $car->fresh()->listing_status);
+        $this->assertSame(ListingApprovalStatus::Approved, $car->fresh()->listing_status);
+        $this->assertTrue($car->fresh()->is_active);
+        $this->assertTrue(Car::publiclyVisible()->whereKey($car->id)->exists());
         $this->assertSame($otherHost->id, $otherCar->fresh()->user_id);
         Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/user/login') && $request['ApiKey'] === 'test-api-key');
         Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/class/getlist') && $request['Session'] === 'test-session' && $request['SkipDateCheck'] === true);
