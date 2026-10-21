@@ -213,7 +213,7 @@ class FoxieIntegrationTest extends TestCase
     {
         [$car, $trip] = $this->fleet();
         Http::preventStrayRequests();
-        Http::fake(fn (Request $request) => str_contains($request->url(), '/quotes')
+        Http::fake(fn (Request $request) => str_contains($request->url(), '/pricing')
             ? Http::response(['code' => 'no_price', 'message' => 'No price.'], 404)
             : Http::response(['available' => true]));
         $this->getJson('/api/cars/'.$car->id.'/foxie-price?'.http_build_query($trip))
@@ -222,7 +222,7 @@ class FoxieIntegrationTest extends TestCase
         Cache::flush();
         $priced = false;
         Http::fake(function (Request $request) use (&$priced) {
-            if (str_contains($request->url(), '/quotes')) {
+            if (str_contains($request->url(), '/pricing')) {
                 $priced = true;
             }
 
@@ -233,7 +233,7 @@ class FoxieIntegrationTest extends TestCase
         $this->assertFalse($priced);
 
         Cache::flush();
-        Http::fake(fn (Request $request) => str_contains($request->url(), '/quotes')
+        Http::fake(fn (Request $request) => str_contains($request->url(), '/pricing')
             ? Http::response(['total' => 0, 'currency' => 'ISK', 'days' => 7])
             : Http::response(['available' => true]));
         $this->getJson('/api/cars/'.$car->id.'/foxie-price?'.http_build_query($trip))
@@ -453,7 +453,7 @@ class FoxieIntegrationTest extends TestCase
 
     private function quoteResponse(Request $request)
     {
-        if (str_contains($request->url(), '/quotes')) {
+        if (str_contains($request->url(), '/pricing')) {
             return Http::response(['total' => 18900, 'currency' => 'ISK', 'days' => 7]);
         }
 

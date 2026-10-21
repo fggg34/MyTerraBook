@@ -52,7 +52,7 @@ class RegisteredHostForm
                         ->url()
                         ->placeholder('https://partner.example/api')
                         ->helperText(fn ($get): ?string => $get('partner_provider') === 'foxie'
-                            ? 'Use https://foxiecampers.is/api/v1. The key is sent only to that Foxie address.'
+                            ? 'Use https://foxiecampers.is/wp-json/northstar/v1. The key is sent only to that Foxie address.'
                             : null)
                         ->required(fn ($get): bool => (bool) $get('partner_api_enabled'))
                         ->columnSpanFull(),

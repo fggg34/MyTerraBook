@@ -9,7 +9,7 @@ use RuntimeException;
 
 class FoxiePartnerClient
 {
-    public const BASE_URL = 'https://foxiecampers.is/api/v1';
+    public const BASE_URL = 'https://foxiecampers.is/wp-json/northstar/v1';
 
     /**
      * Read locations and vehicle details. This never calls POST /bookings.
@@ -65,7 +65,7 @@ class FoxiePartnerClient
      */
     public function pricing(User $host, array $query): array
     {
-        return $this->get($host, 'quotes', $query);
+        return $this->get($host, 'pricing', $query);
     }
 
     /**
