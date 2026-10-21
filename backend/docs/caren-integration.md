@@ -48,3 +48,16 @@ Equivalent exact-match redirects are included in the nginx example.
 These configuration changes must be deployed/reloaded to affect the live server.
 
 API reference: https://apidocs.caren.io/
+
+## Repeated imports and Caren error 10000
+
+The client deliberately does not call `user/logout` after catalogue reads, including
+failed reads. A live diagnostic reproduced successful reads, successful logout,
+then login returning the same invalidated session and reads failing with code 10000
+(`Value cannot be null`). Sessions are left to Caren's documented 30-minute idle expiry.
+
+Deploy this fix before retrying an affected account. An already-invalidated session
+may still need to expire or be reset by Caren. For the Konvin account, entering its
+API email in uppercase was verified to create a separate working session with the
+same password/key; it returned 26 classes, 4 pickup locations and 2 drop-off locations.
+This is a tested account-specific recovery workaround, not automatic username normalization.

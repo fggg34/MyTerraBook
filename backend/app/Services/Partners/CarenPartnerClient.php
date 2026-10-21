@@ -68,15 +68,10 @@ class CarenPartnerClient
             throw new RuntimeException('Caren login failed. Check the saved Vehicle API credentials.');
         }
 
-        try {
-            return $callback($session);
-        } finally {
-            try {
-                $this->request($host, 'user/logout', ['Session' => $session, 'Username' => $host->partner_api_username]);
-            } catch (\Throwable) {
-                // Idle sessions expire; logout failures must not hide the original result.
-            }
-        }
+        // Caren can return the same session on subsequent logins, even after logout
+        // invalidates it. Let its documented idle expiry end the session instead;
+        // logging out here breaks subsequent imports and concurrent API clients.
+        return $callback($session);
     }
 
     private function request(User $host, string $path, array $payload): array

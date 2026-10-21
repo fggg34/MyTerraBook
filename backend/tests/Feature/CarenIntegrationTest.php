@@ -120,7 +120,7 @@ class CarenIntegrationTest extends TestCase
             ->assertSuccessful();
         $this->assertSame(1, User::where('email', 'konvin@example.test')->sole()->cars()->count());
         $this->assertSame('Caren rental 120', User::where('email', 'konvin@example.test')->sole()->name);
-        Http::assertSentCount(5);
+        Http::assertSentCount(4);
     }
 
     public function test_rental_discovery_still_works_when_no_rental_id_is_saved(): void
@@ -161,7 +161,7 @@ class CarenIntegrationTest extends TestCase
         $this->assertSame($otherHost->id, $otherCar->fresh()->user_id);
         Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/user/login') && $request['ApiKey'] === 'test-api-key');
         Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/class/getlist') && $request['Session'] === 'test-session' && $request['SkipDateCheck'] === true);
-        Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/user/logout'));
+        Http::assertNotSent(fn (Request $request) => str_ends_with($request->url(), '/user/logout'));
     }
 
     public function test_empty_catalogue_does_not_deactivate_existing_cars(): void
@@ -173,7 +173,7 @@ class CarenIntegrationTest extends TestCase
         $this->assertTrue($car->fresh()->is_active);
     }
 
-    public function test_failed_catalogue_closes_session_without_changing_listings(): void
+    public function test_failed_catalogue_preserves_session_without_changing_listings(): void
     {
         $this->fakeCatalogue(failClasses: true);
         $host = $this->host();
@@ -184,7 +184,41 @@ class CarenIntegrationTest extends TestCase
             $this->assertStringNotContainsString('secret-provider-detail', $exception->getMessage());
         }
         $this->assertSame(0, $host->cars()->count());
-        Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/user/logout'));
+        Http::assertNotSent(fn (Request $request) => str_ends_with($request->url(), '/user/logout'));
+    }
+
+    public function test_repeated_catalogues_work_when_login_reuses_a_session_invalidated_by_logout(): void
+    {
+        Http::preventStrayRequests();
+        $loggedOut = false;
+        Http::fake(function (Request $request) use (&$loggedOut) {
+            $path = parse_url($request->url(), PHP_URL_PATH);
+            if (str_ends_with($path, '/user/login')) {
+                return Http::response(['Success' => true, 'Session' => 'reused-session']);
+            }
+            if (str_ends_with($path, '/user/logout')) {
+                $loggedOut = true;
+                return Http::response(['Success' => true]);
+            }
+            if ($loggedOut) {
+                return Http::response(['Success' => false, 'Code' => 10000]);
+            }
+            $this->assertSame('reused-session', $request['Session']);
+
+            return Http::response(str_ends_with($path, '/class/getlist')
+                ? ['Classes' => [['Id' => 2181, 'Name' => 'Jeep']]]
+                : ['Locations' => [['Id' => 10, 'Name' => 'Airport']]]);
+        });
+
+        $host = $this->host();
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $catalogue = app(CarenPartnerClient::class)->catalogue($host);
+            $this->assertCount(1, $catalogue['vehicles']);
+            $this->assertCount(1, $catalogue['pickups']);
+            $this->assertCount(1, $catalogue['dropoffs']);
+        }
+        $this->assertFalse($loggedOut);
+        Http::assertSentCount(8);
     }
 
     public function test_unapproved_api_origin_cannot_receive_credentials(): void
