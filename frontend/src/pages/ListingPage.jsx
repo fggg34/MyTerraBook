@@ -59,6 +59,10 @@ function ListingPageBody({ listingType = 'campervan' }) {
   const handleBook = useCallback(
     ({ pickupDate, dropoffDate } = {}) => {
       if (!car) return
+      if (car.external_provider === 'caren') {
+        toast('You can check rental prices on this page. Online booking is not yet available for this vehicle.', 'info')
+        return
+      }
 
       const selectedPickup = pickupDate ?? bookingDatesRef.current.pickupDate
       const selectedDropoff = dropoffDate ?? bookingDatesRef.current.dropoffDate

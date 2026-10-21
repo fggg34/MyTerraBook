@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom'
 import { resolveStorageUrl } from '../../api'
 import { QuoteFeeLines } from './QuotePricingBreakdown'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
+import { carenPriceLabel, formatCarenPrice } from '../../utils/carenPricing'
 
 export default function CarCard({ car, searchQuery = '', categoryName }) {
   const fmt = useFormatPrice()
   const imageSrc = resolveStorageUrl(car.thumbnail_url || car.main_image_path)
   const dailyPrice = car.base_daily_price ?? '0.00'
   const pricing = car.search_pricing
+  const isCaren = car.external_provider === 'caren'
   const detailUrl = `/cars/${car.id}${searchQuery ? `?${searchQuery}` : ''}`
   const checkoutUrl = `/checkout?car_id=${car.id}${searchQuery ? `&${searchQuery}` : ''}`
 
@@ -56,7 +58,7 @@ export default function CarCard({ car, searchQuery = '', categoryName }) {
             <Fuel className="h-3.5 w-3.5" aria-hidden />
             {car.fuel_type}
           </span>
-          {car.units_available != null && (
+          {!isCaren && car.units_available != null && (
             <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1">
               <Users className="h-3.5 w-3.5" aria-hidden />
               {car.units_available} unit{car.units_available !== 1 ? 's' : ''}
@@ -64,7 +66,15 @@ export default function CarCard({ car, searchQuery = '', categoryName }) {
           )}
         </div>
 
-        {pricing ? (
+        {isCaren ? (
+          <div className="mt-4 space-y-1">
+            {pricing ? <>
+              <strong>{formatCarenPrice(pricing.rental_subtotal, pricing.currency, fmt)}</strong>
+              <p>Rental estimate · {pricing.rental_days} days</p>
+              <p>{formatCarenPrice(pricing.daily_price, pricing.currency, fmt)} per day on average</p>
+            </> : <p>{carenPriceLabel(car.pricing_status)}</p>}
+          </div>
+        ) : pricing ? (
           <div className="mt-4 space-y-1">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               {Number(pricing.special_discount_amount) > 0 && (
@@ -114,9 +124,9 @@ export default function CarCard({ car, searchQuery = '', categoryName }) {
           <Link to={detailUrl} className="btn-secondary flex-1 text-center">
             View Details
           </Link>
-          <Link to={checkoutUrl} className="btn-primary flex-1 text-center">
+          {!isCaren && <Link to={checkoutUrl} className="btn-primary flex-1 text-center">
             Rent Now
-          </Link>
+          </Link>}
         </div>
       </div>
     </article>

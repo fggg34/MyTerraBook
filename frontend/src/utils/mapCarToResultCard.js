@@ -1,5 +1,6 @@
 import { buildVehicleCardSpecs, gearboxLabel } from './buildVehicleCardSpecs'
 import { resolveStorageUrl } from '../api'
+import { carenPriceLabel, formatCarenPrice } from './carenPricing'
 
 export function partnerInitials(name) {
   const parts = String(name || '').trim().split(/\s+/).filter(Boolean).slice(0, 2)
@@ -29,6 +30,8 @@ export function mapCarToResultCard(car, { searchQuery = '', config, categoryName
   const formatPrice = priceFormatter?.format ?? ((amount) => `€${Math.round(amount).toLocaleString('en-US')}`)
   const isCampervan = vehicleType === 'campervan' || car.main_category_slug === 'campervan'
   const specs = buildVehicleCardSpecs(car, { isCampervan })
+  const isCaren = car.external_provider === 'caren'
+  const pricing = car.search_pricing
 
   const detailBase = config?.route || '/cars'
   const href = `${detailBase}/${car.id}${searchQuery ? `?${searchQuery}` : ''}`
@@ -39,15 +42,17 @@ export function mapCarToResultCard(car, { searchQuery = '', config, categoryName
     partner: mapPartner(car),
     image: resolveStorageUrl(car.thumbnail_url || car.main_image_path) || '/images/homepage/cardcar.jpg',
     href,
-    price: formatPrice(dailyPrice(car)),
-    per: 'day',
-    badge: car.search_pricing?.has_special_discount ? 'Special price' : 'Extras included',
+    price: isCaren
+      ? (pricing ? formatCarenPrice(dailyPrice(car), pricing.currency, priceFormatter) : carenPriceLabel(car.pricing_status))
+      : formatPrice(dailyPrice(car)),
+    per: isCaren && !pricing ? '' : 'day',
+    badge: isCaren ? 'Rental estimate' : car.search_pricing?.has_special_discount ? 'Special price' : 'Extras included',
     specs,
     transmission: car.transmission,
     fuel_type: car.fuel_type,
     drive_type: car.drive_type,
     categoryName: categoryName || car.categoryName,
-    sortPrice: dailyPrice(car),
+    sortPrice: isCaren && (!pricing || pricing.currency !== priceFormatter?.baseCurrency) ? null : dailyPrice(car),
     sortSeats: car.seats ?? 0,
     sortSleeps: car.sleeps ?? 0,
   }

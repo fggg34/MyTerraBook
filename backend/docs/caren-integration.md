@@ -36,9 +36,33 @@ drafts, rejected or inactive listings. Reimport to publish previously imported v
 Publishing does not add booking availability or prices. An empty catalogue does
 not deactivate existing cars. Missing cars in a nonempty successful catalogue are deactivated.
 
-This is a catalogue integration. Date-specific pricing, availability and Caren reservation/payment
-lifecycle integration are not yet implemented; Caren imports cannot be booked through local pricing.
+Date-specific rental estimates are fetched live for search results and the vehicle detail price
+checker. Caren reservation/payment lifecycle integration is not yet implemented; Caren imports
+cannot be booked through local pricing.
 No placeholder fares or fleet-unit counts are invented.
+
+## Live rental estimates
+
+Deploy both backend and storefront changes. After pulling, run `php artisan optimize:clear`
+from `backend`. Run `npm ci` and `npm run build` from `frontend`, then publish the contents
+of `frontend/dist` to the storefront document root using the existing deployment process.
+No migration or reimport is required for pricing.
+
+Visitors must choose pickup/drop-off dates, times and locations. `/api/cars` includes
+`search_pricing` for returned available Caren classes; the detail page uses the read-only
+`/api/cars/{car}/caren-price` endpoint. `class/getlist` uses `ShowPrices: true` and
+`SkipDateCheck: false`. Local locations are mapped to the same host/rental's Caren IDs.
+Requests are batched per host/trip/currency, with a 60-second cache; failures are not cached.
+
+Prices are rental estimates, not completed booking quotes. No fixed fares are saved.
+Missing dates prompt a date selection; zero, missing or unavailable rates are never shown as
+free rentals. Provider errors show a temporary-unavailability message. Returned currency is
+preserved and only converted through the shop formatter when it matches the shop base.
+
+Live checks on October 21, 2026 returned no priced classes for November 24–28, 2026 and
+July 1–8, 2027 at Konvin location 666. A direct `price/getprices` check for class 2180 also
+returned zero, so successful display of a nonzero live quote still requires a date/location
+combination with rates available in Caren.
 
 ## Backend root 405
 

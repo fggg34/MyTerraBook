@@ -21,6 +21,7 @@ use App\Models\SubCategory;
 use App\Exceptions\GreenlightPartnerException;
 use App\Services\OrderAvailabilityService;
 use App\Services\Partners\GreenlightBookingService;
+use App\Services\Partners\CarenPricingService;
 use App\Services\RentalQuoteService;
 use App\Support\DailyFarePricing;
 use App\Support\ListingPartner;
@@ -37,6 +38,7 @@ class CatalogController extends Controller
         private readonly OrderAvailabilityService $availabilityService,
         private readonly RentalQuoteService $quoteService,
         private readonly GreenlightBookingService $greenlight,
+        private readonly CarenPricingService $carenPricing,
     ) {}
 
     public function mainCategories(): JsonResponse
@@ -186,6 +188,7 @@ class CatalogController extends Controller
 
     public function cars(Request $request): JsonResponse
     {
+        $this->validatePriceDates($request);
         $request->validate(['country_code' => ['sometimes', 'nullable', \Illuminate\Validation\Rule::in(array_keys(config('destinations')))]]);
         $countryCode = $request->query('country_code');
         $pickupId = $request->query('pickup_location_id');
@@ -247,8 +250,16 @@ class CatalogController extends Controller
                 'main_image_path' => $car->main_image_path,
                 'min_daily_price_cents' => (int) ($car->min_daily_price_cents ?? 0),
                 'partner' => app(ListingPartner::class)->fromCar($car),
+                'external_provider' => $car->external_provider,
             ];
 
+            if ($car->external_provider === 'caren') {
+                $result = $this->carenPriceResult($car, $request);
+                $row['search_pricing'] = $result['pricing'];
+                $row['pricing_status'] = $result['status'];
+
+                return $row;
+            }
             $searchPricing = $this->resolveSearchPricing($car, $request);
             if ($searchPricing !== null) {
                 $row['search_pricing'] = $searchPricing;
@@ -383,6 +394,37 @@ class CatalogController extends Controller
             'blocked' => $blocked->merge($locks)->values(),
             'blocked_dates' => [],
         ]);
+    }
+
+    public function carenPrice(Car $car, Request $request): JsonResponse
+    {
+        abort_unless($car->isPubliclyVisible() && $car->external_provider === 'caren', 404);
+        $this->validatePriceDates($request);
+
+        return response()->json($this->carenPriceResult($car, $request));
+    }
+
+    private function validatePriceDates(Request $request): void
+    {
+        $request->validate([
+            'pickup_at' => ['nullable', 'date'],
+            'dropoff_at' => ['nullable', 'date', 'after:pickup_at'],
+            'pickup_location_id' => ['nullable', 'integer', 'min:1'],
+            'dropoff_location_id' => ['nullable', 'integer', 'min:1'],
+        ]);
+    }
+
+    private function carenPriceResult(Car $car, Request $request): array
+    {
+        foreach (['pickup_at', 'dropoff_at', 'pickup_location_id', 'dropoff_location_id'] as $field) {
+            if (! $request->filled($field)) {
+                return ['status' => 'needs_dates', 'pricing' => null];
+            }
+        }
+
+        return $this->carenPricing->quote($car, $request->integer('pickup_location_id'),
+            $request->integer('dropoff_location_id'), Carbon::parse($request->query('pickup_at')),
+            Carbon::parse($request->query('dropoff_at')));
     }
 
     private function resolveSearchPricing(Car $car, Request $request): ?array

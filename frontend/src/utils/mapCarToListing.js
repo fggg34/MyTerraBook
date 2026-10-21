@@ -59,7 +59,7 @@ function buildDetailSpecs(car) {
   if (car.seats != null) specs.push({ label: `${car.seats} seats`, icon: 'seats' })
   if (car.sleeps != null && car.sleeps > 0) specs.push({ label: `Sleeps ${car.sleeps}`, icon: 'sleeps' })
   if (car.bags != null) specs.push({ label: `${car.bags} bags`, icon: 'bags' })
-  if (car.units_available != null) {
+  if (car.external_provider !== 'caren' && car.units_available != null) {
     const n = Number(car.units_available)
     specs.push({ label: `${n} unit${n === 1 ? '' : 's'} available`, icon: 'units' })
   }

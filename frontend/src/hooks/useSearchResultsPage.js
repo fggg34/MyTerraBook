@@ -246,8 +246,11 @@ export default function useSearchResultsPage(vehicleType) {
     ))
 
     list.sort((a, b) => {
-      if (sort === 'price-asc') return a.sortPrice - b.sortPrice
-      if (sort === 'price-desc') return b.sortPrice - a.sortPrice
+      if (sort === 'price-asc' || sort === 'price-desc') {
+        if (a.sortPrice == null) return b.sortPrice == null ? 0 : 1
+        if (b.sortPrice == null) return -1
+        return sort === 'price-asc' ? a.sortPrice - b.sortPrice : b.sortPrice - a.sortPrice
+      }
       if (sort === 'seats') return b.sortSeats - a.sortSeats
       if (sort === 'sleeps') return b.sortSleeps - a.sortSleeps
       return a.name.localeCompare(b.name)

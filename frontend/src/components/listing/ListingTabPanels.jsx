@@ -16,6 +16,7 @@ import ListingSection from './ListingSection'
 import ListingWriteReview from './ListingWriteReview'
 import CatalogIcon from '../../utils/CatalogIcon'
 import { partnerInitials } from '../../utils/mapCarToResultCard'
+import CarenPricePanel from './CarenPricePanel'
 
 export default function ListingTabPanels({
   listing,
@@ -47,7 +48,8 @@ export default function ListingTabPanels({
     owner,
     listingType,
   } = listing
-  const isVehicle = listingType === 'car' || listingType === 'campervan'
+  const isCaren = listing.car?.external_provider === 'caren'
+  const isVehicle = !isCaren && (listingType === 'car' || listingType === 'campervan')
   const hasPickupInfo =
     (pickupLocations?.length ?? 0) > 0
     || (dropoffLocations?.length ?? 0) > 0
@@ -389,6 +391,7 @@ export default function ListingTabPanels({
       </div>
 
       <aside className="listing-book">
+        {isCaren ? <CarenPricePanel key={listing.id} car={listing.car} /> : (
         <div className="listing-bcard">
           <div className="date-wrap" id="dateWrap">
             <DateRangePicker
@@ -475,6 +478,7 @@ export default function ListingTabPanels({
             ))}
           </div>
         </div>
+        )}
       </aside>
     </div>
   )

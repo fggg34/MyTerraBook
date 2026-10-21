@@ -34,6 +34,8 @@ class CarListResource extends JsonResource
             'units_available' => (int) $this->resource['units_available'],
             'partner' => $this->resource['partner'] ?? null,
             'search_pricing' => $this->resource['search_pricing'] ?? null,
+            'external_provider' => $this->resource['external_provider'] ?? null,
+            'pricing_status' => $this->resource['pricing_status'] ?? null,
         ];
     }
 }

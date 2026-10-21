@@ -3,6 +3,7 @@
 namespace App\Services\Partners;
 
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Closure;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -10,6 +11,25 @@ use RuntimeException;
 class CarenPartnerClient
 {
     public const BASE_URL = 'https://booking.caren.is';
+
+    public function prices(User $host, int $rentalId, int $pickupId, int $dropoffId, CarbonInterface $from, CarbonInterface $to, string $currency): array
+    {
+        return $this->withSession($host, function (string $session) use ($host, $rentalId, $pickupId, $dropoffId, $from, $to, $currency): array {
+            $data = $this->request($host, 'class/getlist', [
+                'Session' => $session, 'RentalId' => $rentalId, 'Language' => 'en-GB',
+                'DateFrom' => $from->copy()->utc()->format('Y-m-d H:i'),
+                'DateTo' => $to->copy()->utc()->format('Y-m-d H:i'),
+                'PickupLocationId' => $pickupId, 'DropoffLocationId' => $dropoffId,
+                'Currency' => $currency, 'ShowPrices' => true, 'SkipDateCheck' => false,
+                'ShowAll' => false, 'ShowImages' => false,
+            ]);
+            if (! isset($data['Classes']) || ! is_array($data['Classes'])) {
+                throw new RuntimeException('Caren did not return pricing results.');
+            }
+
+            return $data['Classes'];
+        });
+    }
 
     public function catalogue(User $host): array
     {

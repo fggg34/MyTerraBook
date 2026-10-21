@@ -4,6 +4,7 @@ import { mapPartner } from './mapCarToResultCard'
 
 export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceFormatter } = {}) {
   const formatPrice = (car) => {
+    if (car.external_provider === 'caren') return 'Select dates for price'
     const cents = Number(car.base_daily_price_cents)
     if (priceFormatter?.formatCents && Number.isFinite(cents) && cents > 0) {
       return priceFormatter.formatCents(cents)
@@ -28,8 +29,8 @@ export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceForma
       image: resolveStorageUrl(car.thumbnail_url || car.main_image_path) || '/images/homepage/cardcar.jpg',
       href: `${base}/${car.id}`,
       price: formatPrice(car),
-      per: 'day',
-      badge: 'Extras included',
+      per: car.external_provider === 'caren' ? '' : 'day',
+      badge: car.external_provider === 'caren' ? '' : 'Extras included',
       specs,
     }
   })
