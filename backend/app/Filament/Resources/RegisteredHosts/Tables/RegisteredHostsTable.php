@@ -81,7 +81,7 @@ class RegisteredHostsTable
                 SelectFilter::make('country_code')->label('Operating country')
                     ->options(config('destinations', []))->searchable(),
                 SelectFilter::make('partner_provider')->label('Connection type')
-                    ->options(['greenlight' => 'Greenlight', 'caren' => 'Caren', 'custom' => 'Custom API']),
+                    ->options(['greenlight' => 'Greenlight', 'caren' => 'Caren', 'foxie' => 'Foxie Camper', 'custom' => 'Custom API']),
                 TernaryFilter::make('partner_api_enabled')->label('API enabled'),
             ])
             ->recordActions([

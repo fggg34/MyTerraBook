@@ -43,6 +43,9 @@ class PublicOrderController extends Controller
     public function quote(OrderQuoteRequest $request): JsonResponse
     {
         $car = Car::query()->findOrFail($request->integer('car_id'));
+        if ($car->external_provider === 'foxie') {
+            return response()->json(['message' => 'Online booking is not yet available for this vehicle.'], 422);
+        }
         $pickup = Carbon::parse($request->string('pickup_at'));
         $dropoff = Carbon::parse($request->string('dropoff_at'));
 
@@ -101,6 +104,9 @@ class PublicOrderController extends Controller
     public function store(StoreOrderRequest $request): JsonResponse
     {
         $car = Car::query()->findOrFail($request->integer('car_id'));
+        if ($car->external_provider === 'foxie') {
+            return response()->json(['message' => 'Online booking is not yet available for this vehicle.'], 422);
+        }
         if ($car->external_provider === 'caren') {
             try {
                 $order = $this->caren->create($car, $request->validated(), $request->user()?->id);

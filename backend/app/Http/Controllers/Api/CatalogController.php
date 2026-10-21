@@ -21,7 +21,10 @@ use App\Models\SubCategory;
 use App\Exceptions\GreenlightPartnerException;
 use App\Services\OrderAvailabilityService;
 use App\Services\Partners\GreenlightBookingService;
+use App\Services\Partners\CarenAvailabilityService;
 use App\Services\Partners\CarenPricingService;
+use App\Services\Partners\FoxieAvailabilityService;
+use App\Services\Partners\FoxiePricingService;
 use App\Services\RentalQuoteService;
 use App\Support\DailyFarePricing;
 use App\Support\ListingPartner;
@@ -31,6 +34,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
+use RuntimeException;
 
 class CatalogController extends Controller
 {
@@ -39,6 +43,9 @@ class CatalogController extends Controller
         private readonly RentalQuoteService $quoteService,
         private readonly GreenlightBookingService $greenlight,
         private readonly CarenPricingService $carenPricing,
+        private readonly CarenAvailabilityService $carenAvailability,
+        private readonly FoxiePricingService $foxiePricing,
+        private readonly FoxieAvailabilityService $foxieAvailability,
     ) {}
 
     public function mainCategories(): JsonResponse
@@ -260,6 +267,13 @@ class CatalogController extends Controller
 
                 return $row;
             }
+            if ($car->external_provider === 'foxie') {
+                $result = $this->foxiePriceResult($car, $request);
+                $row['search_pricing'] = $result['pricing'];
+                $row['pricing_status'] = $result['status'];
+
+                return $row;
+            }
             $searchPricing = $this->resolveSearchPricing($car, $request);
             if ($searchPricing !== null) {
                 $row['search_pricing'] = $searchPricing;
@@ -337,6 +351,36 @@ class CatalogController extends Controller
 
     public function availabilityCalendar(Car $car, Request $request): JsonResponse
     {
+        if ($car->external_provider === 'caren') {
+            try {
+                return response()->json($this->carenAvailability->forCar(
+                    $car,
+                    $request->filled('pickup_location_id') ? $request->integer('pickup_location_id') : null,
+                    $request->filled('dropoff_location_id') ? $request->integer('dropoff_location_id') : null,
+                ));
+            } catch (RuntimeException) {
+                return response()->json([
+                    'booked' => [],
+                    'blocked' => [],
+                    'blocked_dates' => [],
+                    'message' => 'Caren availability could not be checked.',
+                ], 422);
+            }
+        }
+
+        if ($car->external_provider === 'foxie') {
+            try {
+                return response()->json($this->foxieAvailability->forCar($car));
+            } catch (RuntimeException) {
+                return response()->json([
+                    'booked' => [],
+                    'blocked' => [],
+                    'blocked_dates' => [],
+                    'message' => 'Foxie availability could not be checked.',
+                ], 422);
+            }
+        }
+
         if ($this->greenlight->isPartnerCar($car)) {
             try {
                 $pickup = $request->filled('pickup_location_id')
@@ -410,6 +454,14 @@ class CatalogController extends Controller
         return response()->json($this->carenPriceResult($car, $request));
     }
 
+    public function foxiePrice(Car $car, Request $request): JsonResponse
+    {
+        abort_unless($car->isPubliclyVisible() && $car->external_provider === 'foxie', 404);
+        $this->validatePriceDates($request);
+
+        return response()->json($this->foxiePriceResult($car, $request));
+    }
+
     private function validatePriceDates(Request $request): void
     {
         $request->validate([
@@ -429,6 +481,19 @@ class CatalogController extends Controller
         }
 
         return $this->carenPricing->quote($car, $request->integer('pickup_location_id'),
+            $request->integer('dropoff_location_id'), Carbon::parse($request->query('pickup_at')),
+            Carbon::parse($request->query('dropoff_at')));
+    }
+
+    private function foxiePriceResult(Car $car, Request $request): array
+    {
+        foreach (['pickup_at', 'dropoff_at', 'pickup_location_id', 'dropoff_location_id'] as $field) {
+            if (! $request->filled($field)) {
+                return ['status' => 'needs_dates', 'pricing' => null];
+            }
+        }
+
+        return $this->foxiePricing->quote($car, $request->integer('pickup_location_id'),
             $request->integer('dropoff_location_id'), Carbon::parse($request->query('pickup_at')),
             Carbon::parse($request->query('dropoff_at')));
     }

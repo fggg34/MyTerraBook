@@ -5,6 +5,8 @@ namespace App\Filament\Resources\RegisteredHosts\Pages;
 use App\Filament\Resources\RegisteredHosts\RegisteredHostResource;
 use App\Services\Partners\CarenPartnerClient;
 use App\Services\Partners\CarenVehicleSyncService;
+use App\Services\Partners\FoxiePartnerClient;
+use App\Services\Partners\FoxieVehicleSyncService;
 use App\Services\Partners\GreenlightPartnerClient;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
@@ -23,7 +25,7 @@ class EditRegisteredHost extends EditRecord
 
     public function getSubheading(): ?string
     {
-        return 'Update the host profile, connection settings and commission. For Caren, use Save & import Caren vehicles to save your credentials and import the fleet here.';
+        return 'Update the host profile, connection settings and commission. For Caren or Foxie, use the save and import button to store credentials and import the fleet here.';
     }
 
     protected function getFormActions(): array
@@ -31,6 +33,7 @@ class EditRegisteredHost extends EditRecord
         return [
             ...parent::getFormActions(),
             $this->carenImportAction('saveAndImportCarenVehicles'),
+            $this->foxieImportAction('saveAndImportFoxieVehicles'),
         ];
     }
 
@@ -61,6 +64,31 @@ class EditRegisteredHost extends EditRecord
             });
     }
 
+    protected function foxieImportAction(string $name): Action
+    {
+        return Action::make($name)
+            ->label('Save & import Foxie vehicles')->icon('heroicon-o-arrow-down-tray')
+            ->visible(fn (): bool => ($this->data['partner_provider'] ?? $this->record->partner_provider) === 'foxie')
+            ->requiresConfirmation()
+            ->modalHeading('Save host and import Foxie vehicles')
+            ->modalDescription('Save the form and import vehicles and locations from Foxie Campers. Imported vehicles are published. This does not create a reservation.')
+            ->action(function (FoxieVehicleSyncService $sync): void {
+                $this->save(shouldRedirect: false, shouldSendSavedNotification: false);
+                $this->record->refresh();
+                $this->refreshFormData(['partner_api_key']);
+                try {
+                    $result = $sync->sync($this->record);
+                    Notification::make()->title('Foxie fleet imported')
+                        ->body($result['vehicles'].' vehicles, '.$result['locations'].' locations; '.$result['skipped'].' test entries skipped. Imported vehicles are published.')
+                        ->success()->send();
+                } catch (Throwable $exception) {
+                    Notification::make()->title('Host saved, but Foxie import failed')
+                        ->body($exception->getMessage().' Your settings are saved; you can retry this button.')
+                        ->danger()->persistent()->send();
+                }
+            });
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -78,6 +106,20 @@ class EditRegisteredHost extends EditRecord
                     }
                 }),
             $this->carenImportAction('syncCarenVehicles'),
+            Action::make('testFoxieConnection')
+                ->label('Test Foxie connection')->icon('heroicon-o-signal')->color('gray')
+                ->visible(fn (): bool => $this->record->partner_provider === 'foxie')
+                ->action(function (FoxiePartnerClient $client): void {
+                    try {
+                        $catalogue = $client->catalogue($this->record);
+                        Notification::make()->title('Foxie connection succeeded')
+                            ->body(count($catalogue['vehicles']).' vehicles and '.count($catalogue['locations']).' locations found.')
+                            ->success()->send();
+                    } catch (Throwable $exception) {
+                        Notification::make()->title('Foxie connection failed')->body($exception->getMessage())->danger()->send();
+                    }
+                }),
+            $this->foxieImportAction('syncFoxieVehicles'),
             Action::make('testConnection')
                 ->label('Test connection')
                 ->icon('heroicon-o-signal')

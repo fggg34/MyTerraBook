@@ -16,6 +16,7 @@ import ListingSection from './ListingSection'
 import ListingWriteReview from './ListingWriteReview'
 import CatalogIcon from '../../utils/CatalogIcon'
 import { partnerInitials } from '../../utils/mapCarToResultCard'
+import { isLivePartner } from '../../utils/livePartner'
 import CarenPricePanel from './CarenPricePanel'
 
 export default function ListingTabPanels({
@@ -48,8 +49,8 @@ export default function ListingTabPanels({
     owner,
     listingType,
   } = listing
-  const isCaren = listing.car?.external_provider === 'caren'
-  const isVehicle = !isCaren && (listingType === 'car' || listingType === 'campervan')
+  const livePartner = isLivePartner(listing.car)
+  const isVehicle = !livePartner && (listingType === 'car' || listingType === 'campervan')
   const hasPickupInfo =
     (pickupLocations?.length ?? 0) > 0
     || (dropoffLocations?.length ?? 0) > 0
@@ -99,9 +100,8 @@ export default function ListingTabPanels({
   }, [isVehicle, listing.id])
 
   const syncBookingDates = (start, end) => {
-    if (bookingDatesRef) {
-      bookingDatesRef.current = { pickupDate: start, dropoffDate: end }
-    }
+    if (livePartner || !bookingDatesRef) return
+    bookingDatesRef.current = { pickupDate: start, dropoffDate: end }
   }
 
   const datesUnavailable = useMemo(
@@ -111,6 +111,7 @@ export default function ListingTabPanels({
   const bookingBlocked = isVehicle && (!blockedDatesLoaded || datesUnavailable)
 
   useEffect(() => {
+    if (livePartner) return
     onAvailabilityChange?.({
       datesUnavailable: bookingBlocked,
       blockedDatesLoaded,
@@ -123,7 +124,7 @@ export default function ListingTabPanels({
         blockedDatesLoaded,
       }
     }
-  }, [startDate, endDate, bookingBlocked, blockedDatesLoaded, onAvailabilityChange, bookingDatesRef])
+  }, [livePartner, startDate, endDate, bookingBlocked, blockedDatesLoaded, onAvailabilityChange, bookingDatesRef])
 
   useEffect(() => {
     const start = parseDateOnly(initialPickup)
@@ -391,7 +392,17 @@ export default function ListingTabPanels({
       </div>
 
       <aside className="listing-book">
-        {isCaren ? <CarenPricePanel key={listing.id} car={listing.car} /> : (
+        {livePartner ? (
+          <CarenPricePanel
+            key={listing.id}
+            car={listing.car}
+            typeConfig={typeConfig}
+            openCalendarRef={openCalendarRef}
+            bookingDatesRef={bookingDatesRef}
+            onRequestBook={onRequestBook}
+            onAvailabilityChange={onAvailabilityChange}
+          />
+        ) : (
         <div className="listing-bcard">
           <div className="date-wrap" id="dateWrap">
             <DateRangePicker

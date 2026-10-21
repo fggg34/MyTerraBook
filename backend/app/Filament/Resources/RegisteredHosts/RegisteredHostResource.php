@@ -111,7 +111,12 @@ class RegisteredHostResource extends Resource
                 TextEntry::make('partner_provider')
                     ->label('Connection type')
                     ->placeholder('—')
-                    ->formatStateUsing(fn (?string $state): string => $state === 'greenlight' ? 'Greenlight car rental' : ($state ? ucfirst($state).' API' : '—')),
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'greenlight' => 'Greenlight car rental',
+                        'foxie' => 'Foxie Camper',
+                        null, '' => '-',
+                        default => ucfirst($state).' API',
+                    }),
                 TextEntry::make('partner_api_base_url')
                     ->label('Partner API URL')
                     ->copyable()

@@ -4,6 +4,7 @@ import { splitListingDescription } from './formatListingDescription'
 import { mapApiListingReviews } from './mapListingReviews'
 import { driveLabel } from './buildVehicleCardSpecs'
 import { mapPartner } from './mapCarToResultCard'
+import { isLivePartner } from './livePartner'
 import { guestRentalOptionSubLabel } from './rentalOptionPricing'
 
 const FALLBACK_IMAGES = {
@@ -132,7 +133,7 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
   const priceFromCents = priceType?.from_price_per_day_cents
   const priceFromDecimal = priceType?.from_price_per_day
   const priceFromAmount =
-    car.external_provider === 'caren' ? null : priceFromCents != null
+    isLivePartner(car) ? null : priceFromCents != null
       ? Number(priceFromCents) / 100
       : priceFromDecimal != null
         ? Number.parseFloat(priceFromDecimal)

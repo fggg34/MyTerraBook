@@ -115,6 +115,7 @@ Route::get('/cars/{car}/reviews', [ListingReviewController::class, 'indexCar']);
 Route::post('/cars/{car}/reviews', [ListingReviewController::class, 'storeCar']);
 Route::get('/cars/{car}/availability-calendar', [CatalogController::class, 'availabilityCalendar']);
 Route::get('/cars/{car}/caren-price', [CatalogController::class, 'carenPrice'])->middleware('throttle:60,1');
+Route::get('/cars/{car}/foxie-price', [CatalogController::class, 'foxiePrice'])->middleware('throttle:60,1');
 Route::get('/integrations/blocked-days', [IntegrationController::class, 'blockedDays']);
 
 Route::post('/orders/quote', [PublicOrderController::class, 'quote']);

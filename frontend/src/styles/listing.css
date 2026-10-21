@@ -469,6 +469,8 @@
     .listing-page .listing-bcard{background:#f4f6f9;border-color:#d8e0ea;box-shadow:none;}
   }
   .listing-page .date-wrap{position:relative;margin-bottom:18px;}
+  .listing-page .listing-loc-fields{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .listing-page .listing-loc-fields .field{padding:10px 14px;}
   .listing-page .date-field{width:100%;display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:13px;padding:13px 16px;cursor:pointer;background:#fff;text-align:left;transition:border-color .15s,box-shadow .15s;font-family:var(--sans);}
   .listing-page .date-field:hover{border-color:#c9d3e2;}
   .listing-page .date-field.open{border-color:var(--blue);box-shadow:0 0 0 3px rgba(52,98,158,.12);}

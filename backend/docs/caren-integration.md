@@ -33,7 +33,8 @@ Imports update existing host/rental/class records without creating duplicates. P
 permissions are imported separately. Names beginning with the word Test are skipped.
 All returned non-test vehicles are automatically active and approved, including existing
 drafts, rejected or inactive listings. Reimport to publish previously imported vehicles.
-Publishing does not add booking availability or prices. An empty catalogue does
+Publishing does not copy prices or a local availability calendar onto the listing.
+The vehicle page reads both live from Caren. An empty catalogue does
 not deactivate existing cars. Missing cars in a nonempty successful catalogue are deactivated.
 
 Date-specific rental estimates are fetched live for search results and the vehicle detail price
@@ -54,6 +55,14 @@ Visitors must choose pickup/drop-off dates, times and locations. `/api/cars` inc
 `/api/cars/{car}/caren-price` endpoint. `class/getlist` uses `ShowPrices: true` and
 `SkipDateCheck: false`. Local locations are mapped to the same host/rental's Caren IDs.
 Requests are batched per host/trip/currency, with a 60-second cache; failures are not cached.
+
+The vehicle page uses the same date picker as other listings. A day is blocked when
+Caren's `class/availabilitycalendar` reports `IsAvailable` is not true or `AvailableUnits`
+is 0. Pickup and drop-off `ClosedDates` ranges (`From` / `To`) are also blocked, but only
+for the locations the visitor selects. That calendar endpoint is limited to 1 request a
+minute and 10 an hour, so TerraBook sends every class on the rental in one request and
+caches the result for 10 minutes. Failures are not cached. Changing location uses the
+cached calendar and only changes which closures apply.
 
 Prices are rental estimates, not completed booking quotes. No fixed fares are saved.
 Missing dates prompt a date selection; zero, missing or unavailable rates are never shown as

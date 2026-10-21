@@ -42,6 +42,49 @@ class CarenPartnerClient
         });
     }
 
+    /**
+     * One availability calendar for the rental, plus location closure ranges.
+     * Caren limits this calendar endpoint to 1 request a minute and 10 an hour,
+     * so callers must cache the bundle and pass every class id together.
+     *
+     * @param  list<int>  $classIds
+     * @return array{availability: list<array<string, mixed>>, pickups: list<array<string, mixed>>, dropoffs: list<array<string, mixed>>}
+     */
+    public function rentalCalendar(User $host, int $rentalId, array $classIds, CarbonInterface $from, CarbonInterface $to): array
+    {
+        $classIds = array_values(array_unique(array_filter(
+            array_map(static fn ($id) => (int) $id, $classIds),
+            static fn (int $id) => $id > 0,
+        )));
+        if ($classIds === []) {
+            throw new RuntimeException('Caren class is missing.');
+        }
+
+        return $this->withSession($host, function (string $session) use ($host, $rentalId, $classIds, $from, $to): array {
+            $base = ['Session' => $session, 'RentalId' => $rentalId, 'Language' => 'en-GB'];
+            $availability = $this->request($host, 'class/availabilitycalendar', $base + [
+                'ClassIds' => $classIds,
+                'DateFrom' => $from->format('Y-m-d').' 00:00',
+                'DateTo' => $to->format('Y-m-d').' 23:00',
+            ]);
+            $closures = ['ShowClosedDates' => true, 'ShowHours' => false];
+            $pickups = $this->request($host, 'location/getpickuplist', $base + $closures);
+            $dropoffs = $this->request($host, 'location/getdropofflist', $base + $closures);
+
+            foreach ([[$availability, 'Availability'], [$pickups, 'Locations'], [$dropoffs, 'Locations']] as [$data, $key]) {
+                if (! isset($data[$key]) || ! is_array($data[$key])) {
+                    throw new RuntimeException('Caren did not return an availability calendar.');
+                }
+            }
+
+            return [
+                'availability' => $availability['Availability'],
+                'pickups' => $pickups['Locations'],
+                'dropoffs' => $dropoffs['Locations'],
+            ];
+        });
+    }
+
     public function catalogue(User $host): array
     {
         return $this->withSession($host, function (string $session) use ($host): array {

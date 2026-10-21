@@ -4,13 +4,14 @@ import { resolveStorageUrl } from '../../api'
 import { QuoteFeeLines } from './QuotePricingBreakdown'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { carenPriceLabel, formatCarenPrice } from '../../utils/carenPricing'
+import { isLivePartner } from '../../utils/livePartner'
 
 export default function CarCard({ car, searchQuery = '', categoryName }) {
   const fmt = useFormatPrice()
   const imageSrc = resolveStorageUrl(car.thumbnail_url || car.main_image_path)
   const dailyPrice = car.base_daily_price ?? '0.00'
   const pricing = car.search_pricing
-  const isCaren = car.external_provider === 'caren'
+  const isCaren = isLivePartner(car)
   const detailUrl = `/cars/${car.id}${searchQuery ? `?${searchQuery}` : ''}`
   const checkoutUrl = `/checkout?car_id=${car.id}${searchQuery ? `&${searchQuery}` : ''}`
 

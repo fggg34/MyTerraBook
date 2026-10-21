@@ -59,8 +59,8 @@ function ListingPageBody({ listingType = 'campervan' }) {
   const handleBook = useCallback(
     ({ pickupDate, dropoffDate } = {}) => {
       if (!car) return
-      if (car.external_provider === 'caren') {
-        toast(car.caren_booking_enabled ? 'Choose your trip in the rental price checker, then continue to booking.' : 'You can check rental prices on this page. Online booking is not yet available for this vehicle.', 'info')
+      if (car.external_provider === 'foxie' || (car.external_provider === 'caren' && !car.caren_booking_enabled)) {
+        toast('You can check rental prices on this page. Online booking is not yet available for this vehicle.', 'info')
         return
       }
 
@@ -108,13 +108,22 @@ function ListingPageBody({ listingType = 'campervan' }) {
         toast('Pricing is not set up for this listing yet. Please contact support.', 'error')
         return
       }
+      const pickupLocationId = bookingDatesRef.current.pickupLocationId || queryDefaults.pickup_location_id || ''
+      const dropoffLocationId = bookingDatesRef.current.dropoffLocationId
+        || queryDefaults.dropoff_location_id
+        || pickupLocationId
+      if (car.external_provider === 'caren' && (!pickupLocationId || !dropoffLocationId || !bookingDatesRef.current.priced)) {
+        toast('Select locations and dates to see the rental price before booking.', 'info')
+        openDatePicker()
+        return
+      }
       const params = buildCheckoutParams({
         car_id: car.id,
         price_type_id: priceTypeId,
         vehicle_type: listingType,
         country_code: queryDefaults.country_code || '',
-        pickup_location_id: queryDefaults.pickup_location_id || '',
-        dropoff_location_id: queryDefaults.dropoff_location_id || queryDefaults.pickup_location_id || '',
+        pickup_location_id: pickupLocationId,
+        dropoff_location_id: dropoffLocationId,
         pickup_at,
         dropoff_at,
         rental_option_ids: selectedAddonIds,

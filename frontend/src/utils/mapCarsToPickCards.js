@@ -1,10 +1,11 @@
 import { resolveStorageUrl } from '../api'
 import { buildVehicleCardSpecs } from './buildVehicleCardSpecs'
 import { mapPartner } from './mapCarToResultCard'
+import { isLivePartner } from './livePartner'
 
 export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceFormatter } = {}) {
   const formatPrice = (car) => {
-    if (car.external_provider === 'caren') return 'Select dates for price'
+    if (isLivePartner(car)) return 'Select dates for price'
     const cents = Number(car.base_daily_price_cents)
     if (priceFormatter?.formatCents && Number.isFinite(cents) && cents > 0) {
       return priceFormatter.formatCents(cents)
@@ -29,8 +30,8 @@ export function mapCarsToPickCards(cars = [], { detailBase = '/cars', priceForma
       image: resolveStorageUrl(car.thumbnail_url || car.main_image_path) || '/images/homepage/cardcar.jpg',
       href: `${base}/${car.id}`,
       price: formatPrice(car),
-      per: car.external_provider === 'caren' ? '' : 'day',
-      badge: car.external_provider === 'caren' ? '' : 'Extras included',
+      per: isLivePartner(car) ? '' : 'day',
+      badge: isLivePartner(car) ? '' : 'Extras included',
       specs,
     }
   })

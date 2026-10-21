@@ -1,6 +1,7 @@
 import { buildVehicleCardSpecs, gearboxLabel } from './buildVehicleCardSpecs'
 import { resolveStorageUrl } from '../api'
 import { carenPriceLabel, formatCarenPrice } from './carenPricing'
+import { isLivePartner } from './livePartner'
 
 export function partnerInitials(name) {
   const parts = String(name || '').trim().split(/\s+/).filter(Boolean).slice(0, 2)
@@ -30,7 +31,7 @@ export function mapCarToResultCard(car, { searchQuery = '', config, categoryName
   const formatPrice = priceFormatter?.format ?? ((amount) => `€${Math.round(amount).toLocaleString('en-US')}`)
   const isCampervan = vehicleType === 'campervan' || car.main_category_slug === 'campervan'
   const specs = buildVehicleCardSpecs(car, { isCampervan })
-  const isCaren = car.external_provider === 'caren'
+  const isCaren = isLivePartner(car)
   const pricing = car.search_pricing
 
   const detailBase = config?.route || '/cars'

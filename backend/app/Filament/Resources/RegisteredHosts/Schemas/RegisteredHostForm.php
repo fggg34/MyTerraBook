@@ -30,7 +30,7 @@ class RegisteredHostForm
             Section::make('Partner API connection')
                 ->icon('heroicon-o-signal')
                 ->columnSpanFull()
-                ->description('For Caren, use Save & import Caren vehicles to save credentials and import directly from this page. Connection tests use saved credentials.')
+                ->description('For Caren or Foxie, use the save and import button to store credentials and import vehicles from this page. Connection tests use saved credentials.')
                 ->schema([
                     Toggle::make('partner_api_enabled')
                         ->label('Enable this partner connection')
@@ -41,6 +41,7 @@ class RegisteredHostForm
                         ->options([
                             'greenlight' => 'Greenlight car rental',
                             'caren' => 'Caren',
+                            'foxie' => 'Foxie Camper',
                             'custom' => 'Custom partner API',
                         ])
                         ->placeholder('Select a connection type')
@@ -50,6 +51,9 @@ class RegisteredHostForm
                         ->label('Partner API URL')
                         ->url()
                         ->placeholder('https://partner.example/api')
+                        ->helperText(fn ($get): ?string => $get('partner_provider') === 'foxie'
+                            ? 'Use https://foxiecampers.is/api/v1. The key is sent only to that Foxie address.'
+                            : null)
                         ->required(fn ($get): bool => (bool) $get('partner_api_enabled'))
                         ->columnSpanFull(),
                     TextInput::make('partner_api_username')
