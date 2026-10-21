@@ -26,6 +26,9 @@ DirectoryIndex index.php index.html
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /backend
+    # The directory itself exists, so the !-d guard below skips /backend/.
+    # Route this entry explicitly into Laravel so its root redirect can run.
+    RewriteRule ^$ public/index.php [L]
     RewriteRule \.env$ public/forbid-dot-env.php [L]
     RewriteRule ^index\.php$ - [L]
     RewriteCond %{REQUEST_FILENAME} !-f

@@ -23,6 +23,14 @@ server {
     }
 
     # Laravel backend (API, admin, spa-shell)
+    location = /backend {
+        return 302 /backend/admin/login;
+    }
+
+    location = /backend/ {
+        return 302 /backend/admin/login;
+    }
+
     location /backend/ {
         alias /var/www/myterrabook/public_html/backend/public/;
         try_files $uri $uri/ @backend;

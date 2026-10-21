@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\RegisteredHosts;
 
 use App\Enums\UserRole;
+use App\Filament\Resources\RegisteredHosts\Pages\CreateRegisteredHost;
 use App\Filament\Resources\RegisteredHosts\Pages\EditRegisteredHost;
 use App\Filament\Resources\RegisteredHosts\Pages\ListRegisteredHosts;
 use App\Filament\Resources\RegisteredHosts\Pages\ViewRegisteredHost;
@@ -46,7 +47,7 @@ class RegisteredHostResource extends Resource
 
     public static function canCreate(): bool
     {
-        return false;
+        return auth()->user()?->isFullAdmin() ?? false;
     }
 
     public static function canEdit($record): bool
@@ -136,6 +137,7 @@ class RegisteredHostResource extends Resource
     {
         return [
             'index' => ListRegisteredHosts::route('/'),
+            'create' => CreateRegisteredHost::route('/create'),
             'view' => ViewRegisteredHost::route('/{record}'),
             'edit' => EditRegisteredHost::route('/{record}/edit'),
         ];

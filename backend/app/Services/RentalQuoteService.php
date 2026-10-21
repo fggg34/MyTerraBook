@@ -32,6 +32,10 @@ class RentalQuoteService
         array $rentalOptionSelections,
         ?string $couponCode
     ): array {
+        if ($car->external_provider === 'caren') {
+            throw new InvalidArgumentException('This partner vehicle is not available for online booking yet.');
+        }
+
         if ($pickupAt->greaterThanOrEqualTo($dropoffAt)) {
             throw new InvalidArgumentException('Drop-off must be after pick-up.');
         }

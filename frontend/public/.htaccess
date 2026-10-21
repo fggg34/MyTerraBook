@@ -49,6 +49,8 @@ DirectoryIndex index.php index.html
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+  # Handle the admin entry before the real-directory guard and SPA fallback.
+  RewriteRule ^backend/?$ /backend/admin/login [R=302,L]
   RewriteRule \.env$ /forbid-dot-env.php [L]
   # Run index.html through the shell so bootstrap is injected (same as client routes)
   RewriteRule ^index\.html$ index.php [L]

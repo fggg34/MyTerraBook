@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\RegisteredHosts\Pages\CreateRegisteredHost;
+use App\Filament\Resources\RegisteredHosts\Pages\EditRegisteredHost;
 use App\Filament\Resources\RegisteredHosts\Pages\ListRegisteredHosts;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
@@ -12,6 +14,27 @@ use Tests\TestCase;
 class RegisteredHostsAdminTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_admin_can_create_caren_host_and_preserve_blank_credentials_on_edit(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        Livewire::test(CreateRegisteredHost::class)->fillForm([
+            'name' => 'Konvin', 'email' => 'konvin@example.test', 'country_code' => 'IS',
+            'partner_provider' => 'caren', 'partner_api_enabled' => true,
+            'partner_api_base_url' => 'https://booking.caren.is',
+            'partner_api_key' => 'test-key', 'partner_api_username' => 'api@example.test',
+            'partner_api_password' => 'test-password', 'partner_rental_id' => 120,
+        ])->call('create')->assertHasNoFormErrors();
+        $host = User::query()->where('email', 'konvin@example.test')->sole();
+        $this->assertTrue($host->isHost());
+        $this->assertSame('test-password', $host->partner_api_password);
+        Livewire::test(EditRegisteredHost::class, ['record' => $host->id])
+            ->assertFormSet(['partner_api_key' => null, 'partner_api_password' => null, 'partner_api_username' => null])
+            ->fillForm(['name' => 'Konvin updated', 'partner_api_key' => '', 'partner_api_password' => '', 'partner_api_username' => ''])
+            ->call('save')->assertHasNoFormErrors();
+        $this->assertSame('test-password', $host->fresh()->partner_api_password);
+        $this->assertSame('test-key', $host->fresh()->partner_api_key);
+    }
 
     public function test_admin_can_view_registered_hosts_list(): void
     {

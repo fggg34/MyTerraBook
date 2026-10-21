@@ -39,6 +39,9 @@ class User extends Authenticatable implements FilamentUser
         'partner_provider',
         'partner_api_base_url',
         'partner_api_key',
+        'partner_api_username',
+        'partner_api_password',
+        'partner_rental_id',
         'partner_api_enabled',
         'partner_commission_rate',
     ];
@@ -50,6 +53,8 @@ class User extends Authenticatable implements FilamentUser
         'company_logo_path',
         'integration_token',
         'partner_api_key',
+        'partner_api_username',
+        'partner_api_password',
     ];
 
     protected $appends = [
@@ -65,6 +70,9 @@ class User extends Authenticatable implements FilamentUser
             'role' => UserRole::class,
             'host_account_type' => HostAccountType::class,
             'partner_api_key' => 'encrypted',
+            'partner_api_username' => 'encrypted',
+            'partner_api_password' => 'encrypted',
+            'partner_rental_id' => 'integer',
             'partner_api_enabled' => 'boolean',
             'partner_commission_rate' => 'decimal:2',
         ];

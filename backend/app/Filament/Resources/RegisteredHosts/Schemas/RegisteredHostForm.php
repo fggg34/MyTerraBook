@@ -19,7 +19,7 @@ class RegisteredHostForm
                 ->description('These details identify this host or partner on MyTerra.')
                 ->schema([
                     TextInput::make('name')->required()->maxLength(255),
-                    TextInput::make('email')->email()->required()->maxLength(255),
+                    TextInput::make('email')->email()->required()->maxLength(255)->unique(ignoreRecord: true),
                     TextInput::make('phone')->tel()->maxLength(32),
                     Select::make('country_code')
                         ->label('Operating country')
@@ -40,9 +40,11 @@ class RegisteredHostForm
                         ->label('Connection type')
                         ->options([
                             'greenlight' => 'Greenlight car rental',
+                            'caren' => 'Caren',
                             'custom' => 'Custom partner API',
                         ])
                         ->placeholder('Select a connection type')
+                        ->live()
                         ->required(fn ($get): bool => (bool) $get('partner_api_enabled')),
                     TextInput::make('partner_api_base_url')
                         ->label('Partner API URL')
@@ -50,6 +52,24 @@ class RegisteredHostForm
                         ->placeholder('https://partner.example/api')
                         ->required(fn ($get): bool => (bool) $get('partner_api_enabled'))
                         ->columnSpanFull(),
+                    TextInput::make('partner_api_username')
+                        ->label('Caren API username')
+                        ->visible(fn ($get): bool => $get('partner_provider') === 'caren')
+                        ->formatStateUsing(fn (): ?string => null)
+                        ->dehydrated(fn (?string $state): bool => filled($state))
+                        ->helperText('Stored encrypted. Leave blank to keep the saved username.'),
+                    TextInput::make('partner_api_password')
+                        ->label('Caren API password')
+                        ->password()->revealable()->autocomplete('new-password')
+                        ->visible(fn ($get): bool => $get('partner_provider') === 'caren')
+                        ->formatStateUsing(fn (): ?string => null)
+                        ->dehydrated(fn (?string $state): bool => filled($state))
+                        ->helperText('Stored encrypted. Leave blank to keep the saved password.'),
+                    TextInput::make('partner_rental_id')
+                        ->label('Caren rental ID')
+                        ->numeric()->minValue(1)
+                        ->visible(fn ($get): bool => $get('partner_provider') === 'caren')
+                        ->helperText('Leave blank to select automatically when the account has one rental.'),
                     TextInput::make('partner_api_key')
                         ->label('API key')
                         ->password()
