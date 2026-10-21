@@ -12,7 +12,7 @@ Deploy the backend changes plus `backend/.htaccess` and the storefront
 ```sh
 php artisan migrate --force
 php artisan optimize:clear
-php artisan caren:connect konvin@partners.myterrabook.local --rental=120
+php artisan caren:connect konvin@partners.myterrabook.local --rental=120 --name="Konvin Car Rental ehf."
 ```
 
 The connect command asks for the API username, Vehicle API key and password using hidden
@@ -21,7 +21,12 @@ The command verifies access, creates the host and imports the catalogue.
 
 Alternatively use Registered Hosts → Add host / partner, choose Caren, enter
 `https://booking.caren.is`, enable the connection and save the credentials. Open Manage host
-to Test Caren connection or Import Caren vehicles. Blank credential inputs preserve saved values.
+to Test Caren connection or **Save & import Caren vehicles** (also next to Save changes).
+The import button validates and saves the form first; no terminal is needed. Enter rental ID
+120 for Konvin to skip the optional rental-discovery call. Blank credential inputs preserve saved values.
+
+The connect command imports its already-verified catalogue using one login session. It does
+not authenticate twice. An API failure on the edit page preserves the saved connection for retry.
 
 Repeat an import with `php artisan caren:sync-vehicles HOST_ID` or the host's import action.
 Imports update existing host/rental/class records without creating duplicates. Pickup/drop-off

@@ -14,14 +14,17 @@ class CarenPartnerClient
     public function catalogue(User $host): array
     {
         return $this->withSession($host, function (string $session) use ($host): array {
-            $rentals = $this->request($host, 'rental/list', ['Session' => $session])['Rentals'] ?? null;
-            if (! is_array($rentals)) {
-                throw new RuntimeException('Caren did not return a rental list.');
+            // A configured rental can be queried directly. Discovery is unnecessary and
+            // can fail independently with Caren code 10000 even after successful login.
+            if ($host->partner_rental_id) {
+                $rental = ['Id' => $host->partner_rental_id, 'Name' => $host->name ?: 'Caren rental '.$host->partner_rental_id];
+            } else {
+                $rentals = $this->request($host, 'rental/list', ['Session' => $session])['Rentals'] ?? null;
+                if (! is_array($rentals)) {
+                    throw new RuntimeException('Caren did not return a rental list.');
+                }
+                $rental = count($rentals) === 1 ? $rentals[0] : null;
             }
-
-            $rental = $host->partner_rental_id
-                ? collect($rentals)->firstWhere('Id', $host->partner_rental_id)
-                : (count($rentals) === 1 ? $rentals[0] : null);
             if (! $rental) {
                 throw new RuntimeException('Select a rental ID that this Caren account can access.');
             }

@@ -23,7 +23,42 @@ class EditRegisteredHost extends EditRecord
 
     public function getSubheading(): ?string
     {
-        return 'Update the host profile, connection settings and commission. Save changes before testing the API.';
+        return 'Update the host profile, connection settings and commission. For Caren, use Save & import Caren vehicles to save your credentials and import the fleet here.';
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            ...parent::getFormActions(),
+            $this->carenImportAction('saveAndImportCarenVehicles'),
+        ];
+    }
+
+    protected function carenImportAction(string $name): Action
+    {
+        return Action::make($name)
+            ->label('Save & import Caren vehicles')->icon('heroicon-o-arrow-down-tray')
+            ->visible(fn (): bool => ($this->data['partner_provider'] ?? $this->record->partner_provider) === 'caren')
+            ->requiresConfirmation()
+            ->modalHeading('Save host and import Caren vehicles')
+            ->modalDescription('Save the form and import vehicles and locations from Caren. New vehicles are inactive drafts. For Konvin, enter rental ID 120.')
+            ->action(function (CarenVehicleSyncService $sync): void {
+                // Let validation errors return to the form rather than treating them as API failures.
+                $this->save(shouldRedirect: false, shouldSendSavedNotification: false);
+                $this->record->refresh();
+                $this->refreshFormData(['partner_api_key', 'partner_api_username', 'partner_api_password']);
+                try {
+                    $result = $sync->sync($this->record);
+                    $this->refreshFormData(['partner_rental_id']);
+                    Notification::make()->title('Caren fleet imported')
+                        ->body($result['vehicles'].' vehicles, '.$result['locations'].' locations; '.$result['skipped'].' test entries skipped. New vehicles are drafts.')
+                        ->success()->send();
+                } catch (Throwable $exception) {
+                    Notification::make()->title('Host saved, but Caren import failed')
+                        ->body($exception->getMessage().' Your settings are saved; you can retry this button.')
+                        ->danger()->persistent()->send();
+                }
+            });
     }
 
     protected function getHeaderActions(): array
@@ -42,21 +77,7 @@ class EditRegisteredHost extends EditRecord
                         Notification::make()->title('Caren connection failed')->body($exception->getMessage())->danger()->send();
                     }
                 }),
-            Action::make('syncCarenVehicles')
-                ->label('Import Caren vehicles')->icon('heroicon-o-arrow-down-tray')
-                ->visible(fn (): bool => $this->record->partner_provider === 'caren')
-                ->requiresConfirmation()
-                ->modalDescription('Import the saved Caren rental catalogue. New vehicles are inactive drafts pending pricing and booking integration. Existing vehicle review status is preserved.')
-                ->action(function (CarenVehicleSyncService $sync): void {
-                    try {
-                        $result = $sync->sync($this->record);
-                        Notification::make()->title('Caren fleet imported')
-                            ->body($result['vehicles'].' vehicles, '.$result['locations'].' locations; '.$result['skipped'].' test entries skipped. New vehicles are drafts.')
-                            ->success()->send();
-                    } catch (Throwable $exception) {
-                        Notification::make()->title('Caren import failed')->body($exception->getMessage())->danger()->send();
-                    }
-                }),
+            $this->carenImportAction('syncCarenVehicles'),
             Action::make('testConnection')
                 ->label('Test connection')
                 ->icon('heroicon-o-signal')

@@ -3,16 +3,19 @@
 namespace Tests\Feature;
 
 use App\Enums\ListingApprovalStatus;
+use App\Filament\Resources\RegisteredHosts\Pages\EditRegisteredHost;
 use App\Models\Car;
 use App\Models\User;
 use App\Services\Partners\CarenPartnerClient;
 use App\Services\Partners\CarenVehicleSyncService;
 use App\Services\RentalQuoteService;
+use Filament\Actions\Testing\TestAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
+use Livewire\Livewire;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -59,6 +62,75 @@ class CarenIntegrationTest extends TestCase
             $this->assertArrayNotHasKey($field, $host->toArray());
         }
         $this->assertSame('test-api-password', $host->fresh()->partner_api_password);
+    }
+
+    public function test_edit_page_saves_credentials_and_imports_without_rental_discovery(): void
+    {
+        $this->fakeCatalogue();
+        $this->actingAs(User::factory()->admin()->create());
+        $host = $this->host();
+        $host->update(['partner_provider' => null, 'partner_api_enabled' => false]);
+        $page = Livewire::test(EditRegisteredHost::class, ['record' => $host->id])
+            ->fillForm([
+                'partner_provider' => 'caren', 'partner_api_enabled' => true,
+                'partner_rental_id' => 120, 'partner_api_password' => 'updated-password',
+            ])
+            ->callAction(TestAction::make('saveAndImportCarenVehicles')->schemaComponent('form-actions', 'content'))
+            ->assertHasNoFormErrors()
+            ->assertNotified('Caren fleet imported');
+        $this->assertSame('updated-password', $host->fresh()->partner_api_password);
+        $this->assertSame('caren', $host->fresh()->partner_provider);
+        $this->assertSame(1, $host->cars()->count());
+        Http::assertNotSent(fn (Request $request) => str_ends_with($request->url(), '/rental/list'));
+        $page->callAction('syncCarenVehicles')->assertNotified('Caren fleet imported');
+        $this->assertSame(1, $host->cars()->count());
+    }
+
+    public function test_edit_page_keeps_saved_credentials_when_api_import_fails(): void
+    {
+        $this->fakeCatalogue(failClasses: true);
+        $this->actingAs(User::factory()->admin()->create());
+        $host = $this->host();
+        Livewire::test(EditRegisteredHost::class, ['record' => $host->id])
+            ->fillForm(['partner_api_password' => 'updated-password'])
+            ->callAction('syncCarenVehicles')
+            ->assertNotified('Host saved, but Caren import failed');
+        $this->assertSame('updated-password', $host->fresh()->partner_api_password);
+        $this->assertSame(0, $host->cars()->count());
+    }
+
+    public function test_edit_page_validates_before_saving_or_calling_caren(): void
+    {
+        Http::fake();
+        $this->actingAs(User::factory()->admin()->create());
+        $host = $this->host();
+        Livewire::test(EditRegisteredHost::class, ['record' => $host->id])
+            ->fillForm(['name' => ''])
+            ->callAction('syncCarenVehicles')->assertHasFormErrors(['name' => 'required'], 'form');
+        Http::assertNothingSent();
+    }
+
+    public function test_connect_command_fetches_catalogue_only_once(): void
+    {
+        $this->fakeCatalogue();
+        $this->artisan('caren:connect', ['email' => 'konvin@example.test', '--rental' => 120])
+            ->expectsQuestion('Caren API username', 'api@example.test')
+            ->expectsQuestion('Caren Vehicle API key', 'test-api-key')
+            ->expectsQuestion('Caren API password', 'test-api-password')
+            ->assertSuccessful();
+        $this->assertSame(1, User::where('email', 'konvin@example.test')->sole()->cars()->count());
+        $this->assertSame('Caren rental 120', User::where('email', 'konvin@example.test')->sole()->name);
+        Http::assertSentCount(5);
+    }
+
+    public function test_rental_discovery_still_works_when_no_rental_id_is_saved(): void
+    {
+        $this->fakeCatalogue();
+        $host = $this->host();
+        $host->update(['partner_rental_id' => null]);
+        app(CarenVehicleSyncService::class)->sync($host);
+        $this->assertSame(120, $host->fresh()->partner_rental_id);
+        Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/rental/list'));
     }
 
     public function test_import_is_idempotent_scoped_and_preserves_review_status(): void

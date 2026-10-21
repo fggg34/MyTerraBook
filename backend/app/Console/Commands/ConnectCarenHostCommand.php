@@ -44,7 +44,9 @@ class ConnectCarenHostCommand extends Command
         $host->partner_rental_id = $catalogue['rental']['Id'];
         $host->save();
         try {
-            $result = $sync->sync($host);
+            // The catalogue was already fetched and validated above. Import it without
+            // logging in again immediately after closing the verification session.
+            $result = $sync->importCatalogue($host, $catalogue);
         } catch (\Throwable $exception) {
             $this->error('Host saved, but import failed: '.$exception->getMessage());
 

@@ -18,7 +18,11 @@ class CarenVehicleSyncService
 
     public function sync(User $host): array
     {
-        $catalogue = $this->client->catalogue($host);
+        return $this->importCatalogue($host, $this->client->catalogue($host));
+    }
+
+    public function importCatalogue(User $host, array $catalogue): array
+    {
         foreach (array_merge($catalogue['vehicles'], $catalogue['pickups'], $catalogue['dropoffs']) as $row) {
             if (! is_array($row) || empty($row['Id']) || blank($row['Name'] ?? null)) {
                 throw new RuntimeException('Caren returned a record without an ID or name. No listings were changed.');

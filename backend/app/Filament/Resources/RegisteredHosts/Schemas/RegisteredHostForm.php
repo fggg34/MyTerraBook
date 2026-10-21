@@ -30,7 +30,7 @@ class RegisteredHostForm
             Section::make('Partner API connection')
                 ->icon('heroicon-o-signal')
                 ->columnSpanFull()
-                ->description('Save your changes before testing the connection. The test uses saved credentials.')
+                ->description('For Caren, use Save & import Caren vehicles to save credentials and import directly from this page. Connection tests use saved credentials.')
                 ->schema([
                     Toggle::make('partner_api_enabled')
                         ->label('Enable this partner connection')
@@ -67,9 +67,9 @@ class RegisteredHostForm
                         ->helperText('Stored encrypted. Leave blank to keep the saved password.'),
                     TextInput::make('partner_rental_id')
                         ->label('Caren rental ID')
-                        ->numeric()->minValue(1)
+                        ->integer()->minValue(1)
                         ->visible(fn ($get): bool => $get('partner_provider') === 'caren')
-                        ->helperText('Leave blank to select automatically when the account has one rental.'),
+                        ->helperText('Konvin: 120. Enter the rental ID to import directly without rental discovery. Leave blank for automatic discovery.'),
                     TextInput::make('partner_api_key')
                         ->label('API key')
                         ->password()
