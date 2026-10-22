@@ -568,7 +568,11 @@
         </section>
 
         <section x-show="tab === 'texts'" x-cloak>
-            <div class="ir-global-placeholder">Use the existing <a href="{{ url('/admin/impact-rent/conditional-texts') }}">Conditional Texts resource</a> for text rules.</div>
+            <div class="ir-global-placeholder">
+                Conditional texts can be stored at
+                <a href="{{ url('/admin/impact-rent/conditional-texts') }}">/admin/impact-rent/conditional-texts</a>.
+                The public site and checkout do not read those rows. Edit live copy under Site content.
+            </div>
         </section>
     </div>
 </x-filament-panels::page>

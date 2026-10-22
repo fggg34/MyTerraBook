@@ -60,9 +60,6 @@ class EditOrder extends EditRecord
                         Notification::make()->title('Cancellation pending')->body($e->getMessage())->danger()->send();
                     }
                 }),
-            Action::make('editReservation')
-                ->label('Edit Reservation')
-                ->color('primary'),
             Action::make('viewFrontSite')
                 ->label('View confirmation page')
                 ->url(function (): string {

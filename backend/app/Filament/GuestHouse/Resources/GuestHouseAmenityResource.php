@@ -8,6 +8,10 @@ use App\Models\GuestHouseAmenity;
 use App\Support\AdminTableBadgeColors;
 use App\Support\IconCatalog;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -67,6 +71,15 @@ class GuestHouseAmenityResource extends Resource
                     ->badge()
                     ->color(fn (): string => AdminTableBadgeColors::neutral())
                     ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
+            ])
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
             ])
             ->defaultSort('group');
     }

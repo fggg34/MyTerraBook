@@ -6,7 +6,6 @@ use App\Filament\Clusters\GuestHouseCluster;
 use App\Filament\Resources\ListingReviews\ListingReviewResource;
 use BackedEnum;
 use Filament\Pages\Page;
-use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
@@ -33,8 +32,6 @@ class GuestHouseReviewsPage extends Page
 
     public function mount(): void
     {
-        $url = ListingReviewResource::getUrl('index');
-
-        $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
+        $this->redirect(ListingReviewResource::getUrl('index'));
     }
 }

@@ -8,7 +8,6 @@ use App\Filament\Resources\PaymentMethods\PaymentMethodResource;
 use BackedEnum;
 use Filament\Navigation\NavigationItem;
 use Filament\Pages\Page;
-use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
 
 class ModerationSettings extends Page
@@ -70,8 +69,6 @@ class ModerationSettings extends Page
 
     public function mount(): void
     {
-        $url = GlobalConfigurationPage::getUrl();
-
-        $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
+        $this->redirect(GlobalConfigurationPage::getUrl());
     }
 }

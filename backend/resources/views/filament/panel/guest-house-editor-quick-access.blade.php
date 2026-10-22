@@ -34,7 +34,7 @@
             ],
         ],
         [
-            'label'  => 'Content',
+            'label'  => 'Reviews',
             'icon'   => $icons['content'],
             'url'    => url('/admin/listing-reviews'),
             'active' => request()->is('admin/listing-reviews*')
@@ -47,7 +47,7 @@
             'active' => request()->is('admin/listing-approvals*'),
         ],
         [
-            'label'  => 'Setup',
+            'label'  => 'Amenities',
             'icon'   => $icons['setup'],
             'url'    => url('/admin/guest-houses/guest-house-amenities'),
             'active' => request()->is('admin/guest-houses/guest-house-amenities*'),
@@ -62,7 +62,7 @@
                     continue;
                 }
                 $mobileNavOptions[] = [
-                    'label' => $link['label'].' — '.$sub['label'],
+                    'label' => $link['label'].' / '.$sub['label'],
                     'url' => $sub['url'],
                     'active' => (bool) ($sub['active'] ?? false),
                 ];

@@ -132,7 +132,7 @@ class GuestHouseBookingResource extends Resource
                     ->visible(fn (GuestHouseBooking $record) => filled($record->confirmation_token) || filled($record->confirmation_url)),
                 Action::make('pdf')
                     ->label('PDF')
-                    ->url(fn (GuestHouseBooking $record) => url('/api/admin/guest-house-bookings/'.$record->id.'/contract.pdf'))
+                    ->url(fn (GuestHouseBooking $record) => route('admin.guest-house-bookings.contract-pdf', ['booking' => $record->id]))
                     ->openUrlInNewTab()
                     ->visible(fn (GuestHouseBooking $record) => in_array($record->status, [
                         GuestHouseBookingStatus::Confirmed,

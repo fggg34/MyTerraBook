@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminCalendarEmbedController;
 use App\Http\Controllers\Admin\HomepageController as AdminHomepageController;
+use App\Http\Controllers\Api\Admin\GuestHouseBookingPdfController;
 use App\Http\Controllers\Api\Admin\OrderCheckinPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\FaviconController;
@@ -52,4 +53,9 @@ Route::middleware('auth')->prefix('admin/impact-rent/orders')->group(function ()
         ->name('admin.orders.contract-pdf');
     Route::get('{order}/checkin.pdf', [OrderCheckinPdfController::class, 'show'])
         ->name('admin.orders.checkin-pdf');
+});
+
+Route::middleware('auth')->prefix('admin/guest-houses/guest-house-bookings')->group(function (): void {
+    Route::get('{booking}/contract.pdf', [GuestHouseBookingPdfController::class, 'show'])
+        ->name('admin.guest-house-bookings.contract-pdf');
 });

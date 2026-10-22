@@ -178,6 +178,25 @@ class Car extends Model
         return $this->hasMany(CarUnit::class);
     }
 
+    public function ensureFleetUnits(): void
+    {
+        $desired = max(1, (int) ($this->units_available ?? 1));
+        $existing = $this->carUnits()->count();
+
+        if ($existing >= $desired) {
+            return;
+        }
+
+        $nextSort = (int) $this->carUnits()->max('sort_order');
+
+        for ($i = 0; $i < $desired - $existing; $i++) {
+            $this->carUnits()->create([
+                'is_active' => true,
+                'sort_order' => $nextSort + 1 + $i,
+            ]);
+        }
+    }
+
     public function dailyFares(): HasMany
     {
         return $this->hasMany(DailyFare::class);

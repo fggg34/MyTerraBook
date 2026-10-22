@@ -91,25 +91,25 @@ class BookingRestrictionForm
                             Toggle::make('cta_enabled')
                                 ->label('Set Days Closed to Arrival (CTA)')
                                 ->default(false)
-                                ->dehydrated(false)
+                                ->dehydrated()
                                 ->formatStateUsing(fn ($record): bool => ! empty($record?->cta_weekdays)),
 
                             Toggle::make('ctd_enabled')
                                 ->label('Set Days Closed to Departure (CTD)')
                                 ->default(false)
-                                ->dehydrated(false)
+                                ->dehydrated()
                                 ->formatStateUsing(fn ($record): bool => ! empty($record?->ctd_weekdays)),
 
                             Select::make('forced_pickup_weekday')
                                 ->label('Force Arrival Week Day')
                                 ->options(self::weekdayOptions())
-                                ->dehydrated(false)
+                                ->dehydrated()
                                 ->native(false)
-                                ->formatStateUsing(
-                                    fn ($record): ?string => filled($record?->forced_pickup_weekdays[0] ?? null)
-                                        ? (string) $record->forced_pickup_weekdays[0]
-                                        : null
-                                ),
+                                ->formatStateUsing(function ($record): ?string {
+                                    $weekday = $record?->forced_pickup_weekdays[0] ?? null;
+
+                                    return $weekday === null || $weekday === '' ? null : (string) $weekday;
+                                }),
 
                             Toggle::make('is_active')
                                 ->label('Active')
@@ -118,6 +118,33 @@ class BookingRestrictionForm
                         ]),
                     ]),
             ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public static function persistWeekdayControls(array $data): array
+    {
+        $allWeekdays = [0, 1, 2, 3, 4, 5, 6];
+
+        $data['cta_weekdays'] = ($data['cta_enabled'] ?? false) ? $allWeekdays : [];
+        $data['ctd_weekdays'] = ($data['ctd_enabled'] ?? false) ? $allWeekdays : [];
+
+        $forcedWeekday = $data['forced_pickup_weekday'] ?? null;
+        $data['forced_pickup_weekdays'] = ($forcedWeekday === null || $forcedWeekday === '')
+            ? []
+            : [(int) $forcedWeekday];
+
+        unset(
+            $data['cta_enabled'],
+            $data['ctd_enabled'],
+            $data['forced_pickup_weekday'],
+            $data['restriction_period_mode'],
+            $data['apply_to_all_cars'],
+        );
+
+        return $data;
     }
 
     private static function weekdayOptions(): array

@@ -46,6 +46,7 @@ class EditCar extends EditRecord
         }
 
         $this->record->locations()->sync($pivot);
+        $this->record->ensureFleetUnits();
     }
 
     public function getPageClasses(): array
