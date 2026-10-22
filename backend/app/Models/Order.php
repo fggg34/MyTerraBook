@@ -79,17 +79,26 @@ class Order extends Model
     protected static function booted(): void
     {
         static::updating(function (Order $order): void {
-            if ($order->getOriginal('external_provider') !== 'caren') {
+            if ($order->getOriginal('external_provider') === 'caren') {
+                if ($order->isDirty(['car_id', 'pickup_location_id', 'dropoff_location_id', 'pickup_at', 'dropoff_at',
+                    'customer_name', 'customer_email', 'customer_phone', 'customer_date_of_birth', 'price_type_id',
+                    'base_rental_cents', 'extras_cents', 'fees_cents', 'discount_cents', 'tax_cents', 'total_cents', 'currency', 'external_provider'])) {
+                    throw new \InvalidArgumentException('Caren reservation amendments must be synchronized with the provider; direct changes are disabled.');
+                }
+                if ($order->isDirty('order_status') && (($order->order_status === OrderStatus::Confirmed && $order->partner_sync_state !== 'confirmed')
+                    || ($order->order_status === OrderStatus::Cancelled && $order->partner_sync_state !== 'cancelled'))) {
+                    throw new \InvalidArgumentException('Caren must acknowledge this status change first.');
+                }
+
                 return;
             }
-            if ($order->isDirty(['car_id', 'pickup_location_id', 'dropoff_location_id', 'pickup_at', 'dropoff_at',
-                'customer_name', 'customer_email', 'customer_phone', 'customer_date_of_birth', 'price_type_id',
-                'base_rental_cents', 'extras_cents', 'fees_cents', 'discount_cents', 'tax_cents', 'total_cents', 'currency', 'external_provider'])) {
-                throw new \InvalidArgumentException('Caren reservation amendments must be synchronized with the provider; direct changes are disabled.');
-            }
-            if ($order->isDirty('order_status') && (($order->order_status === OrderStatus::Confirmed && $order->partner_sync_state !== 'confirmed')
-                || ($order->order_status === OrderStatus::Cancelled && $order->partner_sync_state !== 'cancelled'))) {
-                throw new \InvalidArgumentException('Caren must acknowledge this status change first.');
+            if ($order->external_provider === 'foxie'
+                && $order->isDirty('order_status')
+                && $order->order_status === OrderStatus::Cancelled
+                && $order->getOriginal('partner_sync_state') !== 'cancelled'
+                && filled($order->external_reference)) {
+                app(\App\Services\Partners\FoxieBookingService::class)->cancel($order);
+                $order->partner_sync_state = 'cancelled';
             }
         });
         static::deleting(function (Order $order): void {

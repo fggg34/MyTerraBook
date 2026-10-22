@@ -319,10 +319,32 @@ class CatalogController extends Controller
             ->values()
             ->all();
 
+        $partnerPrice = [];
         if ($car->external_provider === 'caren' && app(\App\Services\Partners\CarenBookingService::class)->enabled($car)) {
             $standard = PriceType::where('slug', 'caren-standard')->where('is_active', true)->first();
             $priceTypes = $standard ? [['id' => $standard->id, 'name' => $standard->name, 'slug' => $standard->slug,
                 'attribute_label' => 'Live Caren rate', 'attribute_value_per_day' => null, 'from_price_per_day_cents' => 0]] : [];
+        }
+        if ($car->external_provider === 'foxie' && app(\App\Services\Partners\FoxieBookingService::class)->enabled($car)) {
+            $standard = \App\Services\Partners\FoxieBookingService::priceType();
+            $starting = $this->foxiePricing->starting($car);
+            $daily = $starting['pricing']['daily_price'] ?? null;
+            $cents = is_numeric($daily) ? (int) round((float) $daily * 100) : 0;
+            $priceTypes = [[
+                'id' => $standard->id,
+                'name' => $standard->name,
+                'slug' => $standard->slug,
+                'attribute_label' => 'From',
+                'attribute_value_per_day' => null,
+                'from_price_per_day_cents' => $cents,
+            ]];
+            if (is_array($starting['pricing'] ?? null)) {
+                $partnerPrice = [
+                    'base_daily_price' => $starting['pricing']['daily_price'],
+                    'base_daily_currency' => $starting['pricing']['currency'],
+                ];
+            }
+            $partnerPrice['insurance_plans'] = $this->foxiePricing->insurancePlans($car);
         }
 
         $locationFees = LocationFee::query()
@@ -345,7 +367,7 @@ class CatalogController extends Controller
             ->all();
 
         return response()->json([
-            'data' => new CarDetailResource($car, $priceTypes, $locationFees),
+            'data' => new CarDetailResource($car, $priceTypes, $locationFees, $partnerPrice),
         ]);
     }
 
@@ -469,6 +491,7 @@ class CatalogController extends Controller
             'dropoff_at' => ['nullable', 'date', 'after:pickup_at'],
             'pickup_location_id' => ['nullable', 'integer', 'min:1'],
             'dropoff_location_id' => ['nullable', 'integer', 'min:1'],
+            'foxie_insurance_id' => ['nullable', 'integer', 'min:1'],
         ]);
     }
 
@@ -489,13 +512,14 @@ class CatalogController extends Controller
     {
         foreach (['pickup_at', 'dropoff_at', 'pickup_location_id', 'dropoff_location_id'] as $field) {
             if (! $request->filled($field)) {
-                return ['status' => 'needs_dates', 'pricing' => null];
+                return $this->foxiePricing->starting($car);
             }
         }
 
         return $this->foxiePricing->quote($car, $request->integer('pickup_location_id'),
             $request->integer('dropoff_location_id'), Carbon::parse($request->query('pickup_at')),
-            Carbon::parse($request->query('dropoff_at')));
+            Carbon::parse($request->query('dropoff_at')), false,
+            $request->filled('foxie_insurance_id') ? $request->integer('foxie_insurance_id') : null);
     }
 
     private function resolveSearchPricing(Car $car, Request $request): ?array

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\RegisteredHosts\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -20,6 +21,15 @@ class RegisteredHostForm
                 ->schema([
                     TextInput::make('name')->required()->maxLength(255),
                     TextInput::make('email')->email()->required()->maxLength(255)->unique(ignoreRecord: true),
+                    FileUpload::make('company_logo_path')
+                        ->label('Partner logo')
+                        ->helperText('Shown on listing cards and the partner logo row. PNG, JPG, or WebP.')
+                        ->disk('public')
+                        ->directory('company-logos')
+                        ->image()
+                        ->maxSize(4096)
+                        ->imagePreviewHeight('80')
+                        ->columnSpanFull(),
                     TextInput::make('phone')->tel()->maxLength(32),
                     Select::make('country_code')
                         ->label('Operating country')

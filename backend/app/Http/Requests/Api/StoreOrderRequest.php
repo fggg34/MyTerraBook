@@ -39,6 +39,7 @@ class StoreOrderRequest extends FormRequest
             'rental_options' => ['nullable', 'array'],
             'rental_options.*' => ['integer', 'min:1'],
             'coupon_code' => ['nullable', 'string', 'max:64'],
+            'foxie_insurance_id' => ['nullable', 'integer', 'min:1'],
             'payment_method' => $caren ? ['required', 'in:card,rapyd_card'] : ['nullable', 'string', 'max:64'],
             'custom_field_values' => ['nullable', 'array'],
             'custom_field_values.*' => ['nullable', 'string', 'max:2000'],

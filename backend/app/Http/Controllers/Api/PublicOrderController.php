@@ -22,6 +22,7 @@ use App\Services\Email\OrderEmailNotifier;
 use App\Services\OrderAvailabilityService;
 use App\Services\Partners\GreenlightBookingService;
 use App\Services\Partners\CarenBookingService;
+use App\Services\Partners\FoxieBookingService;
 use App\Services\RentalQuoteService;
 use App\Support\Money;
 use App\Support\QuotePresentation;
@@ -38,14 +39,12 @@ class PublicOrderController extends Controller
         private readonly OrderEmailNotifier $orderEmails,
         private readonly GreenlightBookingService $greenlight,
         private readonly CarenBookingService $caren,
+        private readonly FoxieBookingService $foxie,
     ) {}
 
     public function quote(OrderQuoteRequest $request): JsonResponse
     {
         $car = Car::query()->findOrFail($request->integer('car_id'));
-        if ($car->external_provider === 'foxie') {
-            return response()->json(['message' => 'Online booking is not yet available for this vehicle.'], 422);
-        }
         $pickup = Carbon::parse($request->string('pickup_at'));
         $dropoff = Carbon::parse($request->string('dropoff_at'));
 
@@ -59,6 +58,7 @@ class PublicOrderController extends Controller
                 $request->integer('dropoff_location_id'),
                 $request->input('rental_options', []),
                 $request->input('coupon_code'),
+                $request->filled('foxie_insurance_id') ? $request->integer('foxie_insurance_id') : null,
             );
         } catch (BookingUnavailableException) {
             return response()->json(['message' => 'No availability for these dates.'], 422);
@@ -105,7 +105,18 @@ class PublicOrderController extends Controller
     {
         $car = Car::query()->findOrFail($request->integer('car_id'));
         if ($car->external_provider === 'foxie') {
-            return response()->json(['message' => 'Online booking is not yet available for this vehicle.'], 422);
+            try {
+                $order = $this->foxie->create($car, $request->validated(), $request->user()?->id);
+            } catch (InvalidArgumentException $e) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+            try {
+                $this->orderEmails->notifyCreated($order->load('car.host'));
+            } catch (\Throwable) {
+                // The Foxie hold already exists. A mail failure must not look like a failed booking.
+            }
+
+            return response()->json(['data' => OrderResource::make($order)], 201);
         }
         if ($car->external_provider === 'caren') {
             try {
@@ -370,7 +381,18 @@ class PublicOrderController extends Controller
         int $dropoffLocationId,
         array $rentalOptions,
         ?string $couponCode,
+        ?int $foxieInsuranceId = null,
     ): array {
+        if ($car->external_provider === 'foxie') {
+            $quote = $this->foxie->quote($car, [
+                'price_type_id' => $priceTypeId, 'pickup_at' => $pickup, 'dropoff_at' => $dropoff,
+                'pickup_location_id' => $pickupLocationId, 'dropoff_location_id' => $dropoffLocationId,
+                'rental_options' => $rentalOptions, 'coupon_code' => $couponCode,
+                'foxie_insurance_id' => $foxieInsuranceId,
+            ]);
+
+            return [$quote, ['basic_rental_cents' => $quote['base_rental_cents'], 'protection_upgrade_cents' => 0]];
+        }
         if ($car->external_provider === 'caren') {
             $quote = $this->caren->quote($car, [
                 'price_type_id' => $priceTypeId, 'pickup_at' => $pickup, 'dropoff_at' => $dropoff,

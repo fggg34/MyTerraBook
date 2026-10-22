@@ -23,6 +23,7 @@ class OrderQuoteRequest extends FormRequest
             'rental_options' => ['nullable', 'array'],
             'rental_options.*' => ['integer', 'min:1'],
             'coupon_code' => ['nullable', 'string', 'max:64'],
+            'foxie_insurance_id' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

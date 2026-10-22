@@ -13,6 +13,7 @@ import { combineDateAndTime, nightsBetween, parseRentalOptionIds, resolveLocatio
 import { useFormatPrice } from './useFormatPrice'
 import { toApiDateTime, parseDateTimeLocal } from '../utils/format'
 import { useBookingRules } from './useBookingRules'
+import { defaultFoxieInsuranceId } from '../components/listing/FoxieInsurancePlans'
 import { expandBlockedWindows, rangeIncludesBlockedDate } from '../utils/bookingRestrictions'
 import useLocationOptions, { mergeLocationLists, suggestionToLocation, useAutoSelectLocation } from './useLocationOptions'
 
@@ -29,6 +30,7 @@ const DEFAULT_FORM = {
   guests_count: 2,
   price_type_id: '',
   rental_option_ids: [],
+  foxie_insurance_id: '',
   customer_name: '',
   customer_email: '',
   customer_phone: '',
@@ -120,6 +122,7 @@ export default function useRequestToBook() {
     price_type_id: searchParams.get('price_type_id') || '',
     guests_count: Number(searchParams.get('guests_count')) || 2,
     rental_option_ids: parseRentalOptionIds(searchParams),
+    foxie_insurance_id: searchParams.get('foxie_insurance_id') || '',
     customer_name: user?.name || '',
     customer_email: user?.email || '',
     customer_phone: user?.phone || '',
@@ -266,11 +269,13 @@ export default function useRequestToBook() {
           const pt = prev.price_type_id || String(data?.price_types?.[0]?.id || '')
           const firstPickup = data?.pickup_locations?.find((location) => !countryCode || location.country_code === countryCode)
           const pickup = prev.pickup_location_id || (firstPickup ? String(firstPickup.id) : '')
+          const insurance = prev.foxie_insurance_id || (data?.external_provider === 'foxie' ? defaultFoxieInsuranceId(data?.insurance_plans || []) : '')
           return {
             ...prev,
             price_type_id: pt,
             pickup_location_id: pickup,
             dropoff_location_id: prev.dropoff_location_id || pickup,
+            foxie_insurance_id: insurance,
           }
         })
         setLoadState(data ? 'ok' : 'error')
@@ -401,6 +406,9 @@ export default function useRequestToBook() {
         dropoff_at: toApiDateTime(dropoffAt),
         rental_options: form.rental_option_ids.map(Number),
       }
+      if (form.foxie_insurance_id) {
+        payload.foxie_insurance_id = Number(form.foxie_insurance_id)
+      }
       if (form.coupon_code.trim()) payload.coupon_code = form.coupon_code.trim()
       api
         .post('/orders/quote', payload)
@@ -424,6 +432,7 @@ export default function useRequestToBook() {
     pickupAt,
     dropoffAt,
     form.rental_option_ids,
+    form.foxie_insurance_id,
     form.coupon_code,
     form.startDate,
     form.endDate,
@@ -582,6 +591,9 @@ export default function useRequestToBook() {
               ? `${form.dobYear}-${form.dobMonth}-${form.dobDay}`
               : undefined,
           rental_options: form.rental_option_ids.map(Number),
+          foxie_insurance_id: item?.external_provider === 'foxie' && form.foxie_insurance_id
+            ? Number(form.foxie_insurance_id)
+            : undefined,
           coupon_code: form.coupon_code.trim() || undefined,
           custom_field_values: form.custom_field_values,
           payment_method: form.paymentMethod,
@@ -599,9 +611,9 @@ export default function useRequestToBook() {
 
       // Card payment (Rapyd): charge the platform fee on the hosted checkout,
       // then Rapyd redirects the guest back to /booking/rapyd/success.
-      // Never fall through to the confirmation page if checkout did not start —
-      // that made failed Rapyd setups look like instant confirmed bookings.
-      if (['card', 'rapyd_card'].includes(form.paymentMethod) && created?.id) {
+      // Never fall through to the confirmation page if checkout did not start.
+      // That made failed Rapyd setups look like instant confirmed bookings.
+      if (item?.external_provider !== 'foxie' && ['card', 'rapyd_card'].includes(form.paymentMethod) && created?.id) {
         const totalCents =
           created.total_amount_cents ?? created.total_cents ?? quote?.total_cents ?? 0
         try {

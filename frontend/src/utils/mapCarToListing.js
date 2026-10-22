@@ -4,6 +4,7 @@ import { splitListingDescription } from './formatListingDescription'
 import { mapApiListingReviews } from './mapListingReviews'
 import { driveLabel } from './buildVehicleCardSpecs'
 import { mapPartner } from './mapCarToResultCard'
+import { formatCarenPrice } from './carenPricing'
 import { isLivePartner } from './livePartner'
 import { guestRentalOptionSubLabel } from './rentalOptionPricing'
 
@@ -132,14 +133,21 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
   const format = priceFormatter?.format ?? ((v) => String(Math.round(Number(v))))
   const priceFromCents = priceType?.from_price_per_day_cents
   const priceFromDecimal = priceType?.from_price_per_day
-  const priceFromAmount =
-    isLivePartner(car) ? null : priceFromCents != null
-      ? Number(priceFromCents) / 100
-      : priceFromDecimal != null
-        ? Number.parseFloat(priceFromDecimal)
-        : null
-  const priceFrom =
-    priceFromAmount != null && !Number.isNaN(priceFromAmount) ? format(priceFromAmount) : null
+  const liveBase = isLivePartner(car) && car.base_daily_price != null
+    ? Number.parseFloat(car.base_daily_price)
+    : null
+  const priceFromAmount = liveBase != null && !Number.isNaN(liveBase)
+    ? liveBase
+    : isLivePartner(car)
+      ? null
+      : priceFromCents != null
+        ? Number(priceFromCents) / 100
+        : priceFromDecimal != null
+          ? Number.parseFloat(priceFromDecimal)
+          : null
+  const priceFrom = liveBase != null && !Number.isNaN(liveBase)
+    ? formatCarenPrice(car.base_daily_price, car.base_daily_currency || 'ISK', priceFormatter)
+    : priceFromAmount != null && !Number.isNaN(priceFromAmount) ? format(priceFromAmount) : null
 
   const { short: shortDesc, more: moreDesc } = splitListingDescription(car.description || '')
   const reviews = listingReviewsOverride ?? mapApiListingReviews(car.listing_reviews)

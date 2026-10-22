@@ -12,7 +12,7 @@ class FoxiePartnerClient
     public const BASE_URL = 'https://foxiecampers.is/wp-json/northstar/v1';
 
     /**
-     * Read locations and vehicle details. This never calls POST /bookings.
+     * Read locations and vehicle details.
      *
      * @return array{locations: list<array<string, mixed>>, vehicles: list<array<string, mixed>>}
      */
@@ -69,6 +69,31 @@ class FoxiePartnerClient
     }
 
     /**
+     * Creates a confirmed Foxie hold. Call this only after the traveler submits checkout.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    public function book(User $host, array $payload): array
+    {
+        $body = $this->send($host, 'bookings', $payload);
+        $id = $body['booking_id'] ?? null;
+        if (! is_numeric($id) || (int) $id < 1) {
+            throw new RuntimeException('Foxie did not return a booking identifier.');
+        }
+
+        return $body;
+    }
+
+    public function cancelBooking(User $host, int $bookingId): void
+    {
+        if ($bookingId < 1) {
+            throw new RuntimeException('Foxie booking could not be cancelled.');
+        }
+        $this->send($host, 'bookings/'.$bookingId, method: 'DELETE');
+    }
+
+    /**
      * @param  array<string, scalar>  $query
      * @return list<array<string, mixed>>
      */
@@ -95,15 +120,40 @@ class FoxiePartnerClient
     {
         $this->assertHost($host);
         $response = Http::acceptJson()
-            ->withHeaders([
-                'X-API-Key' => trim((string) $host->partner_api_key),
-                'User-Agent' => 'MyTerraBook/1.0',
-            ])
+            ->withHeaders($this->headers($host))
             ->withOptions(['allow_redirects' => false])
             ->timeout(20)
             ->get(self::BASE_URL.'/'.ltrim($path, '/'), $query);
 
         return $this->decode($response);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function send(User $host, string $path, array $payload = [], string $method = 'POST'): array
+    {
+        $this->assertHost($host);
+        $pending = Http::acceptJson()
+            ->withHeaders($this->headers($host))
+            ->withOptions(['allow_redirects' => false])
+            ->timeout(20);
+        $url = self::BASE_URL.'/'.ltrim($path, '/');
+        $response = $method === 'DELETE' ? $pending->delete($url) : $pending->post($url, $payload);
+
+        return $this->decode($response);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function headers(User $host): array
+    {
+        return [
+            'X-API-Key' => trim((string) $host->partner_api_key),
+            'User-Agent' => 'MyTerraBook/1.0',
+        ];
     }
 
     /**

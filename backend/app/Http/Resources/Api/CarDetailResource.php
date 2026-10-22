@@ -15,7 +15,7 @@ class CarDetailResource extends JsonResource
      * @param  Car  $resource
      * @param  array<int, array{id:int,name:string,slug:string,attribute_label:?string,attribute_value_per_day:?string,from_price_per_day_cents:int}>  $priceTypes
      */
-    public function __construct($resource, protected array $priceTypes = [], protected array $locationFees = [])
+    public function __construct($resource, protected array $priceTypes = [], protected array $locationFees = [], protected array $partnerPrice = [])
     {
         parent::__construct($resource);
     }
@@ -62,8 +62,13 @@ class CarDetailResource extends JsonResource
             'bags' => $car->bags,
             'units_available' => $car->units_available,
             'external_provider' => $car->external_provider,
-            'caren_booking_enabled' => $car->external_provider === 'caren'
-                && app(\App\Services\Partners\CarenBookingService::class)->enabled($car),
+            'caren_booking_enabled' => ($car->external_provider === 'caren'
+                && app(\App\Services\Partners\CarenBookingService::class)->enabled($car))
+                || ($car->external_provider === 'foxie'
+                    && app(\App\Services\Partners\FoxieBookingService::class)->enabled($car)),
+            'base_daily_price' => $this->partnerPrice['base_daily_price'] ?? null,
+            'base_daily_currency' => $this->partnerPrice['base_daily_currency'] ?? null,
+            'insurance_plans' => $this->partnerPrice['insurance_plans'] ?? [],
             'host' => $car->host ? HostProfileResource::make($car->host) : null,
             'partner' => app(ListingPartner::class)->fromCar($car),
             'main_image_path' => $car->main_image_path,

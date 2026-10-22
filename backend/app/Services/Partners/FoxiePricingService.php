@@ -20,16 +20,142 @@ class FoxiePricingService
     /**
      * @return array{status: string, pricing: array<string, mixed>|null}
      */
-    public function quote(Car $car, int $pickupId, int $dropoffId, CarbonInterface $from, CarbonInterface $to): array
+    public function quote(Car $car, int $pickupId, int $dropoffId, CarbonInterface $from, CarbonInterface $to, bool $fresh = false, ?int $insuranceId = null): array
     {
         $unavailable = ['status' => 'unavailable', 'pricing' => null];
+        if ($insuranceId !== null && ! $this->hasInsurancePlan($car, $insuranceId)) {
+            return ['status' => 'error', 'pricing' => null];
+        }
+        $query = $this->tripQuery($car, $pickupId, $dropoffId, $from, $to, $insuranceId);
+        if ($query === null) {
+            return $unavailable;
+        }
+        $host = $car->host;
+        $key = 'foxie-price:'.hash('sha256', json_encode([
+            $host->id, $host->partner_api_key, $query,
+        ]));
+        if (! $fresh && array_key_exists($key, $this->results)) {
+            return $this->results[$key];
+        }
+        try {
+            $result = $fresh
+                ? $this->fetch($host, $query, $from, $to)
+                : Cache::remember($key, 60, fn () => $this->fetch($host, $query, $from, $to));
+        } catch (Throwable) {
+            $result = ['status' => 'error', 'pricing' => null];
+        }
+        if (! $fresh) {
+            $this->results[$key] = $result;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Undated starting price from Foxie price_from. Zero is not a price.
+     *
+     * @return array{status: string, pricing: array<string, mixed>|null}
+     */
+    public function starting(Car $car): array
+    {
+        $empty = ['status' => 'needs_dates', 'pricing' => null];
+        $host = $car->host;
+        if (! $host || $car->external_provider !== 'foxie' || ! $host->partner_api_enabled
+            || $host->partner_provider !== 'foxie'
+            || ! preg_match('/^[1-9]\d*$/', (string) $car->external_vehicle_id)) {
+            return $empty;
+        }
+        $vehicleId = (int) $car->external_vehicle_id;
+        $key = 'foxie-start:'.hash('sha256', json_encode([$host->id, $host->partner_api_key, $vehicleId]));
+        $cached = Cache::get($key);
+        if (is_array($cached)) {
+            return ['status' => 'base', 'pricing' => $cached];
+        }
+        try {
+            $pricing = $this->startingFromVehicle($host, $vehicleId);
+        } catch (Throwable) {
+            return $empty;
+        }
+        if ($pricing === null) {
+            return $empty;
+        }
+        Cache::put($key, $pricing, 600);
+
+        return ['status' => 'base', 'pricing' => $pricing];
+    }
+
+    /**
+     * @return array<string, int|string>|null
+     */
+    /**
+     * @return list<array{id: int, name: string, description: string, cost: string, cost_cents: int, per_day: bool, currency: string}>
+     */
+    public function insurancePlans(Car $car): array
+    {
+        $host = $car->host;
+        if (! $host || $car->external_provider !== 'foxie' || ! $host->partner_api_enabled
+            || $host->partner_provider !== 'foxie'
+            || ! preg_match('/^[1-9]\d*$/', (string) $car->external_vehicle_id)) {
+            return [];
+        }
+        try {
+            $detail = $this->vehicleDetail($host, (int) $car->external_vehicle_id);
+        } catch (Throwable) {
+            return [];
+        }
+        $rows = $detail['insurance'] ?? null;
+        if (! is_array($rows)) {
+            return [];
+        }
+        $plans = [];
+        foreach ($rows as $row) {
+            if (! is_array($row) || ($row['is_insurance'] ?? true) !== true) {
+                continue;
+            }
+            $id = $row['id'] ?? null;
+            if (! is_numeric($id) || (int) $id < 1) {
+                continue;
+            }
+            $major = $row['cost'] ?? 0;
+            if (! is_numeric($major) || ! is_finite((float) $major) || (float) $major < 0) {
+                continue;
+            }
+            $cents = (int) round((float) $major * 100);
+            $name = trim((string) ($row['name'] ?? ''));
+            $plans[] = [
+                'id' => (int) $id,
+                'name' => $name !== '' ? $name : 'Insurance',
+                'description' => trim((string) ($row['description'] ?? '')),
+                'cost' => Money::formatDecimalFromCents($cents),
+                'cost_cents' => $cents,
+                'per_day' => filter_var($row['per_day'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'currency' => 'ISK',
+            ];
+        }
+
+        return $plans;
+    }
+
+    public function hasInsurancePlan(Car $car, int $insuranceId): bool
+    {
+        foreach ($this->insurancePlans($car) as $plan) {
+            if ($plan['id'] === $insuranceId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function tripQuery(Car $car, int $pickupId, int $dropoffId, CarbonInterface $from, CarbonInterface $to, ?int $insuranceId = null): ?array
+    {
         $host = $car->host;
         if (! $host || $car->external_provider !== 'foxie' || ! $host->partner_api_enabled
             || $host->partner_provider !== 'foxie' || $to->lessThanOrEqualTo($from) || $from->copy()->utc()->isPast()) {
-            return $unavailable;
+            return null;
         }
         if (! preg_match('/^[1-9]\d*$/', (string) $car->external_vehicle_id)) {
-            return $unavailable;
+            return null;
         }
         $locations = $car->locations()->where('locations.is_active', true)
             ->where('external_provider', 'foxie')->where('host_user_id', $host->id)
@@ -39,7 +165,7 @@ class FoxiePricingService
         if (! $pickup?->pivot?->allows_pickup || ! $dropoff?->pivot?->allows_dropoff
             || ! preg_match('/^[1-9]\d*$/', (string) $pickup->external_id)
             || ! preg_match('/^[1-9]\d*$/', (string) $dropoff->external_id)) {
-            return $unavailable;
+            return null;
         }
 
         $query = [
@@ -51,18 +177,11 @@ class FoxiePricingService
             'pickup_location' => (int) $pickup->external_id,
             'dropoff_location' => (int) $dropoff->external_id,
         ];
-        $key = 'foxie-price:'.hash('sha256', json_encode([
-            $host->id, $host->partner_api_key, $query,
-        ]));
-        if (! array_key_exists($key, $this->results)) {
-            try {
-                $this->results[$key] = Cache::remember($key, 60, fn () => $this->fetch($host, $query, $from, $to));
-            } catch (Throwable) {
-                $this->results[$key] = ['status' => 'error', 'pricing' => null];
-            }
+        if ($insuranceId !== null && $insuranceId > 0) {
+            $query['insurance'] = $insuranceId;
         }
 
-        return $this->results[$key];
+        return $query;
     }
 
     /**
@@ -99,6 +218,23 @@ class FoxiePricingService
         }
         $cents = (int) round((float) $total * 100);
         $dayCount = (int) $days;
+        $insuranceMajor = $body['insurance_total'] ?? 0;
+        $insuranceCents = is_numeric($insuranceMajor) && is_finite((float) $insuranceMajor) && (float) $insuranceMajor > 0
+            ? (int) round((float) $insuranceMajor * 100)
+            : 0;
+        if ($insuranceCents > $cents) {
+            return $unavailable;
+        }
+        $insuranceName = null;
+        $insuranceRows = $body['insurance'] ?? null;
+        if (is_array($insuranceRows)) {
+            foreach ($insuranceRows as $row) {
+                if (is_array($row) && filled($row['name'] ?? null)) {
+                    $insuranceName = trim((string) $row['name']);
+                    break;
+                }
+            }
+        }
 
         return ['status' => 'priced', 'pricing' => [
             'source' => 'foxie',
@@ -108,7 +244,58 @@ class FoxiePricingService
             'rental_subtotal' => Money::formatDecimalFromCents($cents),
             'total' => Money::formatDecimalFromCents($cents),
             'daily_price' => Money::formatDecimalFromCents((int) round($cents / $dayCount)),
+            'insurance_total' => Money::formatDecimalFromCents($insuranceCents),
+            'insurance_name' => $insuranceName,
             'has_special_discount' => false,
         ]];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function startingFromVehicle(User $host, int $vehicleId): ?array
+    {
+        $detail = $this->vehicleDetail($host, $vehicleId);
+        $amount = $detail['price_from'] ?? null;
+        $span = $detail['price_from_per_days'] ?? 1;
+        $currency = array_key_exists('currency', $detail)
+            ? PricingCurrency::normalize(is_string($detail['currency']) ? $detail['currency'] : null)
+            : 'ISK';
+        if (! $currency || ! is_numeric($amount) || ! is_finite((float) $amount) || (float) $amount <= 0
+            || ! is_numeric($span) || (int) $span < 1) {
+            return null;
+        }
+        $cents = (int) round(((float) $amount / (int) $span) * 100);
+        if ($cents < 1) {
+            return null;
+        }
+
+        return [
+            'source' => 'foxie',
+            'estimate_only' => true,
+            'base_only' => true,
+            'rental_days' => 1,
+            'currency' => $currency,
+            'rental_subtotal' => Money::formatDecimalFromCents($cents),
+            'total' => Money::formatDecimalFromCents($cents),
+            'daily_price' => Money::formatDecimalFromCents($cents),
+            'has_special_discount' => false,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function vehicleDetail(User $host, int $vehicleId): array
+    {
+        $key = 'foxie-vehicle:'.hash('sha256', json_encode([$host->id, $host->partner_api_key, $vehicleId]));
+        $cached = Cache::get($key);
+        if (is_array($cached)) {
+            return $cached;
+        }
+        $detail = $this->client->vehicle($host, $vehicleId);
+        Cache::put($key, $detail, 600);
+
+        return $detail;
     }
 }

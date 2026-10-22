@@ -8,6 +8,8 @@ use App\Filament\Resources\RegisteredHosts\Pages\ListRegisteredHosts;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -34,6 +36,26 @@ class RegisteredHostsAdminTest extends TestCase
             ->call('save')->assertHasNoFormErrors();
         $this->assertSame('test-password', $host->fresh()->partner_api_password);
         $this->assertSame('test-key', $host->fresh()->partner_api_key);
+    }
+
+    public function test_admin_can_upload_a_partner_logo(): void
+    {
+        Storage::fake('public');
+        $this->actingAs(User::factory()->admin()->create());
+        $host = User::factory()->host()->create();
+
+        Livewire::test(EditRegisteredHost::class, ['record' => $host->id])
+            ->fillForm([
+                'company_logo_path' => UploadedFile::fake()->image('logo.png', 240, 80),
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $host->refresh();
+        $this->assertNotNull($host->company_logo_path);
+        $this->assertStringStartsWith('company-logos/', $host->company_logo_path);
+        Storage::disk('public')->assertExists($host->company_logo_path);
+        $this->assertNotNull($host->company_logo_url);
     }
 
     public function test_admin_can_view_registered_hosts_list(): void

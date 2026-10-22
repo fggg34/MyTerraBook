@@ -69,7 +69,10 @@ export default function CarCard({ car, searchQuery = '', categoryName }) {
 
         {isCaren ? (
           <div className="mt-4 space-y-1">
-            {pricing ? <>
+            {pricing?.base_only ? <>
+              <strong>{formatCarenPrice(pricing.daily_price, pricing.currency, fmt)}</strong>
+              <p>From / day</p>
+            </> : pricing ? <>
               <strong>{formatCarenPrice(pricing.rental_subtotal, pricing.currency, fmt)}</strong>
               <p>Rental estimate · {pricing.rental_days} days</p>
               <p>{formatCarenPrice(pricing.daily_price, pricing.currency, fmt)} per day on average</p>

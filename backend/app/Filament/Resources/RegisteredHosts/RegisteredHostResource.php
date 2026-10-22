@@ -11,6 +11,7 @@ use App\Filament\Resources\RegisteredHosts\Schemas\RegisteredHostForm;
 use App\Filament\Resources\RegisteredHosts\Tables\RegisteredHostsTable;
 use App\Models\User;
 use BackedEnum;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -72,6 +73,11 @@ class RegisteredHostResource extends Resource
         return $schema->components([
             Section::make('Host details')->icon('heroicon-o-building-office-2')->columnSpanFull()->schema([
                 TextEntry::make('name'),
+                ImageEntry::make('company_logo_path')
+                    ->label('Partner logo')
+                    ->disk('public')
+                    ->height(64)
+                    ->placeholder('No logo'),
                 TextEntry::make('email')->copyable(),
                 TextEntry::make('phone')->placeholder('—'),
                 TextEntry::make('country_code')

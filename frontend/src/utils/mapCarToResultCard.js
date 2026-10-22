@@ -44,10 +44,14 @@ export function mapCarToResultCard(car, { searchQuery = '', config, categoryName
     image: resolveStorageUrl(car.thumbnail_url || car.main_image_path) || '/images/homepage/cardcar.jpg',
     href,
     price: isCaren
-      ? (pricing ? formatCarenPrice(dailyPrice(car), pricing.currency, priceFormatter) : carenPriceLabel(car.pricing_status))
+      ? (pricing
+        ? formatCarenPrice(pricing.base_only ? pricing.daily_price : dailyPrice(car), pricing.currency, priceFormatter)
+        : carenPriceLabel(car.pricing_status))
       : formatPrice(dailyPrice(car)),
     per: isCaren && !pricing ? '' : 'day',
-    badge: isCaren ? 'Rental estimate' : car.search_pricing?.has_special_discount ? 'Special price' : 'Extras included',
+    badge: isCaren
+      ? (pricing?.base_only ? 'From' : 'Rental estimate')
+      : car.search_pricing?.has_special_discount ? 'Special price' : 'Extras included',
     specs,
     transmission: car.transmission,
     fuel_type: car.fuel_type,

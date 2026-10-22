@@ -1,6 +1,8 @@
 import { ChevronLeft } from 'lucide-react'
 import ProtectionPlanGrid from './ProtectionPlanGrid'
 import AddonRow from './AddonRow'
+import FoxieInsurancePlans from '../listing/FoxieInsurancePlans'
+import { useFormatPrice } from '../../hooks/useFormatPrice'
 
 export default function Step2ExtrasCover({
   config,
@@ -14,7 +16,9 @@ export default function Step2ExtrasCover({
   onNext,
   onBack,
 }) {
-  const addons = item?.rental_options || []
+  const formatter = useFormatPrice()
+  const addons = item?.external_provider === 'foxie' ? [] : (item?.rental_options || [])
+  const insurancePlans = item?.external_provider === 'foxie' ? (item.insurance_plans || []) : []
   const amenities = (item?.amenities || []).flatMap((g) => g.items || (g.name ? [g] : []))
 
   return (
@@ -61,6 +65,23 @@ export default function Step2ExtrasCover({
         </div>
       )}
 
+      {insurancePlans.length > 0 && (
+        <div className="block">
+          <div className="block-head">
+            <span className="bnum">{config.step2.showProtection && item?.price_types?.length > 0 ? '2' : '1'}</span>
+            <h3>Insurance</h3>
+            <span className="bh-sub">Foxie protection for this camper. The trip total includes the plan you choose.</span>
+          </div>
+          <FoxieInsurancePlans
+            plans={insurancePlans}
+            selectedId={form.foxie_insurance_id}
+            onSelect={(id) => updateForm({ foxie_insurance_id: id })}
+            formatter={formatter}
+            hideLegend
+          />
+        </div>
+      )}
+
       {config.step2.showAddons && addons.length > 0 && (
         <div className="block">
           <div className="block-head">
@@ -82,7 +103,7 @@ export default function Step2ExtrasCover({
         </div>
       )}
 
-      {config.step2.showAddons && !addons.length && bookingType !== 'guesthouse' && (
+      {config.step2.showAddons && !addons.length && insurancePlans.length === 0 && bookingType !== 'guesthouse' && (
         <div className="block">
           <p style={{ margin: 0, fontSize: 14, color: 'var(--rtb-slate)' }}>No add-ons available for this listing.</p>
         </div>

@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Enums\DriveType;
 use App\Enums\ListingApprovalStatus;
 use App\Filament\Resources\RegisteredHosts\Pages\EditRegisteredHost;
+use App\Enums\OrderStatus;
 use App\Models\Car;
 use App\Models\Location;
+use App\Models\Order;
 use App\Models\PriceType;
 use App\Models\User;
 use App\Services\Partners\FoxiePartnerClient;
@@ -305,19 +307,50 @@ class FoxieIntegrationTest extends TestCase
         Http::assertSentCount(2);
     }
 
-    public function test_missing_dates_and_bad_locations_do_not_call_foxie(): void
+    public function test_missing_dates_show_the_foxie_starting_price(): void
     {
         [$car, $trip] = $this->fleet();
-        Http::fake();
+        Http::preventStrayRequests();
+        Http::fake([
+            '*/vehicles/20' => Http::response([
+                'id' => 20,
+                'price_from' => 10000,
+                'price_from_per_days' => 1,
+                'currency' => 'ISK',
+            ]),
+        ]);
         $this->getJson('/api/cars/'.$car->id.'/foxie-price')->assertOk()
-            ->assertJsonPath('status', 'needs_dates')->assertJsonPath('pricing', null);
+            ->assertJsonPath('status', 'base')
+            ->assertJsonPath('pricing.daily_price', '10000.00')
+            ->assertJsonPath('pricing.currency', 'ISK')
+            ->assertJsonPath('pricing.base_only', true);
+        $row = collect($this->getJson('/api/cars')->assertOk()->json('data'))->firstWhere('id', $car->id);
+        $this->assertSame('10000.00', $row['search_pricing']['daily_price']);
+        $this->assertSame('base', $row['pricing_status']);
         $trip['pickup_location_id'] = 999999;
         $this->getJson('/api/cars/'.$car->id.'/foxie-price?'.http_build_query($trip))->assertOk()
             ->assertJsonPath('status', 'unavailable');
-        $trip['total'] = 0;
-        Http::assertNothingSent();
+        Http::assertSentCount(1);
+
         $car->update(['is_active' => false]);
         $this->getJson('/api/cars/'.$car->id.'/foxie-price')->assertNotFound();
+    }
+
+    public function test_a_zero_foxie_starting_price_is_not_shown(): void
+    {
+        [$car] = $this->fleet();
+        Http::preventStrayRequests();
+        Http::fake([
+            '*/vehicles/20' => Http::response([
+                'id' => 20,
+                'price_from' => 0,
+                'price_from_per_days' => 1,
+                'currency' => 'ISK',
+            ]),
+        ]);
+        $this->getJson('/api/cars/'.$car->id.'/foxie-price')->assertOk()
+            ->assertJsonPath('status', 'needs_dates')
+            ->assertJsonPath('pricing', null);
     }
 
     public function test_calendar_blocks_foxie_dates_and_does_not_cache_a_failure(): void
@@ -363,21 +396,174 @@ class FoxieIntegrationTest extends TestCase
         Http::assertSentCount(2);
     }
 
-    public function test_checkout_cannot_create_a_foxie_reservation(): void
+    public function test_checkout_creates_a_foxie_reservation_from_a_live_quote(): void
     {
         [$car, $trip] = $this->fleet();
-        $price = PriceType::factory()->create();
+        $wrong = PriceType::factory()->create();
+        $rate = PriceType::query()->firstOrCreate(
+            ['slug' => 'foxie-standard'],
+            ['name' => 'Foxie rate', 'is_active' => true],
+        );
+        Http::preventStrayRequests();
+        Http::fake(function (Request $request) {
+            if ($request->method() === 'POST' && str_contains($request->url(), '/bookings')) {
+                return Http::response([
+                    'success' => true,
+                    'booking_id' => 4401,
+                    'status' => 'confirmed',
+                    'total' => 18900,
+                    'currency' => 'ISK',
+                    'paid_online' => true,
+                    'paid_amount' => 1890,
+                    'balance_at_pickup' => 17010,
+                ], 201);
+            }
+
+            return $this->quoteResponse($request);
+        });
         $payload = $trip + [
             'car_id' => $car->id,
-            'price_type_id' => $price->id,
-            'customer_name' => 'Traveler',
+            'price_type_id' => $wrong->id,
+            'customer_name' => 'Test Driver',
             'customer_email' => 'traveler@example.test',
+            'customer_phone' => '+3545550000',
         ];
         $this->postJson('/api/orders/quote', $payload)->assertStatus(422)
-            ->assertJsonPath('message', 'Online booking is not yet available for this vehicle.');
-        $this->postJson('/api/orders', $payload)->assertStatus(422)
-            ->assertJsonPath('message', 'Online booking is not yet available for this vehicle.');
+            ->assertJsonPath('message', 'Choose the Foxie rate.');
         $this->assertDatabaseCount('orders', 0);
+
+        $payload['price_type_id'] = $rate->id;
+        $this->postJson('/api/orders/quote', $payload)->assertOk()
+            ->assertJsonPath('total', '18900.00')
+            ->assertJsonPath('currency', 'ISK')
+            ->assertJsonPath('rental_days', 7);
+        $this->postJson('/api/orders', $payload)->assertCreated()
+            ->assertJsonPath('data.external_reference', '4401')
+            ->assertJsonPath('data.order_status', 'confirmed')
+            ->assertJsonPath('data.currency', 'ISK');
+        $this->assertDatabaseHas('orders', [
+            'car_id' => $car->id,
+            'external_provider' => 'foxie',
+            'external_reference' => '4401',
+            'total_cents' => 1890000,
+            'currency' => 'ISK',
+            'order_status' => 'confirmed',
+            'partner_sync_state' => 'confirmed',
+        ]);
+        Http::assertSent(function (Request $request) {
+            if ($request->method() !== 'POST' || ! str_contains($request->url(), '/bookings')) {
+                return false;
+            }
+            $body = $request->data();
+
+            return ($body['vehicle_id'] ?? null) === 20
+                && ($body['pickup_location'] ?? null) === 2
+                && ($body['dropoff_location'] ?? null) === 2
+                && ($body['customer']['first_name'] ?? null) === 'Test'
+                && ($body['customer']['last_name'] ?? null) === 'Driver'
+                && ($body['customer']['email'] ?? null) === 'traveler@example.test';
+        });
+
+        Http::fake([
+            '*/bookings/4401' => Http::response([
+                'success' => true,
+                'booking_id' => 4401,
+                'status' => 'cancelled',
+            ]),
+        ]);
+        Order::query()->firstOrFail()->update(['order_status' => OrderStatus::Cancelled]);
+        $this->assertSame('cancelled', Order::query()->firstOrFail()->partner_sync_state);
+        Http::assertSent(fn (Request $request) => $request->method() === 'DELETE'
+            && str_contains($request->url(), '/bookings/4401'));
+    }
+
+    public function test_a_rejected_foxie_booking_does_not_create_an_order(): void
+    {
+        [$car, $trip] = $this->fleet();
+        $rate = PriceType::query()->firstOrCreate(
+            ['slug' => 'foxie-standard'],
+            ['name' => 'Foxie rate', 'is_active' => true],
+        );
+        Http::preventStrayRequests();
+        Http::fake(function (Request $request) {
+            if ($request->method() === 'POST') {
+                return Http::response(['code' => 'missing_field', 'message' => 'Customer first_name, last_name, and email are required.'], 400);
+            }
+
+            return $this->quoteResponse($request);
+        });
+        $this->postJson('/api/orders', $trip + [
+            'car_id' => $car->id,
+            'price_type_id' => $rate->id,
+            'customer_name' => 'Test Driver',
+            'customer_email' => 'traveler@example.test',
+        ])->assertStatus(422)
+            ->assertJsonPath('message', 'Foxie could not complete this reservation. Please try again.');
+        $this->assertDatabaseCount('orders', 0);
+        Http::assertNotSent(fn (Request $request) => $request->method() === 'DELETE');
+    }
+
+    public function test_foxie_insurance_is_quoted_and_sent_with_the_booking(): void
+    {
+        [$car, $trip] = $this->fleet();
+        $rate = PriceType::query()->firstOrCreate(
+            ['slug' => 'foxie-standard'],
+            ['name' => 'Foxie rate', 'is_active' => true],
+        );
+        Http::preventStrayRequests();
+        Http::fake(function (Request $request) {
+            if ($request->method() === 'POST' && str_contains($request->url(), '/bookings')) {
+                return Http::response([
+                    'success' => true,
+                    'booking_id' => 4402,
+                    'status' => 'confirmed',
+                    'total' => 49000,
+                    'insurance' => 30100,
+                    'currency' => 'ISK',
+                ], 201);
+            }
+
+            return $this->quoteResponse($request);
+        });
+
+        $this->getJson('/api/cars/'.$car->id)->assertOk()
+            ->assertJsonPath('data.insurance_plans.0.name', 'Basic')
+            ->assertJsonPath('data.insurance_plans.0.cost', '0.00')
+            ->assertJsonPath('data.insurance_plans.1.id', 14)
+            ->assertJsonPath('data.insurance_plans.1.name', 'Gold')
+            ->assertJsonPath('data.insurance_plans.1.cost', '4300.00')
+            ->assertJsonPath('data.insurance_plans.1.per_day', true);
+
+        $payload = $trip + [
+            'car_id' => $car->id,
+            'price_type_id' => $rate->id,
+            'customer_name' => 'Test Driver',
+            'customer_email' => 'traveler@example.test',
+            'foxie_insurance_id' => 99,
+        ];
+        $this->postJson('/api/orders/quote', $payload)->assertStatus(422)
+            ->assertJsonPath('message', 'Choose a Foxie insurance plan from this vehicle.');
+
+        $payload['foxie_insurance_id'] = 14;
+        $this->postJson('/api/orders/quote', $payload)->assertOk()
+            ->assertJsonPath('total', '49000.00')
+            ->assertJsonPath('extras_subtotal', '30100.00')
+            ->assertJsonPath('extras_lines.0.name', 'Gold');
+        $this->postJson('/api/orders', $payload)->assertCreated()
+            ->assertJsonPath('data.total', '49000.00');
+        $this->assertDatabaseHas('orders', [
+            'car_id' => $car->id,
+            'external_reference' => '4402',
+            'extras_cents' => 3010000,
+            'total_cents' => 4900000,
+        ]);
+        Http::assertSent(function (Request $request) {
+            if ($request->method() !== 'POST' || ! str_contains($request->url(), '/bookings')) {
+                return false;
+            }
+
+            return ($request->data()['insurance'] ?? null) === 14;
+        });
     }
 
     private function host(): User
@@ -503,7 +689,29 @@ class FoxieIntegrationTest extends TestCase
     private function quoteResponse(Request $request)
     {
         if (str_contains($request->url(), '/pricing')) {
-            return Http::response(['total' => 18900, 'currency' => 'ISK', 'days' => 7]);
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+            $insurance = (int) ($query['insurance'] ?? 0);
+            $insuranceTotal = $insurance === 14 ? 30100 : 0;
+
+            return Http::response([
+                'total' => 18900 + $insuranceTotal,
+                'insurance_total' => $insuranceTotal,
+                'insurance' => $insurance ? [['id' => $insurance, 'name' => 'Gold']] : [],
+                'currency' => 'ISK',
+                'days' => 7,
+            ]);
+        }
+        if (str_contains($request->url(), '/vehicles/20')) {
+            return Http::response([
+                'id' => 20,
+                'price_from' => 10000,
+                'price_from_per_days' => 1,
+                'currency' => 'ISK',
+                'insurance' => [
+                    ['id' => 12, 'name' => 'Basic', 'cost' => 0, 'per_day' => false, 'is_insurance' => true, 'description' => ''],
+                    ['id' => 14, 'name' => 'Gold', 'cost' => 4300, 'per_day' => true, 'is_insurance' => true, 'description' => 'Lower excess'],
+                ],
+            ]);
         }
 
         return Http::response(['available' => true, 'vehicle_id' => 20]);

@@ -4,6 +4,7 @@ import { api } from '../../api'
 import { useFormatPrice } from '../../hooks/useFormatPrice'
 import { rangeIncludesBlockedDate } from '../../utils/bookingRestrictions'
 import { carenPriceLabel, formatCarenPrice } from '../../utils/carenPricing'
+import FoxieInsurancePlans, { defaultFoxieInsuranceId } from './FoxieInsurancePlans'
 import { formatDateTimeAt, parseTimeParts } from '../../utils/format'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
 import FieldSelect from '../ui/FieldSelect'
@@ -50,6 +51,8 @@ export default function CarenPricePanel({
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [attempt, setAttempt] = useState(0)
+  const insurancePlans = car.external_provider === 'foxie' ? (car.insurance_plans || []) : []
+  const [insuranceId, setInsuranceId] = useState(() => defaultFoxieInsuranceId(insurancePlans))
 
   useEffect(() => {
     setPickupLocationId((current) => {
@@ -85,11 +88,12 @@ export default function CarenPricePanel({
     return () => { cancelled = true }
   }, [car.id, pickupLocationId, dropoffLocationId])
 
+  const foxie = car.external_provider === 'foxie'
   const datesUnavailable = useMemo(
-    () => rangeIncludesBlockedDate(startDate, endDate, blockedDates),
-    [startDate, endDate, blockedDates],
+    () => (foxie ? false : rangeIncludesBlockedDate(startDate, endDate, blockedDates)),
+    [foxie, startDate, endDate, blockedDates],
   )
-  const bookingBlocked = !blockedDatesLoaded || datesUnavailable
+  const bookingBlocked = foxie ? false : (!blockedDatesLoaded || datesUnavailable)
   const times = startDate && endDate ? tripTimes(car, startDate, endDate) : { pickup_at: '', dropoff_at: '' }
   const tripReady = Boolean(
     pickupLocationId && dropoffLocationId && times.pickup_at && times.dropoff_at && times.dropoff_at > times.pickup_at,
@@ -110,10 +114,11 @@ export default function CarenPricePanel({
         priced: Boolean(pricing),
         datesUnavailable: bookingBlocked,
         blockedDatesLoaded,
+        foxieInsuranceId: insuranceId,
       }
     }
   }, [
-    startDate, endDate, pickupLocationId, dropoffLocationId,
+    startDate, endDate, pickupLocationId, dropoffLocationId, insuranceId,
     pricing, bookingBlocked, blockedDatesLoaded, onAvailabilityChange, bookingDatesRef,
   ])
 
@@ -133,6 +138,7 @@ export default function CarenPricePanel({
           dropoff_location_id: dropoffLocationId,
           pickup_at: times.pickup_at,
           dropoff_at: times.dropoff_at,
+          ...(car.external_provider === 'foxie' && insuranceId ? { foxie_insurance_id: insuranceId } : {}),
         },
       })
         .then(({ data }) => { if (!cancelled) setResult(data) })
@@ -141,7 +147,7 @@ export default function CarenPricePanel({
     }, 350)
     return () => { cancelled = true; window.clearTimeout(timer) }
   }, [
-    car.id, car.external_provider, pickupLocationId, dropoffLocationId,
+    car.id, car.external_provider, pickupLocationId, dropoffLocationId, insuranceId,
     times.pickup_at, times.dropoff_at, tripReady, datesUnavailable, attempt,
   ])
 
@@ -152,6 +158,9 @@ export default function CarenPricePanel({
     ? `Rental · ${nights} ${nights === 1 ? 'day' : 'days'}`
     : (typeConfig?.rateLabelDefault || 'Daily rate')
   const priceText = pricing ? formatCarenPrice(pricing.rental_subtotal, pricing.currency, formatter) : ''
+  const baseText = !pricing && car.base_daily_price
+    ? formatCarenPrice(car.base_daily_price, car.base_daily_currency || 'ISK', formatter)
+    : ''
   const canBook = Boolean(car.caren_booking_enabled && pricing && !bookingBlocked && !loading)
 
   const choosePickup = (value) => {
@@ -201,20 +210,28 @@ export default function CarenPricePanel({
           totalLoading={loading}
           formatTotal={pricing ? () => priceText : undefined}
           fixedPopper
-          blockedDates={blockedDates}
+          blockedDates={foxie ? [] : blockedDates}
           onChange={({ start, end }) => {
             setStartDate(start)
             setEndDate(end)
           }}
         />
       </div>
+      {insurancePlans.length > 0 ? (
+        <FoxieInsurancePlans
+          plans={insurancePlans}
+          selectedId={insuranceId}
+          onSelect={setInsuranceId}
+          formatter={formatter}
+        />
+      ) : null}
       <div className="rate-row">
         <span className="rl">{rateLabel}</span>
         <span className="rr">
           {startDate && endDate ? (
             loading ? <b>…</b> : priceText ? <b>{priceText}</b> : <b>-</b>
           ) : (
-            <b>-</b>
+            baseText ? <b>{baseText}</b> : <b>-</b>
           )}
         </span>
       </div>
@@ -222,6 +239,8 @@ export default function CarenPricePanel({
         <p className="listing-fees-note">
           {formatCarenPrice(pricing.daily_price, pricing.currency, formatter)} per day on average. Rental estimate only. Extras and additional charges may apply.
         </p>
+      ) : baseText ? (
+        <p className="listing-fees-note">From {baseText} per day. Select dates for the trip total.</p>
       ) : null}
       {datesUnavailable && blockedDatesLoaded ? (
         <p className="listing-unavailable-note">Selected dates are not available for booking.</p>
