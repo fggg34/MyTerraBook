@@ -6,9 +6,11 @@ use App\Enums\HostAccountType;
 use App\Enums\UserRole;
 use App\Services\Email\EmailService;
 use App\Support\PricingCurrency;
+use App\Support\RichText;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -44,6 +46,7 @@ class User extends Authenticatable implements FilamentUser
         'partner_rental_id',
         'partner_api_enabled',
         'partner_commission_rate',
+        'rental_terms_html',
     ];
 
     protected $hidden = [
@@ -149,6 +152,13 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return Storage::disk('public')->url($this->company_logo_path);
+    }
+
+    protected function rentalTermsHtml(): Attribute
+    {
+        return Attribute::make(
+            set: fn (mixed $value): ?string => RichText::clean(is_string($value) ? $value : null),
+        );
     }
 
     public function pricingCurrency(): string

@@ -16,6 +16,7 @@ class GreenlightBookingService
         private readonly GreenlightPartnerClient $client,
         private readonly GreenlightSettings $settings,
         private readonly GreenlightMoney $money,
+        private readonly GreenlightOptionsService $options,
     ) {}
 
     public function isPartnerCar(Car $car): bool
@@ -101,10 +102,14 @@ class GreenlightBookingService
         Location $pickup,
         Location $dropoff,
         array $rentalOptions = [],
+        ?string $insurancePlanId = null,
+        array $addonIds = [],
     ): array {
-        $remote = $this->client->quote($this->tripPayload($car, $priceTypeId, $pickupAt, $dropoffAt, $pickup, $dropoff, $rentalOptions));
+        $planId = $this->selectedInsuranceId($car, $insurancePlanId, $priceTypeId);
+        $addons = $this->options->selectedAddons($car, $addonIds);
+        $remote = $this->client->quote($this->tripPayload($car, $pickupAt, $dropoffAt, $pickup, $dropoff, $planId, $addons));
 
-        return $this->mapQuote($remote, $priceTypeId);
+        return $this->mapQuote($remote, $priceTypeId, $this->offerName($car, $planId), $this->addonLabel($car, $addonIds));
     }
 
     /**
@@ -145,13 +150,17 @@ class GreenlightBookingService
         ?string $notes = null,
         bool $holdUntilPaid = false,
         ?CarbonInterface $holdExpiresAt = null,
+        ?string $insurancePlanId = null,
+        array $addonIds = [],
     ): array {
         $parts = preg_split('/\s+/', trim($customerName)) ?: [];
         $firstName = $parts[0] ?? 'Guest';
         $lastName = count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : $firstName;
+        $planId = $this->selectedInsuranceId($car, $insurancePlanId, $priceTypeId);
+        $addons = $this->options->selectedAddons($car, $addonIds);
 
         return $this->client->createReservation([
-            ...$this->tripPayload($car, $priceTypeId, $pickupAt, $dropoffAt, $pickup, $dropoff, $rentalOptions),
+            ...$this->tripPayload($car, $pickupAt, $dropoffAt, $pickup, $dropoff, $planId, $addons),
             'holdUntilPaid' => $holdUntilPaid,
             'holdExpiresAt' => $holdExpiresAt?->toIso8601String(),
             'driver' => [
@@ -201,17 +210,17 @@ class GreenlightBookingService
     }
 
     /**
-     * @param  array<int|string, mixed>  $rentalOptions
+     * @param  list<array{addonId: string, quantity: int}>  $addons
      * @return array<string, mixed>
      */
     private function tripPayload(
         Car $car,
-        int $priceTypeId,
         CarbonInterface $pickupAt,
         CarbonInterface $dropoffAt,
         Location $pickup,
         Location $dropoff,
-        array $rentalOptions,
+        string $insurancePlanId,
+        array $addons,
     ): array {
         return [
             'vehicleId' => (string) $car->external_vehicle_id,
@@ -219,9 +228,60 @@ class GreenlightBookingService
             'dropOffLocationId' => $this->externalLocationId($dropoff),
             'pickupAt' => $pickupAt->toIso8601String(),
             'returnAt' => $dropoffAt->toIso8601String(),
-            'insurancePlanId' => $this->insurancePlanId($priceTypeId),
-            'addons' => [],
+            'insurancePlanId' => $insurancePlanId,
+            'addons' => $addons,
         ];
+    }
+
+    /**
+     * @param  list<string>  $addonIds
+     */
+    private function selectedInsuranceId(Car $car, ?string $raw, int $priceTypeId): string
+    {
+        if ($raw === null || trim($raw) === '') {
+            return $this->insurancePlanId($priceTypeId);
+        }
+        $id = trim($raw);
+        $plans = $this->options->forCar($car)['insurance_plans'];
+        if ($plans === []) {
+            throw new GreenlightPartnerException('Greenlight insurance plans could not be checked.');
+        }
+        foreach ($plans as $plan) {
+            if ((string) ($plan['id'] ?? '') === $id) {
+                return $id;
+            }
+        }
+
+        throw new GreenlightPartnerException('Choose a Greenlight insurance plan from this vehicle.');
+    }
+
+    private function offerName(Car $car, string $planId): string
+    {
+        foreach ($this->options->forCar($car)['insurance_plans'] as $plan) {
+            if ((string) ($plan['id'] ?? '') === $planId && filled($plan['name'] ?? null)) {
+                return (string) $plan['name'];
+            }
+        }
+
+        return 'Insurance';
+    }
+
+    /**
+     * @param  list<string>  $addonIds
+     */
+    private function addonLabel(Car $car, array $addonIds): string
+    {
+        if ($addonIds === []) {
+            return 'Add-ons';
+        }
+        $names = [];
+        foreach ($this->options->forCar($car)['partner_extras'] as $extra) {
+            if (in_array((string) ($extra['id'] ?? ''), $addonIds, true)) {
+                $names[] = (string) $extra['name'];
+            }
+        }
+
+        return $names !== [] ? implode(', ', $names) : 'Add-ons';
     }
 
     private function externalLocationId(Location $location): string
@@ -261,7 +321,7 @@ class GreenlightBookingService
      * @param  array<string, mixed>  $remote
      * @return array<string, mixed>
      */
-    private function mapQuote(array $remote, int $priceTypeId): array
+    private function mapQuote(array $remote, int $priceTypeId, string $insuranceName = 'Insurance', string $addonName = 'Add-ons'): array
     {
         $base = $this->money->fromIsk((int) ($remote['baseRateIsk'] ?? 0));
         $insurance = $this->money->fromIsk((int) ($remote['extrasTotalIsk'] ?? 0));
@@ -278,7 +338,7 @@ class GreenlightBookingService
             $extrasLines[] = [
                 'rental_option_id' => null,
                 'kind' => 'insurance',
-                'name' => 'Insurance',
+                'name' => $insuranceName,
                 'quantity' => 1,
                 'unit_price_cents' => $insurance['cents'],
                 'total_cents' => $insurance['cents'],
@@ -288,7 +348,7 @@ class GreenlightBookingService
             $extrasLines[] = [
                 'rental_option_id' => null,
                 'kind' => 'addon',
-                'name' => 'Add-ons',
+                'name' => $addonName,
                 'quantity' => 1,
                 'unit_price_cents' => $addons['cents'],
                 'total_cents' => $addons['cents'],

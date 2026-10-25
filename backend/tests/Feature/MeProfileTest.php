@@ -59,6 +59,28 @@ class MeProfileTest extends TestCase
         ]);
     }
 
+    public function test_host_can_save_contract_terms_without_scripts(): void
+    {
+        $host = User::factory()->host()->create([
+            'phone' => '+354 555 0000',
+        ]);
+
+        Sanctum::actingAs($host);
+
+        $this->patchJson('/api/me/profile', [
+            'name' => $host->name,
+            'email' => $host->email,
+            'phone' => $host->phone,
+            'currency' => 'EUR',
+            'rental_terms_html' => '<p>No smoking</p><script>alert(1)</script><a href="javascript:alert(1)">bad</a>',
+        ])->assertOk();
+
+        $saved = (string) $host->fresh()->rental_terms_html;
+        $this->assertStringContainsString('No smoking', $saved);
+        $this->assertStringNotContainsString('<script', $saved);
+        $this->assertStringNotContainsString('javascript:', $saved);
+    }
+
     public function test_email_change_requires_current_password(): void
     {
         $host = User::factory()->host()->create([

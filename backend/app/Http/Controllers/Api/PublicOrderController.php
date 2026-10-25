@@ -59,6 +59,8 @@ class PublicOrderController extends Controller
                 $request->input('rental_options', []),
                 $request->input('coupon_code'),
                 $request->filled('foxie_insurance_id') ? $request->integer('foxie_insurance_id') : null,
+                $this->partnerExtraIds($request),
+                $request->filled('partner_insurance_id') ? (string) $request->input('partner_insurance_id') : null,
             );
         } catch (BookingUnavailableException) {
             return response()->json(['message' => 'No availability for these dates.'], 422);
@@ -149,6 +151,9 @@ class PublicOrderController extends Controller
                 $request->integer('dropoff_location_id'),
                 $request->input('rental_options', []),
                 $request->input('coupon_code'),
+                $request->filled('foxie_insurance_id') ? $request->integer('foxie_insurance_id') : null,
+                $this->partnerExtraIds($request),
+                $request->filled('partner_insurance_id') ? (string) $request->input('partner_insurance_id') : null,
             );
         } catch (BookingUnavailableException) {
             return response()->json(['message' => 'No availability for these dates.'], 422);
@@ -183,6 +188,8 @@ class PublicOrderController extends Controller
                     $request->input('notes'),
                     $awaitsOnlinePayment,
                     $awaitsOnlinePayment ? now()->addMinutes($lockMinutes) : null,
+                    $request->filled('partner_insurance_id') ? (string) $request->input('partner_insurance_id') : null,
+                    $this->partnerExtraIds($request),
                 );
             } catch (GreenlightPartnerException $e) {
                 return response()->json(['message' => $e->getMessage()], 422);
@@ -382,6 +389,8 @@ class PublicOrderController extends Controller
         array $rentalOptions,
         ?string $couponCode,
         ?int $foxieInsuranceId = null,
+        array $partnerExtraIds = [],
+        ?string $partnerInsuranceId = null,
     ): array {
         if ($car->external_provider === 'foxie') {
             $quote = $this->foxie->quote($car, [
@@ -389,6 +398,7 @@ class PublicOrderController extends Controller
                 'pickup_location_id' => $pickupLocationId, 'dropoff_location_id' => $dropoffLocationId,
                 'rental_options' => $rentalOptions, 'coupon_code' => $couponCode,
                 'foxie_insurance_id' => $foxieInsuranceId,
+                'partner_extra_ids' => $partnerExtraIds,
             ]);
 
             return [$quote, ['basic_rental_cents' => $quote['base_rental_cents'], 'protection_upgrade_cents' => 0]];
@@ -398,6 +408,8 @@ class PublicOrderController extends Controller
                 'price_type_id' => $priceTypeId, 'pickup_at' => $pickup, 'dropoff_at' => $dropoff,
                 'pickup_location_id' => $pickupLocationId, 'dropoff_location_id' => $dropoffLocationId,
                 'rental_options' => $rentalOptions, 'coupon_code' => $couponCode,
+                'partner_extra_ids' => $partnerExtraIds,
+                'partner_insurance_id' => $partnerInsuranceId,
             ]);
 
             return [$quote, ['basic_rental_cents' => $quote['base_rental_cents'], 'protection_upgrade_cents' => 0]];
@@ -417,6 +429,8 @@ class PublicOrderController extends Controller
                 $pickupLocation,
                 $dropoffLocation,
                 $rentalOptions,
+                $partnerInsuranceId,
+                $partnerExtraIds,
             );
 
             return [$quote, $this->greenlight->split($quote)];
@@ -450,5 +464,21 @@ class PublicOrderController extends Controller
         );
 
         return [$quote, $split];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function partnerExtraIds(OrderQuoteRequest|StoreOrderRequest $request): array
+    {
+        $raw = $request->input('partner_extra_ids', []);
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn ($id) => trim((string) $id),
+            $raw,
+        ), static fn (string $id) => $id !== ''));
     }
 }

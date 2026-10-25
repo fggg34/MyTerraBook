@@ -1,6 +1,6 @@
 import { formatDateTimeAt, parseTimeParts, toApiDateTime } from './format'
 
-export function buildListingQuotePayload(listing, startDate, endDate, selectedAddonIds = []) {
+export function buildListingQuotePayload(listing, startDate, endDate, selectedAddonIds = [], insuranceId = '') {
   const car = listing?.car
   if (!car?.id || !startDate || !endDate) return null
 
@@ -30,13 +30,21 @@ export function buildListingQuotePayload(listing, startDate, endDate, selectedAd
 
   if (!pickupLocal || !dropoffLocal) return null
 
-  return {
+  const partnerExtras = car.partner_extras || []
+  const payload = {
     car_id: Number(car.id),
     price_type_id: Number(priceType.id),
     pickup_location_id: Number(pickupLoc.id),
     dropoff_location_id: Number(dropoffLoc.id),
     pickup_at: toApiDateTime(pickupLocal),
     dropoff_at: toApiDateTime(dropoffLocal),
-    rental_options: (selectedAddonIds || []).map(Number).filter((id) => id > 0),
+    rental_options: partnerExtras.length ? [] : (selectedAddonIds || []).map(Number).filter((id) => id > 0),
   }
+  if (partnerExtras.length && selectedAddonIds?.length) {
+    payload.partner_extra_ids = selectedAddonIds.map(String)
+  }
+  if (insuranceId && car.external_provider !== 'foxie') {
+    payload.partner_insurance_id = String(insuranceId)
+  }
+  return payload
 }

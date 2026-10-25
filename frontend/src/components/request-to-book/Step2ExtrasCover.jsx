@@ -17,8 +17,15 @@ export default function Step2ExtrasCover({
   onBack,
 }) {
   const formatter = useFormatPrice()
-  const addons = item?.external_provider === 'foxie' ? [] : (item?.rental_options || [])
-  const insurancePlans = item?.external_provider === 'foxie' ? (item.insurance_plans || []) : []
+  const partnerExtras = item?.partner_extras || []
+  const addons = partnerExtras.length ? partnerExtras : (item?.external_provider === 'foxie' ? [] : (item?.rental_options || []))
+  const insurancePlans = item?.insurance_plans || []
+  const insuranceField = item?.external_provider === 'foxie' ? 'foxie_insurance_id' : 'partner_insurance_id'
+  const protectionVisible = config.step2.showProtection && item?.price_types?.length > 0
+  const insuranceVisible = insurancePlans.length > 0
+  const addonNumber = protectionVisible || insuranceVisible
+    ? 1 + Number(protectionVisible) + Number(insuranceVisible)
+    : 2
   const amenities = (item?.amenities || []).flatMap((g) => g.items || (g.name ? [g] : []))
 
   return (
@@ -65,17 +72,17 @@ export default function Step2ExtrasCover({
         </div>
       )}
 
-      {insurancePlans.length > 0 && (
+      {insuranceVisible && (
         <div className="block">
           <div className="block-head">
-            <span className="bnum">{config.step2.showProtection && item?.price_types?.length > 0 ? '2' : '1'}</span>
+            <span className="bnum">{protectionVisible ? '2' : '1'}</span>
             <h3>Insurance</h3>
-            <span className="bh-sub">Foxie protection for this camper. The trip total includes the plan you choose.</span>
+            <span className="bh-sub">The trip total includes the plan you choose.</span>
           </div>
           <FoxieInsurancePlans
             plans={insurancePlans}
-            selectedId={form.foxie_insurance_id}
-            onSelect={(id) => updateForm({ foxie_insurance_id: id })}
+            selectedId={form[insuranceField]}
+            onSelect={(id) => updateForm({ [insuranceField]: id })}
             formatter={formatter}
             hideLegend
           />
@@ -85,7 +92,7 @@ export default function Step2ExtrasCover({
       {config.step2.showAddons && addons.length > 0 && (
         <div className="block">
           <div className="block-head">
-            <span className="bnum">2</span>
+            <span className="bnum">{addonNumber}</span>
             <h3>Host add-ons</h3>
             <span className="bh-sub">{config.step2.addonsSubtitle}</span>
           </div>
@@ -94,7 +101,9 @@ export default function Step2ExtrasCover({
               <AddonRow
                 key={opt.id}
                 option={opt}
-                selected={form.rental_option_ids.includes(Number(opt.id))}
+                selected={partnerExtras.length
+                  ? (form.partner_extra_ids || []).map(String).includes(String(opt.id))
+                  : form.rental_option_ids.includes(Number(opt.id))}
                 nights={nights}
                 onToggle={toggleAddon}
               />
@@ -103,7 +112,7 @@ export default function Step2ExtrasCover({
         </div>
       )}
 
-      {config.step2.showAddons && !addons.length && insurancePlans.length === 0 && bookingType !== 'guesthouse' && (
+      {config.step2.showAddons && !addons.length && !insuranceVisible && bookingType !== 'guesthouse' && (
         <div className="block">
           <p style={{ margin: 0, fontSize: 14, color: 'var(--rtb-slate)' }}>No add-ons available for this listing.</p>
         </div>

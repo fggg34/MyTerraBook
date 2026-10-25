@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\RegisteredHosts\Schemas;
 
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -37,6 +38,15 @@ class RegisteredHostForm
                         ->searchable()
                         ->native(false),
                 ])->columns(2),
+            Section::make('Contract rental terms and conditions')
+                ->icon('heroicon-o-document-text')
+                ->columnSpanFull()
+                ->description('The host can edit this after signing in. It is shown on their listings and rental contracts.')
+                ->schema([
+                    RichEditor::make('rental_terms_html')
+                        ->hiddenLabel()
+                        ->columnSpanFull(),
+                ]),
             Section::make('Partner API connection')
                 ->icon('heroicon-o-signal')
                 ->columnSpanFull()

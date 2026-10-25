@@ -69,12 +69,19 @@ function buildDetailSpecs(car) {
 }
 
 function buildAmenities(car) {
-  return (car.characteristics || []).map((c, i) => ({
+  const local = (car.characteristics || []).map((c) => ({
     name: c.display_text || c.name,
     icon: c.icon,
     iconUrl: c.icon_url || null,
-    featured: i < 4,
   }))
+  const partner = (car.partner_characteristics || []).map((c) => ({
+    name: c.name,
+    icon: null,
+    iconUrl: null,
+  }))
+  return [...local, ...partner]
+    .filter((item) => item.name)
+    .map((item, i) => ({ ...item, featured: i < 4 }))
 }
 
 function buildConditions(car) {
@@ -87,16 +94,17 @@ function buildConditions(car) {
 
 function buildAddons(car, priceFormatter) {
   const format = priceFormatter?.format ?? ((v) => String(v))
-  return (car.rental_options || []).map((opt) => ({
+  const source = (car.partner_extras || []).length ? car.partner_extras : (car.rental_options || [])
+  return source.map((opt) => ({
     id: opt.id,
     name: opt.name,
     icon: opt.icon,
     iconUrl: opt.icon_url || null,
     description: opt.description || '',
-    sub: guestRentalOptionSubLabel(!!opt.is_daily_cost),
+    sub: guestRentalOptionSubLabel(!!(opt.is_daily_cost || opt.per_day)),
     price: opt.cost ? format(Number.parseFloat(opt.cost)) : ',',
     cost_cents: opt.cost_cents ?? 0,
-    is_daily_cost: !!opt.is_daily_cost,
+    is_daily_cost: !!(opt.is_daily_cost || opt.per_day),
     free: (opt.cost_cents ?? 0) === 0,
   }))
 }
@@ -171,6 +179,7 @@ export function mapCarToListing(car, listingType = 'campervan', listingReviewsOv
     description: { short: shortDesc || 'Description coming soon.', more: moreDesc },
     amenities: buildAmenities(car),
     conditions: buildConditions(car),
+    rentalTermsHtml: car.rental_terms_html || '',
     sleeping: null,
     addons: buildAddons(car, priceFormatter),
     pickupLocations: car.pickup_locations || [],

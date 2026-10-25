@@ -20,7 +20,7 @@ export default function ListingOptionalExtras({
     <div className="addon-panel">
       <div className="addon-list">
         {visible.map((a) => {
-          const selected = selectedAddonIds.includes(Number(a.id))
+          const selected = selectedAddonIds.map(String).includes(String(a.id))
           return (
             <button
               key={a.id || a.name}

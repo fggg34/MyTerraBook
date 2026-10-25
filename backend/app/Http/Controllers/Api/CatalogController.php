@@ -23,8 +23,10 @@ use App\Services\OrderAvailabilityService;
 use App\Services\Partners\GreenlightBookingService;
 use App\Services\Partners\CarenAvailabilityService;
 use App\Services\Partners\CarenPricingService;
+use App\Services\Partners\CarenOptionsService;
 use App\Services\Partners\FoxieAvailabilityService;
 use App\Services\Partners\FoxiePricingService;
+use App\Services\Partners\GreenlightOptionsService;
 use App\Services\RentalQuoteService;
 use App\Support\DailyFarePricing;
 use App\Support\ListingPartner;
@@ -46,6 +48,8 @@ class CatalogController extends Controller
         private readonly CarenAvailabilityService $carenAvailability,
         private readonly FoxiePricingService $foxiePricing,
         private readonly FoxieAvailabilityService $foxieAvailability,
+        private readonly CarenOptionsService $carenOptions,
+        private readonly GreenlightOptionsService $greenlightOptions,
     ) {}
 
     public function mainCategories(): JsonResponse
@@ -345,6 +349,14 @@ class CatalogController extends Controller
                 ];
             }
             $partnerPrice['insurance_plans'] = $this->foxiePricing->insurancePlans($car);
+            $partnerPrice['partner_extras'] = $this->foxiePricing->extras($car);
+            $partnerPrice['partner_characteristics'] = $this->foxiePricing->characteristics($car);
+        }
+        if ($car->external_provider === 'caren') {
+            $partnerPrice = array_merge($partnerPrice, $this->carenOptions->forCar($car));
+        }
+        if ($this->greenlight->isPartnerCar($car)) {
+            $partnerPrice = array_merge($partnerPrice, $this->greenlightOptions->forCar($car));
         }
 
         $locationFees = LocationFee::query()
@@ -492,6 +504,8 @@ class CatalogController extends Controller
             'pickup_location_id' => ['nullable', 'integer', 'min:1'],
             'dropoff_location_id' => ['nullable', 'integer', 'min:1'],
             'foxie_insurance_id' => ['nullable', 'integer', 'min:1'],
+            'partner_extra_ids' => ['nullable', 'array', 'max:20'],
+            'partner_extra_ids.*' => ['regex:/^[A-Za-z0-9_-]{1,64}$/'],
         ]);
     }
 
@@ -519,7 +533,8 @@ class CatalogController extends Controller
         return $this->foxiePricing->quote($car, $request->integer('pickup_location_id'),
             $request->integer('dropoff_location_id'), Carbon::parse($request->query('pickup_at')),
             Carbon::parse($request->query('dropoff_at')), false,
-            $request->filled('foxie_insurance_id') ? $request->integer('foxie_insurance_id') : null);
+            $request->filled('foxie_insurance_id') ? $request->integer('foxie_insurance_id') : null,
+            $request->input('partner_extra_ids', []));
     }
 
     private function resolveSearchPricing(Car $car, Request $request): ?array

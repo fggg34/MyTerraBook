@@ -20,13 +20,20 @@ class FoxiePricingService
     /**
      * @return array{status: string, pricing: array<string, mixed>|null}
      */
-    public function quote(Car $car, int $pickupId, int $dropoffId, CarbonInterface $from, CarbonInterface $to, bool $fresh = false, ?int $insuranceId = null): array
+    public function quote(Car $car, int $pickupId, int $dropoffId, CarbonInterface $from, CarbonInterface $to, bool $fresh = false, ?int $insuranceId = null, array $extraIds = []): array
     {
         $unavailable = ['status' => 'unavailable', 'pricing' => null];
         if ($insuranceId !== null && ! $this->hasInsurancePlan($car, $insuranceId)) {
             return ['status' => 'error', 'pricing' => null];
         }
+        $extraIds = $this->normalizeExtraIds($extraIds);
+        if ($extraIds !== [] && ! $this->hasExtras($car, $extraIds)) {
+            return ['status' => 'error', 'pricing' => null];
+        }
         $query = $this->tripQuery($car, $pickupId, $dropoffId, $from, $to, $insuranceId);
+        if ($query !== null && $extraIds !== []) {
+            $query['extras'] = $this->extrasQuery($extraIds);
+        }
         if ($query === null) {
             return $unavailable;
         }
@@ -136,6 +143,112 @@ class FoxiePricingService
         return $plans;
     }
 
+    /**
+     * @return list<array{id: int, name: string, description: string, cost: string, cost_cents: int, per_day: bool, max_price_cents: int, currency: string}>
+     */
+    public function extras(Car $car): array
+    {
+        $detail = $this->detailFor($car);
+        $rows = $detail['extras'] ?? null;
+        if (! is_array($rows)) {
+            return [];
+        }
+        $extras = [];
+        foreach ($rows as $row) {
+            if (! is_array($row) || filter_var($row['is_insurance'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+                continue;
+            }
+            $id = $row['id'] ?? null;
+            $major = $row['cost'] ?? 0;
+            if (! is_numeric($id) || (int) $id < 1 || ! is_numeric($major) || ! is_finite((float) $major) || (float) $major < 0) {
+                continue;
+            }
+            $cents = (int) round((float) $major * 100);
+            $max = $row['max_price'] ?? 0;
+            $name = trim((string) ($row['name'] ?? ''));
+            $extras[] = [
+                'id' => (int) $id,
+                'name' => $name !== '' ? $name : 'Extra',
+                'description' => trim((string) ($row['description'] ?? '')),
+                'cost' => Money::formatDecimalFromCents($cents),
+                'cost_cents' => $cents,
+                'per_day' => filter_var($row['per_day'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'is_daily_cost' => filter_var($row['per_day'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'max_quantity' => max(1, (int) ($row['max_quantity'] ?? 1)),
+                'max_price_cents' => is_numeric($max) && (float) $max > 0 ? (int) round((float) $max * 100) : 0,
+                'currency' => 'ISK',
+            ];
+        }
+
+        return $extras;
+    }
+
+    /**
+     * @return list<array{name: string}>
+     */
+    public function characteristics(Car $car): array
+    {
+        $detail = $this->detailFor($car);
+        $rows = [];
+        $chars = $detail['characteristics'] ?? [];
+        if (is_array($chars)) {
+            foreach ($chars as $item) {
+                $name = $this->characteristicName($item);
+                if ($name !== null) {
+                    $row = PartnerOfferFormatter::characteristic($name);
+                    if ($row) {
+                        $rows[] = $row;
+                    }
+                }
+            }
+        }
+        $doors = (int) ($detail['doors'] ?? 0);
+        if ($doors > 0) {
+            $row = PartnerOfferFormatter::characteristic($doors.' doors');
+            if ($row) {
+                $rows[] = $row;
+            }
+        }
+        $seen = [];
+        $unique = [];
+        foreach ($rows as $row) {
+            $key = mb_strtolower($row['name']);
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $unique[] = $row;
+        }
+
+        return $unique;
+    }
+
+    /**
+     * @param  list<int>  $extraIds
+     * @return list<array{id: int, name: string, total_cents: int}>
+     */
+    public function extraLines(Car $car, array $extraIds, int $days): array
+    {
+        $catalog = [];
+        foreach ($this->extras($car) as $extra) {
+            $catalog[$extra['id']] = $extra;
+        }
+        $lines = [];
+        foreach ($extraIds as $id) {
+            $extra = $catalog[$id] ?? null;
+            if (! $extra || $days < 1) {
+                return [];
+            }
+            $cents = $extra['per_day'] ? $extra['cost_cents'] * $days : $extra['cost_cents'];
+            if ($extra['max_price_cents'] > 0 && $cents > $extra['max_price_cents']) {
+                $cents = $extra['max_price_cents'];
+            }
+            $lines[] = ['id' => $id, 'name' => $extra['name'], 'total_cents' => $cents];
+        }
+
+        return $lines;
+    }
+
     public function hasInsurancePlan(Car $car, int $insuranceId): bool
     {
         foreach ($this->insurancePlans($car) as $plan) {
@@ -145,6 +258,32 @@ class FoxiePricingService
         }
 
         return false;
+    }
+
+    /**
+     * @param  list<int>  $extraIds
+     */
+    public function hasExtras(Car $car, array $extraIds): bool
+    {
+        $known = [];
+        foreach ($this->extras($car) as $extra) {
+            $known[$extra['id']] = true;
+        }
+        foreach ($extraIds as $id) {
+            if (! isset($known[$id])) {
+                return false;
+            }
+        }
+
+        return $extraIds !== [];
+    }
+
+    /**
+     * @param  list<int>  $extraIds
+     */
+    public function extrasQuery(array $extraIds): string
+    {
+        return implode(';', array_map(static fn (int $id) => $id.':1', $extraIds));
     }
 
     public function tripQuery(Car $car, int $pickupId, int $dropoffId, CarbonInterface $from, CarbonInterface $to, ?int $insuranceId = null): ?array
@@ -191,7 +330,9 @@ class FoxiePricingService
     private function fetch(User $host, array $query, CarbonInterface $from, CarbonInterface $to): array
     {
         $unavailable = ['status' => 'unavailable', 'pricing' => null];
-        $availability = $this->client->availability($host, $query);
+        $availabilityQuery = $query;
+        unset($availabilityQuery['extras']);
+        $availability = $this->client->availability($host, $availabilityQuery);
         if (($availability['available'] ?? null) !== true) {
             return $unavailable;
         }
@@ -246,6 +387,7 @@ class FoxiePricingService
             'daily_price' => Money::formatDecimalFromCents((int) round($cents / $dayCount)),
             'insurance_total' => Money::formatDecimalFromCents($insuranceCents),
             'insurance_name' => $insuranceName,
+            'extras_total' => Money::formatDecimalFromCents($this->majorCents($body['extras_total'] ?? 0)),
             'has_special_discount' => false,
         ]];
     }
@@ -297,5 +439,68 @@ class FoxiePricingService
         Cache::put($key, $detail, 600);
 
         return $detail;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function detailFor(Car $car): array
+    {
+        $host = $car->host;
+        if (! $host || $car->external_provider !== 'foxie' || ! $host->partner_api_enabled
+            || $host->partner_provider !== 'foxie'
+            || ! preg_match('/^[1-9]\d*$/', (string) $car->external_vehicle_id)) {
+            return [];
+        }
+        try {
+            return $this->vehicleDetail($host, (int) $car->external_vehicle_id);
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @param  list<mixed>  $raw
+     * @return list<int>
+     */
+    private function normalizeExtraIds(array $raw): array
+    {
+        $ids = [];
+        foreach ($raw as $value) {
+            if (! is_numeric($value) || (int) $value < 1) {
+                return [-1];
+            }
+            $ids[] = (int) $value;
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function characteristicName(mixed $item): ?string
+    {
+        if (is_string($item) || is_numeric($item)) {
+            $name = trim((string) $item);
+
+            return $name !== '' ? $name : null;
+        }
+        if (! is_array($item)) {
+            return null;
+        }
+        foreach (['name', 'label', 'title'] as $key) {
+            if (filled($item[$key] ?? null) && ! is_array($item[$key])) {
+                return trim((string) $item[$key]);
+            }
+        }
+
+        return null;
+    }
+
+    private function majorCents(mixed $amount): int
+    {
+        if (! is_numeric($amount) || ! is_finite((float) $amount) || (float) $amount <= 0) {
+            return 0;
+        }
+
+        return (int) round((float) $amount * 100);
     }
 }

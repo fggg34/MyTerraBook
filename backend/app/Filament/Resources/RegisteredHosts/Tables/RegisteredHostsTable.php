@@ -3,7 +3,10 @@
 namespace App\Filament\Resources\RegisteredHosts\Tables;
 
 use App\Models\User;
+use App\Services\Hosts\HostLoginInvite;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Notifications\Notification;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -85,6 +88,7 @@ class RegisteredHostsTable
                 TernaryFilter::make('partner_api_enabled')->label('API enabled'),
             ])
             ->recordActions([
+                self::sendLoginAction(),
                 EditAction::make()->label('Manage host')->icon('heroicon-o-cog-6-tooth'),
                 ActionGroup::make([
                     ViewAction::make(),
@@ -100,6 +104,33 @@ class RegisteredHostsTable
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
+    }
+
+    public static function sendLoginAction(): Action
+    {
+        return Action::make('sendHostLogin')
+            ->label('Send login')
+            ->icon('heroicon-o-envelope')
+            ->requiresConfirmation()
+            ->modalHeading('Send host login')
+            ->modalDescription(fn (User $record): string => 'This replaces the current password for '.$record->email.' and emails a new login. The host can sign in, review vehicles and stays, and change the password in settings.')
+            ->action(function (User $record, HostLoginInvite $invite): void {
+                if ($invite->send($record)) {
+                    Notification::make()
+                        ->title('Login emailed')
+                        ->body('A new login was sent to '.$record->email.'.')
+                        ->success()
+                        ->send();
+
+                    return;
+                }
+
+                Notification::make()
+                    ->title('Login email was not sent')
+                    ->body('The host login email is turned off or could not be delivered. The password was not changed.')
+                    ->danger()
+                    ->send();
+            });
     }
 
     public static function makeDeleteAction(): DeleteAction

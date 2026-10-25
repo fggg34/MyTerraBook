@@ -32,6 +32,7 @@ export default function CarenPricePanel({
   bookingDatesRef,
   onRequestBook,
   onAvailabilityChange,
+  selectedAddonIds = [],
 }) {
   const [query] = useSearchParams()
   const formatter = useFormatPrice()
@@ -51,7 +52,7 @@ export default function CarenPricePanel({
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [attempt, setAttempt] = useState(0)
-  const insurancePlans = car.external_provider === 'foxie' ? (car.insurance_plans || []) : []
+  const insurancePlans = car.insurance_plans || []
   const [insuranceId, setInsuranceId] = useState(() => defaultFoxieInsuranceId(insurancePlans))
 
   useEffect(() => {
@@ -114,11 +115,12 @@ export default function CarenPricePanel({
         priced: Boolean(pricing),
         datesUnavailable: bookingBlocked,
         blockedDatesLoaded,
-        foxieInsuranceId: insuranceId,
+        foxieInsuranceId: foxie ? insuranceId : '',
+        partnerInsuranceId: foxie ? '' : insuranceId,
       }
     }
   }, [
-    startDate, endDate, pickupLocationId, dropoffLocationId, insuranceId,
+    startDate, endDate, pickupLocationId, dropoffLocationId, insuranceId, foxie,
     pricing, bookingBlocked, blockedDatesLoaded, onAvailabilityChange, bookingDatesRef,
   ])
 
@@ -139,6 +141,7 @@ export default function CarenPricePanel({
           pickup_at: times.pickup_at,
           dropoff_at: times.dropoff_at,
           ...(car.external_provider === 'foxie' && insuranceId ? { foxie_insurance_id: insuranceId } : {}),
+          ...(car.external_provider === 'foxie' && selectedAddonIds.length ? { partner_extra_ids: selectedAddonIds } : {}),
         },
       })
         .then(({ data }) => { if (!cancelled) setResult(data) })
@@ -147,7 +150,7 @@ export default function CarenPricePanel({
     }, 350)
     return () => { cancelled = true; window.clearTimeout(timer) }
   }, [
-    car.id, car.external_provider, pickupLocationId, dropoffLocationId, insuranceId,
+    car.id, car.external_provider, pickupLocationId, dropoffLocationId, insuranceId, selectedAddonIds,
     times.pickup_at, times.dropoff_at, tripReady, datesUnavailable, attempt,
   ])
 
@@ -237,7 +240,7 @@ export default function CarenPricePanel({
       </div>
       {pricing ? (
         <p className="listing-fees-note">
-          {formatCarenPrice(pricing.daily_price, pricing.currency, formatter)} per day on average. Rental estimate only. Extras and additional charges may apply.
+          {formatCarenPrice(pricing.daily_price, pricing.currency, formatter)} per day on average. {foxie && (insurancePlans.length || selectedAddonIds.length) ? 'This total includes the insurance and extras you selected.' : 'Rental estimate only.'}
         </p>
       ) : baseText ? (
         <p className="listing-fees-note">From {baseText} per day. Select dates for the trip total.</p>

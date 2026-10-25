@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\RegisteredHosts\Pages;
 
 use App\Filament\Resources\RegisteredHosts\RegisteredHostResource;
+use App\Filament\Resources\RegisteredHosts\Tables\RegisteredHostsTable;
 use App\Services\Partners\CarenPartnerClient;
 use App\Services\Partners\CarenVehicleSyncService;
 use App\Services\Partners\FoxiePartnerClient;
@@ -25,7 +26,7 @@ class EditRegisteredHost extends EditRecord
 
     public function getSubheading(): ?string
     {
-        return 'Update the host profile, connection settings and commission. For Caren or Foxie, use the save and import button to store credentials and import the fleet here.';
+        return 'Update the host profile, contract terms, connection settings, and commission. Send a login when the host should sign in and review their vehicles.';
     }
 
     protected function getFormActions(): array
@@ -112,6 +113,7 @@ class EditRegisteredHost extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            RegisteredHostsTable::sendLoginAction(),
             Action::make('testCarenConnection')
                 ->label('Test Caren connection')->icon('heroicon-o-signal')->color('gray')
                 ->visible(fn (): bool => $this->record->partner_provider === 'caren')

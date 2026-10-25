@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Me\UpdateCompanyLogoRequest;
 use App\Http\Requests\Me\UpdatePasswordRequest;
 use App\Http\Requests\Me\UpdateProfilePhotoRequest;
+use App\Enums\UserRole;
 use App\Http\Requests\Me\UpdateProfileRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
@@ -19,6 +20,9 @@ class MeProfileController extends Controller
         if ($user->isHost()) {
             $fields[] = 'currency';
             $fields[] = 'kennitala';
+        }
+        if ($user->role === UserRole::Host && $request->exists('rental_terms_html')) {
+            $fields[] = 'rental_terms_html';
         }
         $user->update($request->safe()->only($fields));
 

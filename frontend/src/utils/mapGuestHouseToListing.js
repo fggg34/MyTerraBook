@@ -245,6 +245,7 @@ export function mapGuestHouseToListing(house, listingReviews, priceFormatter) {
     detailSpecs: buildDetailSpecs(house),
     amenities: amenities.length ? amenities : base.amenities,
     conditions: conditions.length ? conditions : base.conditions,
+    rentalTermsHtml: house.rental_terms_html || '',
     sleeping,
     addons: [],
     priceFrom: formatPriceDisplay(house),

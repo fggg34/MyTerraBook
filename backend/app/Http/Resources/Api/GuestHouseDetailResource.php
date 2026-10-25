@@ -82,6 +82,7 @@ class GuestHouseDetailResource extends JsonResource
                 'minimum_nights' => $sp->minimum_nights,
             ]),
             'rating' => $avgRating ? round((float) $avgRating, 1) : null,
+            'rental_terms_html' => $this->host?->rental_terms_html,
             'listing_reviews' => ListingReviewResource::collection($approvedReviews),
         ];
     }

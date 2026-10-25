@@ -50,7 +50,7 @@ class FoxieBookingService
             throw new InvalidArgumentException('Online booking is not enabled for this Foxie vehicle yet.');
         }
         if (! empty($input['rental_options']) || ! empty($input['coupon_code'])) {
-            throw new InvalidArgumentException('Extra selections and discount codes are not supported for this Foxie rate.');
+            throw new InvalidArgumentException('Discount codes are not supported for this Foxie rate.');
         }
         if (! PriceType::whereKey($input['price_type_id'] ?? 0)->where('slug', 'foxie-standard')->where('is_active', true)->exists()) {
             throw new InvalidArgumentException('Choose the Foxie rate.');
@@ -58,6 +58,7 @@ class FoxieBookingService
         $from = $input['pickup_at'] instanceof Carbon ? $input['pickup_at'] : Carbon::parse((string) $input['pickup_at']);
         $to = $input['dropoff_at'] instanceof Carbon ? $input['dropoff_at'] : Carbon::parse((string) $input['dropoff_at']);
         $insuranceId = $this->selectedInsuranceId($car, $input['foxie_insurance_id'] ?? null);
+        $extraIds = $this->selectedExtraIds($car, $input['partner_extra_ids'] ?? []);
         $result = $this->pricing->quote(
             $car,
             (int) $input['pickup_location_id'],
@@ -66,6 +67,7 @@ class FoxieBookingService
             $to,
             $fresh,
             $insuranceId,
+            $extraIds,
         );
         if (($result['status'] ?? null) === 'error') {
             throw new InvalidArgumentException('Foxie pricing could not be checked.');
@@ -76,31 +78,49 @@ class FoxieBookingService
         }
         $total = $this->cents($pricing['total'] ?? null);
         $insuranceCents = $this->cents($pricing['insurance_total'] ?? 0);
+        $extraCents = $this->cents($pricing['extras_total'] ?? 0);
         $days = (int) ($pricing['rental_days'] ?? 0);
-        if ($total < 1 || $days < 1 || $insuranceCents > $total || ($pricing['currency'] ?? null) !== 'ISK') {
+        $extraLines = $extraIds === [] ? [] : $this->pricing->extraLines($car, $extraIds, $days);
+        $computedExtras = array_sum(array_column($extraLines, 'total_cents'));
+        if ($total < 1 || $days < 1 || $insuranceCents + $extraCents > $total || ($pricing['currency'] ?? null) !== 'ISK'
+            || ($extraIds !== [] && ($extraLines === [] || $computedExtras !== $extraCents))) {
             throw new InvalidArgumentException('Foxie did not return a complete, bookable price.');
         }
-        $base = $total - $insuranceCents;
+        $base = $total - $insuranceCents - $extraCents;
         $insuranceName = trim((string) ($pricing['insurance_name'] ?? ''));
         if ($insuranceName === '') {
             $insuranceName = 'Insurance';
+        }
+        $lines = [];
+        if ($insuranceCents > 0) {
+            $lines[] = [
+                'rental_option_id' => $insuranceId,
+                'name' => $insuranceName,
+                'quantity' => 1,
+                'unit_price_cents' => $insuranceCents,
+                'total_cents' => $insuranceCents,
+            ];
+        }
+        foreach ($extraLines as $line) {
+            $lines[] = [
+                'rental_option_id' => $line['id'],
+                'name' => $line['name'],
+                'quantity' => 1,
+                'unit_price_cents' => $line['total_cents'],
+                'total_cents' => $line['total_cents'],
+            ];
         }
 
         return [
             'rental_days' => $days, 'billable_days' => $days, 'pricing_mode' => 'foxie',
             'price_type_id' => (int) $input['price_type_id'], 'extra_hours_charged' => 0,
             'foxie_insurance_id' => $insuranceId,
+            'foxie_extra_ids' => $extraIds,
             'base_rental_cents' => $base, 'rental_before_specials_cents' => $base,
             'special_discount_cents' => 0, 'special_surcharge_cents' => 0, 'special_prices_applied' => [],
             'fees_cents' => 0, 'fees_lines' => [],
-            'extras_cents' => $insuranceCents,
-            'extras_lines' => $insuranceCents > 0 ? [[
-                'rental_option_id' => $insuranceId,
-                'name' => $insuranceName,
-                'quantity' => 1,
-                'unit_price_cents' => $insuranceCents,
-                'total_cents' => $insuranceCents,
-            ]] : [],
+            'extras_cents' => $insuranceCents + $extraCents,
+            'extras_lines' => $lines,
             'discount_cents' => 0, 'tax_cents' => 0, 'total_cents' => $total,
             'currency' => 'ISK', 'coupon_id' => null,
         ];
@@ -124,6 +144,10 @@ class FoxieBookingService
         );
         if ($query === null) {
             throw new InvalidArgumentException('Foxie has no availability for these dates.');
+        }
+        $extraIds = $quote['foxie_extra_ids'] ?? [];
+        if (is_array($extraIds) && $extraIds !== []) {
+            $query['extras'] = $this->pricing->extrasQuery($extraIds);
         }
         $parts = preg_split('/\s+/', trim((string) $input['customer_name']), 2) ?: [];
         $first = trim((string) ($parts[0] ?? ''));
@@ -253,6 +277,32 @@ class FoxieBookingService
         }
 
         throw new InvalidArgumentException('Choose a Foxie insurance plan from this vehicle.');
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function selectedExtraIds(Car $car, mixed $raw): array
+    {
+        if ($raw === null || $raw === '' || $raw === []) {
+            return [];
+        }
+        if (! is_array($raw)) {
+            throw new InvalidArgumentException('Choose extras from this vehicle.');
+        }
+        $ids = [];
+        foreach ($raw as $value) {
+            if (! is_numeric($value) || (int) $value < 1) {
+                throw new InvalidArgumentException('Choose extras from this vehicle.');
+            }
+            $ids[] = (int) $value;
+        }
+        $ids = array_values(array_unique($ids));
+        if (! $this->pricing->hasExtras($car, $ids)) {
+            throw new InvalidArgumentException('Choose extras from this vehicle.');
+        }
+
+        return $ids;
     }
 
     private function cents(mixed $amount): int

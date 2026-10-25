@@ -47,6 +47,16 @@ class GreenlightPartnerClient
     }
 
     /**
+     * @return list<array<string, mixed>>
+     */
+    public function addons(?string $categoryId = null): array
+    {
+        return $this->list('addons', array_filter([
+            'categoryId' => $categoryId,
+        ], fn ($value) => $value !== null && $value !== ''));
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function availability(string $vehicleId, string $pickupLocationId, string $pickupAt, string $returnAt): array

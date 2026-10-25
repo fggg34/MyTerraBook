@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Me;
 
+use App\Enums\UserRole;
 use App\Support\PricingCurrency;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,6 +31,10 @@ class UpdateProfileRequest extends FormRequest
         if ($user->isHost()) {
             $rules['currency'] = ['required', 'string', 'size:3', PricingCurrency::validationRule()];
             $rules['kennitala'] = ['nullable', 'string', 'max:20'];
+        }
+
+        if ($user->role === UserRole::Host) {
+            $rules['rental_terms_html'] = ['nullable', 'string', 'max:50000'];
         }
 
         return $rules;

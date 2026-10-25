@@ -18,6 +18,7 @@ import CatalogIcon from '../../utils/CatalogIcon'
 import { partnerInitials } from '../../utils/mapCarToResultCard'
 import { isLivePartner } from '../../utils/livePartner'
 import CarenPricePanel from './CarenPricePanel'
+import FoxieInsurancePlans, { defaultFoxieInsuranceId } from './FoxieInsurancePlans'
 
 export default function ListingTabPanels({
   listing,
@@ -51,6 +52,9 @@ export default function ListingTabPanels({
   } = listing
   const livePartner = isLivePartner(listing.car)
   const isVehicle = !livePartner && (listingType === 'car' || listingType === 'campervan')
+  const showExtras = (listingType === 'car' || listingType === 'campervan')
+  const insurancePlans = livePartner ? [] : (listing.car?.insurance_plans || [])
+  const [insuranceId, setInsuranceId] = useState(() => defaultFoxieInsuranceId(insurancePlans))
   const hasPickupInfo =
     (pickupLocations?.length ?? 0) > 0
     || (dropoffLocations?.length ?? 0) > 0
@@ -122,9 +126,10 @@ export default function ListingTabPanels({
         dropoffDate: endDate,
         datesUnavailable: bookingBlocked,
         blockedDatesLoaded,
+        partnerInsuranceId: insuranceId,
       }
     }
-  }, [livePartner, startDate, endDate, bookingBlocked, blockedDatesLoaded, onAvailabilityChange, bookingDatesRef])
+  }, [livePartner, startDate, endDate, bookingBlocked, blockedDatesLoaded, insuranceId, onAvailabilityChange, bookingDatesRef])
 
   useEffect(() => {
     const start = parseDateOnly(initialPickup)
@@ -142,7 +147,7 @@ export default function ListingTabPanels({
       return undefined
     }
 
-    const payload = buildListingQuotePayload(listing, startDate, endDate, selectedAddonIds)
+    const payload = buildListingQuotePayload(listing, startDate, endDate, selectedAddonIds, insuranceId)
     if (!payload) {
       setQuoteRental(null)
       setQuoteTotal(null)
@@ -176,7 +181,7 @@ export default function ListingTabPanels({
       cancelled = true
       window.clearTimeout(timer)
     }
-  }, [isVehicle, listing, startDate, endDate, selectedAddonIds, bookingBlocked])
+  }, [isVehicle, listing, startDate, endDate, selectedAddonIds, insuranceId, bookingBlocked])
 
   const handleDateChange = ({ start, end }) => {
     setStartDate(start)
@@ -312,13 +317,19 @@ export default function ListingTabPanels({
           </ListingSection>
         ) : null}
 
-        {isVehicle && addons.length > 0 ? (
+        {showExtras && addons.length > 0 ? (
           <ListingSection title="Optional extras" description={sectionDesc.optionalExtras}>
             <ListingOptionalExtras
               addons={addons}
               selectedAddonIds={selectedAddonIds}
               onToggleAddon={onToggleAddon}
             />
+          </ListingSection>
+        ) : null}
+
+        {listing.rentalTermsHtml ? (
+          <ListingSection title="Terms and conditions">
+            <div className="listing-terms" dangerouslySetInnerHTML={{ __html: listing.rentalTermsHtml }} />
           </ListingSection>
         ) : null}
 
@@ -401,6 +412,7 @@ export default function ListingTabPanels({
             bookingDatesRef={bookingDatesRef}
             onRequestBook={onRequestBook}
             onAvailabilityChange={onAvailabilityChange}
+            selectedAddonIds={selectedAddonIds}
           />
         ) : (
         <div className="listing-bcard">
@@ -420,6 +432,14 @@ export default function ListingTabPanels({
               onChange={handleDateChange}
             />
           </div>
+          {insurancePlans.length > 0 ? (
+            <FoxieInsurancePlans
+              plans={insurancePlans}
+              selectedId={insuranceId}
+              onSelect={setInsuranceId}
+              formatter={price}
+            />
+          ) : null}
           <div className="rate-row">
             <span className="rl" id="rateL">
               {selectedRateDurationLabel
@@ -446,7 +466,9 @@ export default function ListingTabPanels({
           </div>
           {startDate && endDate && !quoteLoading && hasExtraCharges && (
             <p className="listing-fees-note">
-              + fees &amp; tax at checkout · {price.format(quoteTotal)} total
+              {insurancePlans.length || selectedAddonIds.length
+                ? `Trip total ${price.format(quoteTotal)}, including ${[insurancePlans.length ? 'insurance' : null, selectedAddonIds.length ? 'extras' : null].filter(Boolean).join(' and ')}.`
+                : `+ fees & tax at checkout · ${price.format(quoteTotal)} total`}
             </p>
           )}
           {listingType !== 'guesthouse' && selectedAddonIds.length > 0 && (

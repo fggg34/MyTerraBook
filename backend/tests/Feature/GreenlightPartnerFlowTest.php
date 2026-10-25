@@ -12,6 +12,7 @@ use App\Models\Setting;
 use App\Services\Partners\GreenlightSettings;
 use App\Services\Partners\GreenlightVehicleSyncService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -63,7 +64,19 @@ class GreenlightPartnerFlowTest extends TestCase
                 'data' => [['id' => 'cat_1', 'name' => '4x4', 'slug' => '4x4']],
             ]),
             'https://greenlight.test/api/partner/v1/insurance-plans' => Http::response([
-                'data' => [['id' => 'ins_1', 'name' => 'Basic', 'dailyPriceIsk' => 3000]],
+                'data' => [['id' => 'ins_1', 'name' => 'Basic', 'dailyPriceIsk' => 3000, 'options' => [
+                    ['label' => 'Collision waiver', 'included' => true],
+                ]]],
+            ]),
+            'https://greenlight.test/api/partner/v1/addons' => Http::response([
+                'data' => [[
+                    'id' => 'add_1',
+                    'name' => 'Child seat',
+                    'description' => 'For infants',
+                    'dailyPriceIsk' => 1500,
+                    'chargePerDay' => true,
+                    'categoryIds' => ['cat_1'],
+                ]],
             ]),
             'https://greenlight.test/api/partner/v1/vehicles' => Http::response([
                 'data' => [[
@@ -84,6 +97,7 @@ class GreenlightPartnerFlowTest extends TestCase
                     'baseDailyRateIsk' => 15000,
                     'totalUnits' => 3,
                     'description' => 'Ready for the highlands.',
+                    'features' => [['id' => 'feat_1', 'name' => 'Heated seats', 'slug' => 'heated-seats']],
                     'photos' => ['https://greenlight.test/uploads/rav4.jpg'],
                     'homeLocationId' => 'loc_1',
                     'availableAtAllLocations' => false,
@@ -99,7 +113,7 @@ class GreenlightPartnerFlowTest extends TestCase
                     'days' => 3,
                     'baseRateIsk' => 45000,
                     'extrasTotalIsk' => 9000,
-                    'addonsTotalIsk' => 0,
+                    'addonsTotalIsk' => 4500,
                     'oneWayFeeIsk' => 0,
                     'outOfHoursFeeIsk' => 0,
                     'locationFeeIsk' => 2000,
@@ -170,6 +184,34 @@ class GreenlightPartnerFlowTest extends TestCase
             ['ins_1'],
             app(GreenlightSettings::class)->insurancePlanIds(),
         );
+
+        $this->getJson('/api/cars/'.$car->id)->assertOk()
+            ->assertJsonPath('data.partner_characteristics.0.name', 'Heated seats')
+            ->assertJsonPath('data.partner_extras.0.id', 'add_1')
+            ->assertJsonPath('data.partner_extras.0.name', 'Child seat')
+            ->assertJsonPath('data.insurance_plans.0.name', 'Basic')
+            ->assertJsonPath('data.insurance_plans.0.description', 'Collision waiver');
+
+        $this->postJson('/api/orders/quote', [
+            'car_id' => $car->id,
+            'price_type_id' => $priceType->id,
+            'pickup_location_id' => $pickup->id,
+            'dropoff_location_id' => $pickup->id,
+            'pickup_at' => now()->addDays(2)->toDateTimeString(),
+            'dropoff_at' => now()->addDays(5)->toDateTimeString(),
+            'partner_insurance_id' => 'ins_1',
+            'partner_extra_ids' => ['add_1'],
+        ])->assertOk()->assertJsonPath('extras_lines.1.name', 'Child seat');
+
+        Http::assertSent(function (Request $request) {
+            if ($request->method() !== 'POST' || ! str_contains($request->url(), '/quote')) {
+                return false;
+            }
+            $data = $request->data();
+
+            return ($data['insurancePlanId'] ?? null) === 'ins_1'
+                && ($data['addons'][0]['addonId'] ?? null) === 'add_1';
+        });
     }
 
     public function test_sync_assigns_each_vehicle_only_its_greenlight_locations(): void

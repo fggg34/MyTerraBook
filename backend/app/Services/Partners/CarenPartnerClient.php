@@ -125,6 +125,38 @@ class CarenPartnerClient
         });
     }
 
+    /**
+     * Class specs plus the rental's extras and insurance lists.
+     *
+     * @return array{classes: list<array<string, mixed>>, extras: list<array<string, mixed>>, insurances: list<array<string, mixed>>}
+     */
+    public function options(User $host): array
+    {
+        return $this->withSession($host, function (string $session) use ($host): array {
+            $rentalId = (int) $host->partner_rental_id;
+            if ($rentalId < 1) {
+                throw new RuntimeException('Caren rental is missing.');
+            }
+            $payload = ['Session' => $session, 'RentalId' => $rentalId, 'Language' => 'en-GB'];
+            $classes = $this->request($host, 'class/getlist', $payload + [
+                'SkipDateCheck' => true, 'ShowPrices' => false, 'ShowImages' => false, 'ShowGroupNames' => true,
+            ]);
+            $extras = $this->request($host, 'extra/getlist', $payload);
+            $insurances = $this->request($host, 'insurance/getlist', $payload);
+            foreach ([[$classes, 'Classes'], [$extras, 'Extras'], [$insurances, 'Insurances']] as [$data, $key]) {
+                if (! isset($data[$key]) || ! is_array($data[$key])) {
+                    throw new RuntimeException('Caren did not return vehicle options.');
+                }
+            }
+
+            return [
+                'classes' => $classes['Classes'],
+                'extras' => $extras['Extras'],
+                'insurances' => $insurances['Insurances'],
+            ];
+        });
+    }
+
     private function withSession(User $host, Closure $callback): mixed
     {
         if ($host->partner_provider !== 'caren' || ! $host->partner_api_enabled

@@ -17,6 +17,7 @@ import {
 import { formatPhoneForApi, validatePhone } from '../../utils/phone'
 import { useShopConfig } from '../../context/ShopConfigContext'
 import HostCurrencySelect from '../host/HostCurrencySelect'
+import RichTextEditor from '../host/RichTextEditor'
 import UserAvatar, { getUserProfilePhotoUrl } from './UserAvatar'
 
 const PHOTO_ACCEPT = 'image/jpeg,image/png,image/webp'
@@ -27,6 +28,7 @@ export default function AccountSettingsForms({
   showKennitala = false,
   showBecomeHost = false,
   showCompanyLogo = false,
+  showRentalTerms = false,
   profileDescription = 'Update your account details.',
 }) {
   const { user, setUser, applyAsHost: applyAsHostFromAuth } = useAuth()
@@ -42,6 +44,7 @@ export default function AccountSettingsForms({
     kennitala: '',
     phone: '',
     currency: baseCurrency || 'EUR',
+    rental_terms_html: '',
     current_password: '',
   })
   const [passwordForm, setPasswordForm] = useState({
@@ -72,6 +75,7 @@ export default function AccountSettingsForms({
       kennitala: user.kennitala || '',
       phone: user.phone || '',
       currency: user.currency || baseCurrency || 'EUR',
+      rental_terms_html: user.rental_terms_html || '',
       current_password: '',
     })
   }, [user, baseCurrency])
@@ -254,6 +258,9 @@ export default function AccountSettingsForms({
       }
       if (showCurrency) {
         payload.currency = profile.currency
+      }
+      if (showRentalTerms && Object.prototype.hasOwnProperty.call(user || {}, 'rental_terms_html')) {
+        payload.rental_terms_html = profile.rental_terms_html
       }
       if (profile.current_password) {
         payload.current_password = profile.current_password
@@ -467,6 +474,18 @@ export default function AccountSettingsForms({
                 </div>
               </div>
               {profileErrors.currency && <p className="client-field-error">{profileErrors.currency}</p>}
+            </div>
+          )}
+          {showRentalTerms && (
+            <div className="client-field">
+              <label htmlFor="settings-rental-terms">Contract rental terms and conditions</label>
+              <p className="client-field-hint">These terms appear on your listings and rental contracts.</p>
+              <RichTextEditor
+                id="settings-rental-terms"
+                value={profile.rental_terms_html}
+                onChange={(html) => setProfile((prev) => ({ ...prev, rental_terms_html: html }))}
+              />
+              {profileErrors.rental_terms_html && <p className="client-field-error">{profileErrors.rental_terms_html}</p>}
             </div>
           )}
           {profile.email !== user?.email && (

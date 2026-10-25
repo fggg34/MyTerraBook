@@ -25,7 +25,9 @@ export default function AddonRow({ option, selected, nights, onToggle }) {
   const dialogRef = useRef(null)
   const priceFormatter = useFormatPrice()
   const unitCents = option.cost_cents || 0
-  const totalCents = calculateRentalOptionTotalCents(unitCents, option.is_daily_cost, nights)
+  const uncappedCents = calculateRentalOptionTotalCents(unitCents, option.is_daily_cost, nights)
+  const capCents = Number(option.max_price_cents) || 0
+  const totalCents = capCents > 0 ? Math.min(uncappedCents, capCents) : uncappedCents
   const price = priceFormatter.formatCents(totalCents)
   const unitLabel = option.is_daily_cost ? `for trip` : 'per trip'
   const Icon = addonIcon(option.name)

@@ -24,6 +24,9 @@ class OrderQuoteRequest extends FormRequest
             'rental_options.*' => ['integer', 'min:1'],
             'coupon_code' => ['nullable', 'string', 'max:64'],
             'foxie_insurance_id' => ['nullable', 'integer', 'min:1'],
+            'partner_insurance_id' => ['nullable', 'string', 'max:64'],
+            'partner_extra_ids' => ['nullable', 'array', 'max:20'],
+            'partner_extra_ids.*' => ['regex:/^[A-Za-z0-9_-]{1,64}$/'],
         ];
     }
 }

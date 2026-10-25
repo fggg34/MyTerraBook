@@ -532,7 +532,13 @@ class FoxieIntegrationTest extends TestCase
             ->assertJsonPath('data.insurance_plans.1.id', 14)
             ->assertJsonPath('data.insurance_plans.1.name', 'Gold')
             ->assertJsonPath('data.insurance_plans.1.cost', '4300.00')
-            ->assertJsonPath('data.insurance_plans.1.per_day', true);
+            ->assertJsonPath('data.insurance_plans.1.per_day', true)
+            ->assertJsonPath('data.partner_characteristics.0.name', 'Kitchen')
+            ->assertJsonPath('data.partner_characteristics.1.name', 'Awning')
+            ->assertJsonPath('data.partner_characteristics.2.name', '4 doors')
+            ->assertJsonPath('data.partner_extras.0.id', 5)
+            ->assertJsonPath('data.partner_extras.0.name', 'Extra Gas Can')
+            ->assertJsonPath('data.partner_extras.0.cost', '1300.00');
 
         $payload = $trip + [
             'car_id' => $car->id,
@@ -563,6 +569,53 @@ class FoxieIntegrationTest extends TestCase
             }
 
             return ($request->data()['insurance'] ?? null) === 14;
+        });
+    }
+
+    public function test_foxie_extras_are_quoted_and_sent_with_the_booking(): void
+    {
+        [$car, $trip] = $this->fleet();
+        $rate = PriceType::query()->firstOrCreate(
+            ['slug' => 'foxie-standard'],
+            ['name' => 'Foxie rate', 'is_active' => true],
+        );
+        Http::preventStrayRequests();
+        Http::fake(function (Request $request) {
+            if ($request->method() === 'POST' && str_contains($request->url(), '/bookings')) {
+                return Http::response([
+                    'success' => true,
+                    'booking_id' => 4403,
+                    'status' => 'confirmed',
+                    'total' => 20200,
+                    'currency' => 'ISK',
+                ], 201);
+            }
+
+            return $this->quoteResponse($request);
+        });
+
+        $payload = $trip + [
+            'car_id' => $car->id,
+            'price_type_id' => $rate->id,
+            'customer_name' => 'Test Driver',
+            'customer_email' => 'traveler@example.test',
+            'partner_extra_ids' => [99],
+        ];
+        $this->postJson('/api/orders/quote', $payload)->assertStatus(422)
+            ->assertJsonPath('message', 'Choose extras from this vehicle.');
+
+        $payload['partner_extra_ids'] = ['5'];
+        $this->postJson('/api/orders/quote', $payload)->assertOk()
+            ->assertJsonPath('total', '20200.00')
+            ->assertJsonPath('extras_subtotal', '1300.00')
+            ->assertJsonPath('extras_lines.0.name', 'Extra Gas Can');
+        $this->postJson('/api/orders', $payload)->assertCreated();
+        Http::assertSent(function (Request $request) {
+            if ($request->method() !== 'POST' || ! str_contains($request->url(), '/bookings')) {
+                return false;
+            }
+
+            return ($request->data()['extras'] ?? null) === '5:1';
         });
     }
 
@@ -692,10 +745,13 @@ class FoxieIntegrationTest extends TestCase
             parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
             $insurance = (int) ($query['insurance'] ?? 0);
             $insuranceTotal = $insurance === 14 ? 30100 : 0;
+            $extraIds = array_values(array_filter(explode(';', (string) ($query['extras'] ?? ''))));
+            $extrasTotal = count($extraIds) * 1300;
 
             return Http::response([
-                'total' => 18900 + $insuranceTotal,
+                'total' => 18900 + $insuranceTotal + $extrasTotal,
                 'insurance_total' => $insuranceTotal,
+                'extras_total' => $extrasTotal,
                 'insurance' => $insurance ? [['id' => $insurance, 'name' => 'Gold']] : [],
                 'currency' => 'ISK',
                 'days' => 7,
@@ -707,9 +763,14 @@ class FoxieIntegrationTest extends TestCase
                 'price_from' => 10000,
                 'price_from_per_days' => 1,
                 'currency' => 'ISK',
+                'doors' => 4,
+                'characteristics' => ['Kitchen', ['name' => 'Awning']],
                 'insurance' => [
                     ['id' => 12, 'name' => 'Basic', 'cost' => 0, 'per_day' => false, 'is_insurance' => true, 'description' => ''],
                     ['id' => 14, 'name' => 'Gold', 'cost' => 4300, 'per_day' => true, 'is_insurance' => true, 'description' => 'Lower excess'],
+                ],
+                'extras' => [
+                    ['id' => 5, 'name' => 'Extra Gas Can', 'cost' => 1300, 'per_day' => false, 'is_insurance' => false, 'description' => 'Spare fuel', 'max_quantity' => 1],
                 ],
             ]);
         }

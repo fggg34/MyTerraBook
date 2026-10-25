@@ -45,10 +45,9 @@ function ListingPageBody({ listingType = 'campervan' }) {
 
   const toggleAddon = useCallback((id) => {
     if (listingType === 'guesthouse' || id == null || id === '') return
-    const numId = Number(id)
-    if (Number.isNaN(numId)) return
+    const key = String(id)
     setSelectedAddonIds((prev) =>
-      prev.includes(numId) ? prev.filter((x) => x !== numId) : [...prev, numId],
+      prev.map(String).includes(key) ? prev.filter((x) => String(x) !== key) : [...prev, key],
     )
   }, [listingType])
 
@@ -126,8 +125,10 @@ function ListingPageBody({ listingType = 'campervan' }) {
         dropoff_location_id: dropoffLocationId,
         pickup_at,
         dropoff_at,
-        rental_option_ids: selectedAddonIds,
+        rental_option_ids: (car.partner_extras || []).length ? [] : selectedAddonIds,
+        partner_extra_ids: (car.partner_extras || []).length ? selectedAddonIds : [],
         foxie_insurance_id: car.external_provider === 'foxie' ? (bookingDatesRef.current.foxieInsuranceId || '') : '',
+        partner_insurance_id: car.external_provider === 'foxie' ? '' : (bookingDatesRef.current.partnerInsuranceId || ''),
       })
       navigate(`/checkout?${params}`)
     },

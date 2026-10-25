@@ -129,6 +129,12 @@ class RegisteredHostResource extends Resource
                     ->placeholder('—')
                     ->columnSpanFull(),
             ])->columns(2),
+            Section::make('Contract rental terms and conditions')->icon('heroicon-o-document-text')->columnSpanFull()->schema([
+                TextEntry::make('rental_terms_html')
+                    ->hiddenLabel()
+                    ->html()
+                    ->placeholder('No terms yet'),
+            ]),
             Section::make('Commission')->icon('heroicon-o-receipt-percent')->columnSpanFull()->schema([
                 TextEntry::make('partner_commission_rate')
                     ->label('Partner commission')

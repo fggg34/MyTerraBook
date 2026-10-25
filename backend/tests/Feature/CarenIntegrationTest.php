@@ -243,4 +243,52 @@ class CarenIntegrationTest extends TestCase
         $this->expectExceptionMessage('not available for online booking yet');
         app(RentalQuoteService::class)->quote(new Car(['external_provider' => 'caren']), 1, now(), now()->addDays(3), 1, 1, [], null);
     }
+
+    public function test_car_detail_includes_caren_characteristics_extras_and_insurance(): void
+    {
+        Http::preventStrayRequests();
+        Http::fake([
+            '*/user/login' => Http::response(['Success' => true, 'Session' => 'test-session']),
+            '*/class/getlist' => Http::response(['Classes' => [[
+                'Id' => 2180, 'Name' => 'Suzuki', 'Doors' => 5, 'AirCondition' => true,
+                'ForHighland' => true, 'GroupName' => 'Compact SUV', 'MinimumDriverAge' => 18, 'ACRISS' => 'CFCR',
+            ]]]),
+            '*/extra/getlist' => Http::response(['Extras' => [
+                ['Id' => 1592, 'Name' => 'Additional Driver', 'Description' => '<p>Extra driver</p>', 'Price' => 990, 'PricePerDay' => true, 'MaximumQuantity' => 4, 'Included' => false, 'Currency' => 'ISK', 'ClassIds' => [2180]],
+                ['Id' => 9, 'Name' => 'GPS', 'Price' => 0, 'Included' => true, 'ClassIds' => []],
+                ['Id' => 8, 'Name' => 'Other class extra', 'Price' => 100, 'Included' => false, 'ClassIds' => [999]],
+            ]]),
+            '*/insurance/getlist' => Http::response(['Insurances' => [
+                ['Id' => 774, 'Name' => 'Basic Coverages', 'Description' => '<p>CDW</p>', 'Price' => 0, 'PricePerDay' => false, 'Included' => true, 'Currency' => 'ISK', 'ClassIds' => []],
+                ['Id' => 775, 'Name' => 'Full Cover', 'Description' => 'Lower excess', 'Price' => 2500, 'PricePerDay' => true, 'Currency' => 'ISK', 'ClassIds' => [2180]],
+            ]]),
+        ]);
+        $host = $this->host();
+        $car = Car::factory()->create([
+            'user_id' => $host->id,
+            'external_provider' => 'caren',
+            'external_vehicle_id' => '120:2180',
+            'is_active' => true,
+            'listing_status' => ListingApprovalStatus::Approved,
+        ]);
+
+        $response = $this->getJson('/api/cars/'.$car->id)->assertOk()
+            ->assertJsonPath('data.partner_characteristics.0.name', 'Compact SUV')
+            ->assertJsonPath('data.partner_characteristics.1.name', '5 doors')
+            ->assertJsonPath('data.partner_characteristics.2.name', 'Air conditioning')
+            ->assertJsonPath('data.partner_characteristics.3.name', 'Highland ready')
+            ->assertJsonPath('data.partner_extras.0.id', '1592')
+            ->assertJsonPath('data.partner_extras.0.name', 'Additional Driver')
+            ->assertJsonPath('data.partner_extras.0.per_day', true)
+            ->assertJsonPath('data.partner_extras.0.description', 'Extra driver')
+            ->assertJsonPath('data.insurance_plans.0.name', 'Basic Coverages')
+            ->assertJsonPath('data.insurance_plans.0.description', 'CDW')
+            ->assertJsonPath('data.insurance_plans.1.name', 'Full Cover');
+
+        $names = collect($response->json('data.partner_characteristics'))->pluck('name');
+        $this->assertTrue($names->contains('GPS'));
+        $extraNames = collect($response->json('data.partner_extras'))->pluck('name');
+        $this->assertFalse($extraNames->contains('GPS'));
+        $this->assertFalse($extraNames->contains('Other class extra'));
+    }
 }

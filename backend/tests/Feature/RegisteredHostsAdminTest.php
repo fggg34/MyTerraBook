@@ -2,13 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ListingApprovalStatus;
 use App\Filament\Resources\RegisteredHosts\Pages\CreateRegisteredHost;
 use App\Filament\Resources\RegisteredHosts\Pages\EditRegisteredHost;
 use App\Filament\Resources\RegisteredHosts\Pages\ListRegisteredHosts;
+use App\Mail\TemplatedMail;
+use App\Models\Car;
+use App\Models\EmailTemplate;
 use App\Models\User;
+use Database\Seeders\EmailTemplateSeeder;
 use Filament\Actions\DeleteAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -56,6 +63,72 @@ class RegisteredHostsAdminTest extends TestCase
         $this->assertStringStartsWith('company-logos/', $host->company_logo_path);
         Storage::disk('public')->assertExists($host->company_logo_path);
         $this->assertNotNull($host->company_logo_url);
+    }
+
+    public function test_admin_can_email_a_host_login_and_the_host_can_sign_in(): void
+    {
+        $this->seed(EmailTemplateSeeder::class);
+        Mail::fake();
+        $admin = User::factory()->admin()->create();
+        $host = User::factory()->host()->create([
+            'email' => 'fleet-host@example.test',
+            'password' => 'old-password',
+        ]);
+        $host->createToken('existing');
+        $previous = $host->fresh()->password;
+
+        $this->actingAs($admin);
+        Livewire::test(ListRegisteredHosts::class)
+            ->callTableAction('sendHostLogin', $host)
+            ->assertNotified();
+
+        $password = null;
+        Mail::assertSent(TemplatedMail::class, function (TemplatedMail $mail) use (&$password, $host): bool {
+            $password = $mail->data['temporary_password'] ?? null;
+
+            return $mail->templateKey === 'host_login'
+                && $mail->hasTo($host->email)
+                && is_string($password)
+                && $password !== '';
+        });
+
+        $host->refresh();
+        $this->assertFalse(Hash::check('old-password', $host->password));
+        $this->assertNotSame($previous, $host->password);
+        $this->assertSame(0, $host->tokens()->count());
+
+        $this->postJson('/api/auth/login', [
+            'email' => $host->email,
+            'password' => $password,
+        ])->assertOk()->assertJsonPath('user.email', $host->email);
+
+        $car = Car::factory()->create([
+            'user_id' => $host->id,
+            'is_active' => true,
+            'listing_status' => ListingApprovalStatus::Approved,
+        ]);
+        $host->update(['rental_terms_html' => '<p>Fuel is not included.</p>']);
+        $this->getJson('/api/cars/'.$car->id)
+            ->assertOk()
+            ->assertJsonPath('data.rental_terms_html', '<p>Fuel is not included.</p>');
+    }
+
+    public function test_failed_login_email_keeps_the_current_password(): void
+    {
+        Mail::fake();
+        EmailTemplate::query()->where('key', 'host_login')->update(['is_enabled' => false]);
+        $admin = User::factory()->admin()->create();
+        $host = User::factory()->host()->create(['password' => 'keep-this-password']);
+        $previous = $host->fresh()->password;
+
+        $this->actingAs($admin);
+        Livewire::test(EditRegisteredHost::class, ['record' => $host->id])
+            ->callAction('sendHostLogin')
+            ->assertNotified();
+
+        Mail::assertNothingSent();
+        $this->assertSame($previous, $host->fresh()->password);
+        $this->assertTrue(Hash::check('keep-this-password', $host->fresh()->password));
     }
 
     public function test_admin_can_view_registered_hosts_list(): void

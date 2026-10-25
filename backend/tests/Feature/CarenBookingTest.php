@@ -312,4 +312,42 @@ class CarenBookingTest extends TestCase
         $this->assertContains('reservation/cancel', $this->calls);
         $this->assertDatabaseCount('rapyd_payments', 0);
     }
+
+    public function test_quote_sends_selected_caren_extra_and_insurance(): void
+    {
+        [, $input] = $this->trip();
+        $currency = PricingCurrency::shopDefault();
+        $this->provider([
+            'class/getlist' => ['Classes' => [['Id' => 2180, 'Name' => 'Suzuki', 'Doors' => 5]]],
+            'extra/getlist' => ['Extras' => [[
+                'Id' => 1592, 'Name' => 'Additional Driver', 'Price' => 10, 'PricePerDay' => false,
+                'Included' => false, 'Currency' => $currency, 'ClassIds' => [2180],
+            ]]],
+            'insurance/getlist' => ['Insurances' => [[
+                'Id' => 775, 'Name' => 'Full Cover', 'Price' => 5, 'PricePerDay' => false,
+                'Included' => false, 'Currency' => $currency, 'ClassIds' => [],
+            ]]],
+            'price/getprices' => [
+                'VehicleClassId' => 2180, 'Currency' => $currency, 'VehicleTotalPrice' => 700,
+                'LocationTotalPrice' => 50, 'ExtrasTotalPrice' => 10, 'InsurancesTotalPrice' => 5,
+                'TotalPrice' => 765, 'NumberOfDays' => 7,
+            ],
+        ]);
+
+        $this->postJson('/api/orders/quote', $input + [
+            'partner_extra_ids' => ['1592'],
+            'partner_insurance_id' => '775',
+        ])->assertOk()->assertJsonPath('extras_subtotal', '15.00');
+
+        Http::assertSent(function (Request $request) {
+            if (! str_ends_with((string) parse_url($request->url(), PHP_URL_PATH), 'price/getprices')) {
+                return false;
+            }
+            $data = $request->data();
+
+            return ($data['Extras'][0]['Id'] ?? null) === 1592
+                && ($data['Extras'][0]['Quantity'] ?? null) === 1
+                && ($data['Insurances'][0]['Id'] ?? null) === 775;
+        });
+    }
 }

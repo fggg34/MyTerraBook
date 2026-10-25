@@ -30,7 +30,9 @@ const DEFAULT_FORM = {
   guests_count: 2,
   price_type_id: '',
   rental_option_ids: [],
+  partner_extra_ids: [],
   foxie_insurance_id: '',
+  partner_insurance_id: '',
   customer_name: '',
   customer_email: '',
   customer_phone: '',
@@ -122,7 +124,9 @@ export default function useRequestToBook() {
     price_type_id: searchParams.get('price_type_id') || '',
     guests_count: Number(searchParams.get('guests_count')) || 2,
     rental_option_ids: parseRentalOptionIds(searchParams),
+    partner_extra_ids: searchParams.getAll('partner_extra_ids').filter(Boolean),
     foxie_insurance_id: searchParams.get('foxie_insurance_id') || '',
+    partner_insurance_id: searchParams.get('partner_insurance_id') || '',
     customer_name: user?.name || '',
     customer_email: user?.email || '',
     customer_phone: user?.phone || '',
@@ -269,13 +273,16 @@ export default function useRequestToBook() {
           const pt = prev.price_type_id || String(data?.price_types?.[0]?.id || '')
           const firstPickup = data?.pickup_locations?.find((location) => !countryCode || location.country_code === countryCode)
           const pickup = prev.pickup_location_id || (firstPickup ? String(firstPickup.id) : '')
-          const insurance = prev.foxie_insurance_id || (data?.external_provider === 'foxie' ? defaultFoxieInsuranceId(data?.insurance_plans || []) : '')
+          const plans = data?.insurance_plans || []
+          const insurance = prev.foxie_insurance_id || (data?.external_provider === 'foxie' ? defaultFoxieInsuranceId(plans) : '')
+          const partnerInsurance = prev.partner_insurance_id || (data?.external_provider && data.external_provider !== 'foxie' ? defaultFoxieInsuranceId(plans) : '')
           return {
             ...prev,
             price_type_id: pt,
             pickup_location_id: pickup,
             dropoff_location_id: prev.dropoff_location_id || pickup,
             foxie_insurance_id: insurance,
+            partner_insurance_id: partnerInsurance,
           }
         })
         setLoadState(data ? 'ok' : 'error')
@@ -404,10 +411,16 @@ export default function useRequestToBook() {
         dropoff_location_id: Number(dropoffLocationId),
         pickup_at: toApiDateTime(pickupAt),
         dropoff_at: toApiDateTime(dropoffAt),
-        rental_options: form.rental_option_ids.map(Number),
+        rental_options: (item?.partner_extras || []).length ? [] : form.rental_option_ids.map(Number),
       }
       if (form.foxie_insurance_id) {
         payload.foxie_insurance_id = Number(form.foxie_insurance_id)
+      }
+      if (form.partner_insurance_id && item?.external_provider !== 'foxie') {
+        payload.partner_insurance_id = form.partner_insurance_id
+      }
+      if ((item?.partner_extras || []).length && form.partner_extra_ids.length) {
+        payload.partner_extra_ids = form.partner_extra_ids.map(String)
       }
       if (form.coupon_code.trim()) payload.coupon_code = form.coupon_code.trim()
       api
@@ -432,7 +445,11 @@ export default function useRequestToBook() {
     pickupAt,
     dropoffAt,
     form.rental_option_ids,
+    form.partner_extra_ids,
     form.foxie_insurance_id,
+    form.partner_insurance_id,
+    item?.external_provider,
+    item?.partner_extras,
     form.coupon_code,
     form.startDate,
     form.endDate,
@@ -536,6 +553,17 @@ export default function useRequestToBook() {
   }, [step, goStep])
 
   const toggleAddon = useCallback((id) => {
+    if ((item?.partner_extras || []).length) {
+      const key = String(id)
+      setForm((prev) => {
+        const ids = (prev.partner_extra_ids || []).map(String)
+        return {
+          ...prev,
+          partner_extra_ids: ids.includes(key) ? ids.filter((x) => x !== key) : [...ids, key],
+        }
+      })
+      return
+    }
     const numId = Number(id)
     setForm((prev) => {
       const ids = prev.rental_option_ids.includes(numId)
@@ -543,7 +571,7 @@ export default function useRequestToBook() {
         : [...prev.rental_option_ids, numId]
       return { ...prev, rental_option_ids: ids }
     })
-  }, [])
+  }, [item?.partner_extras])
 
   const submit = useCallback(async () => {
     const validationErrors = validateStep(4)
@@ -590,9 +618,15 @@ export default function useRequestToBook() {
             form.dobYear && form.dobMonth && form.dobDay
               ? `${form.dobYear}-${form.dobMonth}-${form.dobDay}`
               : undefined,
-          rental_options: form.rental_option_ids.map(Number),
+          rental_options: (item?.partner_extras || []).length ? [] : form.rental_option_ids.map(Number),
+          partner_extra_ids: (item?.partner_extras || []).length && form.partner_extra_ids.length
+            ? form.partner_extra_ids.map(String)
+            : undefined,
           foxie_insurance_id: item?.external_provider === 'foxie' && form.foxie_insurance_id
             ? Number(form.foxie_insurance_id)
+            : undefined,
+          partner_insurance_id: item?.external_provider && item.external_provider !== 'foxie' && form.partner_insurance_id
+            ? form.partner_insurance_id
             : undefined,
           coupon_code: form.coupon_code.trim() || undefined,
           custom_field_values: form.custom_field_values,

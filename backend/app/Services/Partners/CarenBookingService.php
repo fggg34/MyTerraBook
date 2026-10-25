@@ -23,7 +23,10 @@ use Throwable;
 
 class CarenBookingService
 {
-    public function __construct(private readonly CarenPartnerClient $client) {}
+    public function __construct(
+        private readonly CarenPartnerClient $client,
+        private readonly CarenOptionsService $options,
+    ) {}
 
     public function enabled(Car $car): bool
     {
@@ -41,7 +44,7 @@ class CarenBookingService
             throw new InvalidArgumentException('Online booking is not enabled for this Caren rental yet.');
         }
         if (! empty($input['rental_options']) || ! empty($input['coupon_code'])) {
-            throw new InvalidArgumentException('Extra selections and discount codes are not supported for this Caren rate.');
+            throw new InvalidArgumentException('Discount codes are not supported for this Caren rate.');
         }
         if (! PriceType::whereKey($input['price_type_id'] ?? 0)->where('slug', 'caren-standard')->where('is_active', true)->exists()) {
             throw new InvalidArgumentException('Choose the Caren standard rate.');
@@ -82,7 +85,7 @@ class CarenBookingService
             'base_rental_cents' => $base, 'rental_before_specials_cents' => $base,
             'special_discount_cents' => 0, 'special_surcharge_cents' => 0, 'special_prices_applied' => [],
             'fees_cents' => $fees, 'fees_lines' => $fees ? [['label' => 'Caren location fees', 'amount_cents' => $fees]] : [],
-            'extras_cents' => $extras, 'extras_lines' => $extras ? [['name' => 'Caren included extras and insurance',
+            'extras_cents' => $extras, 'extras_lines' => $extras ? [['rental_option_id' => null, 'name' => 'Caren included extras and insurance',
                 'quantity' => 1, 'unit_price_cents' => $extras, 'total_cents' => $extras]] : [],
             'discount_cents' => 0, 'tax_cents' => 0, 'total_cents' => $total,
             'currency' => $payload['Currency'], 'coupon_id' => null,
@@ -112,13 +115,18 @@ class CarenBookingService
             }
             $locations[$key] = (int) $mapped[1];
         }
+        $extraIds = is_array($input['partner_extra_ids'] ?? null) ? $input['partner_extra_ids'] : [];
+        $insuranceId = filled($input['partner_insurance_id'] ?? null) ? (string) $input['partner_insurance_id'] : null;
+        $selection = $extraIds === [] && $insuranceId === null
+            ? ['extras' => [], 'insurances' => []]
+            : $this->options->selection($car, $extraIds, $insuranceId);
 
         return ['RentalId' => $rentalId, 'ClassId' => (int) $ids[2],
             'DateFrom' => $from->utc()->format('Y-m-d H:i'), 'DateTo' => $to->utc()->format('Y-m-d H:i'),
             'PickupLocationId' => $locations['pickup'], 'DropoffLocationId' => $locations['dropoff'],
             'Currency' => PricingCurrency::shopDefault(), 'Language' => 'en-GB',
             'PaymentOptionId' => (int) config('services.caren.payment_options.'.$rentalId),
-            'Extras' => [], 'Insurances' => [], 'SharedLocation' => false];
+            'Extras' => $selection['extras'], 'Insurances' => $selection['insurances'], 'SharedLocation' => false];
     }
 
     public function create(Car $car, array $input, ?int $userId): Order

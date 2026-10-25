@@ -79,6 +79,26 @@ class EmailTemplateSeeder extends Seeder
                 'sort_order' => 20,
             ],
             [
+                'key' => 'host_login',
+                'name' => 'Host login',
+                'category' => 'account',
+                'audience' => 'host',
+                'is_enabled' => true,
+                'subject' => 'Your {{brand_name}} host login',
+                'preheader' => 'Use this email and temporary password to open your host account.',
+                'heading' => 'Your host login',
+                'greeting' => 'Hi {{host_name}},',
+                'body_html' => '<p>Your host account on {{brand_name}} is ready.</p>'
+                    .'<p>Sign in with the email and temporary password below. From the host portal you can review vehicles, stays, and bookings.</p>'
+                    .'<p>Email: {{host_email}}<br>Temporary password: {{temporary_password}}</p>'
+                    .'<p>Change this password from Host settings after you sign in.</p>',
+                'cta_label' => 'Sign in to the host portal',
+                'cta_url_template' => '{{login_url}}',
+                'footer_note' => 'If you were not expecting this email, contact us at {{support_email}}.',
+                'available_variables' => ['host_name', 'host_email', 'temporary_password', 'login_url', 'brand_name', 'frontend_url', 'support_email'],
+                'sort_order' => 25,
+            ],
+            [
                 'key' => 'password_reset',
                 'name' => 'Password reset',
                 'category' => 'account',

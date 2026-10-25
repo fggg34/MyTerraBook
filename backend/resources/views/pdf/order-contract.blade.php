@@ -62,5 +62,7 @@
             </tr>
         </tbody>
     </table>
+
+    @include('pdf.partials.rental-terms', ['terms' => $order->car?->host?->rental_terms_html])
 </body>
 </html>

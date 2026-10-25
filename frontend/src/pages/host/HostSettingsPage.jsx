@@ -7,7 +7,8 @@ export default function HostSettingsPage() {
       showCurrency
       showKennitala
       showCompanyLogo
-      profileDescription="Update your contact details, partner logo, and the currency used for your listing prices."
+      showRentalTerms
+      profileDescription="Update your contact details, partner logo, contract terms, and the currency used for your listing prices."
     />
   )
 }
