@@ -22,6 +22,7 @@ export function buildSiteDataFromContent(pages = {}, { useDefaults = false } = {
     header: global.header,
     hero: home.hero,
     trustItems: home.trustItems,
+    horizonSection: home.horizonSection,
     rentSection: home.rentSection,
     whySection: home.whySection,
     picksSection: home.picksSection,

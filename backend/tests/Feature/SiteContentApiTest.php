@@ -474,6 +474,54 @@ class SiteContentApiTest extends TestCase
         }
     }
 
+    public function test_homepage_destinations_show_live_prices_and_placeholder_countries(): void
+    {
+        $camperMain = \App\Models\MainCategory::query()->firstOrCreate(
+            ['slug' => 'campervan'],
+            ['name' => 'Campervan', 'is_active' => true],
+        );
+        $camperSub = \App\Models\SubCategory::query()->create([
+            'main_category_id' => $camperMain->id,
+            'name' => 'Camper',
+            'is_active' => true,
+            'is_search_filter' => true,
+        ]);
+        $camper = \App\Models\Car::query()->create([
+            'name' => 'Ring Road Camper',
+            'slug' => 'ring-road-camper-horizon',
+            'sub_category_id' => $camperSub->id,
+            'is_active' => true,
+        ]);
+        $location = \App\Models\Location::factory()->create([
+            'country_code' => 'IS',
+            'is_active' => true,
+        ]);
+        $camper->locations()->attach($location->id, [
+            'allows_pickup' => true,
+            'allows_dropoff' => true,
+        ]);
+        \App\Models\DailyFare::query()->create([
+            'car_id' => $camper->id,
+            'price_type_id' => \App\Models\PriceType::factory()->create()->id,
+            'from_days' => 1,
+            'to_days' => 30,
+            'price_per_day_cents' => 8900,
+        ]);
+
+        $response = $this->getJson('/api/homepage')->assertOk();
+        $cards = collect($response->json('horizonSection.cards'));
+        $iceland = $cards->firstWhere('countryCode', 'IS');
+        $finland = $cards->firstWhere('countryCode', 'FI');
+
+        $this->assertSame('Iceland', $iceland['name']);
+        $this->assertTrue($iceland['available']);
+        $this->assertSame(8900, $iceland['fromPriceCents']);
+        $this->assertSame('Europe', $finland['region']);
+        $this->assertFalse($finland['available']);
+        $this->assertNull($finland['fromPriceCents']);
+        $this->assertSame('', $finland['image']);
+    }
+
     public function test_become_a_host_page_images_resolve_from_storage(): void
     {
         $path = 'site-content/become-a-host/tab.jpg';

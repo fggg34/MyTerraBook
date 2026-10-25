@@ -132,7 +132,10 @@ class SiteContentFormBuilder
             'file' => $this->buildFileUpload($statePath, $pageKey, $field),
             'number' => TextInput::make($statePath)->numeric(),
             'tags' => TagsInput::make($statePath),
-            'select' => Select::make($statePath)->options($field['options'] ?? []),
+            'select' => Select::make($statePath)
+                ->options($this->selectOptions($field))
+                ->searchable((bool) ($field['searchable'] ?? false))
+                ->native(! (bool) ($field['searchable'] ?? false)),
             'repeater' => $this->buildRepeater($statePath, $field, $pageKey),
             default => TextInput::make($statePath),
         };
@@ -249,7 +252,7 @@ class SiteContentFormBuilder
             ->truncateItemLabel()
             ->reorderableWithButtons()
             ->addActionLabel('Add '.Str::lower(Str::singular($field['label'] ?? 'item')))
-            ->helperText('Expand an item to edit it. Drag or use the arrows to change its display order.')
+            ->helperText(trim(($field['helperText'] ?? '').' Expand an item to edit it. Drag or use the arrows to change its display order.'))
             ->defaultItems(0);
 
         $subFields = $field['fields'] ?? [];
@@ -277,7 +280,10 @@ class SiteContentFormBuilder
                 }
             }
 
-            return 'Untitled item';
+            $code = strtoupper(trim((string) ($state['countryCode'] ?? '')));
+            $country = config('destinations.'.$code);
+
+            return is_string($country) && $country !== '' ? $country : 'Untitled item';
         });
 
         return $repeater;
@@ -310,7 +316,19 @@ class SiteContentFormBuilder
 
     /**
      * @param  array<string, mixed>  $field
+     * @return array<string, string>
      */
+    private function selectOptions(array $field): array
+    {
+        if (($field['optionsFrom'] ?? '') === 'destinations') {
+            return config('destinations', []);
+        }
+
+        $options = $field['options'] ?? [];
+
+        return is_array($options) ? $options : [];
+    }
+
     private function statePath(string $sectionKey, ?string $key, array $field, bool $isRootSection): string
     {
         if (isset($field['path']) && is_string($field['path']) && $field['path'] !== '') {

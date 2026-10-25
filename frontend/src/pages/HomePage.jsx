@@ -1,6 +1,7 @@
 import HeroSection from '../components/homepage/HeroSection'
 import TrustStrip from '../components/homepage/TrustStrip'
 import WhatWeRentSection from '../components/homepage/WhatWeRentSection'
+import HorizonSection from '../components/homepage/HorizonSection'
 import WhyMyTerraSection from '../components/homepage/WhyMyTerraSection'
 import PicksSection from '../components/homepage/PicksSection'
 import HowItWorksSection from '../components/homepage/HowItWorksSection'
@@ -14,6 +15,7 @@ export default function HomePage({ pageData = {}, contentReady = true }) {
   return (
     <main className={contentReady ? undefined : 'homepage--loading'}>
       <HeroSection {...(pageData.hero || {})} />
+      <HorizonSection {...(pageData.horizonSection || {})} />
       <TrustStrip items={pageData.trustItems || []} />
       <WhatWeRentSection {...(pageData.rentSection || {})} />
       <WhyMyTerraSection {...(pageData.whySection || {})} />

@@ -1,6 +1,6 @@
 // Bumped to evict caches poisoned with demo copy on devices that loaded the
 // storefront while the API was unreachable.
-const CACHE_VERSION = 5
+const CACHE_VERSION = 6
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
 const KEYS = {

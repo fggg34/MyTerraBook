@@ -132,6 +132,22 @@ export function mergeHomepageData(apiData = {}, { useImageFallbacks = true } = {
     ),
   }
 
+  const horizonCards = Array.isArray(apiData.horizonSection?.cards)
+    ? apiData.horizonSection.cards
+    : defaults.horizonSection.cards
+
+  const horizonSection = {
+    ...withDefaults(defaults.horizonSection, apiData.horizonSection),
+    cards: horizonCards
+      .filter((card) => card?.countryCode)
+      .map((card) => ({
+        ...card,
+        countryCode: String(card.countryCode).toUpperCase(),
+        region: card.region || 'Europe',
+        image: resolveCmsImage(card.image, null) || '',
+      })),
+  }
+
   const rentSection = {
     ...withDefaults(defaults.rentSection, apiData.rentSection),
     cards: mergeCards(apiData.rentSection?.cards, defaults.rentSection.cards, useImageFallbacks),
@@ -245,6 +261,7 @@ export function mergeHomepageData(apiData = {}, { useImageFallbacks = true } = {
     header,
     hero,
     trustItems: mergeTrustItems(apiData.trustItems, defaults.trustItems, useImageFallbacks),
+    horizonSection,
     rentSection,
     whySection,
     picksSection,

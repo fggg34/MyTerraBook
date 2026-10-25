@@ -325,6 +325,21 @@
         "subtitle": "Real people in Reykjavík"
       }
     ],
+    "horizonSection": {
+      "heading": "Choose your next destination",
+      "subtitle": "Campervans and cars in the countries we cover, with more of Europe on the way.",
+      "cards": [
+        { "countryCode": "IS", "region": "Europe", "image": "/images/homepage/hero.jpg" },
+        { "countryCode": "FI", "region": "Europe", "image": "" },
+        { "countryCode": "DE", "region": "Europe", "image": "" },
+        { "countryCode": "PL", "region": "Europe", "image": "" },
+        { "countryCode": "GR", "region": "Europe", "image": "" },
+        { "countryCode": "IT", "region": "Europe", "image": "" },
+        { "countryCode": "HR", "region": "Europe", "image": "" },
+        { "countryCode": "CH", "region": "Europe", "image": "" },
+        { "countryCode": "CY", "region": "Europe", "image": "" }
+      ]
+    },
     "rentSection": {
       "heading": "Three ways to move through Iceland.",
       "subtitle": "From a two-berth van for the Ring Road to a warm bed at the end of it.",

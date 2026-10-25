@@ -7,6 +7,7 @@ use App\Http\Resources\Api\BlogPostResource;
 use App\Models\BlogPost;
 use App\Models\Car;
 use App\Models\GuestHouse;
+use App\Models\Location;
 use App\Models\Setting;
 use App\Models\SiteContentPage;
 use App\Models\SitePage;
@@ -50,6 +51,7 @@ class SiteContentService
 
         if ($pageKey === 'home') {
             $normalized['rentSection'] = $this->resolveRentSection($normalized['rentSection'] ?? []);
+            $normalized['horizonSection'] = $this->resolveHorizonSection($normalized['horizonSection'] ?? []);
         }
 
         if ($pageKey === 'about') {
@@ -102,6 +104,7 @@ class SiteContentService
             'header' => $global['header'] ?? [],
             'hero' => $home['hero'] ?? [],
             'trustItems' => $home['trustItems'] ?? [],
+            'horizonSection' => $home['horizonSection'] ?? [],
             'rentSection' => $this->resolveRentSection($home['rentSection'] ?? []),
             'whySection' => $home['whySection'] ?? [],
             'picksSection' => $home['picksSection'] ?? [],
@@ -644,6 +647,7 @@ class SiteContentService
         }
 
         foreach ([
+            ['horizonSection', 'cards', 'image'],
             ['rentSection', 'cards', 'image'],
             ['howSection', 'steps', 'image'],
             ['staySection', 'cards', 'image'],
@@ -1060,6 +1064,113 @@ class SiteContentService
      * @param  array<string, mixed>  $section
      * @return array<string, mixed>
      */
+    private function resolveHorizonSection(array $section): array
+    {
+        $cards = $section['cards'] ?? [];
+        if (! is_array($cards)) {
+            $section['cards'] = [];
+
+            return $section;
+        }
+
+        $codes = [];
+        foreach ($cards as $card) {
+            if (! is_array($card)) {
+                continue;
+            }
+            $code = strtoupper(trim((string) ($card['countryCode'] ?? '')));
+            if (preg_match('/^[A-Z]{2}$/', $code)) {
+                $codes[] = $code;
+            }
+        }
+
+        $stats = $this->destinationCatalogStats(array_values(array_unique($codes)));
+        $resolved = [];
+
+        foreach ($cards as $card) {
+            if (! is_array($card)) {
+                continue;
+            }
+            $code = strtoupper(trim((string) ($card['countryCode'] ?? '')));
+            $name = config('destinations.'.$code);
+            if (! preg_match('/^[A-Z]{2}$/', $code) || ! is_string($name) || $name === '') {
+                continue;
+            }
+            $region = trim((string) ($card['region'] ?? 'Europe'));
+            if (! in_array($region, ['Europe', 'Oceania', 'America'], true)) {
+                $region = 'Europe';
+            }
+            $stat = $stats[$code] ?? ['available' => false, 'fromPriceCents' => null];
+            $resolved[] = [
+                'countryCode' => $code,
+                'name' => $name,
+                'region' => $region,
+                'image' => $card['image'] ?? '',
+                'available' => (bool) $stat['available'],
+                'fromPriceCents' => $stat['fromPriceCents'],
+                'priceUnit' => 'day',
+            ];
+        }
+
+        $section['cards'] = $resolved;
+
+        return $section;
+    }
+
+    /**
+     * @param  list<string>  $codes
+     * @return array<string, array{available: bool, fromPriceCents: ?int}>
+     */
+    private function destinationCatalogStats(array $codes): array
+    {
+        $stats = [];
+        foreach ($codes as $code) {
+            $stats[$code] = ['available' => false, 'fromPriceCents' => null];
+        }
+        if ($codes === []) {
+            return $stats;
+        }
+
+        $availableCodes = Location::query()
+            ->where('is_active', true)
+            ->whereIn('country_code', $codes)
+            ->whereHas('cars', fn ($cars) => $cars->publiclyVisible()->where('car_location.allows_pickup', true))
+            ->distinct()
+            ->pluck('country_code');
+
+        foreach ($availableCodes as $code) {
+            $code = (string) $code;
+            if (isset($stats[$code])) {
+                $stats[$code]['available'] = true;
+            }
+        }
+
+        $minPrices = DailyFarePricing::cheapestFareListSubquery();
+        $publicCars = Car::query()->publiclyVisible()->select('cars.id');
+        $rows = Location::query()
+            ->join('car_location', 'car_location.location_id', '=', 'locations.id')
+            ->joinSub($minPrices, 'min_fares', 'min_fares.car_id', '=', 'car_location.car_id')
+            ->whereIn('car_location.car_id', $publicCars)
+            ->where('car_location.allows_pickup', true)
+            ->where('locations.is_active', true)
+            ->whereIn('locations.country_code', $codes)
+            ->where('min_fares.min_daily_price_cents', '>', 0)
+            ->groupBy('locations.country_code')
+            ->selectRaw('locations.country_code as country_code, MIN(min_fares.min_daily_price_cents) as min_price')
+            ->get();
+
+        foreach ($rows as $row) {
+            $code = (string) $row->country_code;
+            if (! isset($stats[$code])) {
+                continue;
+            }
+            $stats[$code]['available'] = true;
+            $stats[$code]['fromPriceCents'] = $this->nullablePositiveInt($row->min_price);
+        }
+
+        return $stats;
+    }
+
     private function resolveRentSection(array $section): array
     {
         $cards = $section['cards'] ?? [];

@@ -433,6 +433,18 @@ return [
                         ['key' => 'trustItems', 'type' => 'repeater', 'label' => 'Items', 'fields' => $trustItemFields, 'columnSpanFull' => true, 'isRootList' => true],
                     ],
                 ],
+                'horizonSection' => [
+                    'label' => 'Destinations',
+                    'fields' => [
+                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'columnSpanFull' => true],
+                        ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
+                        ['key' => 'cards', 'type' => 'repeater', 'label' => 'Destinations to show', 'helperText' => 'Choose which countries appear on the homepage, and which region tab they belong to. Leave the image empty for a placeholder. A price is shown only when that country has a bookable vehicle.', 'fields' => [
+                            ['key' => 'countryCode', 'type' => 'select', 'label' => 'Country', 'optionsFrom' => 'destinations', 'searchable' => true, 'required' => true],
+                            ['key' => 'region', 'type' => 'select', 'label' => 'Region', 'options' => ['Europe' => 'Europe', 'Oceania' => 'Oceania', 'America' => 'America'], 'required' => true],
+                            ['key' => 'image', 'type' => 'image', 'label' => 'Image', 'helperText' => 'Optional. Empty cards use a placeholder.'],
+                        ], 'columnSpanFull' => true],
+                    ],
+                ],
                 'rentSection' => [
                     'label' => 'What we rent',
                     'fields' => [

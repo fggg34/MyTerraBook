@@ -75,6 +75,21 @@ export const defaultHomepageData = {
     { icon: 'shield', title: 'Fully insured', subtitle: 'Gravel & ash cover included' },
     { icon: 'phone', title: 'Local support, 24/7', subtitle: 'Real people in Reykjavík' },
   ],
+  horizonSection: {
+    heading: 'Choose your next destination',
+    subtitle: 'Campervans and cars in the countries we cover, with more of Europe on the way.',
+    cards: [
+      { countryCode: 'IS', name: 'Iceland', region: 'Europe', image: IMG.hero },
+      { countryCode: 'FI', name: 'Finland', region: 'Europe', image: '' },
+      { countryCode: 'DE', name: 'Germany', region: 'Europe', image: '' },
+      { countryCode: 'PL', name: 'Poland', region: 'Europe', image: '' },
+      { countryCode: 'GR', name: 'Greece', region: 'Europe', image: '' },
+      { countryCode: 'IT', name: 'Italy', region: 'Europe', image: '' },
+      { countryCode: 'HR', name: 'Croatia', region: 'Europe', image: '' },
+      { countryCode: 'CH', name: 'Switzerland', region: 'Europe', image: '' },
+      { countryCode: 'CY', name: 'Cyprus', region: 'Europe', image: '' },
+    ],
+  },
   rentSection: {
     heading: 'Three ways to move through Iceland.',
     subtitle: 'From a two-berth van for the Ring Road to a warm bed at the end of it.',
