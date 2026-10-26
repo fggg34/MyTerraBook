@@ -126,6 +126,7 @@ Route::get('/booking-change-requests', [BookingChangeRequestController::class, '
 Route::post('/booking-change-requests/preview', [BookingChangeRequestController::class, 'preview']);
 Route::get('/booking-confirmation/{token}', [BookingConfirmationController::class, 'show']);
 Route::get('/booking-confirmation/{token}/calendar.ics', [BookingConfirmationController::class, 'calendar']);
+Route::get('/booking-confirmation/{token}/rental-terms.pdf', [BookingConfirmationController::class, 'rentalTerms']);
 
 Route::prefix('guest-houses')->group(function () {
     Route::get('/', [GuestHouseController::class, 'index']);
@@ -147,12 +148,16 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('api.me.orders.ical');
     Route::get('/me/orders/{order}/contract.pdf', [MeOrderContractPdfController::class, 'show'])
         ->name('api.me.orders.contract-pdf');
+    Route::get('/me/orders/{order}/rental-terms.pdf', [MeOrderContractPdfController::class, 'rentalTerms'])
+        ->name('api.me.orders.rental-terms-pdf');
 
     Route::get('/me/guest-house-bookings', [MeGuestHouseBookingController::class, 'index']);
     Route::get('/me/guest-house-bookings/{ref}', [MeGuestHouseBookingController::class, 'show']);
     Route::post('/me/guest-house-bookings/{ref}/cancel', [MeGuestHouseBookingController::class, 'cancel']);
     Route::get('/me/guest-house-bookings/{ref}/contract.pdf', [MeGuestHouseBookingPdfController::class, 'show'])
         ->name('api.me.guest-house-bookings.contract-pdf');
+    Route::get('/me/guest-house-bookings/{ref}/rental-terms.pdf', [MeGuestHouseBookingPdfController::class, 'rentalTerms'])
+        ->name('api.me.guest-house-bookings.rental-terms-pdf');
     Route::patch('/me/profile', [MeProfileController::class, 'update']);
     Route::post('/me/profile-photo', [MeProfileController::class, 'updatePhoto']);
     Route::delete('/me/profile-photo', [MeProfileController::class, 'deletePhoto']);

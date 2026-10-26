@@ -37,3 +37,17 @@ export async function downloadConfirmationCalendar(token, reference) {
     `booking-${reference}.ics`,
   )
 }
+
+export async function openPdf(url) {
+  const res = await api.get(url, { responseType: 'blob' })
+  const blob = new Blob([res.data], { type: 'application/pdf' })
+  const blobUrl = URL.createObjectURL(blob)
+  const opened = window.open(blobUrl, '_blank', 'noopener')
+  if (!opened) {
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = 'rental-terms.pdf'
+    link.click()
+  }
+  window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+}

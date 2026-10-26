@@ -70,6 +70,7 @@ function buildPropsFromPayload(data, prepayPercent) {
     dropoffAt: data.dropoff_at,
     host: data.host,
     confirmationToken: data.confirmation_token,
+    hasRentalTerms: Boolean(data.has_rental_terms),
   }
 }
 

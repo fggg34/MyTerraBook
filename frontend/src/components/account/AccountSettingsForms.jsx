@@ -550,7 +550,7 @@ export default function AccountSettingsForms({
           {showRentalTerms && (
             <div className="client-field">
               <label htmlFor="settings-rental-terms">Contract rental terms and conditions</label>
-              <p className="client-field-hint">These terms appear on your listings and rental contracts.</p>
+              <p className="client-field-hint">These terms appear on your listings and are attached as a PDF to each booking so the guest can open them.</p>
               <RichTextEditor
                 id="settings-rental-terms"
                 value={profile.rental_terms_html}

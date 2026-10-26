@@ -51,6 +51,7 @@ class Order extends Model
         'pricing_snapshot',
         'custom_field_values',
         'notes',
+        'rental_terms_html',
         'admin_internal_note',
         'created_by_admin_id',
         'payment_lock_expires_at',
@@ -111,6 +112,7 @@ class Order extends Model
                 $order->reference = static::generateUniqueReference();
             }
             BookingConfirmationUrl::assignToModel($order);
+            $order->snapshotRentalTerms();
         });
     }
 
@@ -131,6 +133,31 @@ class Order extends Model
     public function car(): BelongsTo
     {
         return $this->belongsTo(Car::class);
+    }
+
+    public function snapshotRentalTerms(): void
+    {
+        if (filled($this->rental_terms_html) || ! $this->car_id) {
+            return;
+        }
+
+        $hostId = Car::query()->whereKey($this->car_id)->value('user_id');
+        if (! $hostId) {
+            return;
+        }
+
+        $this->rental_terms_html = User::query()->whereKey($hostId)->value('rental_terms_html');
+    }
+
+    public function resolvedRentalTermsHtml(): ?string
+    {
+        if (filled($this->rental_terms_html)) {
+            return $this->rental_terms_html;
+        }
+
+        $this->loadMissing('car.host');
+
+        return $this->car?->host?->rental_terms_html;
     }
 
     public function carUnit(): BelongsTo

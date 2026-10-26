@@ -63,6 +63,6 @@
         </tbody>
     </table>
 
-    @include('pdf.partials.rental-terms', ['terms' => $order->car?->host?->rental_terms_html])
+    @include('pdf.partials.rental-terms', ['terms' => $order->resolvedRentalTermsHtml()])
 </body>
 </html>

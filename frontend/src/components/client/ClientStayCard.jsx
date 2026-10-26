@@ -1,6 +1,9 @@
-import { Calendar, MapPin } from 'lucide-react'
+import { Calendar, FileText, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { resolveStorageUrl } from '../../api'
+import { getMeGuestHouseTermsUrl } from '../../api/me'
+import { openPdf } from '../../utils/bookingConfirmationActions'
+import { useToast } from '../../context/ToastContext'
 import StatusBadge from '../ui/StatusBadge'
 import { formatCurrencyFromCents, formatDate } from '../../utils/format'
 
@@ -13,10 +16,19 @@ export default function ClientStayCard({
   viewListingLabel = 'View property',
   cancelBookingLabel = 'Cancel booking',
 }) {
+  const { toast } = useToast()
   const house = booking.guest_house
   const listingPath = house?.slug ? `/guesthouses/${house.slug}` : house?.id ? `/guesthouses/${house.id}` : null
   const thumbnail = house?.thumbnail ? resolveStorageUrl(house.thumbnail) : null
   const canCancel = CANCELLABLE.includes(booking.status) && !booking.cancelled_at
+
+  const openTerms = async () => {
+    try {
+      await openPdf(getMeGuestHouseTermsUrl(booking.booking_reference))
+    } catch {
+      toast('Could not open rental terms', 'error')
+    }
+  }
 
   return (
     <article className="client-card">
@@ -61,6 +73,12 @@ export default function ClientStayCard({
               <Link to={listingPath} className="client-btn secondary">
                 {viewListingLabel}
               </Link>
+            )}
+            {booking.has_rental_terms && (
+              <button type="button" className="client-btn secondary" onClick={openTerms}>
+                <FileText size={14} />
+                Rental terms
+              </button>
             )}
             {canCancel && (
               <button

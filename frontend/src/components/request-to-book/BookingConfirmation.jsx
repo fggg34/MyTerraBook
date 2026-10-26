@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Calendar, Check, Globe, MessageCircle } from 'lucide-react'
+import { Calendar, Check, FileText, Globe, MessageCircle } from 'lucide-react'
 import BookingModificationSection from '../booking/BookingModificationSection'
 import { useToast } from '../../context/ToastContext'
 import { getProtectionPresentation } from '../../data/requestToBookConfig'
@@ -8,6 +8,7 @@ import {
   buildHostMessageHref,
   downloadConfirmationCalendar,
   hostMemberLabel,
+  openPdf,
 } from '../../utils/bookingConfirmationActions'
 import { fmtDisplayDate, toDateOnlyString } from '../../utils/requestToBookUtils'
 
@@ -25,9 +26,11 @@ export default function BookingConfirmation({
   dropoffAt,
   host,
   confirmationToken,
+  hasRentalTerms = false,
 }) {
   const { toast } = useToast()
   const [calendarLoading, setCalendarLoading] = useState(false)
+  const [termsLoading, setTermsLoading] = useState(false)
   const timeline = config.confirmationTimeline
   const isVehicle = bookingType !== 'guesthouse'
   const payment = confirmed.payment
@@ -67,6 +70,21 @@ export default function BookingConfirmation({
       toast('Could not download calendar file', 'error')
     } finally {
       setCalendarLoading(false)
+    }
+  }
+
+  const handleTermsDownload = async () => {
+    if (!confirmationToken) {
+      toast('Rental terms are not available for this booking', 'error')
+      return
+    }
+    setTermsLoading(true)
+    try {
+      await openPdf(`/booking-confirmation/${encodeURIComponent(confirmationToken)}/rental-terms.pdf`)
+    } catch {
+      toast('Could not open rental terms', 'error')
+    } finally {
+      setTermsLoading(false)
     }
   }
 
@@ -225,6 +243,17 @@ export default function BookingConfirmation({
               <Calendar aria-hidden />
               {calendarLoading ? 'Preparing calendar…' : 'Add trip to calendar'}
             </button>
+            {hasRentalTerms && (
+              <button
+                type="button"
+                className="ca-ghost"
+                onClick={handleTermsDownload}
+                disabled={termsLoading || !confirmationToken}
+              >
+                <FileText aria-hidden />
+                {termsLoading ? 'Opening terms…' : 'Rental terms (PDF)'}
+              </button>
+            )}
             <Link to={listingPath} className="ca-ghost">
               <Globe aria-hidden />
               Back to listing

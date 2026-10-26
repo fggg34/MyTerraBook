@@ -32,8 +32,16 @@ export function getMeOrderContractUrl(orderId) {
   return `/me/orders/${orderId}/contract.pdf`
 }
 
+export function getMeOrderTermsUrl(orderId) {
+  return `/me/orders/${orderId}/rental-terms.pdf`
+}
+
 export function getMeGuestHouseContractUrl(ref) {
   return `/me/guest-house-bookings/${ref}/contract.pdf`
+}
+
+export function getMeGuestHouseTermsUrl(ref) {
+  return `/me/guest-house-bookings/${ref}/rental-terms.pdf`
 }
 
 export function updateProfile(payload) {

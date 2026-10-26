@@ -17,7 +17,7 @@ class MeGuestHouseBookingController extends Controller
     {
         $bookings = $request->user()
             ->guestHouseBookings()
-            ->with('guestHouse')
+            ->with('guestHouse.host')
             ->orderByDesc('created_at')
             ->paginate(20);
 
@@ -35,7 +35,7 @@ class MeGuestHouseBookingController extends Controller
         $booking = GuestHouseBooking::query()
             ->where('booking_reference', $ref)
             ->where('user_id', $request->user()->id)
-            ->with('guestHouse')
+            ->with('guestHouse.host')
             ->firstOrFail();
 
         return response()->json([
@@ -48,7 +48,7 @@ class MeGuestHouseBookingController extends Controller
         $booking = GuestHouseBooking::query()
             ->where('booking_reference', $ref)
             ->where('user_id', $request->user()->id)
-            ->with('guestHouse')
+            ->with('guestHouse.host')
             ->firstOrFail();
 
         if (! in_array($booking->status, [

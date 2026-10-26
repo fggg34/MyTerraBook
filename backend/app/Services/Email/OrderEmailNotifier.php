@@ -4,6 +4,7 @@ namespace App\Services\Email;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Services\Documents\RentalTermsPdf;
 use App\Services\Order\OrderSettingsService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Mail\Mailables\Attachment;
@@ -14,6 +15,7 @@ class OrderEmailNotifier
         private readonly EmailService $email,
         private readonly EmailSettingsService $emailSettings,
         private readonly OrderSettingsService $orderSettings,
+        private readonly RentalTermsPdf $rentalTermsPdf,
     ) {}
 
     public function notifyCreated(Order $order): void
@@ -104,6 +106,14 @@ class OrderEmailNotifier
     {
         $shouldAttach = $attachPdf ?? $this->orderSettings->shouldAttachPdfToOrderEmail();
         $attachments = $shouldAttach ? $this->contractPdfAttachments($order) : [];
+        $terms = $this->rentalTermsPdf->attachment(
+            (string) $order->reference,
+            $order->customer_name,
+            $order->resolvedRentalTermsHtml(),
+        );
+        if ($terms !== null) {
+            $attachments[] = $terms;
+        }
 
         return $this->email->send($templateKey, $order->customer_email, $payload, $attachments);
     }

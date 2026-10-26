@@ -1,9 +1,10 @@
-import { Calendar, Car, Download } from 'lucide-react'
+import { Calendar, Car, Download, FileText } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
 import StatusBadge from '../ui/StatusBadge'
 import { useToast } from '../../context/ToastContext'
-import { getMeOrderCalendarUrl } from '../../api/me'
+import { getMeOrderCalendarUrl, getMeOrderTermsUrl } from '../../api/me'
+import { openPdf } from '../../utils/bookingConfirmationActions'
 import { formatCurrency, formatDate } from '../../utils/format'
 
 export default function ClientBookingCard({ order, addToCalendarLabel = 'Add to calendar', viewListingLabel = 'View vehicle' }) {
@@ -22,6 +23,14 @@ export default function ClientBookingCard({ order, addToCalendarLabel = 'Add to 
       URL.revokeObjectURL(blobUrl)
     } catch {
       toast('Could not download calendar file', 'error')
+    }
+  }
+
+  const openTerms = async () => {
+    try {
+      await openPdf(getMeOrderTermsUrl(order.id))
+    } catch {
+      toast('Could not open rental terms', 'error')
     }
   }
 
@@ -55,6 +64,12 @@ export default function ClientBookingCard({ order, addToCalendarLabel = 'Add to 
               <Link to={listingPath} className="client-btn secondary">
                 {viewListingLabel}
               </Link>
+            )}
+            {order.has_rental_terms && (
+              <button type="button" className="client-btn secondary" onClick={openTerms}>
+                <FileText size={14} />
+                Rental terms
+              </button>
             )}
             <button type="button" className="client-btn secondary" onClick={downloadCalendar}>
               <Download size={14} />

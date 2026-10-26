@@ -72,7 +72,7 @@
         </tbody>
     </table>
 
-    @include('pdf.partials.rental-terms', ['terms' => $booking->guestHouse?->host?->rental_terms_html])
+    @include('pdf.partials.rental-terms', ['terms' => $booking->resolvedRentalTermsHtml()])
 
     <p style="margin-top:2rem;font-size:10px;color:#666;">
         Thank you for booking with {{ config('app.name') }}. For assistance, contact our support team.

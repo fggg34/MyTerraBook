@@ -41,7 +41,7 @@ class RegisteredHostForm
             Section::make('Contract rental terms and conditions')
                 ->icon('heroicon-o-document-text')
                 ->columnSpanFull()
-                ->description('The host can edit this after signing in. It is shown on their listings and rental contracts.')
+                ->description('The host can edit this after signing in. It is shown on their listings and attached as a PDF to each booking.')
                 ->schema([
                     RichEditor::make('rental_terms_html')
                         ->hiddenLabel()

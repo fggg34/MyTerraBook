@@ -39,6 +39,7 @@ class GuestHouseBooking extends Model
         'coupon_code',
         'coupon_id',
         'special_requests',
+        'rental_terms_html',
         'cancellation_reason',
         'cancelled_at',
         'confirmed_at',
@@ -90,6 +91,7 @@ class GuestHouseBooking extends Model
             }
 
             BookingConfirmationUrl::assignToModel($booking);
+            $booking->snapshotRentalTerms();
         });
     }
 
@@ -105,6 +107,31 @@ class GuestHouseBooking extends Model
     public function guestHouse(): BelongsTo
     {
         return $this->belongsTo(GuestHouse::class);
+    }
+
+    public function snapshotRentalTerms(): void
+    {
+        if (filled($this->rental_terms_html) || ! $this->guest_house_id) {
+            return;
+        }
+
+        $hostId = GuestHouse::query()->whereKey($this->guest_house_id)->value('user_id');
+        if (! $hostId) {
+            return;
+        }
+
+        $this->rental_terms_html = User::query()->whereKey($hostId)->value('rental_terms_html');
+    }
+
+    public function resolvedRentalTermsHtml(): ?string
+    {
+        if (filled($this->rental_terms_html)) {
+            return $this->rental_terms_html;
+        }
+
+        $this->loadMissing('guestHouse.host');
+
+        return $this->guestHouse?->host?->rental_terms_html;
     }
 
     public function user(): BelongsTo

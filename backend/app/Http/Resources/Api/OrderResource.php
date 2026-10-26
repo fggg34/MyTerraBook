@@ -33,6 +33,7 @@ class OrderResource extends JsonResource
             'total' => Money::formatDecimalFromCents((int) $this->total_cents),
             'total_cents' => (int) $this->total_cents,
             'currency' => $this->currency,
+            'has_rental_terms' => filled($this->rental_terms_html) || filled($this->car?->host?->rental_terms_html),
             'confirmation_url' => $this->confirmation_url,
             'created_at' => $this->created_at?->toIso8601String(),
             'pickup_location' => $this->whenLoaded('pickupLocation', fn () => $this->pickupLocation ? [

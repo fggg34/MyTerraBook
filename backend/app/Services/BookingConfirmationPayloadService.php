@@ -70,6 +70,7 @@ class BookingConfirmationPayloadService
                 'category' => $car->subCategory ? ['name' => $car->subCategory->name] : null,
             ] : null,
             'host' => $this->hostPayload($car?->host),
+            'has_rental_terms' => filled($order->resolvedRentalTermsHtml()),
             'payment' => $this->rapydPaymentPayload($order->id, 'car'),
         ];
     }
@@ -109,6 +110,7 @@ class BookingConfirmationPayloadService
                 'check_out_time' => $house->check_out_time,
             ] : null,
             'host' => $this->hostPayload($house?->host),
+            'has_rental_terms' => filled($booking->resolvedRentalTermsHtml()),
             'payment' => $this->rapydPaymentPayload($booking->id, 'guesthouse'),
         ];
     }

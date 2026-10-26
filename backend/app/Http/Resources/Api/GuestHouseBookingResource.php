@@ -39,6 +39,7 @@ class GuestHouseBookingResource extends JsonResource
             'cancelled_at' => $this->cancelled_at?->toIso8601String(),
             'confirmed_at' => $this->confirmed_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
+            'has_rental_terms' => filled($this->rental_terms_html) || filled($this->guestHouse?->host?->rental_terms_html),
             'guest_house' => $this->whenLoaded('guestHouse', fn () => [
                 'id' => $this->guestHouse->id,
                 'name' => $this->guestHouse->name,
