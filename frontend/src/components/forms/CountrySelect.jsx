@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import CountryFlag from '../ui/CountryFlag'
+import FieldSelect from '../ui/FieldSelect'
 import { getCountryOptions, resolveCountrySelectValue } from '../../data/countries'
 
 export default function CountrySelect({
@@ -9,27 +11,40 @@ export default function CountrySelect({
   className = '',
   includeOther = true,
   required = false,
-  ...rest
+  disabled = false,
+  'aria-invalid': ariaInvalid,
+  'aria-label': ariaLabel,
+  'data-field': dataField,
 }) {
-  const options = useMemo(
+  const countries = useMemo(
     () => getCountryOptions({ includeOther }),
     [includeOther],
   )
-  const selectValue = resolveCountrySelectValue(value, options)
+  const options = useMemo(
+    () => countries.map(({ code, name }) => ({
+      value: code,
+      label: name,
+      icon: /^[A-Z]{2}$/.test(code) ? <CountryFlag code={code} decorative /> : null,
+    })),
+    [countries],
+  )
+  const selectValue = resolveCountrySelectValue(value, countries)
+  const selectedName = countries.find((country) => country.code === selectValue)?.name
+  const invalid = ariaInvalid === true || ariaInvalid === 'true' || className.includes('inp-error')
 
   return (
-    <select
-      id={id}
-      className={className}
-      value={selectValue}
-      onChange={onChange}
-      required={required}
-      {...rest}
-    >
-      <option value="">{placeholder}</option>
-      {options.map(({ code, name }) => (
-        <option key={code} value={code}>{name}</option>
-      ))}
-    </select>
+    <div className={`country-select${invalid ? ' is-invalid' : ''}`} data-field={dataField}>
+      <FieldSelect
+        id={id}
+        value={selectValue}
+        onChange={(next) => onChange?.({ target: { value: next } })}
+        options={options}
+        placeholder={placeholder}
+        ariaLabel={ariaLabel || selectedName || placeholder}
+        disabled={disabled}
+        required={required}
+        searchable
+      />
+    </div>
   )
 }

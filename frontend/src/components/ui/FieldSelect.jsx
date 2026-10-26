@@ -9,6 +9,7 @@ const CHEVRON_ICON = (
 )
 
 export default function FieldSelect({
+  id,
   value,
   onChange,
   options = [],
@@ -18,6 +19,7 @@ export default function FieldSelect({
   disabled = false,
   className = '',
   searchable = false,
+  required = false,
   onOpen,
 }) {
   const listId = useId()
@@ -169,12 +171,14 @@ export default function FieldSelect({
         {icon}
         <button
           ref={triggerRef}
+          id={id}
           type="button"
           className={`field-select-trigger ${hasValue ? 'filled' : ''}`}
           onClick={() => (open ? closeMenu() : openMenu())}
           onKeyDown={onKeyDown}
           disabled={disabled}
           aria-label={ariaLabel}
+          aria-required={required || undefined}
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={open ? listId : undefined}

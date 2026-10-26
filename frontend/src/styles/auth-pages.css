@@ -349,6 +349,29 @@
   height: 18px;
 }
 
+.auth-field .country-select .field-control-wrap {
+  min-height: 50px;
+  border-radius: 14px;
+  padding: 0 16px;
+  border-color: var(--auth-line);
+}
+
+.auth-field .country-select .field-select-trigger {
+  padding: 13px 0;
+  font-size: 0.95rem;
+}
+
+.auth-field .country-select .field-select.is-open .field-control-wrap,
+.auth-field .country-select .field-control-wrap:focus-within {
+  border-color: var(--auth-green);
+  box-shadow: 0 0 0 3px rgba(69, 160, 106, 0.14);
+}
+
+.auth-field .country-select.is-invalid .field-control-wrap {
+  border-color: #f0a8a8;
+  background: var(--auth-red-soft);
+}
+
 .auth-input-wrap .auth-input {
   padding-right: 48px;
 }

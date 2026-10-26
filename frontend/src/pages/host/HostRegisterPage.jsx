@@ -211,17 +211,15 @@ export default function HostRegisterPage() {
           <div className="auth-field">
             <label htmlFor="host-reg-country">Country you operate in <RequiredMark /></label>
             <p className="auth-field-hint">Your listings appear under this destination.</p>
-            <div className={`auth-input-wrap${errors.country_code ? ' auth-input-wrap--error' : ''}`}>
-              <CountrySelect
-                id="host-reg-country"
-                className="auth-input"
-                includeOther={false}
-                required
-                value={form.country_code}
-                onChange={(e) => setForm({ ...form, country_code: e.target.value })}
-                placeholder="Select country"
-              />
-            </div>
+            <CountrySelect
+              id="host-reg-country"
+              includeOther={false}
+              required
+              aria-invalid={!!errors.country_code}
+              value={form.country_code}
+              onChange={(e) => setForm({ ...form, country_code: e.target.value })}
+              placeholder="Select country"
+            />
             {errors.country_code && <p className="auth-field-error">{errors.country_code}</p>}
           </div>
 

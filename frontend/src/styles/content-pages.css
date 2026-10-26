@@ -2639,6 +2639,70 @@
   border-color: var(--green, #45a06a);
 }
 
+.country-select {
+  width: 100%;
+}
+
+.country-select .field-select {
+  width: 100%;
+}
+
+.country-select .field-control-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  border: 1.5px solid var(--line, #e2e7ef);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.country-select .field-select.is-open .field-control-wrap,
+.country-select .field-control-wrap:focus-within {
+  border-color: var(--green, #45a06a);
+  box-shadow: 0 0 0 3px rgba(69, 160, 106, 0.14);
+}
+
+.country-select.is-invalid .field-control-wrap {
+  border-color: #e23744;
+  background: #fef5f6;
+}
+
+.country-select .field-select-trigger {
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 9px 0;
+  font-family: var(--sans, 'Open Sans', sans-serif);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--slate-light, #8090a4);
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  min-width: 0;
+}
+
+.country-select .field-select-trigger.filled {
+  color: var(--ink, #1d2b40);
+}
+
+.country-select .field-select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.country-select .field-select-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--slate, #5a6b82);
+  flex: 0 0 auto;
+}
+
 .host-landing-submit {
   width: 100%;
   margin-top: 4px;
