@@ -1488,6 +1488,16 @@ a.host-overview-card:hover .host-overview-card-link {
   white-space: nowrap;
 }
 
+.host-settings-back {
+  display: inline-flex;
+  width: fit-content;
+  color: #34629e;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.host-settings-back:hover { color: #0f2036; }
+
 .host-btn {
   display: inline-flex;
   align-items: center;

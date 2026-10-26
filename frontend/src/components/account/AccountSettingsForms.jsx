@@ -30,6 +30,9 @@ export default function AccountSettingsForms({
   showCompanyLogo = false,
   showRentalTerms = false,
   profileDescription = 'Update your account details.',
+  passwordHref = '',
+  passwordOnly = false,
+  passwordBackHref = '',
 }) {
   const { user, setUser, applyAsHost: applyAsHostFromAuth } = useAuth()
   const { toast } = useToast()
@@ -322,6 +325,74 @@ export default function AccountSettingsForms({
     ? { ...user, profile_photo_url: photoPreview }
     : user
 
+  const passwordSection = passwordHref ? (
+    <section className="client-settings-section">
+      <h2>Password</h2>
+      <p className="client-settings-desc">Update the password you use to sign in.</p>
+      <Link to={passwordHref} className="host-btn secondary">Change password</Link>
+    </section>
+  ) : (
+    <section className="client-settings-section">
+      <h2>Password</h2>
+      <p className="client-settings-desc">Choose a strong password with at least 8 characters.</p>
+      <form onSubmit={handlePasswordSubmit} className="client-settings-form">
+        <div className="client-field">
+          <label htmlFor="settings-current-password">Current password</label>
+          <PasswordInput
+            id="settings-current-password"
+            value={passwordForm.current_password}
+            onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
+            autoComplete="current-password"
+            hasError={!!passwordErrors.current_password}
+          />
+          {passwordErrors.current_password && (
+            <p className="client-field-error">{passwordErrors.current_password}</p>
+          )}
+        </div>
+        <div className="client-field">
+          <label htmlFor="settings-new-password">New password</label>
+          <PasswordInput
+            id="settings-new-password"
+            value={passwordForm.password}
+            onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
+            autoComplete="new-password"
+            hasError={!!passwordErrors.password}
+          />
+          {passwordErrors.password && (
+            <p className="client-field-error">{passwordErrors.password}</p>
+          )}
+        </div>
+        <div className="client-field">
+          <label htmlFor="settings-confirm-password">Confirm new password</label>
+          <PasswordInput
+            id="settings-confirm-password"
+            value={passwordForm.password_confirmation}
+            onChange={(e) => setPasswordForm({ ...passwordForm, password_confirmation: e.target.value })}
+            autoComplete="new-password"
+            hasError={!!passwordErrors.password_confirmation}
+          />
+          {passwordErrors.password_confirmation && (
+            <p className="client-field-error">{passwordErrors.password_confirmation}</p>
+          )}
+        </div>
+        <button type="submit" className="client-btn primary" disabled={passwordLoading}>
+          {passwordLoading ? 'Updating…' : 'Update password'}
+        </button>
+      </form>
+    </section>
+  )
+
+  if (passwordOnly) {
+    return (
+      <div className="client-settings client-settings--single">
+        {passwordBackHref ? (
+          <Link to={passwordBackHref} className="host-settings-back">Back to settings</Link>
+        ) : null}
+        {passwordSection}
+      </div>
+    )
+  }
+
   return (
     <div className="client-settings">
       <section className="client-settings-section">
@@ -509,54 +580,7 @@ export default function AccountSettingsForms({
         </form>
       </section>
 
-      <section className="client-settings-section">
-        <h2>Password</h2>
-        <p className="client-settings-desc">Choose a strong password with at least 8 characters.</p>
-        <form onSubmit={handlePasswordSubmit} className="client-settings-form">
-          <div className="client-field">
-            <label htmlFor="settings-current-password">Current password</label>
-            <PasswordInput
-              id="settings-current-password"
-              value={passwordForm.current_password}
-              onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
-              autoComplete="current-password"
-              hasError={!!passwordErrors.current_password}
-            />
-            {passwordErrors.current_password && (
-              <p className="client-field-error">{passwordErrors.current_password}</p>
-            )}
-          </div>
-          <div className="client-field">
-            <label htmlFor="settings-new-password">New password</label>
-            <PasswordInput
-              id="settings-new-password"
-              value={passwordForm.password}
-              onChange={(e) => setPasswordForm({ ...passwordForm, password: e.target.value })}
-              autoComplete="new-password"
-              hasError={!!passwordErrors.password}
-            />
-            {passwordErrors.password && (
-              <p className="client-field-error">{passwordErrors.password}</p>
-            )}
-          </div>
-          <div className="client-field">
-            <label htmlFor="settings-confirm-password">Confirm new password</label>
-            <PasswordInput
-              id="settings-confirm-password"
-              value={passwordForm.password_confirmation}
-              onChange={(e) => setPasswordForm({ ...passwordForm, password_confirmation: e.target.value })}
-              autoComplete="new-password"
-              hasError={!!passwordErrors.password_confirmation}
-            />
-            {passwordErrors.password_confirmation && (
-              <p className="client-field-error">{passwordErrors.password_confirmation}</p>
-            )}
-          </div>
-          <button type="submit" className="client-btn primary" disabled={passwordLoading}>
-            {passwordLoading ? 'Updating…' : 'Update password'}
-          </button>
-        </form>
-      </section>
+      {passwordSection}
 
       {canBecomeHost && (
         <section className="client-settings-section client-settings-section--host">

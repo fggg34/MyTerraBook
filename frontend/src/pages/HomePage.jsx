@@ -15,9 +15,9 @@ export default function HomePage({ pageData = {}, contentReady = true }) {
   return (
     <main className={contentReady ? undefined : 'homepage--loading'}>
       <HeroSection {...(pageData.hero || {})} />
-      <HorizonSection {...(pageData.horizonSection || {})} />
       <TrustStrip items={pageData.trustItems || []} />
       <WhatWeRentSection {...(pageData.rentSection || {})} />
+      <HorizonSection {...(pageData.horizonSection || {})} />
       <WhyMyTerraSection {...(pageData.whySection || {})} />
       <PicksSection {...(pageData.picksSection || {})} />
       <HowItWorksSection {...(pageData.howSection || {})} />

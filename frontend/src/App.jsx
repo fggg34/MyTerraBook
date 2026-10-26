@@ -45,6 +45,7 @@ import HostCarEditorPage from './pages/host/HostCarEditorPage'
 import HostBookingsPage from './pages/host/HostBookingsPage'
 import HostBookingDetailPage from './pages/host/HostBookingDetailPage'
 import HostSettingsPage from './pages/host/HostSettingsPage'
+import HostPasswordPage from './pages/host/HostPasswordPage'
 import HostIntegrationsPage from './pages/host/HostIntegrationsPage'
 import HostRegisterPage from './pages/host/HostRegisterPage'
 import GuestHouseCheckoutPage from './pages/guest-houses/GuestHouseCheckoutPage'
@@ -186,6 +187,7 @@ function AppRoutes() {
           <Route path="bookings/guest-houses/:id" element={<HostBookingDetailPage kind="guesthouse" />} />
           <Route path="integrations" element={<HostIntegrationsPage />} />
           <Route path="settings" element={<HostSettingsPage />} />
+          <Route path="settings/password" element={<HostPasswordPage />} />
         </Route>
         <Route path="/guest-houses" element={<Navigate to="/guesthouses" replace />} />
         <Route path="/guest-houses/:slug" element={<RedirectGuestHouseSlug />} />
