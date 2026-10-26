@@ -31,11 +31,13 @@ class ModerationSettings extends Page
         $paymentMethodsUrl = PaymentMethodResource::getUrl('index');
         $customFieldsUrl = CustomFieldResource::getUrl('index');
         $loggedInUsersUrl = LoggedInUsers::getUrl();
+        $usersUrl = ManageUsers::getUrl();
 
         $isSettingsActive = fn (): bool => request()->is('admin/global-configuration*')
             || request()->is('admin/payment-methods*')
             || request()->is('admin/custom-fields*')
-            || request()->is('admin/logged-in-users*');
+            || request()->is('admin/logged-in-users*')
+            || request()->is('admin/users*');
 
         return [
             NavigationItem::make('moderation-settings')
@@ -73,6 +75,13 @@ class ModerationSettings extends Page
                 ->sort(4)
                 ->url($loggedInUsersUrl)
                 ->isActiveWhen(fn (): bool => request()->is('admin/logged-in-users*')),
+            NavigationItem::make('moderation-users')
+                ->label('Users')
+                ->group('Moderation')
+                ->parentItem(self::PARENT_LABEL)
+                ->sort(5)
+                ->url($usersUrl)
+                ->isActiveWhen(fn (): bool => request()->is('admin/users*')),
         ];
     }
 
