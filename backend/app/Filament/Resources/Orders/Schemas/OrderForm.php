@@ -39,103 +39,105 @@ class OrderForm
                     ->columnSpanFull(),
                 Grid::make([
                     'default' => 1,
-                    'xl' => 12,
+                    'lg' => 12,
                 ])
                     ->columnSpanFull()
                     ->schema([
                         Section::make('Quick Reservation')
                             ->columnSpan([
                                 'default' => 1,
-                                'xl' => 5,
+                                'lg' => 5,
                             ])
                             ->schema([
-                                Select::make('car_id')
-                                    ->label('Car')
-                                    ->relationship('car', 'name')
-                                    ->live()
-                                    ->required(),
                                 Grid::make([
                                     'default' => 1,
-                                    'md' => 2,
-                                ])
-                                    ->schema([
-                                        DateTimePicker::make('pickup_at')
-                                            ->label('Pickup Date and Time')
-                                            ->live()
-                                            ->required(),
-                                        DateTimePicker::make('dropoff_at')
-                                            ->label('Drop Off Date and Time')
-                                            ->live()
-                                            ->required(),
-                                    ]),
-                                Select::make('car_unit_id')
-                                    ->label('Car Unit')
-                                    ->options(
-                                        fn (): array => CarUnit::query()
-                                            ->with('car')
-                                            ->orderBy('id')
-                                            ->get()
-                                            ->mapWithKeys(fn (CarUnit $u): array => [
-                                                $u->id => ($u->car?->name ?? 'Car').' · unit #'.$u->id,
-                                            ])
-                                            ->all()
-                                    )
-                                    ->searchable(),
-                                Select::make('price_type_id')
-                                    ->relationship('priceType', 'name'),
-                                Placeholder::make('stop_rentals_hint')
-                                    ->label('Stop rentals on these dates')
-                                    ->content('To block dates for this car, add an availability block from the car\'s record. Blocked dates appear in red on the calendar.'),
-                                Select::make('pickup_location_id')
-                                    ->label('Pickup Location')
-                                    ->relationship('pickupLocation', 'name')
-                                    ->required(),
-                                Select::make('dropoff_location_id')
-                                    ->label('Drop Off Location')
-                                    ->relationship('dropoffLocation', 'name')
-                                    ->required(),
-                                Select::make('order_status')
-                                    ->label('Order Status')
-                                    ->options(collect(OrderStatus::cases())->mapWithKeys(fn (OrderStatus $s) => [$s->value => str_replace('_', ' ', ucfirst($s->value))]))
-                                    ->default(OrderStatus::Pending->value)
-                                    ->required(),
-                                Select::make('rental_status')
-                                    ->label('Rental Status')
-                                    ->options(collect(RentalStatus::cases())->mapWithKeys(fn (RentalStatus $s) => [$s->value => str_replace('_', ' ', ucfirst($s->value))])),
-                                Select::make('payment_method_preview')
-                                    ->label('Payment Method')
-                                    ->options(fn (): array => ['' => '-undefined-'] + PaymentMethod::query()
-                                        ->where('is_enabled', true)
-                                        ->orderBy('sort_order')
-                                        ->pluck('name', 'code')
-                                        ->all())
-                                    ->default('')
-                                    ->dehydrated(false),
-                                Select::make('user_id')
-                                    ->label('Assign Customer')
-                                    ->relationship('user', 'name')
-                                    ->searchable(),
-                                TextInput::make('customer_name')
-                                    ->label('Customer Name')
-                                    ->required(),
-                                TextInput::make('customer_email')
-                                    ->label('E-Mail')
-                                    ->email()
-                                    ->required(),
-                                TextInput::make('customer_phone')
-                                    ->label('Phone')
-                                    ->tel(),
-                                TextInput::make('customer_country')
-                                    ->label('Country'),
-                                Textarea::make('notes')
-                                    ->label('Customer Information')
-                                    ->rows(5),
+                                    'sm' => 2,
+                                ])->schema([
+                                    Select::make('car_id')
+                                        ->label('Car')
+                                        ->relationship('car', 'name')
+                                        ->live()
+                                        ->required()
+                                        ->columnSpanFull(),
+                                    Select::make('pickup_location_id')
+                                        ->label('Pickup Location')
+                                        ->relationship('pickupLocation', 'name')
+                                        ->required(),
+                                    Select::make('dropoff_location_id')
+                                        ->label('Drop Off Location')
+                                        ->relationship('dropoffLocation', 'name')
+                                        ->required(),
+                                    DateTimePicker::make('pickup_at')
+                                        ->label('Pickup Date and Time')
+                                        ->live()
+                                        ->required(),
+                                    DateTimePicker::make('dropoff_at')
+                                        ->label('Drop Off Date and Time')
+                                        ->live()
+                                        ->required(),
+                                    Select::make('car_unit_id')
+                                        ->label('Car Unit')
+                                        ->options(
+                                            fn (): array => CarUnit::query()
+                                                ->with('car')
+                                                ->orderBy('id')
+                                                ->get()
+                                                ->mapWithKeys(fn (CarUnit $u): array => [
+                                                    $u->id => ($u->car?->name ?? 'Car').' · unit #'.$u->id,
+                                                ])
+                                                ->all()
+                                        )
+                                        ->searchable(),
+                                    Select::make('price_type_id')
+                                        ->relationship('priceType', 'name'),
+                                    Select::make('order_status')
+                                        ->label('Order Status')
+                                        ->options(collect(OrderStatus::cases())->mapWithKeys(fn (OrderStatus $s) => [$s->value => str_replace('_', ' ', ucfirst($s->value))]))
+                                        ->default(OrderStatus::Pending->value)
+                                        ->required(),
+                                    Select::make('rental_status')
+                                        ->label('Rental Status')
+                                        ->options(collect(RentalStatus::cases())->mapWithKeys(fn (RentalStatus $s) => [$s->value => str_replace('_', ' ', ucfirst($s->value))])),
+                                    Select::make('payment_method_preview')
+                                        ->label('Payment Method')
+                                        ->options(fn (): array => ['' => '-undefined-'] + PaymentMethod::query()
+                                            ->where('is_enabled', true)
+                                            ->orderBy('sort_order')
+                                            ->pluck('name', 'code')
+                                            ->all())
+                                        ->default('')
+                                        ->dehydrated(false),
+                                    Select::make('user_id')
+                                        ->label('Assign Customer')
+                                        ->relationship('user', 'name')
+                                        ->searchable(),
+                                    TextInput::make('customer_name')
+                                        ->label('Customer Name')
+                                        ->required(),
+                                    TextInput::make('customer_email')
+                                        ->label('E-Mail')
+                                        ->email()
+                                        ->required(),
+                                    TextInput::make('customer_phone')
+                                        ->label('Phone')
+                                        ->tel(),
+                                    TextInput::make('customer_country')
+                                        ->label('Country'),
+                                    Placeholder::make('stop_rentals_hint')
+                                        ->label('Stop rentals on these dates')
+                                        ->content('To block dates for this car, add an availability block from the car\'s record. Blocked dates appear in red on the calendar.')
+                                        ->columnSpanFull(),
+                                    Textarea::make('notes')
+                                        ->label('Customer Information')
+                                        ->rows(5)
+                                        ->columnSpanFull(),
+                                ]),
                             ]),
 
                         Section::make('Car Reservation Calendar')
                             ->columnSpan([
                                 'default' => 1,
-                                'xl' => 7,
+                                'lg' => 7,
                             ])
                             ->schema([
                                 Grid::make([
@@ -168,13 +170,13 @@ class OrderForm
                         Section::make('Reservation Costs')
                             ->columnSpan([
                                 'default' => 1,
-                                'xl' => 12,
+                                'lg' => 12,
                             ])
                             ->schema([
                                 Grid::make([
                                     'default' => 1,
-                                    'md' => 2,
-                                    'xl' => 4,
+                                    'sm' => 2,
+                                    'lg' => 4,
                                 ])
                                     ->schema([
                                         TextInput::make('base_rental_cents')

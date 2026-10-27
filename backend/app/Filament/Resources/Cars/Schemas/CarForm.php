@@ -41,14 +41,14 @@ class CarForm
                     Section::make('Identity')
                         ->description('What this car is, and where it lives in the fleet.')
                         ->schema(self::identityFields())
-                        ->columns(2),
+                        ->columns(self::pairedColumns()),
                 ]),
             Step::make('Specs')
                 ->schema([
                     Section::make('Specs')
                         ->description('How the car drives and what it can carry.')
                         ->schema(self::specsFields())
-                        ->columns(2),
+                        ->columns(self::pairedColumns()),
                 ]),
             Step::make('Features')
                 ->schema([
@@ -76,12 +76,12 @@ class CarForm
             Section::make('Identity')
                 ->description('What this car is, and where it lives in the fleet.')
                 ->schema(self::identityFields())
-                ->columns(2)
+                ->columns(self::pairedColumns())
                 ->columnSpanFull(),
             Section::make('Specs')
                 ->description('How the car drives and what it can carry.')
                 ->schema(self::specsFields())
-                ->columns(2)
+                ->columns(self::pairedColumns())
                 ->columnSpanFull(),
             Section::make('Features')
                 ->description('Comfort and equipment tags for this model.')
@@ -107,8 +107,21 @@ class CarForm
             Section::make('Notes and extras')
                 ->description('Internal only. Not shown to guests.')
                 ->schema(self::notesFields())
-                ->columns(2)
+                ->columns(self::pairedColumns())
                 ->columnSpanFull(),
+        ];
+    }
+
+    /**
+     * Two columns from the small breakpoint, matching the Greenlight vehicle cards.
+     *
+     * @return array<string, int>
+     */
+    private static function pairedColumns(): array
+    {
+        return [
+            'default' => 1,
+            'sm' => 2,
         ];
     }
 
@@ -131,13 +144,6 @@ class CarForm
                 ->searchable()
                 ->native(false)
                 ->placeholder('Select a year'),
-            TextInput::make('units_available')
-                ->label('Total units')
-                ->helperText('How many matching cars of this model you have.')
-                ->required()
-                ->numeric()
-                ->minValue(1)
-                ->default(1),
             Select::make('main_category_id')
                 ->label('Main category')
                 ->options(fn (): array => MainCategory::query()
@@ -169,8 +175,7 @@ class CarForm
                 })
                 ->searchable()
                 ->preload()
-                ->required()
-                ->columnSpanFull(),
+                ->required(),
             Select::make('pickup_location_ids')
                 ->label('Pickup locations')
                 ->helperText('Where guests can pick up this car.')
@@ -189,8 +194,7 @@ class CarForm
                             ->map(fn ($id) => (string) $id)
                             ->all()
                     );
-                })
-                ->columnSpanFull(),
+                }),
             Select::make('dropoff_location_ids')
                 ->label('Drop-off locations')
                 ->helperText('Where guests can return this car.')
@@ -209,7 +213,15 @@ class CarForm
                             ->map(fn ($id) => (string) $id)
                             ->all()
                     );
-                })
+                }),
+            TextInput::make('units_available')
+                ->label('Total units')
+                ->belowLabel('How many matching cars of this model you have.')
+                ->required()
+                ->numeric()
+                ->minValue(1)
+                ->default(1)
+                ->extraFieldWrapperAttributes(['class' => 'ir-units-field'])
                 ->columnSpanFull(),
         ];
     }
@@ -223,13 +235,14 @@ class CarForm
             Placeholder::make('base_price_hint')
                 ->label('Base price per day')
                 ->content('Set the daily rate under Pricing, Base prices. Create starts without a fare.')
-                ->columnSpanFull(),
+                ->extraEntryWrapperAttributes(['class' => 'ir-price-field']),
             Toggle::make('is_active')
                 ->label('Available')
-                ->helperText('Off hides the car from booking.')
+                ->belowLabel('Off hides the car from booking.')
                 ->default(true)
                 ->required()
                 ->inline(false)
+                ->extraFieldWrapperAttributes(['class' => 'ir-available-field'])
                 ->columnSpanFull(),
             Select::make('drive_type')
                 ->label('Drivetrain')
@@ -305,7 +318,7 @@ class CarForm
                         : $record->name,
                 )
                 ->bulkToggleable()
-                ->columns(3)
+                ->columns(['default' => 1, 'sm' => 2, 'lg' => 3])
                 ->gridDirection(GridDirection::Row)
                 ->columnSpanFull(),
             CheckboxList::make('rentalOptions')
@@ -319,7 +332,7 @@ class CarForm
                     fn (RentalOption $record): string => $record->name
                 )
                 ->bulkToggleable()
-                ->columns(3)
+                ->columns(['default' => 1, 'sm' => 2, 'lg' => 3])
                 ->gridDirection(GridDirection::Row)
                 ->columnSpanFull(),
             CheckboxList::make('rentalConditions')
@@ -333,7 +346,7 @@ class CarForm
                     fn (RentalCondition $record): string => $record->title
                 )
                 ->bulkToggleable()
-                ->columns(2)
+                ->columns(self::pairedColumns())
                 ->gridDirection(GridDirection::Row)
                 ->columnSpanFull(),
         ];
@@ -394,7 +407,7 @@ class CarForm
             Section::make('Notes and extras')
                 ->description('Internal only. Not shown to guests.')
                 ->schema(self::notesFields())
-                ->columns(2)
+                ->columns(self::pairedColumns())
                 ->columnSpanFull(),
         ];
     }
@@ -441,13 +454,15 @@ class CarForm
                 ->dehydrated(false),
             TextInput::make('custom_label')
                 ->label('Additional detail features')
-                ->dehydrated(false),
+                ->dehydrated(false)
+                ->columnSpanFull(),
             FileUpload::make('custom_tag_image')
                 ->label('Custom image / if vacant')
                 ->disk('public')
                 ->directory('cars/tags')
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'])
-                ->dehydrated(false),
+                ->dehydrated(false)
+                ->columnSpanFull(),
         ];
     }
 }

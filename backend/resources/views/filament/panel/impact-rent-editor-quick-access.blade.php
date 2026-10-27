@@ -391,11 +391,24 @@
             box-shadow: 0 0 0 3px color-mix(in srgb, #0164a3 18%, transparent);
         }
 
-        html.ir-shell .fi-fo-field-wrp-label span,
-        html.ir-shell .fi-sc-field-wrp-label span {
+        html.ir-shell .fi-fo-field-label,
+        html.ir-shell .fi-fo-field-label-content,
+        html.ir-shell .fi-in-entry-label {
             font-size: 0.875rem;
             font-weight: 500;
+            line-height: 1.25rem;
             color: #0f172a;
+        }
+
+        html.ir-shell .fi-fo-field {
+            gap: 0.375rem;
+        }
+
+        html.ir-shell .fi-fo-field .fi-sc-text,
+        html.ir-shell .fi-in-entry .fi-sc-text {
+            font-size: 0.75rem;
+            line-height: 1rem;
+            color: #64748b;
         }
 
         html.ir-shell .fi-section-header-heading {
@@ -426,13 +439,16 @@
 
         html.ir-shell .fi-section,
         html.ir-shell .fi-sc-section {
-            overflow: hidden;
+            overflow: visible;
+            border-radius: 0.75rem;
         }
 
         html.ir-shell .fi-section-header,
         html.ir-shell .fi-sc-section-header {
             background: #f8fafc;
             border-bottom: 1px solid #e2e8f0;
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
             padding: 1rem 1.25rem;
         }
 
@@ -447,14 +463,94 @@
             padding: 1.25rem;
         }
 
-        html.ir-shell .fi-fo-field-wrp {
-            gap: 0.375rem;
+        html.ir-shell .fi-section-content.fi-grid {
+            align-items: start;
+            gap: 1rem;
         }
 
-        html.ir-shell .fi-input,
-        html.ir-shell .fi-select-input,
+        html.ir-shell .fi-input-wrp {
+            align-items: stretch;
+            min-height: 2.25rem;
+        }
+
+        html.ir-shell .fi-input-wrp:has(textarea) {
+            min-height: 0;
+        }
+
+        html.ir-shell input.fi-input,
+        html.ir-shell select.fi-select-input,
+        html.ir-shell .fi-fo-date-time-picker-display-text-input {
+            height: 2.25rem;
+            min-height: 2.25rem;
+            line-height: 2.25rem;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        html.ir-shell textarea.fi-input,
         html.ir-shell .fi-textarea {
-            min-height: 2.5rem;
+            height: auto;
+            min-height: 4.5rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        html.ir-shell div.fi-select-input {
+            display: flex;
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        html.ir-shell .fi-select-input .fi-select-input-btn,
+        html.ir-shell .fi-select-input div[x-ref="select"] {
+            min-height: 2.25rem;
+        }
+
+        html.ir-shell .fi-fo-date-time-picker-trigger {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            min-height: 2.25rem;
+        }
+
+        html.ir-shell .ir-price-field .fi-in-entry-content {
+            display: flex;
+            align-items: center;
+            min-height: 2.25rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background: #f8fafc;
+            padding: 0.375rem 0.75rem;
+            color: #334155;
+            font-size: 0.875rem;
+        }
+
+        html.ir-shell .ir-available-field,
+        html.ir-shell .ir-units-field {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            background: #f8fafc;
+            padding: 0.75rem 1rem;
+        }
+
+        html.ir-shell .ir-available-field .fi-fo-field-label-col,
+        html.ir-shell .ir-units-field .fi-fo-field-label-col {
+            height: auto;
+        }
+
+        html.ir-shell .ir-available-field .fi-fo-field-content-col,
+        html.ir-shell .ir-units-field .fi-fo-field-content-col {
+            width: auto;
+        }
+
+        html.ir-shell .ir-units-field .fi-input-wrp {
+            width: 7.5rem;
+            background: #fff;
         }
 
         html.ir-shell .fi-fo-file-upload,

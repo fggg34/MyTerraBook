@@ -475,7 +475,9 @@
             min-width: 36rem;
         }
 
-        .fi-fo-field-wrp-label span {
+        .fi-fo-field-label,
+        .fi-fo-field-label-content,
+        .fi-in-entry-label {
             font-size: 0.875rem;
         }
 
