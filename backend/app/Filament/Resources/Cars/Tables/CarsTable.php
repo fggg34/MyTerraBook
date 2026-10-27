@@ -30,7 +30,7 @@ class CarsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['subCategory.mainCategory', 'host', 'locations']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['subCategory.mainCategory', 'host']))
             ->searchPlaceholder('Search vehicles or hosts')
             ->emptyStateHeading('No vehicles match')
             ->emptyStateDescription('Try clearing filters or add a vehicle.')
@@ -58,10 +58,6 @@ class CarsTable
                 TextColumn::make('subCategory.name')
                     ->label('Category')
                     ->description(fn ($record) => $record->subCategory?->mainCategory?->name)
-                    ->placeholder('-'),
-                TextColumn::make('locations.name')
-                    ->label('Location')
-                    ->separator(', ')
                     ->placeholder('-'),
                 TextColumn::make('drive_type')
                     ->label('Drivetrain')

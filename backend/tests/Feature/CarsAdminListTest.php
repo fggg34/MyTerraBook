@@ -47,7 +47,7 @@ class CarsAdminListTest extends TestCase
             ->assertOk()
             ->assertSee('Fleet')
             ->assertSee('Reykjavik Compact')
-            ->assertSee('Location')
+            ->assertSee('Category')
             ->assertSee('Drivetrain')
             ->assertSee('Vehicles')
             ->assertSee('Pricing')
