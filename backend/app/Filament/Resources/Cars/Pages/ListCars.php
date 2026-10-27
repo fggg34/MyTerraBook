@@ -18,6 +18,8 @@ class ListCars extends ListRecords
 {
     protected static string $resource = CarResource::class;
 
+    protected static ?string $title = 'Fleet';
+
     public function getTabs(): array
     {
         $pendingCount = Car::query()->where('listing_status', ListingApprovalStatus::PendingReview)->count();
@@ -36,7 +38,7 @@ class ListCars extends ListRecords
 
     public function getSubheading(): ?string
     {
-        return 'Manage fleet details, host ownership and listing approvals. Fleet size shows total units, not live availability.';
+        return 'Vehicles across Iceland locations. Open a row to edit the existing vehicle form.';
     }
 
     public function getDefaultActiveTab(): string|int|null
@@ -71,7 +73,7 @@ class ListCars extends ListRecords
                 ->color('gray')
                 ->url(OrderResource::getUrl('index'))
                 ->tooltip('Open Orders (calendar-style scheduling from bookings)'),
-            CreateAction::make()->label('Add vehicle'),
+            CreateAction::make()->label('Add vehicle')->color('success'),
         ];
     }
 }

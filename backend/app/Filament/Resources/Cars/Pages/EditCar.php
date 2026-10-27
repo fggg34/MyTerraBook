@@ -2,13 +2,16 @@
 
 namespace App\Filament\Resources\Cars\Pages;
 
+use App\Enums\ListingApprovalStatus;
 use App\Filament\Resources\Cars\CarResource;
+use App\Filament\Resources\SpecialPrices\SpecialPriceResource;
 use App\Models\Car;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\Enums\Width;
+use Illuminate\Contracts\View\View;
 
 class EditCar extends EditRecord
 {
@@ -62,18 +65,20 @@ class EditCar extends EditRecord
     {
         return [
             Action::make('backToList')
-                ->label('Back')
+                ->label('Back to fleet')
                 ->icon(Heroicon::OutlinedArrowLeft)
                 ->color('gray')
-                ->url(fn (): string => CarResource::getUrl('index'))
-                ->tooltip('Return to vehicles list'),
+                ->url(fn (): string => CarResource::getUrl('index')),
+            Action::make('pricingRules')
+                ->label('Pricing rules')
+                ->color('gray')
+                ->url(SpecialPriceResource::getUrl('index')),
             Action::make('previewStorefront')
                 ->label('Preview')
                 ->icon(Heroicon::OutlinedEye)
                 ->color('gray')
                 ->url(fn (): string => config('app.frontend_url').'/cars/'.$this->getRecord()->getKey())
-                ->openUrlInNewTab()
-                ->tooltip('Open this vehicle on the rental site (new tab).'),
+                ->openUrlInNewTab(),
             DeleteAction::make(),
         ];
     }
@@ -82,5 +87,42 @@ class EditCar extends EditRecord
     {
         return parent::getSaveFormAction()
             ->tooltip('Save changes (⌘S or Ctrl+S)');
+    }
+
+    public function getHeader(): ?View
+    {
+        $car = $this->getRecord();
+        if (! $car instanceof Car) {
+            return null;
+        }
+
+        $car->loadMissing(['subCategory.mainCategory', 'locations']);
+        $category = $car->subCategory?->name;
+        $main = $car->subCategory?->mainCategory?->name;
+        if ($main && $category) {
+            $category = $main.' / '.$category;
+        }
+        $locations = $car->locations->pluck('name')->filter()->implode(', ');
+
+        return view('filament.impact-rent.record-summary', [
+            'heading' => $this->getHeading(),
+            'subheading' => 'Open the vehicle record. The fields below are the same editor.',
+            'actions' => $this->getCachedHeaderActions(),
+            'tab' => 'Vehicle details',
+            'fields' => [
+                ['label' => 'Vehicle', 'value' => $car->name],
+                ['label' => 'Category', 'value' => $category ?: 'Not set'],
+                ['label' => 'Locations', 'value' => $locations !== '' ? $locations : 'Not set'],
+                ['label' => 'Drivetrain', 'value' => $car->drive_type?->label() ?? 'Not set'],
+                ['label' => 'Units', 'value' => (string) max(1, (int) $car->units_available)],
+                ['label' => 'Listed', 'value' => $car->is_active ? 'Active' : 'Hidden'],
+                ['label' => 'Review', 'value' => match ($car->listing_status) {
+                    ListingApprovalStatus::PendingReview => 'Pending review',
+                    ListingApprovalStatus::Approved => 'Approved',
+                    ListingApprovalStatus::Rejected => 'Rejected',
+                    default => 'Draft',
+                }],
+            ],
+        ]);
     }
 }

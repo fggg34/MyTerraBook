@@ -21,97 +21,86 @@
      * Icons are inline SVG paths (heroicons-style 24x24 outline).
      */
     $icons = [
-        'rental'     => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/>',
-        'cars'       => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M8.25 18.75a1.5 1.5 0 0 1-3 0M19.5 18.75a1.5 1.5 0 1 1-3 0m-9.75 0H4.875a1.125 1.125 0 0 1-1.125-1.125V14.25M19.5 12.75v4.875c0 .621-.504 1.125-1.125 1.125h-1.875M19.5 12.75H4.5M19.5 12.75 18.4 7.05a1.125 1.125 0 0 0-1.106-.925H6.706c-.553 0-1.027.4-1.106.945L4.5 12.75"/>',
-        'pricing'    => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6 6h.008v.008H6V6Z"/>',
-        'orders'     => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z"/>',
-        'management' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>',
-        'advanced'   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46"/>',
+        'vehicles' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M8.25 18.75a1.5 1.5 0 0 1-3 0M19.5 18.75a1.5 1.5 0 1 1-3 0m-9.75 0H4.875a1.125 1.125 0 0 1-1.125-1.125V14.25M19.5 12.75v4.875c0 .621-.504 1.125-1.125 1.125h-1.875M19.5 12.75H4.5M19.5 12.75 18.4 7.05a1.125 1.125 0 0 0-1.106-.925H6.706c-.553 0-1.027.4-1.106.945L4.5 12.75"/>',
+        'pricing'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6 6h.008v.008H6V6Z"/>',
+        'bookings' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6.75 3v2.25M17.25 3v2.25M3 8.25h18M4.5 6.75h15A1.5 1.5 0 0 1 21 8.25v11.25A1.5 1.5 0 0 1 19.5 21h-15A1.5 1.5 0 0 1 3 19.5V8.25A1.5 1.5 0 0 1 4.5 6.75Z"/>',
+        'finance'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>',
     ];
 
     $quickLinks = [
         [
-            'label'  => 'Rental',
-            'icon'   => $icons['rental'],
-            'active' => request()->is('admin/impact-rent/tax-rates*')
-                || request()->is('admin/impact-rent/price-types*')
-                || request()->is('admin/impact-rent/locations*')
-                || request()->is('admin/impact-rent/booking-restrictions*'),
-            'items'  => [
-                ['label' => 'Tax Rates',                 'url' => url('/admin/impact-rent/tax-rates'),            'active' => request()->is('admin/impact-rent/tax-rates*')],
-                ['label' => 'Types of Price',            'url' => url('/admin/impact-rent/price-types'),          'active' => request()->is('admin/impact-rent/price-types*')],
-                ['label' => 'Pickup/Drop Off Locations', 'url' => url('/admin/impact-rent/locations'),            'active' => request()->is('admin/impact-rent/locations*')],
-                ['label' => 'Restrictions',              'url' => url('/admin/impact-rent/booking-restrictions'), 'active' => request()->is('admin/impact-rent/booking-restrictions*')],
-            ],
-        ],
-        [
-            'label'  => 'Cars',
-            'icon'   => $icons['cars'],
-            'active' => request()->is('admin/impact-rent/main-categories*')
+            'label'  => 'Vehicles',
+            'icon'   => $icons['vehicles'],
+            'active' => request()->is('admin/impact-rent/cars*')
+                || request()->is('admin/impact-rent/car-units*')
+                || request()->is('admin/impact-rent/main-categories*')
                 || request()->is('admin/impact-rent/sub-categories*')
-                || request()->is('admin/impact-rent/rental-options*')
-                || request()->is('admin/impact-rent/rental-conditions*')
                 || request()->is('admin/impact-rent/characteristics*')
-                || request()->is('admin/impact-rent/cars*'),
+                || request()->is('admin/impact-rent/locations*')
+                || request()->is('admin/impact-rent/rental-conditions*'),
             'items'  => [
-                ['label' => 'Main Categories', 'url' => url('/admin/impact-rent/main-categories'), 'active' => request()->is('admin/impact-rent/main-categories*')],
-                ['label' => 'Sub Categories',  'url' => url('/admin/impact-rent/sub-categories'),  'active' => request()->is('admin/impact-rent/sub-categories*')],
-                ['label' => 'Car Options',     'url' => url('/admin/impact-rent/rental-options'),  'active' => request()->is('admin/impact-rent/rental-options*')],
-                ['label' => 'Rental Conditions', 'url' => url('/admin/impact-rent/rental-conditions'), 'active' => request()->is('admin/impact-rent/rental-conditions*')],
-                ['label' => 'Characteristics', 'url' => url('/admin/impact-rent/characteristics'), 'active' => request()->is('admin/impact-rent/characteristics*')],
-                ['label' => 'Cars List',       'url' => url('/admin/impact-rent/cars'),            'active' => request()->is('admin/impact-rent/cars*')],
+                ['label' => 'All vehicles',      'url' => url('/admin/impact-rent/cars'),               'active' => request()->is('admin/impact-rent/cars', 'admin/impact-rent/cars/')],
+                ['label' => 'Fleet units',       'url' => url('/admin/impact-rent/car-units'),          'active' => request()->is('admin/impact-rent/car-units*')],
+                ['label' => 'Main Categories',   'url' => url('/admin/impact-rent/main-categories'),    'active' => request()->is('admin/impact-rent/main-categories*')],
+                ['label' => 'Sub Categories',    'url' => url('/admin/impact-rent/sub-categories'),     'active' => request()->is('admin/impact-rent/sub-categories*')],
+                ['label' => 'Features',          'url' => url('/admin/impact-rent/characteristics'),    'active' => request()->is('admin/impact-rent/characteristics*')],
+                ['label' => 'Locations',         'url' => url('/admin/impact-rent/locations'),          'active' => request()->is('admin/impact-rent/locations*')],
+                ['label' => 'Rental Conditions', 'url' => url('/admin/impact-rent/rental-conditions'),  'active' => request()->is('admin/impact-rent/rental-conditions*')],
             ],
         ],
         [
             'label'  => 'Pricing',
             'icon'   => $icons['pricing'],
-            'active' => request()->is('admin/impact-rent/daily-fares*')
+            'active' => request()->is('admin/impact-rent/special-prices*')
+                || request()->is('admin/impact-rent/daily-fares*')
                 || request()->is('admin/impact-rent/extra-hour-fares*')
-                || request()->is('admin/impact-rent/special-prices*')
-                || request()->is('admin/impact-rent/location-fees*')
+                || request()->is('admin/impact-rent/hourly-fares*')
                 || request()->is('admin/impact-rent/out-of-hours-fees*')
+                || request()->is('admin/impact-rent/location-fees*')
+                || request()->is('admin/impact-rent/rental-options*')
+                || request()->is('admin/impact-rent/coupons*')
+                || request()->is('admin/impact-rent/tax-rates*')
+                || request()->is('admin/impact-rent/price-types*')
                 || request()->is('admin/impact-rent/fares-overview*'),
             'items'  => [
-                ['label' => 'Fares Table',          'url' => url('/admin/impact-rent/daily-fares'),       'active' => request()->is('admin/impact-rent/daily-fares*') || request()->is('admin/impact-rent/extra-hour-fares*')],
-                ['label' => 'Special Prices',       'url' => url('/admin/impact-rent/special-prices'),    'active' => request()->is('admin/impact-rent/special-prices*')],
-                ['label' => 'Pickup/Drop Off Fees', 'url' => url('/admin/impact-rent/location-fees'),     'active' => request()->is('admin/impact-rent/location-fees*')],
-                ['label' => 'Out of Hours Fees',    'url' => url('/admin/impact-rent/out-of-hours-fees'), 'active' => request()->is('admin/impact-rent/out-of-hours-fees*')],
-                ['label' => 'Fares Overview',       'url' => url('/admin/impact-rent/fares-overview'),    'active' => request()->is('admin/impact-rent/fares-overview*')],
+                ['label' => 'Pricing rules',     'url' => url('/admin/impact-rent/special-prices'),     'active' => request()->is('admin/impact-rent/special-prices*')],
+                ['label' => 'Base prices',       'url' => url('/admin/impact-rent/daily-fares'),        'active' => request()->is('admin/impact-rent/daily-fares*')],
+                ['label' => 'Extra hour fares',  'url' => url('/admin/impact-rent/extra-hour-fares'),   'active' => request()->is('admin/impact-rent/extra-hour-fares*')],
+                ['label' => 'Hourly fares',      'url' => url('/admin/impact-rent/hourly-fares'),       'active' => request()->is('admin/impact-rent/hourly-fares*')],
+                ['label' => 'Out-of-hours fees', 'url' => url('/admin/impact-rent/out-of-hours-fees'),  'active' => request()->is('admin/impact-rent/out-of-hours-fees*')],
+                ['label' => 'Location fees',     'url' => url('/admin/impact-rent/location-fees'),      'active' => request()->is('admin/impact-rent/location-fees*')],
+                ['label' => 'Add-ons',           'url' => url('/admin/impact-rent/rental-options'),     'active' => request()->is('admin/impact-rent/rental-options*')],
+                ['label' => 'Discount codes',    'url' => url('/admin/impact-rent/coupons'),            'active' => request()->is('admin/impact-rent/coupons*')],
+                ['label' => 'Tax Rates',         'url' => url('/admin/impact-rent/tax-rates'),          'active' => request()->is('admin/impact-rent/tax-rates*')],
+                ['label' => 'Types of Price',    'url' => url('/admin/impact-rent/price-types'),        'active' => request()->is('admin/impact-rent/price-types*')],
+                ['label' => 'Fares Overview',    'url' => url('/admin/impact-rent/fares-overview'),     'active' => request()->is('admin/impact-rent/fares-overview*')],
             ],
         ],
         [
-            'label'  => 'Vehicle Rental',
-            'icon'   => $icons['orders'],
-            'active' => request()->is('admin/impact-rent/orders')
+            'label'  => 'Bookings',
+            'icon'   => $icons['bookings'],
+            'active' => request()->is('admin/impact-rent/orders-calendar*')
+                || request()->is('admin/impact-rent/orders')
                 || request()->is('admin/impact-rent/orders/*')
-                || request()->is('admin/impact-rent/orders-calendar*'),
+                || request()->is('admin/impact-rent/booking-restrictions*')
+                || request()->is('admin/registered-clients*'),
             'items'  => [
-                ['label' => 'Vehicle Rental', 'url' => url('/admin/impact-rent/orders'), 'active' => request()->is('admin/impact-rent/orders') || request()->is('admin/impact-rent/orders/*')],
-                ['label' => 'Calendar',    'url' => url('/admin/impact-rent/orders-calendar'), 'active' => request()->is('admin/impact-rent/orders-calendar*')],
-                ['label' => 'Overview',    'url' => null,                               'active' => false], // Phase 2
-                ['label' => 'Dashboard',   'url' => null,                               'active' => false], // Phase 2
+                ['label' => 'Calendar',      'url' => url('/admin/impact-rent/orders-calendar'),     'active' => request()->is('admin/impact-rent/orders-calendar*')],
+                ['label' => 'Reservations',  'url' => url('/admin/impact-rent/orders'),              'active' => request()->is('admin/impact-rent/orders') || request()->is('admin/impact-rent/orders/*')],
+                ['label' => 'Restrictions',  'url' => url('/admin/impact-rent/booking-restrictions'), 'active' => request()->is('admin/impact-rent/booking-restrictions*')],
+                ['label' => 'Customers',     'url' => url('/admin/registered-clients'),              'active' => request()->is('admin/registered-clients*')],
             ],
         ],
         [
-            'label'  => 'Management',
-            'icon'   => $icons['management'],
-            'active' => request()->is('admin/impact-rent/coupons*'),
+            'label'  => 'Finance',
+            'icon'   => $icons['finance'],
+            'active' => request()->is('admin/impact-rent/reports*')
+                || request()->is('admin/impact-rent/tracking-statistics*')
+                || request()->is('admin/impact-rent/tracking-campaigns*'),
             'items'  => [
-                ['label' => 'Customers',           'url' => null,                               'active' => false], // Phase 2
-                ['label' => 'Coupons',             'url' => url('/admin/impact-rent/coupons'), 'active' => request()->is('admin/impact-rent/coupons*')],
-                ['label' => 'Graphs & Statistics', 'url' => null,                               'active' => false], // Phase 2
-            ],
-        ],
-        [
-            'label'  => 'Advanced',
-            'icon'   => $icons['advanced'],
-            'active' => request()->is('admin/impact-rent/tracking-campaigns*')
-                || request()->is('admin/impact-rent/reports*')
-                || request()->is('admin/impact-rent/tracking-statistics*'),
-            'items'  => [
-                ['label' => 'iCal',                'url' => null,                                           'active' => false], // Phase 2
-                ['label' => 'Reports',             'url' => url('/admin/impact-rent/reports'),             'active' => request()->is('admin/impact-rent/reports*')],
-                ['label' => 'Statistics Tracking', 'url' => url('/admin/impact-rent/tracking-statistics'), 'active' => request()->is('admin/impact-rent/tracking-statistics*')],
+                ['label' => 'Reports',              'url' => url('/admin/impact-rent/reports'),              'active' => request()->is('admin/impact-rent/reports*')],
+                ['label' => 'Statistics Tracking',  'url' => url('/admin/impact-rent/tracking-statistics'),  'active' => request()->is('admin/impact-rent/tracking-statistics*')],
+                ['label' => 'Tracking campaigns',   'url' => url('/admin/impact-rent/tracking-campaigns'),   'active' => request()->is('admin/impact-rent/tracking-campaigns*')],
             ],
         ],
     ];
@@ -154,267 +143,667 @@
 @endphp
 
 @if ($inImpactRent)
+    <script>
+        document.documentElement.classList.add('ir-shell');
+    </script>
     <style>
-        /* Hide native Filament cluster sub-nav, replaced by the IR bar below */
         .fi-page-sub-navigation-tabs,
         .fi-page-sub-navigation-dropdown {
             display: none !important;
+        }
+
+        html.ir-shell {
+            background: #f4f6f9;
+        }
+
+        html.ir-shell .fi-main,
+        html.ir-shell .fi-body {
+            background: #f4f6f9;
+        }
+
+        html.ir-shell .fi-breadcrumbs {
+            display: none;
+        }
+
+        html.ir-shell .fi-header {
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.5rem;
+        }
+
+        html.ir-shell .fi-header > div:first-child {
+            flex: 1 1 22rem;
+            min-width: min(100%, 22rem);
+        }
+
+        @media (max-width: 1100px) {
+            html.ir-shell .fi-header {
+                flex-direction: column;
+            }
+
+            html.ir-shell .fi-header-actions-ctn {
+                margin-left: 0;
+            }
+        }
+
+        html.ir-shell .fi-header-actions-ctn {
+            margin-left: auto;
+        }
+
+        html.ir-shell .fi-topbar {
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: none;
+        }
+
+        html.ir-shell .fi-main {
+            background: #f4f6f9;
+        }
+
+        html.ir-shell .fi-page {
+            gap: 1.5rem;
+        }
+
+        html.ir-shell .fi-header-heading {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            color: #0f172a;
+        }
+
+        html.ir-shell .fi-header-subheading {
+            max-width: 40rem;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        html.ir-shell .fi-header-actions-ctn .fi-btn {
+            border-radius: 0.5rem;
+            box-shadow: none;
+        }
+
+        html.ir-shell .fi-header-actions-ctn .fi-btn.fi-color-gray {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+        }
+
+        html.ir-shell .fi-header-actions-ctn .fi-btn.fi-color-success,
+        html.ir-shell .fi-header-actions-ctn .fi-btn.fi-color-primary {
+            height: 2.75rem;
+            padding-inline: 1.25rem;
+            background: #059669;
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+        }
+
+        html.ir-shell .fi-header-actions-ctn .fi-btn.fi-color-success:hover,
+        html.ir-shell .fi-header-actions-ctn .fi-btn.fi-color-primary:hover {
+            background: #047857;
+        }
+
+        html.ir-shell .fi-btn.fi-color-primary {
+            background-color: #0164a3;
+            border-color: transparent;
+        }
+
+        html.ir-shell .fi-btn.fi-color-primary:hover {
+            background-color: #014f82;
+        }
+
+        html.ir-shell .fi-tabs:not(.fi-contained) {
+            width: fit-content;
+            margin-inline: 0;
+            border-radius: 0.5rem;
+            background: #f1f5f9;
+            padding: 3px;
+            box-shadow: none;
+            outline: none;
+        }
+
+        html.ir-shell .fi-tabs-item {
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+        }
+
+        html.ir-shell .fi-tabs-item.fi-active {
+            background: #fff;
+            box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+        }
+
+        html.ir-shell .fi-tabs-item .fi-tabs-item-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        html.ir-shell .fi-tabs-item.fi-active .fi-tabs-item-label {
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        html.ir-shell .fi-ta-ctn,
+        html.ir-shell .fi-section,
+        html.ir-shell .fi-wi-stats-overview-stat,
+        html.ir-shell .fi-sc-section {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+        }
+
+        html.ir-shell .fi-ta-ctn {
+            overflow: hidden;
+        }
+
+        html.ir-shell .fi-ta-header-toolbar {
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 0.75rem 1rem;
+        }
+
+        html.ir-shell .fi-ta-table {
+            border-collapse: separate;
+        }
+
+        html.ir-shell .fi-ta-header-cell,
+        html.ir-shell .fi-ta-header-cell-sort-btn {
+            background: #fff;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        html.ir-shell .fi-ta-row {
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        html.ir-shell .fi-ta-row.fi-striped,
+        html.ir-shell .fi-ta-row:nth-child(even) {
+            background: #fff;
+        }
+
+        html.ir-shell .fi-ta-row:hover {
+            background: #f8fafc;
+        }
+
+        html.ir-shell .fi-ta-cell {
+            padding-top: 0.875rem;
+            padding-bottom: 0.875rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        html.ir-shell .fi-ta-text-item-label {
+            color: #0f172a;
+        }
+
+        html.ir-shell .fi-ta-text-description {
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+
+        html.ir-shell .fi-badge {
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        html.ir-shell .fi-badge.fi-color-success {
+            background: #059669;
+            color: #fff;
+        }
+
+        html.ir-shell .fi-badge.fi-color-gray,
+        html.ir-shell .fi-badge.fi-color-neutral {
+            background: #64748b;
+            color: #fff;
+        }
+
+        html.ir-shell .fi-badge.fi-color-warning {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        html.ir-shell .fi-badge.fi-color-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        html.ir-shell .fi-badge.fi-color-info,
+        html.ir-shell .fi-badge.fi-color-primary {
+            background: #0164a3;
+            color: #fff;
+        }
+
+        html.ir-shell .fi-input-wrp {
+            border-radius: 0.5rem;
+            background: #fff;
+            border-color: #e2e8f0;
+            box-shadow: none;
+        }
+
+        html.ir-shell .fi-input-wrp:focus-within {
+            border-color: #0164a3;
+            box-shadow: 0 0 0 3px color-mix(in srgb, #0164a3 18%, transparent);
+        }
+
+        html.ir-shell .fi-fo-field-wrp-label span,
+        html.ir-shell .fi-sc-field-wrp-label span {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #0f172a;
+        }
+
+        html.ir-shell .fi-section-header-heading {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        html.ir-shell .fi-ta-empty-state {
+            background: #fff;
+            padding: 4rem 1.5rem;
+        }
+
+        html.ir-shell .fi-ta-empty-state-heading {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        html.ir-shell .fi-ta-empty-state-description {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        html.ir-shell .fi-page-content {
+            max-width: 1400px;
+        }
+
+        html.ir-shell .fi-section,
+        html.ir-shell .fi-sc-section {
+            overflow: hidden;
+        }
+
+        html.ir-shell .fi-section-header,
+        html.ir-shell .fi-sc-section-header {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 1.25rem;
+        }
+
+        html.ir-shell .fi-section-header-description,
+        html.ir-shell .fi-sc-section-header-description {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        html.ir-shell .fi-section-content,
+        html.ir-shell .fi-sc-section-content {
+            padding: 1.25rem;
+        }
+
+        html.ir-shell .fi-fo-field-wrp {
+            gap: 0.375rem;
+        }
+
+        html.ir-shell .fi-input,
+        html.ir-shell .fi-select-input,
+        html.ir-shell .fi-textarea {
+            min-height: 2.5rem;
+        }
+
+        html.ir-shell .fi-fo-file-upload,
+        html.ir-shell .filepond--root {
+            border: 2px dashed #e2e8f0;
+            border-radius: 0.75rem;
+            background: #f8fafc;
+        }
+
+        html.ir-shell .fi-fo-checkbox-list-options {
+            gap: 0.5rem;
+        }
+
+        html.ir-shell .fi-fo-checkbox-list-option {
+            margin: 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            background: #fff;
+            padding: 0.6rem 0.75rem;
+        }
+
+        html.ir-shell .fi-fo-checkbox-list-option:has(:checked) {
+            border-color: color-mix(in srgb, #0f172a 40%, white);
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+
+        html.ir-shell .fi-sc-wizard {
+            gap: 1.25rem;
+        }
+
+        html.ir-shell .fi-sc-wizard-header {
+            display: flex;
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: none;
+            padding: 0.375rem;
+            gap: 0.125rem;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step {
+            display: flex;
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step-separator {
+            display: none !important;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            height: auto;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.75rem;
+            color: #64748b;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-btn {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step-icon-ctn {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-width: 0 !important;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step.fi-completed .fi-sc-wizard-header-step-icon-ctn {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-icon-ctn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step-number {
+            font-size: 11px;
+            font-weight: 700;
+            color: inherit;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: inherit;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-label {
+            color: #fff;
+        }
+
+        html.ir-shell .fi-sc-wizard-header-step-description {
+            display: none;
+        }
+
+        html.ir-shell .fi-sc-wizard-footer {
+            position: sticky;
+            bottom: 1rem;
+            z-index: 10;
+            margin-top: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            background: color-mix(in srgb, #fff 95%, transparent);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            padding: 0.75rem 1rem;
+            backdrop-filter: blur(8px);
+        }
+
+        html.ir-shell .fi-sc-wizard-footer .fi-btn.fi-color-success {
+            background: #059669;
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        html.ir-shell .fi-form-actions {
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            padding: 0.75rem 1rem;
+        }
+
+        html.ir-shell .fi-fo-placeholder {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .ir-rail {
+            display: none;
+        }
+
+        .ir-rail-mobile {
+            display: none;
+        }
+
+        @media (min-width: 720px) {
+            html.ir-shell .fi-topbar-ctn,
+            html.ir-shell .fi-layout {
+                padding-left: 15rem;
+            }
+
+            html.ir-shell .fi-sidebar.fi-main-sidebar,
+            html.ir-shell .fi-sidebar-close-overlay,
+            html.ir-shell .fi-topbar-open-sidebar-btn,
+            html.ir-shell .fi-topbar-close-sidebar-btn,
+            html.ir-shell .fi-topbar-collapse-sidebar-btn-ctn,
+            html.ir-shell .fi-topbar-open-collapse-sidebar-btn,
+            html.ir-shell .fi-topbar-close-collapse-sidebar-btn {
+                display: none !important;
+            }
+
+            .ir-rail {
+                display: flex;
+                position: fixed;
+                z-index: 40;
+                top: 0;
+                left: 0;
+                width: 15rem;
+                height: 100vh;
+                flex-direction: column;
+                background: #fff;
+                border-right: 1px solid #e2e8f0;
+                color: #0f172a;
+            }
+        }
+
+        @media (max-width: 719px) {
+            .ir-rail-mobile {
+                display: block;
+                margin: 0 0 1rem;
+            }
+        }
+
+        .ir-rail__brand {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            height: 3.5rem;
+            padding: 0 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .ir-rail__mark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.375rem;
+            background: #0164a3;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .ir-rail__name {
+            margin: 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .ir-rail__sub {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .ir-rail__nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .ir-rail__group + .ir-rail__group {
+            margin-top: 0.75rem;
+        }
+
+        .ir-rail__label {
+            margin: 0;
+            padding: 0.375rem 0.625rem;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        .ir-rail__group--active .ir-rail__label {
+            color: #0164a3;
+        }
+
+        .ir-rail__link {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            margin-top: 0.125rem;
+            padding: 0.5rem 0.625rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: #64748b;
+            text-decoration: none;
+        }
+
+        .ir-rail__link:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .ir-rail__link--active {
+            background: color-mix(in srgb, #0164a3 12%, white);
+            color: #0164a3;
+            font-weight: 600;
+        }
+
+        .ir-rail__icon {
+            width: 1rem;
+            height: 1rem;
+            flex-shrink: 0;
+        }
+
+        .ir-rail__foot {
+            border-top: 1px solid #e2e8f0;
+            padding: 0.75rem;
+        }
+
+        .ir-rail__back {
+            display: block;
+            padding: 0.4rem 0.25rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-decoration: none;
+        }
+
+        .ir-rail__back:hover {
+            color: #0f172a;
+        }
+
+        .ir-rail-mobile__label {
+            display: block;
+            margin-bottom: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .ir-rail-mobile__select {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background: #fff;
+            padding: 0.55rem 0.75rem;
+            font-size: 0.875rem;
         }
     </style>
 @endif
 
 @if ($showIrTabs)
-    <style>
-        /* ── Sub-navigation slot (matches fi-page-sub-navigation-tabs placement) ── */
-        .ir-tabs-outer {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: visible;
-            scrollbar-width: none;
-        }
+    <aside class="ir-rail" data-ir-quick-access>
+        <div class="ir-rail__brand">
+            <div class="ir-rail__mark" aria-hidden="true">IR</div>
+            <div>
+                <p class="ir-rail__name">Impact Rent</p>
+                <p class="ir-rail__sub">Rental admin</p>
+            </div>
+        </div>
+        <nav class="ir-rail__nav" aria-label="Impact Rent navigation">
+            @foreach ($quickLinks as $link)
+                <div class="ir-rail__group {{ ! empty($link['active']) ? 'ir-rail__group--active' : '' }}">
+                    <p class="ir-rail__label">{{ $link['label'] }}</p>
+                    @foreach ($link['items'] as $sub)
+                        <a
+                            href="{{ $sub['url'] }}"
+                            class="ir-rail__link {{ ($sub['active'] ?? false) ? 'ir-rail__link--active' : '' }}"
+                            @if ($sub['active'] ?? false) aria-current="page" @endif
+                        >
+                            <svg class="ir-rail__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                {!! $link['icon'] !!}
+                            </svg>
+                            <span>{{ $sub['label'] }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            @endforeach
+        </nav>
+        <div class="ir-rail__foot">
+            <a class="ir-rail__back" href="{{ url('/admin') }}">Terrabook admin</a>
+        </div>
+    </aside>
 
-        .ir-tabs-outer::-webkit-scrollbar { display: none; }
-
-        /* ── Bar container, matches Filament fi-tabs (white pill) ── */
-        .ir-tabs {
-            display: inline-flex;
-            align-items: stretch;
-            gap: 0.25rem;
-            padding: 0.5rem;
-            background-color: #fff;
-            border-radius: 0.75rem;
-            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            outline: 1px solid rgb(3 7 18 / 0.05);
-            overflow: visible;
-            flex-shrink: 0;
-        }
-
-        /* ── Each top-level item wrapper ── */
-        .ir-tabs__entry {
-            position: relative;
-            display: flex;
-        }
-
-        /* ── Shared style for both <a> links and <button> triggers ── */
-        .ir-tabs__item {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            border-radius: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            line-height: 1.25rem;
-            color: rgb(107 114 128);
-            white-space: nowrap;
-            text-decoration: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            transition: background-color 75ms ease, color 75ms ease;
-        }
-
-        .ir-tabs__item:hover {
-            background-color: rgb(249 250 251);
-            color: rgb(55 65 81);
-        }
-
-        .ir-tabs__item:focus-visible {
-            background-color: rgb(249 250 251);
-            outline: none;
-        }
-
-        .ir-tabs__item--active {
-            background-color: rgb(249 250 251);
-            color: var(--mtb-primary-dark);
-        }
-
-        /* ── Leading icon ── */
-        .ir-tabs__icon {
-            width: 1rem;
-            height: 1rem;
-            flex-shrink: 0;
-            stroke: currentColor;
-            fill: none;
-            color: rgb(156 163 175);
-        }
-
-        .ir-tabs__item--active .ir-tabs__icon {
-            color: var(--mtb-primary-dark);
-        }
-
-        .ir-tabs__item:hover .ir-tabs__icon {
-            color: rgb(55 65 81);
-        }
-
-        .ir-tabs__item--active:hover .ir-tabs__icon {
-            color: var(--mtb-primary-dark);
-        }
-
-        /* ── Trailing chevron on dropdown triggers ── */
-        .ir-tabs__chevron {
-            width: 0.75rem;
-            height: 0.75rem;
-            color: rgb(156 163 175);
-            transition: transform 150ms ease;
-            flex-shrink: 0;
-        }
-
-        .ir-tabs__entry[data-open] .ir-tabs__chevron {
-            transform: rotate(180deg);
-        }
-
-        /* ── Dropdown panel, position:fixed escapes any parent overflow ── */
-        .ir-tabs__dropdown {
-            display: none;
-            position: fixed;
-            z-index: 9999;
-            min-width: 13rem;
-            padding: 0.3rem;
-            background-color: #fff;
-            border: 1px solid var(--mtb-line);
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
-
-        .ir-tabs__entry[data-open] .ir-tabs__dropdown {
-            display: block;
-        }
-
-        /* ── Dropdown items ── */
-        .ir-tabs__dropdown-item {
-            display: block;
-            border-radius: 0.5rem;
-            padding: 0.45rem 0.85rem;
-            font-size: 0.875rem;
-            font-weight: 400;
-            color: rgb(107 114 128);
-            text-decoration: none;
-            transition: background-color 100ms ease, color 100ms ease;
-            white-space: nowrap;
-        }
-
-        .ir-tabs__dropdown-item:hover {
-            background-color: rgb(249 250 251);
-            color: rgb(55 65 81);
-        }
-
-        .ir-tabs__dropdown-item--active {
-            background-color: rgb(249 250 251);
-            color: var(--mtb-primary-dark);
-            font-weight: 500;
-        }
-
-        /* ── Dark mode parity with fi-tabs ── */
-        .dark .ir-tabs {
-            background-color: rgb(17 24 39);
-            outline-color: rgb(255 255 255 / 0.1);
-        }
-
-        .dark .ir-tabs__item {
-            color: rgb(156 163 175);
-        }
-
-        .dark .ir-tabs__item:hover,
-        .dark .ir-tabs__item:focus-visible,
-        .dark .ir-tabs__item--active {
-            background-color: rgb(255 255 255 / 0.05);
-        }
-
-        .dark .ir-tabs__item:hover {
-            color: rgb(229 231 235);
-        }
-
-        .dark .ir-tabs__item--active {
-            color: rgb(74 222 128);
-        }
-
-        .dark .ir-tabs__icon,
-        .dark .ir-tabs__chevron {
-            color: rgb(107 114 128);
-        }
-
-        .dark .ir-tabs__item--active .ir-tabs__icon {
-            color: rgb(74 222 128);
-        }
-
-        .dark .ir-tabs__dropdown {
-            background-color: rgb(17 24 39);
-            border-color: rgb(51 65 85);
-        }
-
-        .dark .ir-tabs__dropdown-item {
-            color: rgb(156 163 175);
-        }
-
-        .dark .ir-tabs__dropdown-item:hover {
-            background-color: rgb(255 255 255 / 0.05);
-            color: rgb(229 231 235);
-        }
-
-        .dark .ir-tabs__dropdown-item--active {
-            background-color: rgb(255 255 255 / 0.05);
-            color: rgb(74 222 128);
-        }
-
-        /* ── Mobile: compact section picker instead of horizontal tabs ── */
-        .ir-tabs-mobile {
-            display: none;
-            width: 100%;
-            padding: 0 0.25rem;
-        }
-
-        .ir-tabs-mobile__label {
-            display: block;
-            margin-bottom: 0.35rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: rgb(107 114 128);
-        }
-
-        .ir-tabs-mobile__select {
-            width: 100%;
-            border: 1px solid var(--mtb-line);
-            border-radius: 0.65rem;
-            background: #fff;
-            color: rgb(31 41 55);
-            font-size: 0.9375rem;
-            font-weight: 500;
-            padding: 0.65rem 2.25rem 0.65rem 0.85rem;
-            min-height: 44px;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.65rem center;
-            background-size: 1.1rem;
-        }
-
-        .dark .ir-tabs-mobile__select {
-            background-color: rgb(17 24 39);
-            border-color: rgb(51 65 85);
-            color: rgb(229 231 235);
-        }
-
-        @media (max-width: 768px) {
-            .ir-tabs-outer {
-                display: none;
-            }
-
-            .ir-tabs-mobile {
-                display: block;
-            }
-        }
-
-    </style>
-
-    <div class="ir-tabs-mobile" data-ir-quick-access>
-        <label class="ir-tabs-mobile__label" for="ir-tabs-mobile-select">Impact Rent section</label>
+    <div class="ir-rail-mobile" data-ir-quick-access>
+        <label class="ir-rail-mobile__label" for="ir-rail-mobile-select">Impact Rent section</label>
         <select
-            id="ir-tabs-mobile-select"
-            class="ir-tabs-mobile__select"
+            id="ir-rail-mobile-select"
+            class="ir-rail-mobile__select"
             aria-label="Impact Rent section"
             onchange="if (this.value) window.location.href = this.value"
         >
@@ -425,143 +814,6 @@
             @endforeach
         </select>
     </div>
-
-    <div class="ir-tabs-outer" data-ir-quick-access>
-        <nav class="ir-tabs" aria-label="Impact Rent navigation">
-            @foreach ($quickLinks as $link)
-                <div class="ir-tabs__entry">
-
-                    @if (!empty($link['items']))
-                        {{-- Dropdown trigger --}}
-                        <button
-                            type="button"
-                            class="ir-tabs__item {{ $link['active'] ? 'ir-tabs__item--active' : '' }}"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                            data-ir-trigger
-                        >
-                            <svg class="ir-tabs__icon" viewBox="0 0 24 24" aria-hidden="true">
-                                {!! $link['icon'] !!}
-                            </svg>
-                            <span>{{ $link['label'] }}</span>
-                            <svg class="ir-tabs__chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-
-                        <div class="ir-tabs__dropdown" role="menu">
-                            @foreach ($link['items'] as $sub)
-                                <a
-                                    href="{{ $sub['url'] }}"
-                                    role="menuitem"
-                                    class="ir-tabs__dropdown-item {{ ($sub['active'] ?? false) ? 'ir-tabs__dropdown-item--active' : '' }}"
-                                    @if (($sub['active'] ?? false)) aria-current="page" @endif
-                                >
-                                    {{ $sub['label'] }}
-                                </a>
-                            @endforeach
-                        </div>
-
-                    @else
-                        {{-- Direct link --}}
-                        <a
-                            href="{{ $link['url'] }}"
-                            class="ir-tabs__item {{ $link['active'] ? 'ir-tabs__item--active' : '' }}"
-                            @if ($link['active']) aria-current="page" @endif
-                        >
-                            <svg class="ir-tabs__icon" viewBox="0 0 24 24" aria-hidden="true">
-                                {!! $link['icon'] !!}
-                            </svg>
-                            <span>{{ $link['label'] }}</span>
-                        </a>
-                    @endif
-
-                </div>
-            @endforeach
-        </nav>
-    </div>
-
-    <script>
-    (function () {
-        if (window.__irTabsInitialised) return;
-        window.__irTabsInitialised = true;
-
-        function positionDropdown(trigger, dropdown) {
-            const rect = trigger.getBoundingClientRect();
-            // Anchor: 6px below the trigger, horizontally centered on the trigger
-            dropdown.style.top = (rect.bottom + 6) + 'px';
-            dropdown.style.left = (rect.left + rect.width / 2) + 'px';
-            dropdown.style.transform = 'translateX(-50%)';
-
-            // Keep it on-screen if it would overflow the viewport edges
-            requestAnimationFrame(() => {
-                const ddRect = dropdown.getBoundingClientRect();
-                const margin = 8;
-                if (ddRect.right > window.innerWidth - margin) {
-                    const overflow = ddRect.right - (window.innerWidth - margin);
-                    dropdown.style.left = (rect.left + rect.width / 2 - overflow) + 'px';
-                }
-                if (ddRect.left < margin) {
-                    dropdown.style.left = (margin + ddRect.width / 2) + 'px';
-                }
-            });
-        }
-
-        function closeAll(exceptEntry) {
-            document.querySelectorAll('.ir-tabs__entry[data-open]').forEach((el) => {
-                if (el !== exceptEntry) {
-                    el.removeAttribute('data-open');
-                    const btn = el.querySelector('[data-ir-trigger]');
-                    if (btn) btn.setAttribute('aria-expanded', 'false');
-                }
-            });
-        }
-
-        document.addEventListener('click', function (e) {
-            const trigger = e.target.closest('[data-ir-trigger]');
-
-            if (trigger) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const entry = trigger.closest('.ir-tabs__entry');
-                if (!entry) return;
-
-                const dropdown = entry.querySelector('.ir-tabs__dropdown');
-                const isOpen = entry.hasAttribute('data-open');
-                closeAll(entry);
-
-                if (isOpen) {
-                    entry.removeAttribute('data-open');
-                    trigger.setAttribute('aria-expanded', 'false');
-                } else {
-                    entry.setAttribute('data-open', '');
-                    trigger.setAttribute('aria-expanded', 'true');
-                    if (dropdown) positionDropdown(trigger, dropdown);
-                }
-                return;
-            }
-
-            if (e.target.closest('.ir-tabs__dropdown')) return;
-            closeAll(null);
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeAll(null);
-        });
-
-        // Reposition open dropdown on window resize / scroll so it stays anchored
-        function repositionOpen() {
-            document.querySelectorAll('.ir-tabs__entry[data-open]').forEach((entry) => {
-                const trigger = entry.querySelector('[data-ir-trigger]');
-                const dropdown = entry.querySelector('.ir-tabs__dropdown');
-                if (trigger && dropdown) positionDropdown(trigger, dropdown);
-            });
-        }
-        window.addEventListener('resize', repositionOpen);
-        window.addEventListener('scroll', repositionOpen, true);
-    })();
-    </script>
 @endif
 
 <script>
@@ -578,9 +830,11 @@
 
     document.addEventListener('livewire:navigated', function () {
         if (shouldShowIrTabs(window.location.pathname)) {
+            document.documentElement.classList.add('ir-shell');
             return;
         }
 
+        document.documentElement.classList.remove('ir-shell');
         document.querySelectorAll('[data-ir-quick-access]').forEach(function (el) {
             el.remove();
         });

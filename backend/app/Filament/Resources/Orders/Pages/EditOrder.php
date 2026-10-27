@@ -3,14 +3,17 @@
 namespace App\Filament\Resources\Orders\Pages;
 
 use App\Enums\OrderStatus;
+use App\Enums\RentalStatus;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
 use App\Services\Email\OrderEmailNotifier;
 use App\Support\BookingConfirmationUrl;
+use App\Support\ImpactRentFleetCalendar;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Contracts\View\View;
 
 class EditOrder extends EditRecord
 {
@@ -43,6 +46,44 @@ class EditOrder extends EditRecord
 
             $this->halt();
         }
+    }
+
+    public function getHeader(): ?View
+    {
+        $order = $this->getRecord();
+        if (! $order instanceof Order) {
+            return null;
+        }
+
+        $order->loadMissing(['car', 'pickupLocation', 'dropoffLocation']);
+        $status = match ($order->rental_status) {
+            RentalStatus::Started => 'On the road',
+            RentalStatus::Terminated => 'Returned',
+            RentalStatus::NoShow => 'No show',
+            default => match ($order->order_status) {
+                OrderStatus::StandBy => 'Stand by',
+                OrderStatus::Pending => 'Pending',
+                OrderStatus::Confirmed => 'Confirmed',
+                OrderStatus::Cancelled => 'Cancelled',
+                default => 'Pending',
+            },
+        };
+
+        return view('filament.impact-rent.record-summary', [
+            'heading' => $this->getHeading(),
+            'subheading' => 'Reservation details stay on this record. The form below is the editor.',
+            'actions' => $this->getCachedHeaderActions(),
+            'tab' => 'Reservation',
+            'fields' => [
+                ['label' => 'Reference', 'value' => (string) $order->reference],
+                ['label' => 'Status', 'value' => $status],
+                ['label' => 'Driver', 'value' => $order->customer_name ?: 'Not set'],
+                ['label' => 'Vehicle', 'value' => $order->car?->name ?? 'Not set'],
+                ['label' => 'Pickup', 'value' => trim(($order->pickup_at?->format('j M Y H:i') ?? '').($order->pickupLocation ? ' · '.$order->pickupLocation->name : ''))],
+                ['label' => 'Drop off', 'value' => trim(($order->dropoff_at?->format('j M Y H:i') ?? '').($order->dropoffLocation ? ' · '.$order->dropoffLocation->name : ''))],
+                ['label' => 'Total', 'value' => ImpactRentFleetCalendar::money((int) $order->total_cents, (string) ($order->currency ?: 'EUR'))],
+            ],
+        ]);
     }
 
     protected function getHeaderActions(): array

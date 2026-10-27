@@ -27,6 +27,8 @@ class CarResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Catalog';
 
+    protected static ?string $navigationLabel = 'All vehicles';
+
     protected static ?int $navigationSort = 1;
 
     public static function getNavigationBadge(): ?string

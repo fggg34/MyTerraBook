@@ -109,9 +109,12 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => view('filament.panel.body-end-scripts')->render(),
             )
             ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn (): string => view('filament.panel.impact-rent-editor-quick-access')->render(),
+            )
+            ->renderHook(
                 PanelsRenderHook::PAGE_SUB_NAVIGATION_TOP_AFTER,
-                fn (): string => view('filament.panel.impact-rent-editor-quick-access')->render()
-                    .view('filament.panel.guest-house-editor-quick-access')->render()
+                fn (): string => view('filament.panel.guest-house-editor-quick-access')->render()
                     .view('filament.panel.moderation-settings-quick-access')->render(),
             );
     }

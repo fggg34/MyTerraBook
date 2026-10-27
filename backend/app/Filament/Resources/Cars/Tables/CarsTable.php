@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cars\Tables;
 
+use App\Enums\DriveType;
 use App\Enums\ListingApprovalStatus;
 use App\Filament\Pages\ListingReviewPage;
 use App\Filament\Resources\Cars\CarResource;
@@ -18,7 +19,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -30,30 +30,62 @@ class CarsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['subCategory.mainCategory', 'host']))
-            ->searchPlaceholder('Search vehicles, slugs or hosts')
-            ->striped()
-            ->emptyStateHeading('No vehicles found')
-            ->emptyStateDescription('Try another search, clear the filters or add a vehicle.')
+            ->modifyQueryUsing(fn ($query) => $query->with(['subCategory.mainCategory', 'host', 'locations']))
+            ->searchPlaceholder('Search vehicles or hosts')
+            ->emptyStateHeading('No vehicles match')
+            ->emptyStateDescription('Try clearing filters or add a vehicle.')
+            ->recordUrl(fn (Car $record): string => CarResource::getUrl('edit', ['record' => $record]))
             ->columns([
                 ImageColumn::make('main_image_path')
                     ->label('Photo')
-                    ->imageSize(56)
+                    ->imageSize(40)
                     ->square(),
                 TextColumn::make('name')
                     ->label('Vehicle')
                     ->weight('semibold')
-                    ->description(fn (Car $record): string => implode(' · ', array_filter([
-                        $record->year,
-                        $record->transmission ? ucfirst($record->transmission) : null,
-                        $record->fuel_type ? ucfirst($record->fuel_type) : null,
-                    ])))
+                    ->description(function (Car $record): string {
+                        $units = max(1, (int) ($record->units_available ?? 1));
+                        $parts = [$units === 1 ? '1 unit' : $units.' units'];
+                        if ($record->year) {
+                            $parts[] = (string) $record->year;
+                        }
+
+                        return implode(' · ', $parts);
+                    })
                     ->wrap()
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('subCategory.name')
                     ->label('Category')
-                    ->description(fn ($record) => $record->subCategory?->mainCategory?->name),
+                    ->description(fn ($record) => $record->subCategory?->mainCategory?->name)
+                    ->placeholder('-'),
+                TextColumn::make('locations.name')
+                    ->label('Location')
+                    ->separator(', ')
+                    ->placeholder('-'),
+                TextColumn::make('drive_type')
+                    ->label('Drivetrain')
+                    ->formatStateUsing(function (mixed $state): string {
+                        if ($state instanceof DriveType) {
+                            return $state->label();
+                        }
+                        if (is_string($state) && $state !== '') {
+                            return DriveType::tryFrom($state)?->label() ?? $state;
+                        }
+
+                        return '-';
+                    })
+                    ->placeholder('-'),
+                TextColumn::make('is_active')
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (mixed $state): string => $state ? 'Active' : 'Inactive')
+                    ->color(fn (mixed $state): string => $state ? 'success' : 'gray'),
+                TextColumn::make('listing_status')
+                    ->label('Review status')
+                    ->badge()
+                    ->color(fn (mixed $state): string => AdminTableBadgeColors::listingApprovalStatus($state))
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('subCategory.mainCategory.name')
                     ->label('Main Category')
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -67,19 +99,12 @@ class CarsTable
                 TextColumn::make('units_available')
                     ->label('Fleet size')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('ical_import_url')
                     ->label('iCal import URL')
                     ->limit(35)
                     ->toggleable(isToggledHiddenByDefault: true),
-                IconColumn::make('is_active')
-                    ->label('Active')
-                    ->boolean(),
-                TextColumn::make('listing_status')
-                    ->label('Review status')
-                    ->badge()
-                    ->color(fn (mixed $state): string => AdminTableBadgeColors::listingApprovalStatus($state))
-                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
                 TextColumn::make('host.name')->label('Host / partner')->placeholder('Platform fleet')->searchable()->wrap()->toggleable(),
                 TextColumn::make('submitted_at')->label('Submitted')->dateTime()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
@@ -94,6 +119,12 @@ class CarsTable
             ->filters([
                 SelectFilter::make('listing_status')->options(collect(ListingApprovalStatus::cases())->mapWithKeys(fn ($c) => [$c->value => str_replace('_', ' ', ucfirst($c->value))])),
                 SelectFilter::make('sub_category_id')->label('Category')->relationship('subCategory', 'name')->searchable()->preload(),
+                SelectFilter::make('locations')->label('Location')->relationship('locations', 'name')->searchable()->preload(),
+                SelectFilter::make('drive_type')
+                    ->label('Drivetrain')
+                    ->options(collect(DriveType::cases())->mapWithKeys(
+                        fn (DriveType $type): array => [$type->value => $type->label()]
+                    )),
                 SelectFilter::make('user_id')->label('Host / partner')->relationship('host', 'name')->searchable(),
                 TernaryFilter::make('is_active')->label('Active')->trueLabel('Active vehicles')->falseLabel('Inactive vehicles'),
             ])

@@ -37,4 +37,41 @@ class CarsAdminListTest extends TestCase
             ->assertCanSeeTableRecords([$active])
             ->assertCanNotSeeTableRecords([$inactive]);
     }
+
+    public function test_fleet_list_shows_existing_cars_and_opens_the_editor(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        $car = Car::factory()->create(['name' => 'Reykjavik Compact', 'is_active' => true]);
+
+        $this->get('/admin/impact-rent/cars')
+            ->assertOk()
+            ->assertSee('Fleet')
+            ->assertSee('Reykjavik Compact')
+            ->assertSee('Location')
+            ->assertSee('Drivetrain')
+            ->assertSee('Vehicles')
+            ->assertSee('Pricing')
+            ->assertSee('Bookings')
+            ->assertSee('Finance')
+            ->assertSee('Tax Rates')
+            ->assertSee('Base prices')
+            ->assertSee('Reservations');
+
+        $this->get('/admin/impact-rent/cars/'.$car->id.'/edit')
+            ->assertOk()
+            ->assertSee('Reykjavik Compact')
+            ->assertSee('Vehicle details')
+            ->assertSee('Identity')
+            ->assertSee('Specs');
+
+        $this->get('/admin/impact-rent/cars/create')
+            ->assertOk()
+            ->assertSee('Add vehicle')
+            ->assertSee('Identity')
+            ->assertSee('Specs')
+            ->assertSee('Features')
+            ->assertSee('Photos')
+            ->assertSee('Details')
+            ->assertSee('Continue');
+    }
 }

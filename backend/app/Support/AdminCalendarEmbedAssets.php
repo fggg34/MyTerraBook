@@ -11,22 +11,36 @@ class AdminCalendarEmbedAssets
      */
     public static function resolve(): array
     {
-        $manifest = self::readManifest();
-        if ($manifest === null) {
+        // Local Laravel does not serve frontend/dist. The Vite app at FRONTEND_URL
+        // does, so the calendar page uses that iframe instead of a missing script.
+        if (app()->environment('local')) {
             return [null, null];
         }
 
+        $found = self::readManifestRecord();
+        if ($found === null) {
+            return [null, null];
+        }
+
+        $manifest = $found['manifest'];
         $entry = $manifest['calendar-embed.html'] ?? null;
-        if (! is_array($entry) || ! isset($entry['file'])) {
+        if (! is_array($entry) || ! isset($entry['file']) || ! is_string($entry['file']) || $entry['file'] === '') {
+            return [null, null];
+        }
+
+        $root = self::manifestRoot($found['path']);
+        if (! File::isFile($root.'/'.$entry['file'])) {
             return [null, null];
         }
 
         $base = rtrim(AdminCalendarEmbed::resolvePublicFrontendUrl(), '/');
-        $js = $base.'/'.$entry['file'];
-        $cssFiles = self::collectCssFiles($manifest, $entry);
-        $css = $cssFiles[0] ?? null;
-        if ($css !== null) {
-            $css = $base.'/'.$css;
+        $js = $base.'/'.ltrim($entry['file'], '/');
+        $css = null;
+        foreach (self::collectCssFiles($manifest, $entry) as $file) {
+            if (File::isFile($root.'/'.$file)) {
+                $css = $base.'/'.ltrim($file, '/');
+                break;
+            }
         }
 
         return [$js, $css];
@@ -70,9 +84,9 @@ class AdminCalendarEmbedAssets
     }
 
     /**
-     * @return array<string, mixed>|null
+     * @return array{path: string, manifest: array<string, mixed>}|null
      */
-    private static function readManifest(): ?array
+    private static function readManifestRecord(): ?array
     {
         foreach (self::manifestPaths() as $path) {
             if (! File::isFile($path)) {
@@ -80,11 +94,24 @@ class AdminCalendarEmbedAssets
             }
 
             $decoded = json_decode(File::get($path), true);
+            if (! is_array($decoded)) {
+                continue;
+            }
 
-            return is_array($decoded) ? $decoded : null;
+            return [
+                'path' => $path,
+                'manifest' => $decoded,
+            ];
         }
 
         return null;
+    }
+
+    private static function manifestRoot(string $manifestPath): string
+    {
+        $dir = dirname($manifestPath);
+
+        return basename($dir) === '.vite' ? dirname($dir) : $dir;
     }
 
     /**
