@@ -8,6 +8,7 @@ export default function HostSettingsPage() {
       showKennitala
       showCompanyLogo
       showRentalTerms
+      panel
       passwordHref="/host/settings/password"
       profileDescription="Update your contact details, partner logo, contract terms, and the currency used for your listing prices."
     />

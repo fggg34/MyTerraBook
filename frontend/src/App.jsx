@@ -131,6 +131,28 @@ function AppRoutes() {
       <Route path={ADMIN_CALENDAR_EMBED_PATH} element={<AdminEmbedCalendarPage />} />
       <Route path="/admin/embed/calendar" element={<AdminEmbedCalendarPage />} />
       <Route
+        path="/host"
+        element={
+          <ProtectedRoute role="host">
+            <HostLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<HostDashboardPage />} />
+        <Route path="guesthouses" element={<HostGuestHousesPage />} />
+        <Route path="guesthouses/new" element={<HostGuestHouseEditorPage />} />
+        <Route path="guesthouses/:id/edit" element={<HostGuestHouseEditorPage />} />
+        <Route path="cars" element={<HostCarsPage />} />
+        <Route path="cars/new" element={<HostCarEditorPage />} />
+        <Route path="cars/:id/edit" element={<HostCarEditorPage />} />
+        <Route path="bookings" element={<HostBookingsPage />} />
+        <Route path="bookings/cars/:id" element={<HostBookingDetailPage kind="car" />} />
+        <Route path="bookings/guest-houses/:id" element={<HostBookingDetailPage kind="guesthouse" />} />
+        <Route path="integrations" element={<HostIntegrationsPage />} />
+        <Route path="settings" element={<HostSettingsPage />} />
+        <Route path="settings/password" element={<HostPasswordPage />} />
+      </Route>
+      <Route
         element={
           <SiteLayoutProvider>
             <SiteLayout />
@@ -166,28 +188,6 @@ function AppRoutes() {
         >
           <Route index element={<AdminDashboardPage />} />
           <Route path="calendar" element={<AdminCalendarPage />} />
-        </Route>
-        <Route
-          path="/host"
-          element={
-            <ProtectedRoute role="host">
-              <HostLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<HostDashboardPage />} />
-          <Route path="guesthouses" element={<HostGuestHousesPage />} />
-          <Route path="guesthouses/new" element={<HostGuestHouseEditorPage />} />
-          <Route path="guesthouses/:id/edit" element={<HostGuestHouseEditorPage />} />
-          <Route path="cars" element={<HostCarsPage />} />
-          <Route path="cars/new" element={<HostCarEditorPage />} />
-          <Route path="cars/:id/edit" element={<HostCarEditorPage />} />
-          <Route path="bookings" element={<HostBookingsPage />} />
-          <Route path="bookings/cars/:id" element={<HostBookingDetailPage kind="car" />} />
-          <Route path="bookings/guest-houses/:id" element={<HostBookingDetailPage kind="guesthouse" />} />
-          <Route path="integrations" element={<HostIntegrationsPage />} />
-          <Route path="settings" element={<HostSettingsPage />} />
-          <Route path="settings/password" element={<HostPasswordPage />} />
         </Route>
         <Route path="/guest-houses" element={<Navigate to="/guesthouses" replace />} />
         <Route path="/guest-houses/:slug" element={<RedirectGuestHouseSlug />} />

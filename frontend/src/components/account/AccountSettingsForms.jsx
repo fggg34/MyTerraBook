@@ -33,6 +33,7 @@ export default function AccountSettingsForms({
   passwordHref = '',
   passwordOnly = false,
   passwordBackHref = '',
+  panel = false,
 }) {
   const { user, setUser, applyAsHost: applyAsHostFromAuth } = useAuth()
   const { toast } = useToast()
@@ -325,18 +326,31 @@ export default function AccountSettingsForms({
     ? { ...user, profile_photo_url: photoPreview }
     : user
 
+  const sectionClass = panel ? 'ir-host-card' : 'client-settings-section'
+  const descClass = panel ? 'ir-host-card__desc' : 'client-settings-desc'
+  const formClass = panel ? 'ir-host-form' : 'client-settings-form'
+  const fieldClass = panel ? 'ir-host-field' : 'client-field'
+  const saveClass = panel ? 'ir-host-save' : 'client-btn primary'
+
   const passwordSection = passwordHref ? (
-    <section className="client-settings-section">
-      <h2>Password</h2>
-      <p className="client-settings-desc">Update the password you use to sign in.</p>
-      <Link to={passwordHref} className="host-btn secondary">Change password</Link>
+    <section className={sectionClass}>
+      <header className={panel ? 'ir-host-card__head' : undefined}>
+        <h2>Password</h2>
+        <p className={descClass}>Update the password you use to sign in.</p>
+      </header>
+      <div className={panel ? 'ir-host-card__body' : 'client-settings-flow'}>
+        <Link to={passwordHref} className="host-btn secondary">Change password</Link>
+      </div>
     </section>
   ) : (
-    <section className="client-settings-section">
-      <h2>Password</h2>
-      <p className="client-settings-desc">Choose a strong password with at least 8 characters.</p>
-      <form onSubmit={handlePasswordSubmit} className="client-settings-form">
-        <div className="client-field">
+    <section className={sectionClass}>
+      <header className={panel ? 'ir-host-card__head' : undefined}>
+        <h2>Password</h2>
+        <p className={descClass}>Choose a strong password with at least 8 characters.</p>
+      </header>
+      <form onSubmit={handlePasswordSubmit} className={formClass}>
+        <div className={panel ? 'ir-host-card__body ir-host-grid' : 'client-settings-flow'}>
+        <div className={fieldClass}>
           <label htmlFor="settings-current-password">Current password</label>
           <PasswordInput
             id="settings-current-password"
@@ -349,7 +363,7 @@ export default function AccountSettingsForms({
             <p className="client-field-error">{passwordErrors.current_password}</p>
           )}
         </div>
-        <div className="client-field">
+        <div className={fieldClass}>
           <label htmlFor="settings-new-password">New password</label>
           <PasswordInput
             id="settings-new-password"
@@ -362,7 +376,7 @@ export default function AccountSettingsForms({
             <p className="client-field-error">{passwordErrors.password}</p>
           )}
         </div>
-        <div className="client-field">
+        <div className={fieldClass}>
           <label htmlFor="settings-confirm-password">Confirm new password</label>
           <PasswordInput
             id="settings-confirm-password"
@@ -375,16 +389,19 @@ export default function AccountSettingsForms({
             <p className="client-field-error">{passwordErrors.password_confirmation}</p>
           )}
         </div>
-        <button type="submit" className="client-btn primary" disabled={passwordLoading}>
+        </div>
+        <div className={panel ? 'ir-host-card__foot' : 'client-settings-flow'}>
+        <button type="submit" className={saveClass} disabled={passwordLoading}>
           {passwordLoading ? 'Updating…' : 'Update password'}
         </button>
+        </div>
       </form>
     </section>
   )
 
   if (passwordOnly) {
     return (
-      <div className="client-settings client-settings--single">
+      <div className={panel ? 'ir-host-account ir-host-account--single' : 'client-settings client-settings--single'}>
         {passwordBackHref ? (
           <Link to={passwordBackHref} className="host-settings-back">Back to settings</Link>
         ) : null}
@@ -394,11 +411,14 @@ export default function AccountSettingsForms({
   }
 
   return (
-    <div className="client-settings">
-      <section className="client-settings-section">
-        <h2>Profile</h2>
-        <p className="client-settings-desc">{profileDescription}</p>
-        <form onSubmit={handleProfileSubmit} className="client-settings-form">
+    <div className={panel ? 'ir-host-account' : 'client-settings'}>
+      <section className={sectionClass}>
+        <header className={panel ? 'ir-host-card__head' : undefined}>
+          <h2>Profile</h2>
+          <p className={descClass}>{profileDescription}</p>
+        </header>
+        <form onSubmit={handleProfileSubmit} className={formClass}>
+          <div className={panel ? 'ir-host-card__body' : 'client-settings-flow'}>
           <div className="client-profile-photo">
             <div className="client-profile-photo__preview">
               <UserAvatar user={displayUser} className="client-profile-photo__avatar" />
@@ -477,7 +497,8 @@ export default function AccountSettingsForms({
               </div>
             </div>
           )}
-          <div className="client-field">
+          <div className={panel ? 'ir-host-grid' : 'client-settings-flow'}>
+          <div className={fieldClass}>
             <label htmlFor="settings-name">Full name <RequiredMark className="client-req" /></label>
             <input
               id="settings-name"
@@ -488,7 +509,7 @@ export default function AccountSettingsForms({
             />
             {profileErrors.name && <p className="client-field-error">{profileErrors.name}</p>}
           </div>
-          <div className="client-field">
+          <div className={fieldClass}>
             <label htmlFor="settings-email">Email address <RequiredMark className="client-req" /></label>
             <input
               id="settings-email"
@@ -500,7 +521,7 @@ export default function AccountSettingsForms({
             {profileErrors.email && <p className="client-field-error">{profileErrors.email}</p>}
           </div>
           {showKennitala && (
-            <div className="client-field">
+            <div className={fieldClass}>
               <label htmlFor="settings-kennitala">Kennitala ID number</label>
               <input
                 id="settings-kennitala"
@@ -512,7 +533,7 @@ export default function AccountSettingsForms({
               {profileErrors.kennitala && <p className="client-field-error">{profileErrors.kennitala}</p>}
             </div>
           )}
-          <div className="client-field">
+          <div className={fieldClass}>
             <PhoneField
               id="settings-phone"
               label="Phone"
@@ -526,8 +547,9 @@ export default function AccountSettingsForms({
             />
             {profileErrors.phone && <p className="client-field-error">{profileErrors.phone}</p>}
           </div>
+          </div>
           {showCurrency && (
-            <div className="client-field client-currency-field">
+            <div className={`${fieldClass} client-currency-field`}>
               <div className="client-currency-field__main">
                 <div className="client-currency-field__text">
                   <label htmlFor="settings-currency">Pricing currency</label>
@@ -548,7 +570,7 @@ export default function AccountSettingsForms({
             </div>
           )}
           {showRentalTerms && (
-            <div className="client-field">
+            <div className={`${fieldClass} ir-host-field--full`}>
               <label htmlFor="settings-rental-terms">Contract rental terms and conditions</label>
               <p className="client-field-hint">These terms appear on your listings and are attached as a PDF to each booking so the guest can open them.</p>
               <RichTextEditor
@@ -560,7 +582,7 @@ export default function AccountSettingsForms({
             </div>
           )}
           {profile.email !== user?.email && (
-            <div className="client-field">
+            <div className={fieldClass}>
               <label htmlFor="settings-current-for-email">Current password</label>
               <PasswordInput
                 id="settings-current-for-email"
@@ -574,20 +596,26 @@ export default function AccountSettingsForms({
               )}
             </div>
           )}
-          <button type="submit" className="client-btn primary" disabled={profileLoading}>
+          </div>
+          <div className={panel ? 'ir-host-card__foot' : 'client-settings-flow'}>
+          <button type="submit" className={saveClass} disabled={profileLoading}>
             {profileLoading ? 'Saving…' : 'Save profile'}
           </button>
+          </div>
         </form>
       </section>
 
       {passwordSection}
 
       {canBecomeHost && (
-        <section className="client-settings-section client-settings-section--host">
+        <section className={`${sectionClass} client-settings-section--host`}>
+          <header className={panel ? 'ir-host-card__head' : undefined}>
           <h2>Become a host</h2>
-          <p className="client-settings-desc">
+          <p className={descClass}>
             List your campervan or guesthouse on MyTerraBook. Your existing account stays the same — we will add host tools so you can create listings.
           </p>
+          </header>
+          <div className={panel ? 'ir-host-card__body' : 'client-settings-flow'}>
           <div className="client-become-host">
             <ul className="client-become-host__points">
               <li>Free to list, no upfront costs</li>
@@ -607,6 +635,7 @@ export default function AccountSettingsForms({
                 Learn more about hosting
               </Link>
             </div>
+          </div>
           </div>
         </section>
       )}

@@ -515,6 +515,10 @@
   gap: 16px;
 }
 
+.client-settings-flow {
+  display: contents;
+}
+
 .client-profile-photo {
   display: flex;
   align-items: center;

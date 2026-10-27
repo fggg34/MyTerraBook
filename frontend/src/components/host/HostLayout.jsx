@@ -57,30 +57,40 @@ export default function HostLayout() {
   return (
     <>
       <PageHead {...seo} />
-      <div className="host-panel-page host-account mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="host-panel-topbar">
-        <div className="host-panel-topbar__intro">
-          <p className="text-sm font-semibold text-slate-500">{copy.eyebrow ?? 'Host panel'}</p>
-          <h1 className="text-2xl font-bold text-brand-950">Welcome, {user?.name}</h1>
-        </div>
-        <button type="button" className="host-btn secondary host-panel-topbar__signout" onClick={handleLogout}>
-          <LogOut size={16} />
-          <span>{copy.signOutLabel ?? 'Sign out'}</span>
-        </button>
-      </div>
+      <div className="host-panel-page host-account">
       <div className="host-shell">
         <aside className="host-sidebar">
-          <h2>{copy.sidebarTitle ?? 'Manage'}</h2>
+          <div className="host-rail-brand">
+            <span className="host-rail-mark" aria-hidden="true">H</span>
+            <div>
+              <p className="host-rail-name">{copy.sidebarTitle ?? 'Host panel'}</p>
+              <p className="host-rail-sub">{copy.eyebrow ?? 'Account'}</p>
+            </div>
+          </div>
           <nav className="host-nav">
             {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? 'active' : '')}>
-                <item.icon size={18} />
+                <item.icon size={16} />
                 {item.label}
               </NavLink>
             ))}
           </nav>
+          <button type="button" className="host-rail-signout" onClick={handleLogout}>
+            <LogOut size={16} />
+            <span>{copy.signOutLabel ?? 'Sign out'}</span>
+          </button>
         </aside>
         <main className="host-main">
+          <div className="host-panel-topbar">
+            <div className="host-panel-topbar__intro">
+              <p className="host-panel-kicker">{copy.eyebrow ?? 'Host panel'}</p>
+              <h1>Welcome, {user?.name}</h1>
+            </div>
+            <button type="button" className="host-btn secondary host-panel-topbar__signout" onClick={handleLogout}>
+              <LogOut size={16} />
+              <span>{copy.signOutLabel ?? 'Sign out'}</span>
+            </button>
+          </div>
           <Outlet />
         </main>
       </div>

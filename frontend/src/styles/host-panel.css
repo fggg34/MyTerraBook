@@ -1,53 +1,143 @@
+.host-panel-page.host-account {
+  min-height: 100vh;
+  padding: 0;
+  background: #f4f6f9;
+  color: #0f172a;
+}
+
 .host-shell {
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  min-height: calc(100vh - 120px);
-  gap: 0;
+  display: block;
+  min-height: 100vh;
 }
 
 .host-sidebar {
-  border-right: 1px solid #e2e7ef;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 15rem;
+  height: 100vh;
+  border-right: 1px solid #e2e8f0;
   background: #fff;
-  padding: 24px 16px;
+  padding: 0;
 }
 
-.host-sidebar h2 {
-  font-size: 14px;
+.host-sidebar *,
+.host-sidebar *::before,
+.host-sidebar *::after {
+  box-sizing: border-box;
+}
+
+.host-rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.host-rail-mark {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.875rem;
   font-weight: 700;
-  color: #0f2036;
-  margin: 0 0 16px;
-  padding: 0 12px;
+}
+
+.host-rail-name {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.host-rail-sub {
+  margin: 0.125rem 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.host-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.75rem;
+  overflow: auto;
 }
 
 .host-nav a,
 .host-nav button {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   width: 100%;
   border: none;
   background: none;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #5a6b82;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
   text-decoration: none;
   cursor: pointer;
-  margin-bottom: 4px;
+  margin: 0;
 }
 
 .host-nav a.active,
 .host-nav a:hover,
 .host-nav button:hover {
-  background: #eef2f8;
-  color: #0f2036;
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.host-nav a.active {
+  background: #e8f1f8;
+  color: #014f82;
+  font-weight: 600;
+}
+
+.host-rail-signout {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: auto;
+  width: 100%;
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  text-align: left;
+}
+
+.host-rail-signout:hover {
+  background: #f8fafc;
+  color: #0f172a;
 }
 
 .host-main {
-  padding: 32px;
-  background: #fbfcfe;
+  margin-left: 15rem;
+  padding: 1.5rem 2rem 3rem;
+  background: #f4f6f9;
   min-width: 0;
+  min-height: 100vh;
+}
+
+.host-main > * {
+  max-width: 90rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .host-dashboard {
@@ -2365,7 +2455,24 @@ a.host-overview-card:hover .host-overview-card-link {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 1.25rem;
+}
+
+.host-panel-kicker {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.host-panel-topbar h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #0f172a;
 }
 
 .host-panel-topbar__intro {
@@ -2373,7 +2480,14 @@ a.host-overview-card:hover .host-overview-card-link {
 }
 
 .host-panel-topbar__signout {
+  display: none;
   flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+  .host-panel-topbar__signout {
+    display: inline-flex;
+  }
 }
 
 /* Neutralize global homepage `.host-btn` / `.host-actions` rules (defined
@@ -2397,23 +2511,31 @@ a.host-overview-card:hover .host-overview-card-link {
    ============================================================ */
 @media (max-width: 900px) {
   .host-shell {
-    grid-template-columns: minmax(0, 1fr);
-    border: 1px solid #e6ebf2;
-    border-radius: 16px;
-    overflow: hidden;
     min-height: 0;
   }
 
   .host-sidebar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: auto;
     border-right: none;
-    border-bottom: 1px solid #e2e7ef;
-    padding: 10px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0;
     background: #fff;
     min-width: 0;
   }
 
+  .host-rail-brand,
+  .host-rail-signout {
+    display: none;
+  }
+
   .host-main {
+    margin-left: 0;
     min-width: 0;
+    min-height: 0;
+    padding: 1.25rem 1rem 2rem;
   }
 
   .host-sidebar h2 {
@@ -2447,9 +2569,9 @@ a.host-overview-card:hover .host-overview-card-link {
   }
 
   .host-nav a.active {
-    background: rgba(69, 160, 106, 0.1);
-    color: #2f6b3f;
-    border-color: #45a06a;
+    background: #e8f1f8;
+    color: #014f82;
+    border-color: #0164a3;
   }
 
   .host-main {
@@ -3369,6 +3491,11 @@ a.host-overview-card:hover .host-overview-card-link {
     line-height: 1.3;
   }
 
+  .host-account .host-panel-topbar h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
   .host-account .host-btn {
     font-size: 14px;
   }
@@ -3692,4 +3819,390 @@ a.host-overview-card:hover .host-overview-card-link {
   margin-top: 8px;
   font-size: 12px;
   color: #8a97a8;
+}
+
+/* Host account — same section cards and fields as the Impact Rent admin panel */
+.ir-host-account {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ir-host-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  overflow: hidden;
+}
+
+.ir-host-card__head {
+  padding: 0.9rem 1.25rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ir-host-card__head h2 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.ir-host-card__desc {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.ir-host-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.ir-host-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.ir-host-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 640px) {
+  .ir-host-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ir-host-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.ir-host-field label,
+.ir-host-account .phone-field label,
+.ir-host-account .client-profile-photo__label {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.ir-host-field input,
+.ir-host-account .auth-input,
+.ir-host-account .auth-input-wrap {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ir-host-account .auth-input-wrap {
+  position: relative;
+}
+
+.ir-host-account .auth-input {
+  padding-right: 2.5rem;
+}
+
+.ir-host-account .auth-input-toggle {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.ir-host-account .auth-input-toggle svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.ir-host-field input,
+.ir-host-account .auth-input {
+  height: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.875rem;
+  box-shadow: none;
+}
+
+.ir-host-field input:focus,
+.ir-host-account .auth-input:focus {
+  outline: none;
+  border-color: #0164a3;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #0164a3 18%, transparent);
+}
+
+.ir-host-account .phone-field {
+  gap: 0.375rem;
+}
+
+.ir-host-account .phone-field .PhoneInput {
+  --phone-border: #e2e8f0;
+  --phone-focus: #0164a3;
+  --phone-focus-ring: color-mix(in srgb, #0164a3 18%, transparent);
+  --phone-radius: 0.5rem;
+  --phone-pad-y: 0;
+  --phone-pad-x: 0.75rem;
+  --phone-font-size: 0.875rem;
+  min-height: 2.25rem;
+  border-width: 1px;
+}
+
+.ir-host-account .client-currency-field {
+  padding: 0.85rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+}
+
+.ir-host-account .client-currency-field__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ir-host-account .client-currency-field__control .field-control-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  height: 2.25rem;
+  min-width: 10rem;
+  padding: 0 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: none;
+}
+
+.ir-host-account .client-currency-field__control .field-select.is-open .field-control-wrap,
+.ir-host-account .client-currency-field__control .field-control-wrap:focus-within {
+  border-color: #0164a3;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #0164a3 18%, transparent);
+}
+
+.ir-host-account .client-currency-field__control .field-select-trigger {
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0f172a;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+
+.ir-host-account .client-currency-field__desc,
+.ir-host-account .client-field-hint,
+.ir-host-account .client-profile-photo__hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.ir-host-account .client-profile-photo {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ir-host-account .client-profile-photo__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.ir-host-account .client-profile-photo__input {
+  display: none;
+}
+
+.ir-host-account .client-profile-photo__avatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #e8f1f8;
+  color: #014f82;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.ir-host-account .client-profile-photo__avatar img,
+.ir-host-account .user-avatar--photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ir-host-account .rich-text-editor {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.ir-host-account .rich-text-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.ir-host-account .rich-text-editor__toolbar button {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 0.375rem;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ir-host-account .rich-text-editor__area {
+  min-height: 11rem;
+  padding: 0.75rem 0.85rem;
+  outline: none;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #0f172a;
+}
+
+.ir-host-account .rich-text-editor__area:focus {
+  box-shadow: inset 0 0 0 2px #0164a3;
+}
+
+.ir-host-account .rich-text-editor__area p {
+  margin: 0 0 0.5rem;
+}
+
+.ir-host-account .client-company-logo__preview {
+  width: 7.5rem;
+  height: 4rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.ir-host-account .client-company-logo__preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.ir-host-card__foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.ir-host-save,
+.ir-host-account .client-btn,
+.ir-host-account .host-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.25rem;
+  padding: 0 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.ir-host-save,
+.ir-host-account .client-btn.primary {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #fff;
+}
+
+.ir-host-save:hover,
+.ir-host-account .client-btn.primary:hover {
+  background: #1e293b;
+}
+
+.ir-host-account .client-btn.secondary,
+.ir-host-account .host-btn.secondary,
+.ir-host-account .client-btn.ghost {
+  background: #fff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.ir-host-account .client-btn.secondary:hover,
+.ir-host-account .host-btn.secondary:hover,
+.ir-host-account .client-btn.ghost:hover {
+  background: #f8fafc;
+}
+
+.ir-host-save:disabled,
+.ir-host-account .client-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ir-host-account .client-field-error {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #991b1b;
+}
+
+.ir-host-account .host-settings-back {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #014f82;
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .ir-host-account .client-currency-field__main,
+  .ir-host-account .client-profile-photo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
