@@ -4,26 +4,39 @@
             <p class="tb-welcome-header-date">{{ $date }}</p>
             <h2 class="tb-welcome-header-title">{{ $greeting }}, {{ $name }}</h2>
         </div>
+        <div class="tb-welcome-actions">
+            <a class="tb-btn" href="{{ $reportsUrl }}">
+                <img src="{{ asset('admin-redesign/icon-btn-period.svg') }}" alt="" width="16" height="16">
+                Last 30 days
+            </a>
+            <a class="tb-btn tb-btn-steel" href="{{ $calendarUrl }}">
+                <img src="{{ asset('admin-redesign/icon-btn-calendar.svg') }}" alt="" width="16" height="16">
+                Open calendar
+            </a>
+        </div>
     </div>
 
     <style>
         .tb-welcome-header {
-            padding: 4px 0 8px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 0;
             background: transparent;
             border: 0;
             box-shadow: none;
         }
-
         .tb-welcome-header-date {
             margin: 0 0 4px;
-            font-family: "IBM Plex Mono", ui-monospace, monospace;
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
+            font-family: "IBM Plex Sans", sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 16px;
+            letter-spacing: 0;
+            text-transform: none;
             color: #8a99a9;
         }
-
         .tb-welcome-header-title {
             margin: 0;
             font-family: Manrope, sans-serif;
@@ -31,8 +44,26 @@
             font-weight: 800;
             line-height: 36px;
             letter-spacing: -0.5px;
-            color: #0d1b2a;
+            color: #041e37;
         }
+        .tb-welcome-actions { display: flex; gap: 8px; }
+        .tb-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 16px;
+            border: 1px solid #dbe3ec;
+            border-radius: 6px;
+            background: #fff;
+            color: #0d1b2a;
+            font-family: "IBM Plex Sans", sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 20px;
+            text-decoration: none;
+        }
+        .tb-btn img { width: 16px; height: 16px; }
+        .tb-btn-steel { border-color: #4474a4; color: #4474a4; }
 
         .dark .tb-welcome-header {
             background: rgb(30 41 59);

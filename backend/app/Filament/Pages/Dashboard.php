@@ -2,10 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\DashboardInsightsWidget;
-use App\Filament\Widgets\DashboardOverviewStats;
-use App\Filament\Widgets\OperationsOverviewChartWidget;
-use App\Filament\Widgets\RecentOrdersWidget;
+use App\Filament\Widgets\DashboardHomeWidget;
 use App\Filament\Widgets\WelcomeHeaderWidget;
 use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -47,10 +44,7 @@ class Dashboard extends BaseDashboard
     {
         return [
             WelcomeHeaderWidget::class,
-            DashboardOverviewStats::class,
-            OperationsOverviewChartWidget::class,
-            RecentOrdersWidget::class,
-            DashboardInsightsWidget::class,
+            DashboardHomeWidget::class,
         ];
     }
 

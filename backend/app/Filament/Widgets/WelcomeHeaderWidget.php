@@ -32,6 +32,8 @@ class WelcomeHeaderWidget extends Widget
             'greeting' => $greeting,
             'name' => $user?->name ?? 'Admin',
             'date' => now()->format('l, j F Y'),
+            'reportsUrl' => \App\Filament\Pages\Reports::getUrl(),
+            'calendarUrl' => \App\Filament\Pages\OrdersCalendar::getUrl(),
         ];
     }
 }

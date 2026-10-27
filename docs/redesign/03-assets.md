@@ -29,5 +29,6 @@ Sidebar glyphs and the wordmark were downloaded from the Sidebar component `4:20
 | `icon-status-dot.svg` | Coming Soon status dot |
 | `icon-plus.svg` | New button |
 | `icon-bell.svg` | Topbar notifications |
+| `icon-kpi-*.svg`, `icon-attn-*.svg`, `icon-btn-*.svg` | Dashboard KPI tiles, attention rows, and header buttons |
 
 Per-screen icons (table actions, section menus, topbar search and bell) are not in this folder yet. They get downloaded with the screen that uses them.
