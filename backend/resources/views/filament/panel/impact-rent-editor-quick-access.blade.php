@@ -520,8 +520,9 @@
             font-size: 0.875rem;
         }
 
+        html.ir-shell .fi-main.fi-width-7xl,
         html.ir-shell .fi-page-content {
-            max-width: 1400px;
+            max-width: 90rem;
         }
 
         html.ir-shell .fi-section,
