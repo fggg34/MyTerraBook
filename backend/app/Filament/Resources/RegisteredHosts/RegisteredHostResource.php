@@ -29,8 +29,6 @@ class RegisteredHostResource extends Resource
 
     protected static ?string $navigationLabel = 'Hosts';
 
-    protected static ?string $pluralModelLabel = 'Hosts';
-
     protected static ?string $modelLabel = 'registered host';
 
     protected static ?string $pluralModelLabel = 'Registered Hosts';

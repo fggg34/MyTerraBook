@@ -21,8 +21,6 @@ class BlogPostResource extends Resource
 
     protected static ?string $navigationLabel = 'Good to Know';
 
-    protected static ?string $pluralModelLabel = 'Good to Know';
-
     protected static ?string $modelLabel = 'post';
 
     protected static ?string $pluralModelLabel = 'Good to Know posts';

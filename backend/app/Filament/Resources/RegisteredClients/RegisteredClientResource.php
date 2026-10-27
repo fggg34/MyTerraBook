@@ -25,8 +25,6 @@ class RegisteredClientResource extends Resource
 
     protected static ?string $navigationLabel = 'Clients';
 
-    protected static ?string $pluralModelLabel = 'Clients';
-
     protected static ?string $modelLabel = 'registered client';
 
     protected static ?string $pluralModelLabel = 'Registered Clients';
