@@ -25,6 +25,27 @@ class SiteContentHub extends Page
 {
     private const GROUP_ORDER = ['Global', 'Marketing', 'Transactional', 'App'];
 
+    /**
+     * In-page picker. Keys stay the existing site_content page keys.
+     *
+     * @var array<string, list<string>>
+     */
+    private const PICKER_GROUPS = [
+        'Global' => ['global'],
+        'Main pages' => ['home', 'about', 'faq', 'contact', 'become-a-host', 'campsite-map', 'good-to-know'],
+        'Legal' => ['terms', 'privacy', 'refund-policy', 'cookies', 'cardholder-terms'],
+        'Search & listings' => ['search-campervan', 'search-car', 'search-guesthouse', 'listing-campervan', 'listing-car', 'listing-guesthouse'],
+        'Checkout & accounts' => ['checkout', 'auth-login', 'auth-register', 'auth-host-register'],
+        'Panels & system' => ['user-dashboard', 'admin-dashboard', 'client-panel', 'host-panel', 'newsletter-unsubscribe', 'under-construction'],
+    ];
+
+    /**
+     * Pages whose section list follows the Homepage editor.
+     *
+     * @var list<string>
+     */
+    private const HOMEPAGE_PATTERN = ['home', 'about', 'faq', 'contact', 'become-a-host', 'campsite-map', 'good-to-know'];
+
     protected static ?string $navigationLabel = 'Site content';
 
     protected static ?string $title = 'Site content';
@@ -51,18 +72,76 @@ class SiteContentHub extends Page
             return [];
         }
 
-        return collect(config('site_content.pages', []))
-            ->sortBy(fn (array $config): int => $config['sort_order'] ?? 99)
-            ->map(fn (array $config, string $key): NavigationItem => NavigationItem::make($key)
-                ->label($config['label'] ?? $key)
-                ->group('Content')
+        return [
+            NavigationItem::make('site-content')
+                ->label('Site content')
                 ->icon(static::$navigationIcon)
-                ->sort($config['sort_order'] ?? 99)
-                ->url(static::getUrl(['tab' => $key]))
+                ->sort(static::$navigationSort)
+                ->url(static::getUrl(['tab' => 'global']))
                 ->isActiveWhen(fn (): bool => request()->routeIs(static::getRouteName())
-                    && request()->query('tab', 'global') === $key))
-            ->values()
-            ->all();
+                    || request()->routeIs('filament.admin.pages.homepage-cms')
+                    || request()->routeIs('filament.admin.pages.footer-settings')),
+        ];
+    }
+
+    /**
+     * @return list<array{label: string, pages: list<array{key: string, label: string}>}>
+     */
+    public function pickerGroups(): array
+    {
+        $pages = config('site_content.pages', []);
+        $groups = [];
+
+        foreach (self::PICKER_GROUPS as $label => $keys) {
+            $items = [];
+            foreach ($keys as $key) {
+                if (! isset($pages[$key])) {
+                    continue;
+                }
+                $items[] = [
+                    'key' => $key,
+                    'label' => $pages[$key]['label'] ?? $key,
+                ];
+            }
+            if ($items !== []) {
+                $groups[] = ['label' => $label, 'pages' => $items];
+            }
+        }
+
+        return $groups;
+    }
+
+    public function editorPattern(): string
+    {
+        if ($this->activePageKey === 'global') {
+            return 'chrome';
+        }
+
+        if (in_array($this->activePageKey, self::HOMEPAGE_PATTERN, true)) {
+            return 'homepage';
+        }
+
+        return 'terms';
+    }
+
+    public function editorIntro(): string
+    {
+        $label = (string) config("site_content.pages.{$this->activePageKey}.label", 'this page');
+        $count = count(config("site_content.pages.{$this->activePageKey}.sections", []));
+
+        $legal = ['terms', 'privacy', 'refund-policy', 'cookies', 'cardholder-terms'];
+
+        return match (true) {
+            $this->editorPattern() === 'chrome' => 'Logo, colors, header, footer and the other blocks already stored for every page.',
+            $this->editorPattern() === 'homepage' => "{$count} sections, the same fields already stored for {$label}, in collapsible cards.",
+            in_array($this->activePageKey, $legal, true) => "Hero, body and SEO, the same fields already stored for {$label}.",
+            default => "{$count} sections, the same fields already stored for {$label}, in the Terms card layout.",
+        };
+    }
+
+    public function getHeading(): string|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        return null;
     }
 
     protected string $view = 'filament.pages.site-content-hub';

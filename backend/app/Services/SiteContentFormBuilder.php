@@ -12,22 +12,25 @@ use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Str;
 
 class SiteContentFormBuilder
 {
     /**
-     * @return list<Tabs>
+     * Collapsible cards, matching Homepage, Global chrome, and Terms.
+     * The first card stays open. Later cards stay in the form so a save
+     * still writes every section.
+     *
+     * @return list<Section>
      */
     public function buildSectionsForPage(string $pageKey): array
     {
         $pageConfig = config("site_content.pages.{$pageKey}", []);
         $sections = $pageConfig['sections'] ?? [];
 
-        $tabs = [];
+        $cards = [];
         foreach ($sections as $sectionKey => $sectionConfig) {
             $fields = $sectionConfig['fields'] ?? [];
             $components = $this->buildFields($pageKey, $sectionKey, $fields, (bool) ($sectionConfig['isRootSection'] ?? false));
@@ -36,24 +39,15 @@ class SiteContentFormBuilder
                 continue;
             }
 
-            $tabs[] = Tab::make($sectionConfig['label'] ?? str($sectionKey)->headline()->toString())
+            $cards[] = Section::make($sectionConfig['label'] ?? str($sectionKey)->headline()->toString())
                 ->schema($components)
-                ->columns(2);
+                ->columns(2)
+                ->collapsible()
+                ->collapsed($cards !== [])
+                ->extraAttributes(['class' => 'site-content-card']);
         }
 
-        if ($tabs === []) {
-            return [];
-        }
-
-        return [
-            Tabs::make('Page sections')
-                ->tabs($tabs)
-                ->vertical()
-                ->extraAttributes(['class' => 'site-content-sections'])
-                ->contained()
-                ->persistTabInQueryString('section')
-                ->dehydratedWhenHidden(),
-        ];
+        return $cards;
     }
 
     /**

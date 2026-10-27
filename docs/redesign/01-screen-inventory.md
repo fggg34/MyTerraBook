@@ -9,7 +9,7 @@ Source: Figma file `HjqfE4nbHKhJLGEKIQgyQT`, read with `get_metadata` only.
 - Button labels and Tab labels live inside component instances. `get_metadata` does not expand that text, so those labels are not listed. They must be read with `get_design_context` before implementation.
 - Each sidebar row’s glyph is an instance named `Icon` (16×16 inside a 28×28 tile). The specific icon symbol is not named in metadata. Nav labels below are the instance names.
 
-Status for every row is `todo`. Nothing is implemented.
+Screen rows below stay `todo` until that screen is matched. The shared sidebar and the site-content editor are in progress: one Site content destination, with the other 26 pages using the Homepage, Global chrome, or Terms card layout on their existing fields.
 
 ## Shared chrome (used by every app screen)
 
@@ -325,7 +325,7 @@ Do not invent screens for these. They need a decision before any UI work:
 - `NewsletterCampaignResource` — Campaigns is only a sub-nav item on Newsletter. No campaigns screen.
 - `SettingResource` `settings-records` — no frame of its own. Likely covered by the Settings configuration frames, not confirmed field-by-field.
 - React `/admin`, `/admin/calendar`, and `/admin/embed/calendar` — not in this Figma file.
-- The 26 site-content picker entries other than Homepage, Global chrome, and Terms have no own frame. Terms shows the editor pattern (Hero / Body / SEO). Homepage and Global chrome have their own section lists. The other picker pages should not be designed from guesswork.
+- The 26 site-content picker entries other than Homepage, Global chrome, and Terms have no own frame. They keep their existing fields. Main pages use the Homepage card stack. Global uses the Global chrome card stack. Legal pages and the remaining pages use the Terms card stack.
 
 ## Confirm before Phase 2
 

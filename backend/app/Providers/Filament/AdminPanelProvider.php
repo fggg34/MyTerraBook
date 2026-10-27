@@ -45,12 +45,12 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.25rem')
             ->favicon(fn (): ?string => app(AdminBrandingService::class)->faviconUrl())
             ->font(
-                'Open Sans',
-                url: 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Quicksand:wght@700&display=swap',
+                'IBM Plex Sans',
+                url: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap',
             )
             ->sidebarCollapsibleOnDesktop()
             ->colors([
-                'primary' => Color::hex('#334e68'),
+                'primary' => Color::hex('#041e37'),
             ])
             ->darkMode(false, true)
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
@@ -110,7 +110,14 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::BODY_START,
-                fn (): string => view('filament.panel.impact-rent-editor-quick-access')->render(),
+                function (): string {
+                    $shell = '';
+                    if (auth()->check() && ! request()->is('admin/login', 'admin/password-reset*', 'admin/register')) {
+                        $shell = view('filament.panel.admin-redesign-shell')->render();
+                    }
+
+                    return $shell.view('filament.panel.impact-rent-editor-quick-access')->render();
+                },
             )
             ->renderHook(
                 PanelsRenderHook::PAGE_SUB_NAVIGATION_TOP_AFTER,
