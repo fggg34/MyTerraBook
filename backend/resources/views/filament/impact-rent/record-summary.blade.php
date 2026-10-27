@@ -27,8 +27,26 @@
     }
     .ir-summary-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+        grid-template-columns: 1fr;
         gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .ir-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 768px) {
+        .ir-summary-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .ir-summary-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
     }
     .ir-summary p {
         margin: 0;

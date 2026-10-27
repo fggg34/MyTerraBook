@@ -1,9 +1,9 @@
 <style>
     .orc-shell {
-        border: 1px solid #d7dde6;
-        border-radius: 6px;
-        background: #fff;
-        padding: 12px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        padding: 0;
     }
 
     .orc-top {
@@ -17,7 +17,7 @@
     .orc-title {
         font-size: 16px;
         font-weight: 700;
-        color: #1f2a35;
+        color: #0f172a;
     }
 
     .orc-meta {
@@ -25,9 +25,9 @@
         align-items: center;
         gap: 6px;
         font-size: 11px;
-        color: #4a5b6f;
-        border: 1px solid #d7dde6;
-        background: #f5f8fb;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
         border-radius: 3px;
         padding: 4px 7px;
     }
@@ -36,9 +36,9 @@
         width: 100%;
         max-height: 180px;
         object-fit: contain;
-        border: 1px solid #e2e7ef;
-        border-radius: 6px;
-        background: #f8fbff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        background: #f8fafc;
         margin-bottom: 10px;
     }
 
@@ -49,8 +49,8 @@
     }
 
     .orc-month {
-        border: 1px solid #dce2ea;
-        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
         overflow: hidden;
         background: #fff;
     }
@@ -58,11 +58,11 @@
     .orc-month-name {
         font-size: 13px;
         font-weight: 700;
-        color: #2b3744;
+        color: #0f172a;
         text-align: center;
         padding: 8px 6px;
-        background: #f2f5f9;
-        border-bottom: 1px solid #dce2ea;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .orc-weekdays,
@@ -74,7 +74,7 @@
     .orc-weekdays span {
         font-size: 10px;
         font-weight: 700;
-        color: #5b6b7e;
+        color: #64748b;
         text-align: center;
         padding: 6px 0;
         border-bottom: 1px solid #edf1f6;
@@ -107,7 +107,7 @@
     }
 
     .orc-day--selected {
-        box-shadow: inset 0 0 0 2px #334e68;
+        box-shadow: inset 0 0 0 2px #0164a3;
         font-weight: 700;
     }
 

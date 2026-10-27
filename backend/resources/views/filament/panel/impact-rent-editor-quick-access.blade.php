@@ -323,6 +323,11 @@
             overflow: hidden;
         }
 
+        html.ir-shell body.ir-orders-page .fi-ta-ctn,
+        html.ir-shell body.ir-orders-page .fi-ta-content-ctn {
+            overflow: visible;
+        }
+
         html.ir-shell .fi-ta-header,
         html.ir-shell .fi-ta-header-ctn,
         html.ir-shell .fi-ta-header-toolbar,

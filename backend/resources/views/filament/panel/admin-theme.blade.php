@@ -574,35 +574,40 @@
 
     /* Vehicle rental orders: filters stay on the page, and the list wraps instead of scrolling sideways. */
     body.ir-orders-page .fi-ta-filters-above-content-ctn {
-        margin: 0.25rem 0 0.25rem;
+        margin: 0;
         padding: 1rem 1.1rem 1.15rem;
-        border: 1px solid #d5e0ea;
-        border-radius: 0.9rem;
-        background: #f8fafc;
+        border: 0;
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 0;
+        background: #fff;
         overflow: visible;
     }
 
     body.ir-orders-page .fi-ta-filters {
-        gap: 0.9rem;
+        gap: 1rem;
+        background: #fff;
     }
 
     body.ir-orders-page .fi-ta-filters-heading {
         font-size: 0.75rem;
-        font-weight: 700;
+        font-weight: 600;
         letter-spacing: 0.04em;
         text-transform: uppercase;
-        color: #627d98;
+        color: #64748b;
     }
 
-    body.ir-orders-page .fi-ta-filters .fi-fo-field-wrp-label span {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #334e68;
+    body.ir-orders-page .fi-ta-filters .fi-fo-field-label,
+    body.ir-orders-page .fi-ta-filters .fi-fo-field-label-content {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #0f172a;
     }
 
-    body.ir-orders-page .fi-ta-filters .fi-input-wrp,
-    body.ir-orders-page .fi-ta-filters .fi-select-input {
+    body.ir-orders-page .fi-ta-filters .fi-input-wrp {
         background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        box-shadow: none;
     }
 
     body.ir-orders-page .fi-ta-content-ctn,

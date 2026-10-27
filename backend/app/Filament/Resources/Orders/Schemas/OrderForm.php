@@ -225,8 +225,9 @@ class OrderForm
 
                                         $paid = (int) $record->payments()->sum('amount_cents');
 
-                                        return number_format($paid, 0).' '.((string) ($record->currency ?? 'EUR'));
-                                    }),
+                                        return self::formatCents($paid, (string) ($record->currency ?? 'EUR'));
+                                    })
+                                    ->extraEntryWrapperAttributes(['class' => 'ir-price-field']),
                                 Placeholder::make('remaining_balance_preview')
                                     ->label('Remaining Balance')
                                     ->content(function (?object $record): string {
@@ -237,8 +238,9 @@ class OrderForm
                                         $paid = (int) $record->payments()->sum('amount_cents');
                                         $remaining = max(0, (int) ($record->total_cents ?? 0) - $paid);
 
-                                        return number_format($remaining, 0).' '.((string) ($record->currency ?? 'EUR'));
-                                    }),
+                                        return self::formatCents($remaining, (string) ($record->currency ?? 'EUR'));
+                                    })
+                                    ->extraEntryWrapperAttributes(['class' => 'ir-price-field']),
                             ]),
                     ]),
 
@@ -415,5 +417,10 @@ class OrderForm
         }
 
         return asset('storage/'.$path);
+    }
+
+    private static function formatCents(int $cents, string $currency): string
+    {
+        return $currency.' '.number_format((int) floor($cents / 100), 0, '.', ',');
     }
 }
