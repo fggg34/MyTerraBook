@@ -24,6 +24,10 @@ class SpecialPriceResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $navigationLabel = 'Pricing rules';
+
+    protected static ?string $pluralModelLabel = 'Pricing rules';
+
     protected static string|UnitEnum|null $navigationGroup = 'Pricing';
 
     protected static ?int $navigationSort = 6;

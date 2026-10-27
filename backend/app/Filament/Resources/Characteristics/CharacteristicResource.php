@@ -24,6 +24,10 @@ class CharacteristicResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $navigationLabel = 'Features';
+
+    protected static ?string $pluralModelLabel = 'Features';
+
     protected static string|UnitEnum|null $navigationGroup = 'Catalog';
 
     protected static ?int $navigationSort = 4;

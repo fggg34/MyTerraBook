@@ -23,7 +23,9 @@ class RegisteredClientResource extends Resource
 
     protected static ?string $slug = 'registered-clients';
 
-    protected static ?string $navigationLabel = 'Registered Clients';
+    protected static ?string $navigationLabel = 'Clients';
+
+    protected static ?string $pluralModelLabel = 'Clients';
 
     protected static ?string $modelLabel = 'registered client';
 

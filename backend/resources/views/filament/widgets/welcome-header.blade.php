@@ -1,52 +1,37 @@
 <x-filament-widgets::widget>
     <div class="tb-welcome-header">
         <div class="tb-welcome-header-intro">
-            <p class="tb-welcome-header-greeting">{{ $greeting }}, {{ $name }}</p>
-            <h2 class="tb-welcome-header-title">Welcome to your dashboard</h2>
+            <p class="tb-welcome-header-date">{{ $date }}</p>
+            <h2 class="tb-welcome-header-title">{{ $greeting }}, {{ $name }}</h2>
         </div>
-        <div class="tb-welcome-header-date">{{ $date }}</div>
     </div>
 
     <style>
         .tb-welcome-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 1.5rem;
-            padding: 1.5rem 1.75rem;
-            border-radius: 0.75rem;
-            border: 1px solid var(--mtb-line);
-            border-left: 4px solid var(--mtb-primary);
-            background: #fff;
-            box-shadow: 0 1px 3px rgb(51 78 104 / 0.08);
+            padding: 4px 0 8px;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
         }
 
-        .tb-welcome-header-greeting {
-            margin: 0 0 0.25rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--mtb-primary-light);
-            letter-spacing: 0.01em;
+        .tb-welcome-header-date {
+            margin: 0 0 4px;
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #8a99a9;
         }
 
         .tb-welcome-header-title {
             margin: 0;
-            font-size: 1.5rem;
-            line-height: 1.2;
-            font-weight: 700;
-            color: var(--mtb-primary-dark);
-        }
-
-        .tb-welcome-header-date {
-            flex-shrink: 0;
-            padding: 0.5rem 0.875rem;
-            border-radius: 9999px;
-            background: var(--mtb-bg);
-            border: 1px solid var(--mtb-line);
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--mtb-muted);
-            white-space: nowrap;
+            font-family: Manrope, sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 36px;
+            letter-spacing: -0.5px;
+            color: #0d1b2a;
         }
 
         .dark .tb-welcome-header {

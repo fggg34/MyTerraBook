@@ -103,13 +103,6 @@
         }
     }
 
-    $comingSoon = false;
-    try {
-        $comingSoon = app(\App\Services\SitePreviewService::class)->isComingSoonEnabled();
-    } catch (\Throwable) {
-        $comingSoon = false;
-    }
-
     $user = auth()->user();
     $name = trim((string) ($user->name ?? 'Admin'));
     $email = (string) ($user->email ?? '');
@@ -284,9 +277,6 @@
   </div>
 </aside>
 
-@if ($comingSoon)
-  <div class="tb-coming-soon">Coming Soon mode is on</div>
-@endif
 
 <style>
   html.tb-redesign {
@@ -512,12 +502,31 @@
   }
   .tb-rail-more a:hover,
   .tb-rail-more button:hover { background: #f7f9fc; }
-  .tb-coming-soon {
-    position: fixed;
-    z-index: 30;
-    top: 18px;
-    left: 50%;
-    padding: 4px 10px;
+  html.tb-redesign .fi-topbar-start,
+  html.tb-redesign .fi-user-menu,
+  html.tb-redesign .fi-logo { display: none !important; }
+  html.tb-redesign .fi-topbar-end {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 12px;
+    margin-inline-start: 0;
+  }
+  html.tb-redesign .fi-global-search-ctn { width: 440px; max-width: 46vw; margin-right: auto; }
+  html.tb-redesign .fi-global-search-field .fi-input-wrp {
+    height: 36px;
+    border: 0;
+    border-radius: 8px;
+    background: #f3f6fa;
+    box-shadow: none;
+  }
+  html.tb-redesign .fi-global-search-field .fi-input { font-size: 14px; }
+  html.tb-redesign .fi-global-search-field .fi-input-wrp-suffix { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; }
+  .tb-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px 5px 10px;
     border-radius: 999px;
     background: #fdf1dc;
     color: #9a5b00;
@@ -525,8 +534,127 @@
     font-size: 12px;
     font-weight: 600;
     line-height: 16px;
-    transform: translateX(-50%);
+    white-space: nowrap;
   }
+  .tb-status img { width: 7px; height: 7px; }
+  .tb-new { position: relative; }
+  .tb-new summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 6px;
+    background: #041e37;
+    color: #fff;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    list-style: none;
+    cursor: pointer;
+  }
+  .tb-new summary::-webkit-details-marker { display: none; }
+  .tb-new summary img { width: 16px; height: 16px; }
+  .tb-new div {
+    position: absolute;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    margin-top: 6px;
+    padding: 6px;
+    border: 1px solid #dbe3ec;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(4 30 55 / 12%);
+  }
+  .tb-new a {
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: #0d1b2a;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .tb-new a:hover { background: #f7f9fc; }
+  .tb-bell { display: grid; width: 36px; height: 36px; place-items: center; }
+  .tb-bell img { width: 36px; height: 36px; }
+  .tb-crumb {
+    margin: 0 0 4px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #8a99a9;
+  }
+  .tb-title {
+    margin: 0 0 6px;
+    font-family: Manrope, sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 36px;
+    letter-spacing: -0.5px;
+    color: #0d1b2a;
+  }
+  .tb-desc { max-width: 46rem; margin: 0 0 14px; font-size: 14px; line-height: 20px; color: #5b6b7d; }
+  .fi-page:has(.tb-lead[data-replace-title]) .fi-header-heading { display: none; }
+  .tb-subnav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin: 0 0 16px;
+  }
+  .tb-subnav-group {
+    margin-left: 8px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #8a99a9;
+  }
+  .tb-subnav a {
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: #0d1b2a;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    text-decoration: none;
+  }
+  .tb-subnav a:hover { background: #f7f9fc; }
+  .tb-subnav a.is-active { background: #e8eff7; color: #041e37; font-weight: 600; }
+  html.tb-redesign .fi-header-heading {
+    font-family: Manrope, sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 36px;
+    letter-spacing: -0.5px;
+  }
+  html.tb-redesign .fi-ta-header-cell {
+    background: #f7f9fc;
+    color: #5b6b7d;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  html.tb-redesign .fi-ta-cell { color: #0d1b2a; font-size: 14px; }
+  html.tb-redesign .fi-tabs-item.fi-active { background: #e8eff7; color: #041e37; }
+  html.tb-redesign .fi-input-wrp {
+    border: 1px solid #dbe3ec;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: none;
+  }
+  html.tb-redesign .fi-badge.fi-color-success { background: #e3f3ea; color: #1f7a4d; }
+  html.tb-redesign .fi-badge.fi-color-warning { background: #fdf1dc; color: #9a5b00; }
+  html.tb-redesign .fi-badge.fi-color-danger { background: #fde7e5; color: #b42318; }
+  html.tb-redesign .fi-badge.fi-color-info,
+  html.tb-redesign .fi-badge.fi-color-primary { background: #e8eff7; color: #4474a4; }
+  html.tb-redesign .ir-global-tab[data-active="true"] { background: #041e37; border-color: #041e37; }
+  html.tb-redesign .ir-global-card { border-color: #dbe3ec; border-radius: 12px; }
   @media (max-width: 720px) {
     .tb-rail { width: 72px; padding: 10px; }
     .tb-rail-logo, .tb-rail-label, .tb-rail-badge, .tb-rail-user-copy, .tb-rail-group { display: none; }

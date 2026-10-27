@@ -52,6 +52,8 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::hex('#041e37'),
             ])
+            ->globalSearchKeyBindings(['ctrl+k', 'command+k'])
+            ->globalSearchFieldSuffix('Ctrl K')
             ->darkMode(false, true)
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
@@ -107,6 +109,14 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn (): string => view('filament.panel.body-end-scripts')->render(),
+            )
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+                fn (): string => view('filament.panel.admin-topbar-tools')->render(),
+            )
+            ->renderHook(
+                PanelsRenderHook::PAGE_START,
+                fn (): string => view('filament.panel.admin-screen-lead')->render(),
             )
             ->renderHook(
                 PanelsRenderHook::BODY_START,

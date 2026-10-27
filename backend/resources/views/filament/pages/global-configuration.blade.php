@@ -126,7 +126,7 @@
         }
     </style>
 
-    <div x-data="{ tab: 'shop' }">
+    <div x-data="{ tab: new URLSearchParams(window.location.search).get('tab') || 'shop' }">
         <nav class="ir-global-tabs" aria-label="Global configuration tabs">
             <button type="button" class="ir-global-tab" :data-active="tab === 'shop'" @click="tab = 'shop'">Shop and Rentals</button>
             <button type="button" class="ir-global-tab" :data-active="tab === 'prices'" @click="tab = 'prices'">Prices and Payments</button>

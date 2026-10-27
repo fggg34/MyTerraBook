@@ -27,15 +27,17 @@ class OrdersTable
         return $table
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['car', 'pickupLocation', 'dropoffLocation', 'payments']))
             ->defaultSort('created_at', 'desc')
+            ->searchPlaceholder('Search bookings…')
             ->striped()
             ->stackedOnMobile()
             ->columns([
-                TextColumn::make('partner_sync_state')->label('Partner sync')->badge()->toggleable()
+                TextColumn::make('partner_sync_state')->label('Partner sync')->badge()->toggleable(isToggledHiddenByDefault: true)
                     ->description(fn ($record) => $record->partner_sync_error)
                     ->wrap()
                     ->verticalAlignment(VerticalAlignment::Start),
                 TextColumn::make('id')
-                    ->label('ID')
+                    ->label('Reference')
+                    ->formatStateUsing(fn ($record): string => $record->reference ?: (string) $record->id)
                     ->badge()
                     ->color(fn (): string => AdminTableBadgeColors::neutral())
                     ->sortable()
@@ -44,6 +46,7 @@ class OrdersTable
                     ->verticalAlignment(VerticalAlignment::Start),
                 TextColumn::make('created_at')
                     ->label('Booked')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->date('j M Y')
                     ->description(fn ($record): string => $record->created_at?->format('D H:i') ?? '-')
                     ->sortable()
@@ -61,7 +64,7 @@ class OrdersTable
                     ->wrap()
                     ->verticalAlignment(VerticalAlignment::Start),
                 TextColumn::make('pickup_at')
-                    ->label('Pickup')
+                    ->label('Pickup → Drop-off')
                     ->date('d/m/Y')
                     ->description(fn ($record): string => trim(($record->pickupLocation?->name ?? '').' '.($record->pickup_at?->format('D H:i') ?? '')) ?: '-')
                     ->sortable()
@@ -69,6 +72,7 @@ class OrdersTable
                     ->verticalAlignment(VerticalAlignment::Start),
                 TextColumn::make('dropoff_at')
                     ->label('Drop-off')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->date('d/m/Y')
                     ->description(fn ($record): string => trim(($record->dropoffLocation?->name ?? '').' '.($record->dropoff_at?->format('D H:i') ?? '')) ?: '-')
                     ->sortable()
@@ -76,6 +80,7 @@ class OrdersTable
                     ->verticalAlignment(VerticalAlignment::Start),
                 TextColumn::make('rental_days')
                     ->label('Days')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->state(fn ($record): int => max(1, (int) $record->pickup_at?->diffInDays($record->dropoff_at)))
                     ->alignCenter()
                     ->verticalAlignment(VerticalAlignment::Start),

@@ -24,7 +24,11 @@ class OrderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $navigationLabel = 'Vehicle Rental';
+    protected static ?string $navigationLabel = 'Car reservations';
+
+    protected static ?string $modelLabel = 'Car reservation';
+
+    protected static ?string $pluralModelLabel = 'Car reservations';
 
     protected static string|UnitEnum|null $navigationGroup = 'Operations';
 

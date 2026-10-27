@@ -25,5 +25,9 @@ Sidebar glyphs and the wordmark were downloaded from the Sidebar component `4:20
 | `icon-settings.svg` | Settings |
 | `icon-more.svg` | Account menu |
 | `icon-collapse.svg` | Saved with the sidebar set. The rail does not collapse on desktop; the file has no collapsed-sidebar frame. |
+| `icon-search.svg` | Topbar search |
+| `icon-status-dot.svg` | Coming Soon status dot |
+| `icon-plus.svg` | New button |
+| `icon-bell.svg` | Topbar notifications |
 
 Per-screen icons (table actions, section menus, topbar search and bell) are not in this folder yet. They get downloaded with the screen that uses them.

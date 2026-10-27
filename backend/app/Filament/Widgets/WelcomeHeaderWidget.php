@@ -31,7 +31,7 @@ class WelcomeHeaderWidget extends Widget
         return [
             'greeting' => $greeting,
             'name' => $user?->name ?? 'Admin',
-            'date' => now()->format('l, F j, Y'),
+            'date' => now()->format('l, j F Y'),
         ];
     }
 }
