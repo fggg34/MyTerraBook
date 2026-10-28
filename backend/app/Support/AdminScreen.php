@@ -41,6 +41,7 @@ use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\OutOfHoursFees\OutOfHoursFeeResource;
 use App\Filament\Resources\PaymentMethods\PaymentMethodResource;
 use App\Filament\Resources\RentalConditions\RentalConditionResource;
+use App\Filament\Resources\RegisteredHosts\RegisteredHostResource;
 use App\Filament\Resources\RentalOptions\RentalOptionResource;
 use App\Filament\Resources\SpecialPrices\SpecialPriceResource;
 use App\Filament\Resources\SubCategories\SubCategoryResource;
@@ -214,6 +215,10 @@ class AdminScreen
             return $actions;
         }
 
+        if (self::on('admin/registered-hosts') && RegisteredHostResource::canCreate()) {
+            return [$link('Add host / partner', RegisteredHostResource::getUrl('create'), true)];
+        }
+
         return [];
     }
 
@@ -268,8 +273,10 @@ class AdminScreen
             ['match' => ['admin/impact-rent/tax-rates'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'VAT used by vehicles, fees and add-ons.', 'nav' => 'pricing', 'settings' => false],
             ['match' => ['admin/impact-rent/price-types'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'VAT used by vehicles, fees and add-ons.', 'nav' => 'pricing', 'settings' => false],
             ['match' => ['admin/impact-rent/special-prices/*', 'admin/impact-rent/daily-fares/*', 'admin/impact-rent/booking-restrictions/*', 'admin/impact-rent/extra-hour-fares/*', 'admin/impact-rent/hourly-fares/*', 'admin/impact-rent/out-of-hours-fees/*', 'admin/impact-rent/location-fees/*', 'admin/impact-rent/rental-options/*', 'admin/impact-rent/coupons/*', 'admin/impact-rent/tax-rates/*', 'admin/impact-rent/price-types/*'], 'crumb' => '', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
-            ['match' => ['admin/registered-hosts', 'admin/registered-hosts/*'], 'crumb' => 'People', 'title' => 'Hosts', 'description' => 'Manage profiles, partner API and commission.', 'nav' => null, 'settings' => false],
-            ['match' => ['admin/registered-clients', 'admin/registered-clients/*'], 'crumb' => 'People', 'title' => 'Clients', 'description' => 'Registered clients and their bookings.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/registered-hosts'], 'crumb' => 'People', 'title' => 'Hosts', 'description' => 'Manage profiles, partner API and commission.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/registered-hosts/*'], 'crumb' => 'Hosts', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
+            ['match' => ['admin/registered-clients'], 'crumb' => 'People', 'title' => 'Clients', 'description' => 'Registered clients and their bookings.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/registered-clients/*'], 'crumb' => 'Clients', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/listing-approvals', 'admin/listing-approvals/*'], 'crumb' => 'Moderation', 'title' => 'Listing approvals', 'description' => 'Newest submissions first. Approve, request changes or reject.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/listing-reviews', 'admin/listing-reviews/*', 'admin/guest-houses/guest-reviews'], 'crumb' => 'Moderation', 'title' => 'Listing reviews', 'description' => 'Guest reviews shown on vehicle and guest house pages.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/site-content', 'admin/site-content/*', 'admin/homepage-cms', 'admin/footer-settings'], 'crumb' => 'Website · Site content', 'title' => 'Site content', 'description' => 'Copy and media shown on the public website.', 'nav' => null, 'settings' => false],

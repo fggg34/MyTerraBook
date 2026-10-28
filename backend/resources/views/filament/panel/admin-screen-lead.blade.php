@@ -40,6 +40,14 @@
         'admin/impact-rent/orders-calendar',
         'admin/orders-calendar',
     );
+    if ($screen && \App\Support\AdminScreen::on('admin/registered-hosts')) {
+        $hostCount = \App\Models\User::query()->where('role', \App\Enums\UserRole::Host)->count();
+        $screen['description'] = $hostCount.' '.($hostCount === 1 ? 'host and partner' : 'hosts and partners').'. Manage profiles, partner API and commission.';
+    }
+    if ($screen && \App\Support\AdminScreen::on('admin/registered-clients')) {
+        $clientCount = \App\Models\User::query()->where('role', \App\Enums\UserRole::Customer)->count();
+        $screen['description'] = $clientCount.' registered '.($clientCount === 1 ? 'client' : 'clients').' and their bookings.';
+    }
     $pricingList = \App\Support\AdminScreen::on(
         'admin/impact-rent/special-prices',
         'admin/impact-rent/daily-fares',
@@ -54,9 +62,10 @@
         'admin/impact-rent/tax-rates',
         'admin/impact-rent/price-types',
     );
+    $peopleList = \App\Support\AdminScreen::on('admin/registered-hosts', 'admin/registered-clients');
 @endphp
 @if ($screen && ($screen['crumb'] !== '' || $screen['title'] || $screen['description'] || $links !== []))
-    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $pricingList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
+    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $pricingList || $peopleList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
         <div class="tb-lead-top">
             <div>
         @if ($screen['crumb'] !== '')

@@ -271,6 +271,10 @@ html.tb-redesign .tb-list .tb-pill-info { background: var(--tb-info-bg); color: 
 html.tb-redesign .tb-list .tb-pill-ok { background: var(--tb-ok-bg); color: var(--tb-ok); }
 html.tb-redesign .tb-list .tb-pill-warn { background: var(--tb-warn-bg); color: var(--tb-warn); }
 html.tb-redesign .tb-list .tb-pill-bad { background: var(--tb-bad-bg); color: var(--tb-bad); }
+html.tb-redesign .tb-list .tb-pill-muted { background: #eef2f6; color: #5c6b7a; }
+.tb-initials { display: flex; align-items: center; justify-content: center; background: #e8eff7; color: #4474a4; font-size: 11px; font-weight: 700; }
+.tb-mini-btn { border: 1px solid #d5deea; background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; color: #041e37; cursor: pointer; white-space: nowrap; }
+.tb-api-tabs { margin: 0 0 12px; }
 .tb-muted { color: var(--tb-secondary); font-size: 14px; line-height: 20px; }
 .tb-actions { display: flex; gap: 10px; justify-content: flex-end; }
 .tb-row-btn {
