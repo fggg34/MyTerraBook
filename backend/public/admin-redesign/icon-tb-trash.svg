@@ -1,5 +1,5 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="icon/trash">
-<path id="Vector" d="M2 4H3.33333M3.33333 4H5.33333M3.33333 4L4 13.3333H12L12.6667 4M5.33333 4H10.6667M5.33333 4V2.66667H10.6667V4M10.6667 4H12.6667M12.6667 4H14" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#B42318"/>
+<path id="Vector" d="M2.5 5H4.16667M4.16667 5H6.66667M4.16667 5L5 16.6667H15L15.8333 5M6.66667 5H13.3333M6.66667 5V3.33333H13.3333V5M13.3333 5H15.8333M15.8333 5H17.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
 </g>
 </svg>

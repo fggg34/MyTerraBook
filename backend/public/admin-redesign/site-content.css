@@ -12,8 +12,14 @@
   position: sticky;
   top: 84px;
   max-height: calc(100dvh - 108px);
-  overflow: auto;
-  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid #e3e8ef;
+  border-radius: 12px;
+  background: #fff;
 }
 .site-content-find {
   display: flex;
@@ -130,7 +136,34 @@
 .site-content-editor .site-content-card .fi-section-content {
   padding: 16px;
 }
-.site-content-device { position: relative; }
+.site-content-picker-scroll { overflow: auto; min-height: 0; }
+.site-content-device-tabs {
+  display: inline-flex;
+  gap: 2px;
+  margin: 0 0 14px;
+  padding: 3px;
+  border-radius: 9px;
+  background: #eaf0f5;
+}
+.site-content-device-tabs button {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  padding: 6px 12px;
+  color: #5b6b7d;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.site-content-device-tabs button.is-active {
+  background: #fff;
+  color: #041e37;
+  box-shadow: 0 1px 1px rgb(4 30 55 / 10%);
+}
+.site-content-editor[data-device="desktop"] .site-content-device-mobile,
+.site-content-editor[data-device="mobile"] .site-content-device-desktop { display: none; }
+.site-content-editor[data-device] .site-content-device::before { display: none; }
 .site-content-device::before {
   display: inline-flex;
   grid-column: 1 / -1;
@@ -212,7 +245,8 @@
   background: #fff;
   box-shadow: 0 8px 24px rgb(4 30 55 / 8%);
 }
-.fi-page:has(.site-content-editor) > .fi-header { display: none; }
+.fi-page:has(.site-content-editor) > .fi-header,
+html.tb-redesign .fi-page:has(.site-content-editor) .tb-lead { display: none; }
 @media (max-width: 1100px) {
   .site-content-editor.has-preview { grid-template-columns: 220px minmax(0, 1fr); }
   .site-content-preview { display: none; }

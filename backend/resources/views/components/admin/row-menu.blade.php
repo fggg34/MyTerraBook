@@ -11,6 +11,7 @@
             <summary class="tb-row-btn" aria-label="More">
                 <img src="{{ asset('admin-redesign/icon-tb-more.svg') }}" alt="" width="16" height="16">
             </summary>
+            <button type="button" class="tb-menu-backdrop" onclick="this.closest('details').removeAttribute('open')" aria-label="Close"></button>
             <menu>
                 @foreach ($items as $item)
                     <li>

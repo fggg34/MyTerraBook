@@ -172,11 +172,18 @@
                     @endif
                     <a href="{{ $link['url'] }}" @class(['is-active' => $link['active']])>
                         @if (! empty($link['icon']))
-                            <img src="{{ asset('admin-redesign/'.$link['icon']) }}" alt="" width="16" height="16">
+                            @if (str_ends_with((string) $link['icon'], '.svg'))
+                                <img src="{{ asset('admin-redesign/'.$link['icon']) }}" alt="" width="16" height="16">
+                            @else
+                                <x-admin.icon :name="$link['icon']" :size="16" />
+                            @endif
                         @endif
                         {{ $link['label'] }}
                         @if (array_key_exists('count', $link) && $link['count'] !== null)
                             <span class="tb-count">{{ $link['count'] }}</span>
+                        @endif
+                        @if (! empty($link['dot']))
+                            <span class="tb-nav-dot" title="Needs a check"></span>
                         @endif
                     </a>
                 @endforeach

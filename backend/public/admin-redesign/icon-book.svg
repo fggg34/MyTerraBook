@@ -1,6 +1,6 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Icon">
-<path id="Vector" d="M1.33333 2.66667H5.33333C6.04058 2.66667 6.71885 2.94762 7.21895 3.44772C7.71905 3.94781 8 4.62609 8 5.33333V14C8 13.4696 7.78929 12.9609 7.41421 12.5858C7.03914 12.2107 6.53043 12 6 12H1.33333V2.66667Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#BDCFE6"/>
-<path id="Vector_2" d="M14.6667 2.66667H10.6667C9.95942 2.66667 9.28115 2.94762 8.78105 3.44772C8.28095 3.94781 8 4.62609 8 5.33333V14C8 13.4696 8.21071 12.9609 8.58579 12.5858C8.96086 12.2107 9.46957 12 10 12H14.6667V2.66667Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#BDCFE6"/>
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/book-open">
+<path id="Vector" d="M1.66667 3.33333H6.66667C7.55072 3.33333 8.39857 3.68452 9.02369 4.30964C9.64881 4.93477 10 5.78261 10 6.66667V17.5C10 16.837 9.73661 16.2011 9.26777 15.7322C8.79893 15.2634 8.16304 15 7.5 15H1.66667V3.33333Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
+<path id="Vector_2" d="M18.3333 3.33333H13.3333C12.4493 3.33333 11.6014 3.68452 10.9763 4.30964C10.3512 4.93477 10 5.78261 10 6.66667V17.5C10 16.837 10.2634 16.2011 10.7322 15.7322C11.2011 15.2634 11.837 15 12.5 15H18.3333V3.33333Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
 </g>
 </svg>

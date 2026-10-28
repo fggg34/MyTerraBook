@@ -223,7 +223,7 @@ html.tb-redesign .tb-list .tb-more-row select {
   width: 16px;
   height: 16px;
   margin: 0;
-  accent-color: var(--tb-navy);
+  accent-color: #041e37;
 }
 .tb-entity { display: flex; gap: 10px; align-items: center; min-width: 0; }
 .tb-entity > span { min-width: 0; flex: 1; }
@@ -428,7 +428,7 @@ html.tb-redesign .fi-page:has(.tb-catalog-list) .tb-lead { padding-right: 0 !imp
 .tb-more-filters select { height: 32px; border: 1px solid var(--tb-border); border-radius: 8px; background: #fff; color: var(--tb-text); font: 500 14px/20px "IBM Plex Sans", sans-serif; }
 .tb-switch { position: relative; width: 36px; height: 20px; padding: 0; border: 0; border-radius: 999px; background: #d5dee8; cursor: pointer; }
 .tb-switch:after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(4 30 55 / 20%); }
-.tb-switch.is-on { background: #4474a4; }
+.tb-switch.is-on { background: #041e37; }
 .tb-switch.is-on:after { transform: translateX(16px); }
 .tb-block { margin: 22px 0 0; }
 .tb-block h2 { margin: 0 0 10px; color: var(--tb-text, #041e37); font-size: 16px; font-weight: 700; }
@@ -593,11 +593,131 @@ html.tb-redesign .tb-text-btn {
   border: 0; background: transparent; color: #041e37; font: inherit;
   font-size: 13px; font-weight: 600; cursor: pointer; padding: 0; text-align: right;
 }
-@media (max-width: 768px) {
+.tb-m-only { display: none; }
+.tb-menu-backdrop { display: none; }
+@media (min-width: 768px) {
+  .tb-sheet { display: none !important; }
+}
+@media (max-width: 767px) {
+  html.tb-redesign, html.tb-redesign body { overflow-x: hidden; }
+  html.tb-redesign .fi-main,
+  html.tb-redesign .fi-page { max-width: 100%; min-width: 0; overflow-x: hidden; }
   .tb-lead-top { flex-direction: column; align-items: stretch; gap: 12px; }
   .tb-lead-actions { flex-wrap: wrap; margin-bottom: 0; }
-  .tb-toolbar { flex-wrap: wrap; }
+  .tb-lead-actions .tb-btn-primary {
+    position: fixed;
+    right: 16px;
+    bottom: 100px;
+    z-index: 30;
+    min-height: 48px;
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgb(4 30 55 / 24%);
+  }
+  .tb-toolbar { flex-wrap: wrap; gap: 8px; }
   .tb-search { width: 100%; }
-  .tb-grid { grid-template-columns: 20px minmax(0, 1fr) 60px; }
-  .tb-grid > :not(.tb-keep) { display: none; }
+  .tb-search input, .tb-chip, .tb-seg button, .tb-row-btn, .tb-mbar-btn { min-height: 44px; }
+  .tb-row-btn { min-width: 44px; }
+  .tb-seg { display: flex; flex-wrap: nowrap; overflow-x: auto; }
+  .tb-m-only { display: inline-flex; gap: 8px; }
+  .tb-chip-menu, .tb-more-row, .tb-toolbar > .tb-btn { display: none !important; }
+  .tb-list .tb-head { display: none; }
+  .tb-list .tb-table-card { background: transparent; border: 0; box-shadow: none; }
+  .tb-list .tb-row.tb-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 6px 8px;
+    margin: 0 0 10px;
+    padding: 14px;
+    border: 1px solid #e3e8ef;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .tb-list .tb-row.tb-grid > * { min-width: 0; grid-column: 1 / -1; }
+  .tb-list .tb-row.tb-grid > :first-child:has(.tb-check) { grid-column: 1; grid-row: 1; }
+  .tb-list .tb-row.tb-grid > .tb-actions { grid-column: 2; grid-row: 1; justify-self: end; }
+  .tb-list .tb-row .tb-stack strong { font-size: 15px; }
+  .tb-list .tb-footer, .tb-list .tb-table-footer { border-radius: 12px; }
+  .tb-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+  }
+  .tb-sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgb(4 30 55 / 40%);
+  }
+  .tb-sheet-panel {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: 85dvh;
+    overflow: auto;
+    padding: 8px 16px 28px;
+    border-radius: 16px 16px 0 0;
+    background: #fff;
+  }
+  .tb-sheet-panel header, .tb-sheet-body { display: grid; gap: 10px; }
+  .tb-sheet-panel header { grid-template-columns: 1fr auto; align-items: center; margin-bottom: 8px; }
+  .tb-sheet-panel header button { min-height: 44px; border: 0; background: transparent; color: #4474a4; font-weight: 600; }
+  .tb-sheet-body input, .tb-sheet-body select, .tb-sheet-body button {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #d5deea;
+    border-radius: 10px;
+    padding: 8px 12px;
+    background: #fff;
+    color: #041e37;
+    text-align: left;
+  }
+  .tb-menu[open] > .tb-menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    border: 0;
+    background: rgb(4 30 55 / 40%);
+  }
+  .tb-menu[open] > menu {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 71;
+    margin: 0;
+    padding: 8px 0 24px;
+    border-radius: 16px 16px 0 0;
+    background: #fff;
+  }
+  .tb-menu[open] > menu a, .tb-menu[open] > menu button { min-height: 44px; }
+  html.tb-redesign .fi-modal-window {
+    position: fixed !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+  html.tb-redesign .fi-sc-actions {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 84px !important;
+    top: auto !important;
+  }
+  html.tb-redesign .fi-fo, html.tb-redesign .fi-sc, html.tb-redesign .fi-section-content { min-width: 0; }
+  html.tb-redesign .fi-grid, html.tb-redesign .fi-sc-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  html.tb-redesign .tb-form-toc {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    position: sticky;
+    top: 56px;
+    z-index: 6;
+    background: #f3f6fa;
+  }
 }

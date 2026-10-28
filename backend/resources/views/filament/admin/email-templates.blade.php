@@ -42,7 +42,7 @@
             </header>
             @foreach ($templates as $template)
                 <div class="tb-email-row" wire:key="template-{{ $template->id }}">
-                    <span class="tb-email-mark" aria-hidden="true"></span>
+                    <span class="tb-email-mark" aria-hidden="true"><x-admin.icon name="mail" :size="16" /></span>
                     <div class="tb-email-copy">
                         <strong>{{ $template->name }}</strong>
                         <p>{{ $template->subject }}</p>
@@ -50,7 +50,7 @@
                     <x-admin.status-pill :tone="in_array(strtolower((string) $template->audience), ['staff', 'admin'], true) ? 'warn' : 'info'">{{ Str::headline((string) $template->audience) }}</x-admin.status-pill>
                     <x-admin.switch :on="(bool) $template->is_enabled" wire="toggleTemplate({{ $template->id }})" :label="$template->is_enabled ? 'Enabled' : 'Disabled'" />
                     <a class="tb-icon-btn" href="{{ EmailTemplateResource::getUrl('edit', ['record' => $template]) }}" aria-label="Edit {{ $template->name }}">
-                        <img src="{{ asset('admin-redesign/icon-tb-pencil.svg') }}" alt="" width="16" height="16">
+                        <x-admin.icon name="pencil" :size="16" />
                     </a>
                 </div>
             @endforeach

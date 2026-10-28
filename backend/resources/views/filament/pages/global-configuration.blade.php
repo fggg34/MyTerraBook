@@ -64,12 +64,13 @@
         .ir-global-input,
         .ir-global-select,
         .ir-global-textarea {
-            border: 1px solid #cfd7e2;
-            border-radius: 0.35rem;
+            border: 1px solid #d5deea;
+            border-radius: 8px;
             background: #ffffff;
-            padding: 0.46rem 0.55rem;
-            font-size: 0.82rem;
-            color: #1f2b37;
+            min-height: 40px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #041e37;
             width: 100%;
         }
 
@@ -113,11 +114,15 @@
         }
 
         .ir-global-hint {
-            margin-top: 0.35rem;
-            color: #607080;
-            font-size: 0.78rem;
+            margin: 0.35rem 0 0.8rem;
+            color: #5b6b7d;
+            font-size: 13px;
             line-height: 1.45;
         }
+        .ir-currency-grid, .ir-pay-grid { display: grid; gap: 12px 16px; margin-top: 12px; }
+        .ir-currency-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .ir-pay-grid { grid-template-columns: 1fr 1fr; }
+        .tb-banner.is-bad { background: #fde7e5; color: #b42318; }
 
         @media (max-width: 1024px) {
             .ir-global-grid {
@@ -336,10 +341,35 @@
         </section>
 
         <section x-show="tab === 'prices'" x-cloak>
+            <div x-data="{
+                mismatch() {
+                    const name = String($wire.state.currency_name || '').toLowerCase();
+                    const symbol = String($wire.state.currency_symbol || '').toLowerCase();
+                    const code = String($wire.state.currency_code || '').toUpperCase();
+                    const euroName = name.includes('euro');
+                    const kr = symbol.includes('kr');
+                    const euroSymbol = symbol.includes('€') || symbol === 'eur';
+                    return (code === 'ISK' && (euroName || euroSymbol)) || (code === 'EUR' && (kr || name.includes('kron') || name.includes('isk')));
+                },
+                preview() {
+                    const decimals = Math.max(0, Number($wire.state.currency_decimals || 0));
+                    const decimal = String($wire.state.currency_decimal_separator || '.');
+                    const thousand = String($wire.state.currency_thousand_separator || ',');
+                    const symbol = String($wire.state.currency_symbol || '');
+                    const digits = (147560).toFixed(decimals);
+                    const [whole, frac] = digits.split('.');
+                    const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, thousand);
+                    return symbol + ' ' + grouped + (frac !== undefined && decimals > 0 ? decimal + frac : '');
+                }
+            }">
             <div class="ir-global-grid">
                 <article class="ir-global-card">
                     <h2 class="ir-global-card__title">Currency</h2>
-                    <div class="ir-global-fields">
+                    <p class="ir-global-hint">How amounts are written on the website and in e-mails.</p>
+                    <div class="tb-banner is-bad" x-show="mismatch()" x-cloak>
+                        <span x-text="'Name says “' + ($wire.state.currency_name || '') + '”, symbol is “' + ($wire.state.currency_symbol || '') + '”, code is “' + ($wire.state.currency_code || '') + '”. Pick one currency so prices are not shown as € on the dashboard and ISK on bookings.'"></span>
+                    </div>
+                    <div class="ir-currency-grid">
                         <div class="ir-global-field">
                             <label class="ir-global-label">Currency name</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.currency_name" />
@@ -365,32 +395,39 @@
                             <input class="ir-global-input" type="text" maxlength="2" wire:model.live="state.currency_thousand_separator" />
                         </div>
                     </div>
+                    <p class="ir-global-hint">Preview <strong x-text="preview()"></strong></p>
                 </article>
 
                 <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">Taxes and payments</h2>
-                    <div class="ir-global-fields">
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.prices_tax_included"> Prices tax included</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.show_tax_summary_only"> Show tax in summary only</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.allow_multiple_payments_same_order"> Allow multiple payments for the same order</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.pay_entire_amount"> Pay entire amount</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.allow_deposit"> Let customers choose to leave a deposit</label>
+                    <h2 class="ir-global-card__title">Taxes & payments</h2>
+                    <p class="ir-global-hint">What customers pay at checkout.</p>
+                    <div class="ir-pay-grid">
+                        <label class="ir-global-toggle tb-toggle-row"><span>Prices include tax<small>Entered prices already contain VAT.</small></span><input type="checkbox" wire:model.live="state.prices_tax_included"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Pay entire amount<small>Ask for the full amount at checkout.</small></span><input type="checkbox" wire:model.live="state.pay_entire_amount"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Show tax in summary only<small>Hide tax lines in the price list.</small></span><input type="checkbox" wire:model.live="state.show_tax_summary_only"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Let customers leave a deposit<small>Pay part now, the rest later.</small></span><input type="checkbox" wire:model.live="state.allow_deposit"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Allow multiple payments for one order<small>Customers can pay in parts.</small></span><input type="checkbox" wire:model.live="state.allow_multiple_payments_same_order"></label>
+                    </div>
+                    <div class="ir-currency-grid">
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Leave a deposit of</label>
-                            <div class="ir-global-grid" style="grid-template-columns: 2fr 1fr; gap: 0.5rem;">
-                                <input class="ir-global-input" type="number" min="0" wire:model.live="state.deposit_value" />
-                                <select class="ir-global-select" wire:model.live="state.deposit_type">
-                                    <option value="percentage">%</option>
-                                    <option value="fixed">Fixed</option>
-                                </select>
-                            </div>
+                            <label class="ir-global-label">Deposit amount</label>
+                            <input class="ir-global-input" type="number" min="0" wire:model.live="state.deposit_value" />
+                        </div>
+                        <div class="ir-global-field">
+                            <label class="ir-global-label">Deposit type</label>
+                            <select class="ir-global-select" wire:model.live="state.deposit_type">
+                                <option value="percentage">%</option>
+                                <option value="fixed">Fixed</option>
+                            </select>
                         </div>
                         <div class="ir-global-field">
                             <label class="ir-global-label">Payment transaction name</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.payment_transaction_name" />
+                            <p class="ir-global-hint">Shown on the customer's card statement.</p>
                         </div>
                     </div>
                 </article>
+            </div>
             </div>
 
             <div class="ir-global-actions">

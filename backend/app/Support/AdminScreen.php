@@ -459,7 +459,8 @@ class AdminScreen
     {
         $config = self::url(GlobalConfiguration::class);
 
-        return array_values(array_filter([
+        $warn = self::currencyNeedsCheck();
+        $links = array_values(array_filter([
             $config ? self::plain('Shop & rentals', $config.'?tab=shop', self::pageRequest()->is('admin/global-configuration') && self::pageRequest()->query('tab', 'shop') === 'shop', 'Configuration') : null,
             $config ? self::plain('Prices & payments', $config.'?tab=prices', self::pageRequest()->is('admin/global-configuration') && self::pageRequest()->query('tab') === 'prices', 'Configuration') : null,
             $config ? self::plain('Views & layout', $config.'?tab=views', self::pageRequest()->is('admin/global-configuration') && self::pageRequest()->query('tab') === 'views', 'Configuration') : null,
@@ -472,6 +473,26 @@ class AdminScreen
             self::item('Backups', BackupResource::class, ['admin/impact-rent/backups', 'admin/impact-rent/backups/*'], 'System'),
             ($profile = filament()->getProfileUrl()) ? self::plain('Profile', $profile, self::matches(['admin/profile']), 'System') : null,
         ]));
+        $icons = [
+            'Shop & rentals' => 'sliders',
+            'Prices & payments' => 'badge-percent',
+            'Views & layout' => 'eye',
+            'Orders & company' => 'file',
+            'Conditional texts' => 'type',
+            'Payment methods' => 'store',
+            'Custom fields' => 'file',
+            'Users' => 'users',
+            'Logged-in users' => 'user-check',
+            'Backups' => 'database',
+            'Profile' => 'user',
+        ];
+        foreach ($links as &$link) {
+            $link['icon'] = $icons[$link['label']] ?? null;
+            $link['dot'] = $warn && in_array($link['label'], ['Shop & rentals', 'Prices & payments'], true);
+        }
+        unset($link);
+
+        return $links;
     }
 
     /**
@@ -517,6 +538,27 @@ class AdminScreen
     /**
      * @return array{label: string, url: string, active: bool, count: ?int, group: ?string}
      */
+    private static function currencyNeedsCheck(): bool
+    {
+        try {
+            $currency = \App\Models\Setting::getValue('shop.currency', []);
+        } catch (\Throwable) {
+            return false;
+        }
+        $name = strtolower(trim((string) data_get($currency, 'name', '')));
+        $symbol = strtolower(trim((string) data_get($currency, 'symbol', '')));
+        $code = strtoupper(trim((string) data_get($currency, 'code', '')));
+        if ($name === '' || $symbol === '' || $code === '') {
+            return false;
+        }
+        $nameIsEuro = str_contains($name, 'euro');
+        $symbolIsKr = str_contains($symbol, 'kr');
+        $symbolIsEuro = str_contains($symbol, '€') || $symbol === 'eur';
+
+        return ($code === 'ISK' && ($nameIsEuro || $symbolIsEuro))
+            || ($code === 'EUR' && ($symbolIsKr || str_contains($name, 'kron') || str_contains($name, 'isk')));
+    }
+
     private static function plain(string $label, string $url, bool $active, ?string $group = null): array
     {
         return [

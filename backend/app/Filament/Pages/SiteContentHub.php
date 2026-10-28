@@ -135,6 +135,17 @@ class SiteContentHub extends Page
         return 'chrome';
     }
 
+    public function activePickerGroup(): string
+    {
+        foreach (self::PICKER_GROUPS as $label => $keys) {
+            if (in_array($this->activePageKey, $keys, true)) {
+                return $label;
+            }
+        }
+
+        return 'Site content';
+    }
+
     public function editorIntro(): string
     {
         $label = (string) config("site_content.pages.{$this->activePageKey}.label", 'this page');
@@ -142,10 +153,10 @@ class SiteContentHub extends Page
 
         return match ($this->editorPattern()) {
             'chrome' => $this->activePageKey === 'global'
-                ? 'Logo, colors, header, footer and the other blocks already stored for every page.'
+                ? 'Logo, colors, header, footer and blocks used on every page.'
                 : "{$count} sections, the same fields already stored for {$label}, in the Global chrome card layout.",
-            'homepage' => "{$count} sections, the same fields already stored for {$label}, in collapsible cards.",
-            default => "Hero, body and SEO, the same fields already stored for {$label}.",
+            'homepage' => "{$count} sections, the same fields as today, grouped and collapsible.",
+            default => "Hero, body and SEO for the {$label} page.",
         };
     }
 

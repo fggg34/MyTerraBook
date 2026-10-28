@@ -19,20 +19,20 @@
                 <img src="{{ asset('admin-redesign/icon-tb-bulk.svg') }}" alt="" width="16" height="16">
             </button>
         </div>
-        <div class="tb-head tb-grid" style="grid-template-columns:20px minmax(120px,1fr) minmax(140px,1.2fr) 100px 90px 80px 70px 70px 40px">
-            <span></span><span>Field name</span><span>Label</span><span>Type</span><span>Required</span><span>E-mail</span><span>Order</span><span>Active</span><span></span>
+        <p class="tb-empty" style="border-bottom:1px solid #e3e8ef">Sort order is the stored order. Popup link URL stays on the edit form. Both fields appear on the reservation page as “Custom field”.</p>
+        <div class="tb-head tb-grid" style="grid-template-columns:20px minmax(140px,1.2fr) minmax(120px,1fr) 100px 90px 90px 80px 40px">
+            <span></span><span>Field</span><span>Key</span><span>Type</span><span>Required</span><span>E-mail field</span><span>Active</span><span></span>
         </div>
         @forelse ($records as $record)
             @php $key = $getRecordKey($record); @endphp
-            <div class="tb-row tb-grid" wire:key="field-{{ $key }}" style="grid-template-columns:20px minmax(120px,1fr) minmax(140px,1.2fr) 100px 90px 80px 70px 70px 40px">
+            <div class="tb-row tb-grid" wire:key="field-{{ $key }}" style="grid-template-columns:20px minmax(140px,1.2fr) minmax(120px,1fr) 100px 90px 90px 80px 40px">
                 <span><input class="tb-check fi-ta-record-checkbox" type="checkbox" value="{{ $key }}" x-on:click="toggleSelectedRecord(@js($key))" x-bind:checked="isRecordSelected(@js($key)) ? 'checked' : null"></span>
+                <span class="tb-stack"><strong>{{ $record->label }}</strong><small>Shown on the booking form</small></span>
                 <span>{{ $record->field_key }}</span>
-                <span>{{ $record->label }}</span>
                 <span>{{ $typeLabel($record->type) }}</span>
-                <span>{{ $record->is_required ? 'Yes' : 'No' }}</span>
-                <span>{{ $record->is_email ? 'Yes' : 'No' }}</span>
-                <span>{{ $record->sort_order }}</span>
-                <span>{{ $record->is_active ? 'Yes' : 'No' }}</span>
+                <span><x-admin.switch :on="(bool) $record->is_required" :wire="'toggleCustomField('.$key.', \'is_required\')'" label="Required" /></span>
+                <span><x-admin.switch :on="(bool) $record->is_email" :wire="'toggleCustomField('.$key.', \'is_email\')'" label="E-mail field" /></span>
+                <span><x-admin.switch :on="(bool) $record->is_active" :wire="'toggleCustomField('.$key.', \'is_active\')'" label="Active" /></span>
                 <a class="tb-icon-btn" href="{{ CustomFieldResource::getUrl('edit', ['record' => $record]) }}" aria-label="Edit {{ $record->label }}">
                     <img src="{{ asset('admin-redesign/icon-tb-pencil.svg') }}" alt="" width="16" height="16">
                 </a>

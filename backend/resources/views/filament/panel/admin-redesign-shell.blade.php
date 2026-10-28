@@ -183,41 +183,41 @@
 
     $groups = [
         ['label' => null, 'items' => array_filter([
-            $link('Home', 'icon-home.svg', $href(Dashboard::class), $current(array_filter([$href(Dashboard::class)]), true)),
+            $link('Home', 'home', $href(Dashboard::class), $current(array_filter([$href(Dashboard::class)]), true)),
         ])],
         ['label' => 'Bookings', 'items' => array_filter([
-            $link('Calendar', 'icon-calendar.svg', $firstUrl($calendarUrls), $current($calendarUrls)),
-            $link('Car reservations', 'icon-car.svg', $href(OrderResource::class), $current(array_filter([$href(OrderResource::class)])), $pendingReservations),
-            $link('Guest house bookings', 'icon-stay.svg', $href(GuestHouseBookingResource::class), $current(array_filter([$href(GuestHouseBookingResource::class)]))),
-            $link('Change requests', 'icon-change.svg', $href(BookingChangeRequestResource::class), $current(array_filter([$href(BookingChangeRequestResource::class)]))),
+            $link('Calendar', 'calendar', $firstUrl($calendarUrls), $current($calendarUrls)),
+            $link('Car reservations', 'car', $href(OrderResource::class), $current(array_filter([$href(OrderResource::class)])), $pendingReservations),
+            $link('Guest house bookings', 'bed', $href(GuestHouseBookingResource::class), $current(array_filter([$href(GuestHouseBookingResource::class)]))),
+            $link('Change requests', 'arrows', $href(BookingChangeRequestResource::class), $current(array_filter([$href(BookingChangeRequestResource::class)]))),
         ])],
         ['label' => 'Catalog', 'items' => array_filter([
-            $link('Guest houses', 'icon-house.svg', $firstUrl($guestHouseUrls), $current($guestHouseUrls)),
-            $link('Vehicles', 'icon-vehicle.svg', $firstUrl($vehicleUrls), $current($vehicleUrls)),
-            $link('Pricing', 'icon-pricing.svg', $firstUrl($pricingUrls), $current($pricingUrls)),
+            $link('Guest houses', 'house', $firstUrl($guestHouseUrls), $current($guestHouseUrls)),
+            $link('Vehicles', 'car-front', $firstUrl($vehicleUrls), $current($vehicleUrls)),
+            $link('Pricing', 'badge-percent', $firstUrl($pricingUrls), $current($pricingUrls)),
         ])],
         ['label' => 'People', 'items' => array_filter([
-            $link('Hosts', 'icon-hosts.svg', $href(RegisteredHostResource::class), $current(array_filter([$href(RegisteredHostResource::class)]))),
-            $link('Clients', 'icon-clients.svg', $href(RegisteredClientResource::class), $current(array_filter([$href(RegisteredClientResource::class)]))),
+            $link('Hosts', 'users', $href(RegisteredHostResource::class), $current(array_filter([$href(RegisteredHostResource::class)]))),
+            $link('Clients', 'user', $href(RegisteredClientResource::class), $current(array_filter([$href(RegisteredClientResource::class)]))),
         ])],
         ['label' => 'Moderation', 'items' => array_filter([
-            $link('Listing approvals', 'icon-approvals.svg', $href(ListingReviewPage::class), $current(array_filter([$href(ListingReviewPage::class)]))),
-            $link('Listing reviews', 'icon-reviews.svg', $href(ListingReviewResource::class), $current(array_filter([$href(ListingReviewResource::class), url('/admin/guest-houses/guest-reviews')]))),
+            $link('Listing approvals', 'clipboard-check', $href(ListingReviewPage::class), $current(array_filter([$href(ListingReviewPage::class)]))),
+            $link('Listing reviews', 'message-star', $href(ListingReviewResource::class), $current(array_filter([$href(ListingReviewResource::class), url('/admin/guest-houses/guest-reviews')]))),
         ])],
         ['label' => 'Website', 'items' => array_filter([
-            $link('Site content', 'icon-content.svg', $href(SiteContentHub::class), $current(array_filter([$href(SiteContentHub::class), url('/admin/homepage-cms'), url('/admin/footer-settings')]))),
-            $link('Good to Know', 'icon-book.svg', $href(BlogPostResource::class), $current(array_filter([$href(BlogPostResource::class)]))),
+            $link('Site content', 'layout', $href(SiteContentHub::class), $current(array_filter([$href(SiteContentHub::class), url('/admin/homepage-cms'), url('/admin/footer-settings')]))),
+            $link('Good to Know', 'book-open', $href(BlogPostResource::class), $current(array_filter([$href(BlogPostResource::class)]))),
         ])],
         ['label' => 'Marketing', 'items' => array_filter([
-            $link('Newsletter', 'icon-newsletter.svg', $firstUrl($newsletterUrls), $current($newsletterUrls)),
-            $link('Email', 'icon-email.svg', $firstUrl($emailUrls), $current($emailUrls)),
-            $link('Analytics', 'icon-analytics.svg', $firstUrl($analyticsUrls), $current($analyticsUrls)),
+            $link('Newsletter', 'megaphone', $firstUrl($newsletterUrls), $current($newsletterUrls)),
+            $link('Email', 'mail', $firstUrl($emailUrls), $current($emailUrls)),
+            $link('Analytics', 'chart', $firstUrl($analyticsUrls), $current($analyticsUrls)),
         ])],
     ];
 
     $settings = $link(
         'Settings',
-        'icon-settings.svg',
+        'gear',
         $firstUrl($settingsUrls),
         $current(array_filter([...$settingsUrls, url('/admin/moderation-settings')])),
     );
@@ -233,11 +233,11 @@
     @foreach ($groups as $group)
       @if (count($group['items']))
         @if ($group['label'])
-          <p class="tb-rail-group">{{ $group['label'] }}</p>
+          <p class="tb-rail-group"><span>{{ $group['label'] }}</span><x-admin.icon name="chevron-down" :size="14" /></p>
         @endif
         @foreach ($group['items'] as $item)
           <a href="{{ $item['url'] }}" @class(['tb-rail-link', 'is-active' => $item['active']])>
-            <span class="tb-rail-icon"><img src="{{ $icon($item['icon']) }}" alt="" width="16" height="16"></span>
+            <span class="tb-rail-icon"><x-admin.icon :name="$item['icon']" :size="20" /></span>
             <span class="tb-rail-label">{{ $item['label'] }}</span>
             @if ($item['badge'])
               <span class="tb-rail-badge">{{ $item['badge'] }}</span>
@@ -249,7 +249,7 @@
   </nav>
   @if ($settings)
     <a href="{{ $settings['url'] }}" @class(['tb-rail-link', 'tb-rail-settings', 'is-active' => $settings['active']])>
-      <span class="tb-rail-icon"><img src="{{ $icon($settings['icon']) }}" alt="" width="16" height="16"></span>
+      <span class="tb-rail-icon"><x-admin.icon :name="$settings['icon']" :size="20" /></span>
       <span class="tb-rail-label">{{ $settings['label'] }}</span>
     </a>
   @endif
@@ -279,10 +279,80 @@
 
 @php
     $mobileScreen = \App\Support\AdminScreen::current();
-    $mobileTitle = $mobileScreen['title'] ?? null;
+    $crumb = trim((string) ($mobileScreen['crumb'] ?? ''));
+    $mobileTitle = trim(explode('·', $crumb)[0] ?? '');
+    if ($mobileTitle === '') {
+        $mobileTitle = $mobileScreen['title'] ?? null;
+    }
     if (! is_string($mobileTitle) || $mobileTitle === '') {
         $mobileTitle = 'Dashboard';
     }
+    $named = function (string $label, ?string $url) use ($link, $current): ?array {
+        return $link($label, 'icon-home.svg', $url, $current(array_filter([$url])));
+    };
+    $moreGroups = [
+        ['label' => 'Bookings', 'items' => array_filter([
+            $named('Calendar', $firstUrl($calendarUrls)),
+            $named('Car reservations', $href(OrderResource::class)),
+            $named('Guest house bookings', $href(GuestHouseBookingResource::class)),
+            $named('Change requests', $href(BookingChangeRequestResource::class)),
+        ])],
+        ['label' => 'Catalog', 'items' => array_filter([
+            $named('Guest houses', $href(GuestHouseResource::class)),
+            $named('Amenities', $href(GuestHouseAmenityResource::class)),
+            $named('Vehicles', $href(CarResource::class)),
+            $named('Fleet units', $href(CarUnitResource::class)),
+            $named('Categories', $href(CategoryResource::class)),
+            $named('Subcategories', $href(SubCategoryResource::class)),
+            $named('Features', $href(CharacteristicResource::class)),
+            $named('Locations', $href(LocationResource::class)),
+            $named('Rental conditions', $href(RentalConditionResource::class)),
+            $named('Pricing rules', $href(SpecialPriceResource::class)),
+            $named('Base prices', $href(DailyFareResource::class)),
+            $named('Fares overview', $href(FaresOverview::class)),
+            $named('Booking restrictions', $href(BookingRestrictionResource::class)),
+            $named('Extra hour fares', $href(ExtraHourFareResource::class)),
+            $named('Hourly fares', $href(HourlyFareResource::class)),
+            $named('Out-of-hours fees', $href(OutOfHoursFeeResource::class)),
+            $named('Location fees', $href(LocationFeeResource::class)),
+            $named('Add-ons', $href(RentalOptionResource::class)),
+            $named('Discount codes', $href(CouponResource::class)),
+            $named('Tax rates', $href(TaxRateResource::class)),
+        ])],
+        ['label' => 'People', 'items' => array_filter([
+            $named('Hosts', $href(RegisteredHostResource::class)),
+            $named('Clients', $href(RegisteredClientResource::class)),
+        ])],
+        ['label' => 'Moderation', 'items' => array_filter([
+            $named('Listing approvals', $href(ListingReviewPage::class)),
+            $named('Listing reviews', $href(ListingReviewResource::class)),
+        ])],
+        ['label' => 'Website', 'items' => array_filter([
+            $named('Site content', $href(SiteContentHub::class)),
+            $named('Good to Know', $href(BlogPostResource::class)),
+        ])],
+        ['label' => 'Marketing', 'items' => array_filter([
+            $named('Newsletter subscribers', $href(NewsletterSubscriberResource::class)),
+            $named('Newsletter campaigns', $href(NewsletterCampaignResource::class)),
+            $named('Email templates', $href(EmailTemplateResource::class)),
+            $named('SMTP', $href(EmailSettings::class)),
+            $named('Send test', $href(EmailTesting::class)),
+            $named('Email log', $href(EmailLogResource::class)),
+            $named('Reports', $href(Reports::class)),
+            $named('Statistics', $href(TrackingStatistics::class)),
+            $named('Tracking campaigns', $href(TrackingCampaignResource::class)),
+        ])],
+        ['label' => 'Settings', 'items' => array_filter([
+            $named('Shop & rentals', $href(GlobalConfiguration::class)),
+            $named('Payment methods', $href(PaymentMethodResource::class)),
+            $named('Custom fields', $href(CustomFieldResource::class)),
+            $named('Users', $href(ManageUsers::class)),
+            $named('Logged-in users', $href(LoggedInUsers::class)),
+            $named('Conditional texts', $href(ConditionalTextResource::class)),
+            $named('Backups', $href(BackupResource::class)),
+            $named('Profile', filament()->getProfileUrl()),
+        ])],
+    ];
     $homeUrl = $href(Dashboard::class) ?? url('/admin');
     $bookingsUrl = $href(OrderResource::class);
     $calendarUrl = $firstUrl($calendarUrls);
@@ -299,21 +369,21 @@
     </button>
     <h1>{{ $mobileTitle }}</h1>
     <button type="button" class="tb-mbar-btn" data-tb-search aria-label="Search">
-        <img src="{{ $icon('icon-m-search.svg') }}" alt="" width="20" height="20">
+        <x-admin.icon name="search" :size="20" />
     </button>
-    <span class="tb-mbar-bell"><img src="{{ $icon('icon-m-bell.svg') }}" alt="" width="40" height="40"></span>
+    <span class="tb-mbar-bell"><x-admin.icon name="bell" :size="20" /></span>
     <span class="tb-mbar-avatar">{{ $initials }}</span>
 </header>
 
 <nav class="tb-mtabs" aria-label="Admin">
     <a href="{{ $homeUrl }}" @class(['is-active' => $tabHome])>
-        <span><img src="{{ $icon('icon-m-home.svg') }}" alt="" width="20" height="20"></span>
+        <span><x-admin.icon name="home" :size="20" /></span>
         Home
     </a>
     @if ($bookingsUrl)
         <a href="{{ $bookingsUrl }}" @class(['is-active' => $tabBookings])>
             <span>
-                <img src="{{ $icon('icon-m-bookings.svg') }}" alt="" width="20" height="20">
+                <x-admin.icon name="car" :size="20" />
                 @if ($pendingReservations)
                     <i>{{ $pendingReservations }}</i>
                 @endif
@@ -323,46 +393,51 @@
     @endif
     @if ($calendarUrl)
         <a href="{{ $calendarUrl }}" @class(['is-active' => $tabCalendar])>
-            <span><img src="{{ $icon('icon-m-calendar.svg') }}" alt="" width="20" height="20"></span>
+            <span><x-admin.icon name="calendar" :size="20" /></span>
             Calendar
         </a>
     @endif
     @if ($catalogUrl)
         <a href="{{ $catalogUrl }}" @class(['is-active' => $tabCatalog])>
-            <span><img src="{{ $icon('icon-m-catalog.svg') }}" alt="" width="20" height="20"></span>
+            <span><x-admin.icon name="tag" :size="20" /></span>
             Catalog
         </a>
     @endif
     <button type="button" data-tb-more>
-        <span><img src="{{ $icon('icon-m-more.svg') }}" alt="" width="20" height="20"></span>
+        <span><x-admin.icon name="more" :size="20" /></span>
         More
     </button>
 </nav>
 
-<div class="tb-mmore" hidden>
+<div class="tb-mmore" hidden data-tb-sheet-close>
     <div class="tb-mmore-sheet">
         <header>
             <strong>More</strong>
             <button type="button" data-tb-more-close aria-label="Close">Close</button>
         </header>
-        @foreach ($groups as $group)
+        @foreach ($moreGroups as $group)
             @if (count($group['items']))
-                @if ($group['label'])
-                    <p>{{ $group['label'] }}</p>
-                @endif
-                @foreach ($group['items'] as $item)
-                    <a href="{{ $item['url'] }}">{{ $item['label'] }}</a>
-                @endforeach
+                <details @if (collect($group['items'])->contains(fn ($item) => $item['active'])) open @endif>
+                    <summary>{{ $group['label'] }}</summary>
+                    @foreach ($group['items'] as $item)
+                        <a href="{{ $item['url'] }}">{{ $item['label'] }}</a>
+                    @endforeach
+                </details>
             @endif
         @endforeach
-        @if ($settings)
-            <p>Settings</p>
-            <a href="{{ $settings['url'] }}">{{ $settings['label'] }}</a>
-        @endif
     </div>
 </div>
+<div class="tb-search-backdrop" hidden data-tb-search-close></div>
 
 <script>
+    const closeMobileSheets = () => {
+        const more = document.querySelector('.tb-mmore');
+        if (more) more.hidden = true;
+        document.documentElement.classList.remove('tb-mobile-search');
+        const searchBackdrop = document.querySelector('.tb-search-backdrop');
+        if (searchBackdrop) searchBackdrop.hidden = true;
+        document.querySelectorAll('details.tb-menu[open]').forEach((menu) => menu.removeAttribute('open'));
+    };
     document.querySelectorAll('[data-tb-more]').forEach((button) => {
         button.addEventListener('click', () => {
             const sheet = document.querySelector('.tb-mmore');
@@ -373,10 +448,21 @@
         const sheet = document.querySelector('.tb-mmore');
         if (sheet) sheet.hidden = true;
     });
+    document.querySelector('.tb-mmore')?.addEventListener('click', (event) => {
+        if (event.target === event.currentTarget) {
+            event.currentTarget.hidden = true;
+        }
+    });
     document.querySelector('[data-tb-search]')?.addEventListener('click', () => {
         const input = document.querySelector('.fi-global-search-field input');
-        document.documentElement.classList.toggle('tb-mobile-search');
+        const backdrop = document.querySelector('.tb-search-backdrop');
+        document.documentElement.classList.add('tb-mobile-search');
+        if (backdrop) backdrop.hidden = false;
         input?.focus();
+    });
+    document.querySelector('[data-tb-search-close]')?.addEventListener('click', closeMobileSheets);
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeMobileSheets();
     });
 </script>
 
@@ -522,6 +608,9 @@
     overflow: auto;
   }
   .tb-rail-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin: 14px 8px 4px;
     font-family: "IBM Plex Mono", ui-monospace, monospace;
     font-size: 10.5px;
@@ -531,6 +620,7 @@
     text-transform: uppercase;
     color: #738fad;
   }
+  .tb-rail-group .tb-ico { color: #738fad; }
   .tb-rail-settings { margin-top: 8px; }
   .tb-rail-link {
     display: flex;
@@ -557,8 +647,110 @@
     border-radius: 8px;
     background: #0b2c4d;
   }
-  .tb-rail-link.is-active .tb-rail-icon { background: #041e37; }
-  .tb-rail-icon img { display: block; width: 16px; height: 16px; }
+  .tb-rail-link.is-active .tb-rail-icon { background: #041e37; color: #fff; }
+  .tb-rail-icon { color: #b7c7dc; }
+  .tb-ico { display: inline-flex; color: #5b6b7d; line-height: 0; }
+  .tb-ico svg { display: block; }
+  html.tb-redesign input[type="checkbox"],
+  html.tb-redesign input[type="checkbox"].fi-checkbox-input,
+  html.tb-redesign .tb-check {
+    appearance: none !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0;
+    flex: none;
+    border: 1.5px solid #c5d0dc !important;
+    border-radius: 4px !important;
+    background-color: #fff !important;
+    background-image: none !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 12px 12px !important;
+    box-shadow: none !important;
+    outline: none;
+    cursor: pointer;
+  }
+  html.tb-redesign input[type="checkbox"]:checked,
+  html.tb-redesign input[type="checkbox"].fi-checkbox-input:checked,
+  html.tb-redesign .tb-check:checked {
+    border-color: #041e37 !important;
+    background-color: #041e37 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2l2.6 2.6 6.2-6.4' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  }
+  html.tb-redesign input[type="checkbox"]:indeterminate {
+    border-color: #041e37 !important;
+    background-color: #041e37 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8h9' stroke='white' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  }
+  html.tb-redesign input[type="checkbox"]:focus-visible {
+    outline: 2px solid #4474a4;
+    outline-offset: 2px;
+  }
+  html.tb-redesign .tb-toggle-row input[type="checkbox"],
+  html.tb-redesign .ir-global-toggle input[type="checkbox"] {
+    width: 36px !important;
+    height: 20px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background-color: #d5deea !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Ccircle cx='8' cy='8' r='7' fill='white'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: 2px center !important;
+    background-size: 16px 16px !important;
+  }
+  html.tb-redesign .tb-toggle-row input[type="checkbox"]:checked,
+  html.tb-redesign .ir-global-toggle input[type="checkbox"]:checked {
+    background-color: #041e37 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Ccircle cx='8' cy='8' r='7' fill='white'/%3E%3C/svg%3E") !important;
+    background-position: 18px center !important;
+    background-size: 16px 16px !important;
+  }
+  html.tb-redesign .fi-toggle {
+    width: 36px !important;
+    height: 20px !important;
+    background: #d5deea !important;
+    border-radius: 999px !important;
+    box-shadow: none !important;
+  }
+  html.tb-redesign .fi-toggle.fi-toggle-on {
+    background: #041e37 !important;
+  }
+  html.tb-redesign .fi-toggle > :first-child {
+    width: 16px !important;
+    height: 16px !important;
+    background: #fff !important;
+    box-shadow: 0 1px 2px rgb(4 30 55 / 18%) !important;
+  }
+  html.tb-redesign .ir-global-card input:not([type="checkbox"]):not([type="color"]):not([type="file"]),
+  html.tb-redesign .ir-global-card select,
+  html.tb-redesign .ir-global-card textarea,
+  html.tb-redesign .fi-input,
+  html.tb-redesign .fi-select-input,
+  html.tb-redesign .fi-fo-textarea {
+    min-height: 40px;
+    border-radius: 8px;
+    color: #041e37;
+    font-size: 14px;
+  }
+  html.tb-redesign .fi-input-wrp,
+  html.tb-redesign .fi-fo-text-input .fi-input-wrp,
+  html.tb-redesign .fi-fo-select .fi-input-wrp {
+    min-height: 40px;
+    border: 1px solid #d5deea !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+  html.tb-redesign .fi-btn {
+    min-height: 36px;
+    border-radius: 8px;
+  }
+  html.tb-redesign .fi-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: #5b6b7d;
+  }
   .tb-rail-label { flex: 1; min-width: 0; }
   .tb-rail-badge {
     min-width: 18px;
@@ -715,8 +907,12 @@
     text-decoration: none;
   }
   .tb-new a:hover { background: #f7f9fc; }
-  .tb-bell { display: grid; width: 36px; height: 36px; place-items: center; }
-  .tb-bell img { width: 36px; height: 36px; }
+  .tb-bell { position: relative; display: grid; width: 36px; height: 36px; place-items: center; color: #5b6b7d; }
+  .tb-bell i { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 99px; background: #d92d20; }
+  .tb-profile-id { display: flex; gap: 12px; align-items: center; margin: 0 0 12px; }
+  .tb-profile-id > span { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 20px; background: #041e37; color: #fff; font-weight: 700; }
+  .tb-profile-id strong, .tb-profile-id small { display: block; }
+  .tb-profile-id small { color: #5b6b7d; font-size: 12px; }
   .tb-crumb {
     margin: 0 0 4px;
     font-family: "IBM Plex Mono", ui-monospace, monospace;
@@ -781,6 +977,10 @@
     margin: 0;
     position: sticky;
     top: 24px;
+    padding: 10px 8px 12px;
+    border: 1px solid #e3e8ef;
+    border-radius: 12px;
+    background: #fff;
   }
   html.tb-redesign .fi-page:has(.tb-lead-aside) .tb-subnav-group {
     flex-basis: auto;
@@ -789,8 +989,15 @@
   }
   html.tb-redesign .fi-page:has(.tb-lead-aside) .tb-subnav-group:first-child { margin-top: 0; }
   html.tb-redesign .fi-page:has(.tb-lead-aside) .tb-subnav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 8px 10px;
+    border-radius: 8px;
   }
+  html.tb-redesign .fi-page:has(.tb-lead-aside) .tb-subnav a .tb-ico { color: #5b6b7d; }
+  html.tb-redesign .fi-page:has(.tb-lead-aside) .tb-subnav a.is-active .tb-ico { color: #041e37; }
+  .tb-nav-dot { width: 6px; height: 6px; margin-left: auto; border-radius: 99px; background: #d92d20; }
   html.tb-redesign .fi-page:has(.tb-lead-aside) .tb-lead { padding-right: 0; }
   html.tb-redesign .fi-page:has(.tb-lead-aside) .fi-header {
     margin-top: -4px;
@@ -1207,35 +1414,25 @@
     width: 28px;
     height: 28px;
     border-radius: 8px;
-    background: #e8eef6;
+    background: #e8eff7;
     color: #4474a4;
   }
-  html.tb-redesign .tb-email-mark:before { content: ""; width: 14px; height: 10px; border: 1.5px solid #4474a4; border-radius: 2px; }
+  html.tb-redesign .tb-email-mark .tb-ico { color: #4474a4; }
   html.tb-redesign .tb-amenity-name,
   html.tb-redesign .tb-email-copy strong { font-size: 13px; font-weight: 600; color: var(--tb-text); }
   html.tb-redesign .tb-email-copy p { margin: 0; color: var(--tb-text-secondary); font-size: 12px; }
   html.tb-redesign .tb-email-board { display: grid; gap: 16px; }
   html.tb-redesign .tb-icon-btn {
+    display: grid;
+    place-items: center;
     border: 0;
     background: transparent;
-    color: transparent;
-    width: 28px;
-    height: 28px;
-    overflow: hidden;
-    position: relative;
+    color: #5b6b7d;
+    width: 32px;
+    height: 32px;
     cursor: pointer;
-    text-indent: -99px;
   }
-  html.tb-redesign a.tb-icon-btn { display: inline-block; }
-  html.tb-redesign .tb-icon-btn:after {
-    content: "";
-    position: absolute;
-    inset: 7px;
-    border-right: 1.5px solid #8a99a9;
-    border-bottom: 1.5px solid #8a99a9;
-    transform: rotate(-45deg);
-    border-radius: 1px;
-  }
+  html.tb-redesign .tb-icon-btn .tb-ico { color: #5b6b7d; }
   html.tb-redesign .tb-toggle {
     width: 36px;
     height: 20px;
@@ -1311,16 +1508,35 @@
     html.tb-redesign .fi-page:has(.tb-form-toc) { grid-template-columns: 1fr; }
     html.tb-redesign .tb-form-toc { position: static; display: flex; flex-wrap: wrap; gap: 4px; }
   }
-  .tb-mbar, .tb-mtabs, .tb-mmore { display: none; }
-  @media (max-width: 768px) {
+  .tb-mbar, .tb-mtabs, .tb-mmore, .tb-search-backdrop { display: none; }
+  @media (max-width: 767px) {
     .tb-rail { display: none !important; }
     html.tb-redesign .fi-topbar-ctn,
     html.tb-redesign .fi-layout,
     html.tb-redesign.ir-shell .fi-topbar-ctn,
     html.tb-redesign.ir-shell .fi-layout { padding-left: 0 !important; }
     html.tb-redesign .fi-topbar { display: none; }
-    html.tb-mobile-search .fi-topbar { display: flex; }
+    html.tb-mobile-search .fi-topbar {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 75;
+      display: flex;
+      height: auto;
+      padding: 16px 16px 28px;
+      border-radius: 16px 16px 0 0;
+    }
     html.tb-mobile-search .fi-global-search-ctn { width: 100%; max-width: none; }
+    .tb-search-backdrop[hidden] { display: none; }
+    .tb-search-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 74;
+      display: block;
+      border: 0;
+      background: rgb(4 30 55 / 40%);
+    }
     .tb-mbar {
       position: sticky;
       top: 0;
@@ -1449,6 +1665,15 @@
       text-transform: uppercase;
       color: #738fad;
     }
-    .tb-mmore-sheet a { display: block; padding: 10px 0; color: #0d1b2a; font-size: 15px; font-weight: 500; text-decoration: none; }
+    .tb-mmore-sheet a { display: block; min-height: 44px; padding: 12px 0; color: #0d1b2a; font-size: 15px; font-weight: 500; text-decoration: none; }
+    .tb-mmore-sheet details { border-top: 1px solid #eaf0f5; }
+    .tb-mmore-sheet summary {
+      min-height: 44px;
+      padding: 12px 0;
+      font-weight: 700;
+      color: #041e37;
+      cursor: pointer;
+    }
+    .tb-mmore-sheet details a { padding-left: 12px; }
   }
 </style>

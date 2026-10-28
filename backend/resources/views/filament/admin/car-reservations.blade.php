@@ -95,6 +95,75 @@
                 </select>
             </div>
             <div class="tb-toolbar-spacer"></div>
+            <div class="tb-m-tools">
+                <x-admin.sheet title="Filters">
+                    <x-slot:trigger>
+                        <button type="button" class="tb-chip">Filters</button>
+                    </x-slot:trigger>
+                    <input type="search" placeholder="Booking ID" wire:model.live.debounce.300ms="tableFilters.reference.value" aria-label="Booking ID">
+                    <input type="search" placeholder="Customer" wire:model.live.debounce.300ms="tableFilters.customer.value" aria-label="Customer">
+                    <select wire:model.live="tableFilters.order_status.value" aria-label="Booking status">
+                        <option value="">Booking status</option>
+                        @foreach (OrderStatus::cases() as $case)
+                            <option value="{{ $case->value }}">{{ AdminTableBadgeColors::humanize($case) }}</option>
+                        @endforeach
+                    </select>
+                    <select wire:model.live="tableFilters.rental_status.value" aria-label="Rental progress">
+                        <option value="">Rental progress</option>
+                        @foreach (RentalStatus::cases() as $case)
+                            <option value="{{ $case->value }}">{{ AdminTableBadgeColors::humanize($case) }}</option>
+                        @endforeach
+                    </select>
+                    <select wire:model.live="tableFilters.car.value" aria-label="Vehicle">
+                        <option value="">Vehicle</option>
+                        @foreach ($cars as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <select wire:model.live="tableFilters.pickup_location.value" aria-label="Pickup location">
+                        <option value="">Pickup location</option>
+                        @foreach ($locations as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <select wire:model.live="tableFilters.dropoff_location.value" aria-label="Drop-off location">
+                        <option value="">Drop-off location</option>
+                        @foreach ($locations as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <input type="date" wire:model.live="tableFilters.pickup_from.date" aria-label="Pickup from">
+                    <input type="date" wire:model.live="tableFilters.pickup_until.date" aria-label="Pickup until">
+                    <input type="date" wire:model.live="tableFilters.dropoff_from.date" aria-label="Drop-off from">
+                    <input type="date" wire:model.live="tableFilters.dropoff_until.date" aria-label="Drop-off until">
+                    <input type="date" wire:model.live="tableFilters.booked_from.date" aria-label="Booked from">
+                    <input type="date" wire:model.live="tableFilters.booked_until.date" aria-label="Booked until">
+                    <select wire:model.live="tableFilters.payment.value" aria-label="Payment">
+                        <option value="">Payment</option>
+                        <option value="unpaid">Unpaid</option>
+                        <option value="partial">Part paid</option>
+                        <option value="paid">Paid in full</option>
+                    </select>
+                    <select wire:model.live="tableFilters.source.value" aria-label="Source">
+                        <option value="">Source</option>
+                        <option value="myterrabook">MyTerraBook</option>
+                        <option value="caren">Caren</option>
+                        <option value="greenlight">Greenlight</option>
+                        <option value="foxie">Foxie</option>
+                    </select>
+                    <button type="button" onclick="var root=this.closest('[wire\\:id]'); if(root && root.querySelector('.fi-ta-record-checkbox:checked')) Livewire.find(root.getAttribute('wire:id')).mountTableBulkAction('delete')">Delete selected</button>
+                </x-admin.sheet>
+                <x-admin.sheet title="Sort">
+                    <x-slot:trigger>
+                        <button type="button" class="tb-chip">Sort</button>
+                    </x-slot:trigger>
+                    <button type="button" wire:click="$set('tableSort', 'created_at:desc')">Booked, newest</button>
+                    <button type="button" wire:click="$set('tableSort', 'created_at:asc')">Booked, oldest</button>
+                    <button type="button" wire:click="$set('tableSort', 'pickup_at:asc')">Pickup, soonest</button>
+                    <button type="button" wire:click="$set('tableSort', 'pickup_at:desc')">Pickup, latest</button>
+                    <button type="button" wire:click="$set('tableSort', 'id:desc')">Reference, newest</button>
+                </x-admin.sheet>
+            </div>
             <button type="button" class="tb-chip" x-on:click="more = !more">More filters <span class="tb-count">10</span></button>
             <button type="button" class="tb-btn tb-btn-sm" x-on:click="getSelectedRecordsCount() && $wire.mountTableBulkAction('delete')">
                 <img src="{{ asset('admin-redesign/icon-tb-bulk.svg') }}" alt="" width="16" height="16">

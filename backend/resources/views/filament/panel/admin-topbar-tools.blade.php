@@ -50,6 +50,9 @@
 @endif
 
 <span class="tb-bell" aria-hidden="true">
-    <img src="{{ asset('admin-redesign/icon-bell.svg') }}" alt="" width="36" height="36">
+    <x-admin.icon name="bell" :size="20" />
+    @if ($creates !== [] && \App\Models\Order::query()->where('order_status', \App\Enums\OrderStatus::Pending)->exists())
+        <i></i>
+    @endif
 </span>
 @endif

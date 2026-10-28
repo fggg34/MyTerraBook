@@ -8,6 +8,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +25,7 @@ class EditProfile extends BaseEditProfile
     {
         return $schema
             ->components([
+                View::make('filament.auth.profile-summary'),
                 Section::make('Account')
                     ->schema([
                         $this->getNameFormComponent(),

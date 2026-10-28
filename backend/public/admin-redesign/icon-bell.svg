@@ -1,11 +1,6 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Notifications">
-<rect x="0.5" y="0.5" width="35" height="35" rx="7.5" fill="white"/>
-<rect x="0.5" y="0.5" width="35" height="35" rx="7.5" stroke="#DBE3EC"/>
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="icon/bell">
-<path id="Vector" d="M13.5 15C13.5 13.8065 13.9741 12.6619 14.818 11.818C15.6619 10.9741 16.8065 10.5 18 10.5C19.1935 10.5 20.3381 10.9741 21.182 11.818C22.0259 12.6619 22.5 13.8065 22.5 15C22.5 20.25 24.75 21.75 24.75 21.75H11.25C11.25 21.75 13.5 20.25 13.5 15Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
-<path id="Vector_2" d="M16.725 24.75C16.8595 24.9671 17.0472 25.1462 17.2704 25.2704C17.4935 25.3946 17.7446 25.4598 18 25.4598C18.2554 25.4598 18.5065 25.3946 18.7296 25.2704C18.9528 25.1462 19.1405 24.9671 19.275 24.75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
-</g>
-<circle id="Ellipse" cx="26" cy="11" r="4" fill="#B42318"/>
+<path id="Vector" d="M5 6.66667C5 5.34058 5.52678 4.06881 6.46447 3.13113C7.40215 2.19345 8.67392 1.66667 10 1.66667C11.3261 1.66667 12.5979 2.19345 13.5355 3.13113C14.4732 4.06881 15 5.34058 15 6.66667C15 12.5 17.5 14.1667 17.5 14.1667H2.5C2.5 14.1667 5 12.5 5 6.66667Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
+<path id="Vector_2" d="M8.58333 17.5C8.73281 17.7412 8.94138 17.9402 9.18929 18.0782C9.43721 18.2163 9.71626 18.2887 10 18.2887C10.2837 18.2887 10.5628 18.2163 10.8107 18.0782C11.0586 17.9402 11.2672 17.7412 11.4167 17.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
 </g>
 </svg>

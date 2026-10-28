@@ -1,7 +1,6 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Icon">
-<path id="Vector" d="M8.66667 5.33333C8.66667 6.80609 7.47276 8 6 8C4.52724 8 3.33333 6.80609 3.33333 5.33333C3.33333 3.86057 4.52724 2.66667 6 2.66667C7.47276 2.66667 8.66667 3.86057 8.66667 5.33333Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#BDCFE6"/>
-<path id="Vector_2" d="M1.33333 14V13.3333C1.33333 12.2725 1.75476 11.2551 2.50491 10.5049C3.25505 9.75476 4.27247 9.33333 5.33333 9.33333H6.66667C7.72753 9.33333 8.74495 9.75476 9.49509 10.5049C10.2452 11.2551 10.6667 12.2725 10.6667 13.3333V14" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#BDCFE6"/>
-<path id="Vector_3" d="M10.6667 2.66667C11.3739 2.66667 12.0522 2.94762 12.5523 3.44772C13.0524 3.94781 13.3333 4.62609 13.3333 5.33333C13.3333 6.04058 13.0524 6.71885 12.5523 7.21895C12.0522 7.71905 11.3739 8 10.6667 8M14.6667 14V13.3333C14.6589 12.5126 14.3988 11.7142 13.9218 11.0463C13.4447 10.3785 12.7738 9.87354 12 9.6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#BDCFE6"/>
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/user">
+<path id="Vector" d="M13.3333 6.66667C13.3333 8.50762 11.8409 10 10 10C8.15905 10 6.66667 8.50762 6.66667 6.66667C6.66667 4.82572 8.15905 3.33333 10 3.33333C11.8409 3.33333 13.3333 4.82572 13.3333 6.66667Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
+<path id="Vector_2" d="M3.33333 17.5V16.6667C3.33333 15.1196 3.94791 13.6358 5.04188 12.5419C6.13584 11.4479 7.61957 10.8333 9.16667 10.8333H10.8333C12.3804 10.8333 13.8642 11.4479 14.9581 12.5419C16.0521 13.6358 16.6667 15.1196 16.6667 16.6667V17.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
 </g>
 </svg>

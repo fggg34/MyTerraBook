@@ -1,6 +1,6 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Icon">
-<path id="Vector" d="M8 1.33333L9.6 2.53333L11.6 2.4L12.2 4.33333L13.8667 5.46667L13.2667 7.33333L13.8667 9.2L12.2 10.3333L11.6 12.2667L9.6 12.1333L8 14.6667L6.4 13.4667L4.4 13.6L3.8 11.6667L2.13333 10.5333L2.73333 8.66667L2.13333 6.8L3.8 5.66667L4.4 3.73333L6.4 3.86667L8 1.33333Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#BDCFE6"/>
-<path id="Vector_2" d="M10 6L6 10M6 6H6.00667M10 10H10.0067" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#BDCFE6"/>
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/badge-percent">
+<path id="Vector" d="M10 1.66667L12 3.16667L14.5 3L15.25 5.41667L17.3333 6.83333L16.5833 9.16667L17.3333 11.5L15.25 12.9167L14.5 15.3333L12 15.1667L10 18.3333L8 16.8333L5.5 17L4.75 14.5833L2.66667 13.1667L3.41667 10.8333L2.66667 8.5L4.75 7.08333L5.5 4.66667L8 4.83333L10 1.66667Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
+<path id="Vector_2" d="M12.5 7.5L7.5 12.5M7.5 7.5H7.50833M12.5 12.5H12.5083" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#5B6B7D"/>
 </g>
 </svg>
