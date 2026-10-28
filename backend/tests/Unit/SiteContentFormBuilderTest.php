@@ -52,11 +52,12 @@ class SiteContentFormBuilderTest extends TestCase
 
         $sections = config('site_content.pages.about.sections', []);
 
-        $this->assertArrayHasKey('storyBlocks', $sections);
+        $this->assertArrayHasKey('story', $sections);
+        $this->assertArrayHasKey('values', $sections);
+        $this->assertArrayHasKey('products', $sections);
         $this->assertSame('image', $this->findFieldType($sections['hero']['fields'] ?? [], 'image'));
-        $this->assertSame('image', $this->findFieldType($sections['storyBlocks']['fields'][0]['fields'] ?? [], 'image'));
-        $this->assertSame('image', $this->findFieldType($sections['offerings']['fields'][0]['fields'] ?? [], 'image'));
-        $this->assertSame('richtext', $this->findFieldType($sections['storyBody']['fields'] ?? [], 'body'));
+        $this->assertSame('image', $this->findFieldType($sections['story']['fields'] ?? [], 'image'));
+        $this->assertSame('image', $this->findFieldType($sections['products']['fields'][7]['fields'] ?? [], 'image'));
     }
 
     public function test_become_a_host_form_includes_photo_upload_fields(): void

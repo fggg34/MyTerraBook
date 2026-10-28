@@ -760,7 +760,7 @@ export default function FigmaListing({
             )}
             {sheet === 'process' && (
               <ol className="tb-process">
-                {(page.bookingSteps?.length ? page.bookingSteps : copy.process).map((step, index) => (
+                {(copy.process?.length ? copy.process : page.bookingSteps || []).map((step, index) => (
                   <li key={step.title || index}><strong>{step.title}</strong><p>{step.text}</p></li>
                 ))}
               </ol>

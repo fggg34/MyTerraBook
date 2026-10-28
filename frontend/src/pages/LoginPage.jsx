@@ -62,13 +62,13 @@ export default function LoginPage({ hostIntent = false }) {
       <form onSubmit={handleSubmit} className="tb-login">
         {errors.form && <div className="auth-form-error" role="alert">{errors.form}</div>}
         <div>
-          <p className="kicker">WELCOME BACK</p>
-          <h1>Sign in to your <em>trip</em>.</h1>
-          <p className="lead">Manage bookings, download vouchers and pick up right where you left off.</p>
+          <p className="kicker">{authPage.formKicker || 'WELCOME BACK'}</p>
+          <h1>{authPage.formHeadingBefore || 'Sign in to your '}<em>{authPage.formHeadingAccent || 'trip'}</em>{authPage.formHeadingAfter || '.'}</h1>
+          <p className="lead">{authPage.formLead || 'Manage bookings, download vouchers and pick up right where you left off.'}</p>
         </div>
 
         <div>
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{authPage.emailLabel || 'Email'}</label>
           <div className={`tb-field${errors.email ? ' is-error' : ''}`}>
             <FigmaIcon name="mail-navy" size={16} />
             <input
@@ -84,7 +84,7 @@ export default function LoginPage({ hostIntent = false }) {
         </div>
 
         <div>
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">{authPage.passwordLabel || 'Password'}</label>
           <PasswordInput
             id="password"
             value={form.password}
@@ -103,20 +103,20 @@ export default function LoginPage({ hostIntent = false }) {
               checked={form.remember}
               onChange={(e) => setForm({ ...form, remember: e.target.checked })}
             />
-            Remember me
+            {authPage.rememberLabel || 'Remember me'}
           </label>
           <Link to={hostIntent ? '/host/forgot-password' : '/forgot-password'} className="tb-link">
-            Forgot password?
+            {authPage.forgotPasswordLabel || 'Forgot password?'}
           </Link>
         </div>
 
         <button type="submit" className="auth-submit" disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign in'} <FigmaIcon name="arrow-white" size={16} />
+          {loading ? (authPage.signingInLabel || 'Signing in…') : (authPage.submitLabel || 'Sign in')} <FigmaIcon name="arrow-white" size={16} />
         </button>
-        <div className="or">or</div>
-        <Link to={hostIntent ? '/host/register' : '/register'} className="outline">Create an account <FigmaIcon name="arrow" size={16} /></Link>
+        <div className="or">{authPage.orLabel || 'or'}</div>
+        <Link to={hostIntent ? '/host/register' : '/register'} className="outline">{authPage.registerLink || 'Create an account'} <FigmaIcon name="arrow" size={16} /></Link>
         {!hostIntent && (
-          <Link to="/host/login" className="host"><FigmaIcon name="briefcase" size={16} />Sign in as a host →</Link>
+          <Link to="/host/login" className="host"><FigmaIcon name="briefcase" size={16} />{authPage.hostSignInLabel || 'Sign in as a host →'}</Link>
         )}
       </form>
     </AuthPageLayout>

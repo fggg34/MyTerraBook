@@ -30,6 +30,12 @@ class SiteContentDefaults
         $extra = match ($pageKey) {
             'home' => FigmaHomepage::sections(),
             'global' => FigmaHomepage::chrome(),
+            'about' => FigmaContentPages::about(),
+            'faq' => FigmaContentPages::faq(),
+            'contact' => FigmaContentPages::contact(),
+            'good-to-know' => FigmaContentPages::guides(),
+            'campsite-map' => FigmaContentPages::campsite(),
+            'auth-login' => FigmaContentPages::login(),
             default => [],
         };
 

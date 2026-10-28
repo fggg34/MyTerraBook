@@ -108,9 +108,23 @@ const CATS = [
 
 const CHIPS = ['Cancellation', 'Insurance', 'F-roads', 'Pick-up']
 
+function filled(value, fallback) {
+  return typeof value === 'string' && value.trim() !== '' ? value : fallback
+}
+
 export default function FaqFigma() {
   const { page } = usePageContent('faq')
-  const items = page.figmaItems?.length ? page.figmaItems : ITEMS
+  const hero = page.hero || {}
+  const help = page.help || {}
+  const guide = page.guide || {}
+  const moreCopy = page.more || {}
+  const cmsItems = (page.items || []).filter((item) => item.q).map((item) => ({
+    ...item,
+    link: item.linkHref ? { label: item.linkLabel || 'Read more', href: item.linkHref } : item.link,
+  }))
+  const items = cmsItems.length ? cmsItems : ITEMS
+  const categories = page.categories?.some((item) => item.icon) ? page.categories : CATS
+  const chips = page.hero?.chips?.length ? page.hero.chips : CHIPS
   const [query, setQuery] = useState('')
   const [cat, setCat] = useState('all')
   const [open, setOpen] = useState('01')
@@ -133,26 +147,26 @@ export default function FaqFigma() {
           <nav className="tb-crumbs">
             <Link to="/">Home</Link>
             <StrokeIcon name="chevron" size={12} />
-            <strong>FAQs</strong>
+            <strong>{filled(hero.crumb, 'FAQs')}</strong>
           </nav>
           <div className="tb-faq-copy">
-            <p className="tb-kicker">HELP CENTRE</p>
-            <h1>Questions? We have <em>answers</em>.</h1>
-            <p>Everything about booking, paying, insurance and life on the road — from the team that drives these roads every day.</p>
+            <p className="tb-kicker">{filled(hero.eyebrow, 'HELP CENTRE')}</p>
+            <h1>{filled(hero.headingBefore, 'Questions? We have ')}<em>{filled(hero.headingAccent, 'answers')}</em>{filled(hero.headingAfter, '.')}</h1>
+            <p>{filled(hero.lead, 'Everything about booking, paying, insurance and life on the road — from the team that drives these roads every day.')}</p>
           </div>
           <form className="tb-faq-search" onSubmit={(event) => event.preventDefault()}>
             <StrokeIcon name="search" size={20} />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search questions"
+              placeholder={filled(hero.searchPlaceholder, 'Search questions')}
               aria-label="Search questions"
             />
-            <button type="submit" className="tb-btn navy sm">Search <StrokeIcon name="arrow" size={16} /></button>
+            <button type="submit" className="tb-btn navy sm">{filled(hero.searchButton, 'Search')} <StrokeIcon name="arrow" size={16} /></button>
           </form>
           <div className="tb-faq-chips">
-            <span>Popular:</span>
-            {CHIPS.map((chip) => (
+            <span>{filled(hero.popularLabel, 'Popular:')}</span>
+            {chips.map((chip) => (
               <button key={chip} type="button" onClick={() => setQuery(chip)}>{chip}</button>
             ))}
           </div>
@@ -162,7 +176,7 @@ export default function FaqFigma() {
       <section className="tb-faq-body">
         <Container>
           <div className="tb-faq-tabs" role="tablist">
-            {CATS.map((entry) => (
+            {categories.map((entry) => (
               <button
                 key={entry.id}
                 type="button"
@@ -177,7 +191,7 @@ export default function FaqFigma() {
           <div className="tb-faq-grid">
             <div>
               {visible.length === 0 ? (
-                <p className="tb-faq-empty">No questions match that search. Try a category above, or contact the team.</p>
+                <p className="tb-faq-empty">{filled(moreCopy.empty, 'No questions match that search. Try a category above, or contact the team.')}</p>
               ) : visible.map((item) => {
                 const isOpen = open === item.num
                 return (
@@ -202,27 +216,27 @@ export default function FaqFigma() {
                 )
               })}
               <div className="tb-faq-more">
-                <span>Didn’t find it? Try a category above or</span>
+                <span>{filled(moreCopy.prompt, 'Didn’t find it? Try a category above or')}</span>
                 <button type="button" className="tb-btn ghost sm" onClick={() => setMore(true)}>
-                  Show more questions <StrokeIcon name="arrow" size={16} />
+                  {filled(moreCopy.button, 'Show more questions')} <StrokeIcon name="arrow" size={16} />
                 </button>
               </div>
             </div>
             <aside>
               <div className="tb-faq-human">
                 <span><StrokeIcon name="headset" size={24} /></span>
-                <h2>Need a <em>human</em>?</h2>
-                <p>Our local team in Reykjanesbær answers every day, Mon–Sun 08–22.</p>
-                <a href="tel:+3547870707"><StrokeIcon name="phone" size={20} /><span><small>Call us</small>+354 787 0707</span></a>
-                <a href="mailto:info@myterrabook.com"><StrokeIcon name="mail" size={20} /><span><small>Email us</small>info@myterrabook.com</span></a>
-                <div><StrokeIcon name="clock" size={20} /><span><small>Opening hours</small>Mon–Sun 08–22</span></div>
-                <Link to="/contact" className="tb-btn gold">Contact us <StrokeIcon name="arrow" size={18} /></Link>
+                <h2>{filled(help.headingBefore, 'Need a ')}<em>{filled(help.headingAccent, 'human')}</em>{filled(help.headingAfter, '?')}</h2>
+                <p>{filled(help.body, 'Our local team in Reykjanesbær answers every day, Mon–Sun 08–22.')}</p>
+                <a href={`tel:${String(help.phone || '+354 787 0707').replace(/\s/g, '')}`}><StrokeIcon name="phone" size={20} /><span><small>{filled(help.phoneLabel, 'Call us')}</small>{filled(help.phone, '+354 787 0707')}</span></a>
+                <a href={`mailto:${filled(help.email, 'info@myterrabook.com')}`}><StrokeIcon name="mail" size={20} /><span><small>{filled(help.emailLabel, 'Email us')}</small>{filled(help.email, 'info@myterrabook.com')}</span></a>
+                <div><StrokeIcon name="clock" size={20} /><span><small>{filled(help.hoursLabel, 'Opening hours')}</small>{filled(help.hours, 'Mon–Sun 08–22')}</span></div>
+                <Link to={filled(help.buttonHref, '/contact')} className="tb-btn gold">{filled(help.buttonLabel, 'Contact us')} <StrokeIcon name="arrow" size={18} /></Link>
               </div>
               <div className="tb-faq-guide">
                 <span><StrokeIcon name="book" size={20} /></span>
-                <h3>Still planning your route?</h3>
-                <p>Read our guides on routes, driving and packing in Iceland.</p>
-                <Link to="/good-to-know">Go to Good to Know <StrokeIcon name="arrow" size={14} /></Link>
+                <h3>{filled(guide.title, 'Still planning your route?')}</h3>
+                <p>{filled(guide.body, 'Read our guides on routes, driving and packing in Iceland.')}</p>
+                <Link to={filled(guide.buttonHref, '/good-to-know')}>{filled(guide.buttonLabel, 'Go to Good to Know')} <StrokeIcon name="arrow" size={14} /></Link>
               </div>
             </aside>
           </div>

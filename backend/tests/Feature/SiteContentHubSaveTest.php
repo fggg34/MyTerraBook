@@ -323,19 +323,22 @@ class SiteContentHubSaveTest extends TestCase
         Storage::disk('public')->put($path, 'fake-jpg');
 
         Livewire::test(SiteContentHub::class, ['activePageKey' => 'about'])
-            ->set('data.storyBlocks', [[
-                'text' => 'A new chapter',
+            ->set('data.story', [
+                'headingBefore' => 'We started where the ',
+                'paragraphs' => [[
+                    'text' => 'A new chapter',
+                ]],
                 'image' => [$path],
-                'imageAlt' => 'Team photo',
-            ]])
+                'address' => 'Team photo',
+            ])
             ->call('save')
             ->assertNotified();
 
         $saved = SiteContentPage::query()->where('page_key', 'about')->first()?->content ?? [];
 
-        $this->assertSame('A new chapter', $saved['storyBlocks'][0]['text'] ?? null);
-        $this->assertSame($path, $saved['storyBlocks'][0]['image'] ?? null);
-        $this->assertSame('Team photo', $saved['storyBlocks'][0]['imageAlt'] ?? null);
+        $this->assertSame('A new chapter', $saved['story']['paragraphs'][0]['text'] ?? null);
+        $this->assertSame($path, $saved['story']['image'] ?? null);
+        $this->assertSame('Team photo', $saved['story']['address'] ?? null);
     }
 
     public function test_save_persists_removed_become_a_host_how_tabs(): void

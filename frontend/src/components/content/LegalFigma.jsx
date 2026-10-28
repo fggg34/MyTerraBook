@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Container from '../site/Container'
 import StrokeIcon from './StrokeIcon'
+import { usePageContent } from '../../context/SiteContentContext'
 import { LEGAL_PAGES, LEGAL_TABS } from './legalPages'
 import '../../styles/frames.css'
 
@@ -68,8 +69,37 @@ function CookieTable() {
   )
 }
 
+function paragraphs(body) {
+  return String(body || '').split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean)
+}
+
 export default function LegalFigma({ slug }) {
-  const page = LEGAL_PAGES[slug] || LEGAL_PAGES.terms
+  const fallback = LEGAL_PAGES[slug] || LEGAL_PAGES.terms
+  const { page: cms } = usePageContent(slug)
+  const hero = cms.hero || {}
+  const chapters = (cms.chapters || []).filter((chapter) => chapter.title).map((chapter) => ({
+    id: chapter.id || chapter.title,
+    num: chapter.num,
+    title: chapter.title,
+    paragraphs: paragraphs(chapter.body),
+    list: chapter.bullets?.length ? chapter.bullets : undefined,
+    callout: chapter.calloutTitle ? { icon: 'info', title: chapter.calloutTitle, body: chapter.calloutBody || '' } : undefined,
+  }))
+  const page = {
+    ...fallback,
+    crumb: hero.crumb || fallback.crumb,
+    title: [
+      hero.titleBefore || fallback.title[0],
+      hero.titleEm || fallback.title[1],
+      hero.titleAfter || fallback.title[2] || '',
+    ],
+    intro: hero.intro || fallback.intro,
+    lead: hero.lead || fallback.lead,
+    sections: chapters.length ? chapters : fallback.sections,
+    ask: cms.ask?.title ? cms.ask : fallback.ask,
+    updated: hero.updated || 'Last updated 1 June 2026',
+    company: hero.company || 'MyTerraBook ehf.',
+  }
   const [active, setActive] = useState(page.sections[0]?.id || '')
 
   useEffect(() => {
@@ -96,9 +126,9 @@ export default function LegalFigma({ slug }) {
           <h1>{page.title[0]}<em>{page.title[1]}</em>{page.title[2]}</h1>
           <div className="tb-legal-meta">
             <StrokeIcon name="calendar" size={16} />
-            <b>Last updated 1 June 2026</b>
+            <b>{page.updated}</b>
             <span>·</span>
-            <span>MyTerraBook ehf.</span>
+            <span>{page.company}</span>
           </div>
           <p className="intro">{page.intro}</p>
         </Container>

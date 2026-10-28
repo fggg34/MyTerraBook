@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { usePageContent } from '../../context/SiteContentContext'
 import Container from '../site/Container'
 import StrokeIcon from './StrokeIcon'
 import '../../styles/frames.css'
@@ -24,7 +25,16 @@ const FACILITY_FILTERS = [
 
 const REGIONS = ['All regions', 'Capital', 'South', 'Southeast', 'East', 'North', 'West']
 
+function filled(value, fallback) {
+  return typeof value === 'string' && value.trim() !== '' ? value : fallback
+}
+
 export default function CampsiteFigma() {
+  const { page } = usePageContent('campsite-map')
+  const hero = page.hero || {}
+  const filtersCopy = page.filters || {}
+  const sites = page.sites?.some((site) => site.name) ? page.sites : SITES
+  const regions = filtersCopy.regions?.length ? filtersCopy.regions : REGIONS
   const [query, setQuery] = useState('')
   const [region, setRegion] = useState('All regions')
   const [winter, setWinter] = useState(false)
@@ -32,15 +42,15 @@ export default function CampsiteFigma() {
   const [active, setActive] = useState('reykjavik')
   const [saved, setSaved] = useState([])
 
-  const list = useMemo(() => SITES.filter((site) => {
+  const list = useMemo(() => sites.filter((site) => {
     if (winter && !site.winter) return false
     if (region !== 'All regions' && site.region !== region) return false
     if (facilities.some((item) => !site.facilities.includes(item))) return false
     if (query && !`${site.name} ${site.place}`.toLowerCase().includes(query.toLowerCase())) return false
     return true
-  }), [query, region, winter, facilities])
+  }), [sites, query, region, winter, facilities])
 
-  const current = SITES.find((site) => site.id === active) || list[0]
+  const current = sites.find((site) => site.id === active) || list[0]
   const toggleFacility = (id) => setFacilities((currentFacilities) => (
     currentFacilities.includes(id) ? currentFacilities.filter((item) => item !== id) : [...currentFacilities, id]
   ))
@@ -58,15 +68,15 @@ export default function CampsiteFigma() {
           <nav className="tb-crumbs">
             <Link to="/">Home</Link>
             <StrokeIcon name="chevron" size={12} />
-            <strong>Campsite map</strong>
+            <strong>{filled(hero.crumb, 'Campsite map')}</strong>
           </nav>
           <div className="tb-camp-hero-row">
             <div>
-              <p className="tb-kicker">CAMPSITE MAP</p>
-              <h1>Find a place to park for the <em>night</em>.</h1>
-              <p>Campsites across Iceland on one map — with season dates and facilities, so you always know where you can stop with your campervan.</p>
+              <p className="tb-kicker">{filled(hero.eyebrow, 'CAMPSITE MAP')}</p>
+              <h1>{filled(hero.headingBefore, 'Find a place to park for the ')}<em>{filled(hero.headingAccent, 'night')}</em>{filled(hero.headingAfter, '.')}</h1>
+              <p>{filled(hero.lead, 'Campsites across Iceland on one map — with season dates and facilities, so you always know where you can stop with your campervan.')}</p>
             </div>
-            <Link className="tb-btn" to="/campervans">Find a campervan <StrokeIcon name="arrow" size={16} /></Link>
+            <Link className="tb-btn" to={filled(hero.buttonHref, '/campervans')}>{filled(hero.button, 'Find a campervan')} <StrokeIcon name="arrow" size={16} /></Link>
           </div>
         </Container>
       </section>
@@ -74,14 +84,14 @@ export default function CampsiteFigma() {
       <section>
         <Container>
           <div className="tb-filters">
-            <label className="search"><StrokeIcon name="search" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search campsites" aria-label="Search campsites" /></label>
+            <label className="search"><StrokeIcon name="search" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={filled(filtersCopy.searchPlaceholder, 'Search campsites')} aria-label="Search campsites" /></label>
             <label><StrokeIcon name="map" size={14} />
               <select value={region} onChange={(event) => setRegion(event.target.value)} aria-label="Region">
-                {REGIONS.map((item) => <option key={item} value={item}>{item === 'All regions' ? 'Region: All regions' : item}</option>)}
+                {regions.map((item) => <option key={item} value={item}>{item === regions[0] ? `${filled(filtersCopy.regionLabel, 'Region')}: ${item}` : item}</option>)}
               </select>
             </label>
             <button type="button" className={`winter ${winter ? 'is-on' : ''}`} onClick={() => setWinter((value) => !value)}>
-              <StrokeIcon name="snowflake" size={16} /> Open in winter
+              <StrokeIcon name="snowflake" size={16} /> {filled(filtersCopy.winterLabel, 'Open in winter')}
               <span className={`tb-toggle ${winter ? 'on' : ''}`}><i /></span>
             </button>
             {FACILITY_FILTERS.map((item) => (

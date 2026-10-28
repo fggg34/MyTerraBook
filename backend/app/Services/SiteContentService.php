@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Data\FigmaContentPages;
 use App\Data\SiteContentDefaults;
 use App\Http\Resources\Api\BlogPostResource;
 use App\Models\BlogPost;
@@ -468,6 +469,8 @@ class SiteContentService
             $content['items'] = $content['items']['items'];
         }
 
+        $content = $this->preferCurrentPageSections($pageKey, $content);
+
         if ($pageKey === 'contact' && isset($content['details']) && is_array($content['details'])) {
             $content = array_replace($content, $content['details']);
             unset($content['details']);
@@ -629,6 +632,10 @@ class SiteContentService
         $uploadKeys = [
             'branding' => ['logoImage', 'favicon'],
             'hero' => ['backgroundImage', 'mobileBackgroundImage', 'image'],
+            'cover' => ['backgroundImage'],
+            'story' => ['image'],
+            'visual' => ['image'],
+            'hostBanner' => ['image'],
             'header' => ['image'],
             'map' => ['image'],
             'newsSection' => ['backgroundImage'],
@@ -665,6 +672,9 @@ class SiteContentService
             ['hostCtaSection', null, 'houseImage'],
             ['hostCtaSection', null, 'vanImage'],
             ['whySection', null, 'photo'],
+            ['products', 'items', 'image'],
+            ['countries', 'cards', 'image'],
+            ['guides', 'items', 'image'],
         ] as [$section, $listKey, $fieldKey]) {
             $content = $this->normalizeNestedUploadField($content, $section, $listKey, $fieldKey);
         }
@@ -1002,6 +1012,73 @@ class SiteContentService
      * @param  array<string, mixed>  $content
      * @return array<string, mixed>
      */
+    /**
+     * Older saved pages used the previous section shape. Fill the sections the live pages render.
+     *
+     * @param  array<string, mixed>  $content
+     * @return array<string, mixed>
+     */
+    private function preferCurrentPageSections(string $pageKey, array $content): array
+    {
+        if ($pageKey === 'about') {
+            $defaults = FigmaContentPages::about();
+            $hero = is_array($content['hero'] ?? null) ? $content['hero'] : [];
+            if (! isset($hero['headingBefore'])) {
+                $content['hero'] = array_replace($defaults['hero'], $hero);
+            }
+            $stats = $content['stats'][0] ?? null;
+            if (! is_array($stats) || ! array_key_exists('text', $stats)) {
+                $content['stats'] = $defaults['stats'];
+            }
+            foreach (['story', 'values', 'products', 'cta'] as $section) {
+                $current = $content[$section] ?? null;
+                if (! is_array($current) || ! isset($current['headingBefore'])) {
+                    $content[$section] = $defaults[$section];
+                }
+            }
+        }
+
+        if ($pageKey === 'faq') {
+            $defaults = FigmaContentPages::faq();
+            $hero = is_array($content['hero'] ?? null) ? $content['hero'] : [];
+            if (! isset($hero['headingBefore'])) {
+                $content['hero'] = array_replace($defaults['hero'], $hero);
+            }
+            $first = $content['items'][0] ?? null;
+            if (is_array($first) && ! isset($first['q'])) {
+                $content['items'] = [];
+            }
+            $firstCategory = $content['categories'][0] ?? null;
+            if (! is_array($firstCategory) || ! isset($firstCategory['icon'])) {
+                $content['categories'] = $defaults['categories'];
+            }
+            foreach (['help', 'guide', 'more'] as $section) {
+                if (empty($content[$section])) {
+                    $content[$section] = $defaults[$section];
+                }
+            }
+        }
+
+        if ($pageKey === 'contact') {
+            $defaults = FigmaContentPages::contact();
+            $hero = is_array($content['hero'] ?? null) ? $content['hero'] : [];
+            if (! isset($hero['headingBefore'])) {
+                $content['hero'] = array_replace($defaults['hero'], $hero);
+            }
+            if (empty($content['methods'])) {
+                $content['methods'] = $defaults['methods'];
+            }
+            foreach (['social', 'form', 'map'] as $section) {
+                $current = $content[$section] ?? null;
+                if (! is_array($current) || $current === []) {
+                    $content[$section] = $defaults[$section];
+                }
+            }
+        }
+
+        return $content;
+    }
+
     private function fillEmptyRepeatersFromDefaults(string $pageKey, array $content): array
     {
         $defaults = SiteContentDefaults::forPage($pageKey);
@@ -1023,9 +1100,9 @@ class SiteContentService
             ],
             'about' => [
                 'stats',
-                'pillars',
-                'offerings',
-                'storyBlocks',
+                'story.paragraphs',
+                'values.items',
+                'products.items',
             ],
             'campsite-map' => [
                 'photos',

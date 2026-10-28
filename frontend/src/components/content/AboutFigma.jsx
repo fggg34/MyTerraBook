@@ -51,13 +51,64 @@ const DEFAULTS = {
   ctaSecondaryHref: '/become-a-host',
 }
 
+function filled(value, fallback) {
+  return typeof value === 'string' && value.trim() !== '' ? value : fallback
+}
+
 export default function AboutFigma() {
   const { page } = usePageContent('about')
-  const copy = { ...DEFAULTS, ...(page.figma || {}) }
-  const stats = copy.stats?.length ? copy.stats : DEFAULTS.stats
-  const story = copy.story?.length ? copy.story : DEFAULTS.story
-  const values = copy.values?.length ? copy.values : DEFAULTS.values
-  const products = copy.products?.length ? copy.products : DEFAULTS.products
+  const hero = page.hero || {}
+  const storySection = page.story || {}
+  const valuesSection = page.values || {}
+  const productsSection = page.products || {}
+  const cta = page.cta || {}
+  const copy = {
+    ...DEFAULTS,
+    crumb: filled(hero.crumb, DEFAULTS.crumb),
+    eyebrow: filled(hero.eyebrow, DEFAULTS.eyebrow),
+    headingBefore: filled(hero.headingBefore, 'One booking for the '),
+    headingAccent: filled(hero.headingAccent, 'whole'),
+    headingAfter: filled(hero.headingAfter, ' road trip.'),
+    heroLead: filled(hero.lead, DEFAULTS.heroLead),
+    primaryLabel: filled(hero.primaryLabel, DEFAULTS.primaryLabel),
+    primaryHref: filled(hero.primaryHref, DEFAULTS.primaryHref),
+    secondaryLabel: filled(hero.secondaryLabel, DEFAULTS.secondaryLabel),
+    secondaryHref: filled(hero.secondaryHref, DEFAULTS.secondaryHref),
+    heroImage: filled(hero.image, DEFAULTS.heroImage),
+    storyEyebrow: filled(storySection.eyebrow, DEFAULTS.storyEyebrow),
+    storyBefore: filled(storySection.headingBefore, 'We started where the '),
+    storyAccent: filled(storySection.headingAccent, 'road'),
+    storyAfter: filled(storySection.headingAfter, ' starts.'),
+    storyImage: filled(storySection.image, DEFAULTS.storyImage),
+    address: filled(storySection.address, DEFAULTS.address),
+    valuesEyebrow: filled(valuesSection.eyebrow, DEFAULTS.valuesEyebrow),
+    valuesBefore: filled(valuesSection.headingBefore, 'Three things we '),
+    valuesAccent: filled(valuesSection.headingAccent, 'never'),
+    valuesAfter: filled(valuesSection.headingAfter, ' compromise on.'),
+    valuesLead: filled(valuesSection.lead, DEFAULTS.valuesLead),
+    productsEyebrow: filled(productsSection.eyebrow, DEFAULTS.productsEyebrow),
+    productsBefore: filled(productsSection.headingBefore, 'Everything your trip '),
+    productsAccent: filled(productsSection.headingAccent, 'needs'),
+    productsAfter: filled(productsSection.headingAfter, '.'),
+    productsLead: filled(productsSection.lead, DEFAULTS.productsLead),
+    productsButton: filled(productsSection.button, DEFAULTS.productsButton),
+    productsHref: filled(productsSection.href, DEFAULTS.productsHref),
+    ctaEyebrow: filled(cta.eyebrow, DEFAULTS.ctaEyebrow),
+    ctaBefore: filled(cta.headingBefore, 'Your next road trip starts '),
+    ctaAccent: filled(cta.headingAccent, 'here'),
+    ctaAfter: filled(cta.headingAfter, '.'),
+    ctaLead: filled(cta.lead, DEFAULTS.ctaLead),
+    ctaPrimary: filled(cta.primaryLabel, DEFAULTS.ctaPrimary),
+    ctaPrimaryHref: filled(cta.primaryHref, DEFAULTS.ctaPrimaryHref),
+    ctaSecondary: filled(cta.secondaryLabel, DEFAULTS.ctaSecondary),
+    ctaSecondaryHref: filled(cta.secondaryHref, DEFAULTS.ctaSecondaryHref),
+  }
+  const stats = page.stats?.some((item) => item.text) ? page.stats : DEFAULTS.stats
+  const story = storySection.paragraphs?.some((item) => item.text)
+    ? storySection.paragraphs.map((item) => item.text)
+    : DEFAULTS.story
+  const values = valuesSection.items?.length ? valuesSection.items : DEFAULTS.values
+  const products = productsSection.items?.length ? productsSection.items : DEFAULTS.products
 
   return (
     <div className="tb-about">
@@ -67,7 +118,7 @@ export default function AboutFigma() {
           <div className="tb-about-hero-row">
             <div>
               <p className="tb-kicker">{copy.eyebrow}</p>
-              <h1>One booking for the <em>whole</em> road trip.</h1>
+              <h1>{copy.headingBefore}<em>{copy.headingAccent}</em>{copy.headingAfter}</h1>
               <p>{copy.heroLead}</p>
               <div className="tb-about-actions">
                 <Link to={copy.primaryHref} className="tb-btn navy">{copy.primaryLabel} <FigmaIcon name="arrow-white" size={16} /></Link>
@@ -96,7 +147,7 @@ export default function AboutFigma() {
           <img src={copy.storyImage} alt="" />
           <div>
             <p className="tb-kicker">{copy.storyEyebrow}</p>
-            <h2>We started where the <em>road</em> starts.</h2>
+            <h2>{copy.storyBefore}<em>{copy.storyAccent}</em>{copy.storyAfter}</h2>
             {story.map((paragraph) => <p key={paragraph}>{typeof paragraph === 'string' ? paragraph : paragraph.text}</p>)}
             <p className="tb-about-address"><FigmaIcon name="pin" size={18} />{copy.address}</p>
           </div>
@@ -107,7 +158,7 @@ export default function AboutFigma() {
         <Container>
           <header>
             <p className="tb-kicker">{copy.valuesEyebrow}</p>
-            <h2>Three things we <em>never</em> compromise on.</h2>
+            <h2>{copy.valuesBefore}<em>{copy.valuesAccent}</em>{copy.valuesAfter}</h2>
             <p>{copy.valuesLead}</p>
           </header>
           <div>
@@ -127,7 +178,7 @@ export default function AboutFigma() {
           <header>
             <div>
               <p className="tb-kicker">{copy.productsEyebrow}</p>
-              <h2>Everything your trip <em>needs</em>.</h2>
+              <h2>{copy.productsBefore}<em>{copy.productsAccent}</em>{copy.productsAfter}</h2>
               <p>{copy.productsLead}</p>
             </div>
             <Link to={copy.productsHref}>{copy.productsButton}</Link>
@@ -152,8 +203,8 @@ export default function AboutFigma() {
         <Container>
           <div>
             <div>
-              <p>READY WHEN YOU ARE</p>
-              <h2>Your next road trip starts <em>here</em>.</h2>
+              <p>{copy.ctaEyebrow}</p>
+              <h2>{copy.ctaBefore}<em>{copy.ctaAccent}</em>{copy.ctaAfter}</h2>
               <span>{copy.ctaLead}</span>
             </div>
             <div>

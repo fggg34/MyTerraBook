@@ -104,6 +104,10 @@ trait ResolvesPublicStorageUrls
         $imageSectionKeys = [
             'branding' => ['logoImage', 'favicon'],
             'hero' => ['backgroundImage', 'mobileBackgroundImage', 'image'],
+            'cover' => ['backgroundImage'],
+            'story' => ['image'],
+            'visual' => ['image'],
+            'hostBanner' => ['image'],
             'header' => ['image'],
             'map' => ['image'],
             'rentSection' => [],
@@ -122,7 +126,7 @@ trait ResolvesPublicStorageUrls
             $content[$section] = $this->resolveImageKeys($content[$section], $keys);
         }
 
-        foreach (['rentSection', 'howSection', 'staySection', 'blogSection', 'picksSection'] as $section) {
+        foreach (['rentSection', 'howSection', 'staySection', 'blogSection', 'picksSection', 'countries'] as $section) {
             if (isset($content[$section]['cards']) && is_array($content[$section]['cards'])) {
                 $content[$section]['cards'] = $this->resolveListImages($content[$section]['cards'], 'image');
             }
@@ -132,6 +136,13 @@ trait ResolvesPublicStorageUrls
             if (isset($content[$section]['posts']) && is_array($content[$section]['posts'])) {
                 $content[$section]['posts'] = $this->resolveListImages($content[$section]['posts'], 'image');
             }
+            if (isset($content['products']['items']) && is_array($content['products']['items'])) {
+                $content['products']['items'] = $this->resolveListImages($content['products']['items'], 'image');
+            }
+            if (isset($content['guides']['items']) && is_array($content['guides']['items'])) {
+                $content['guides']['items'] = $this->resolveListImages($content['guides']['items'], 'image');
+            }
+
             if (isset($content[$section]['items']) && is_array($content[$section]['items'])) {
                 foreach ($content[$section]['items'] as $groupKey => $items) {
                     if (! is_array($items)) {

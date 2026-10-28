@@ -191,6 +191,8 @@ $searchPresentationFields = [
     ['key' => 'typeLabel', 'type' => 'text', 'label' => 'Type badge'],
     ['key' => 'clearLabel', 'type' => 'text', 'label' => 'Clear'],
     ['key' => 'showLabel', 'type' => 'text', 'label' => 'Show results'],
+    ['key' => 'onBoardLabel', 'type' => 'text', 'label' => 'On board label'],
+    ['key' => 'fromLabel', 'type' => 'text', 'label' => 'Price prefix'],
 ];
 
 $listingSectionDescriptionFields = [
@@ -275,6 +277,377 @@ $listingLabelFields = [
     ['key' => 'bookingModalLead', 'type' => 'textarea', 'label' => 'Booking modal lead', 'columnSpanFull' => true],
     ['key' => 'bookingModalFootnote', 'type' => 'text', 'label' => 'Booking modal footnote', 'columnSpanFull' => true, 'helperText' => 'Small text beside the modal CTA button.'],
     ['key' => 'faqLead', 'type' => 'textarea', 'label' => 'FAQ lead', 'columnSpanFull' => true],
+];
+
+$bindFields = function (string $root, array $fields): array {
+    return array_map(function (array $field) use ($root): array {
+        if (! isset($field['path']) && isset($field['key'])) {
+            $field['path'] = $root.'.'.$field['key'];
+        }
+
+        return $field;
+    }, $fields);
+};
+
+$pickFields = function (array $fields, array $keys): array {
+    $byKey = [];
+    foreach ($fields as $field) {
+        $byKey[$field['key']] = $field;
+    }
+    $picked = [];
+    foreach ($keys as $key) {
+        if (isset($byKey[$key])) {
+            $picked[] = $byKey[$key];
+        }
+    }
+
+    return $picked;
+};
+
+$searchFigmaSections = [
+    'routing' => ['label' => 'Catalog routing', 'isRootSection' => true, 'fields' => $searchRoutingFields],
+    'results' => ['label' => 'Results header', 'fields' => $bindFields('presentation', $pickFields($searchPresentationFields, ['title', 'insuranceNote', 'showingLabel', 'loadMoreLabel']))],
+    'breadcrumb' => ['label' => 'Breadcrumb', 'fields' => $bindFields('presentation', $pickFields($searchPresentationFields, ['breadcrumbHome', 'breadcrumbSection', 'breadcrumbPlace']))],
+    'searchBar' => ['label' => 'Search bar', 'fields' => $bindFields('presentation', $pickFields($searchPresentationFields, ['pickupLabel', 'datesLabel', 'dropoffLabel', 'whoLabel', 'whoValue', 'dropoffSame', 'updateLabel']))],
+    'filters' => ['label' => 'Filters and sort', 'fields' => $bindFields('presentation', $pickFields($searchPresentationFields, ['filtersLabel', 'filtersTitle', 'sortTitle', 'clearLabel', 'showLabel', 'showAllLabel']))],
+    'cards' => ['label' => 'Result cards', 'fields' => $bindFields('presentation', $pickFields($searchPresentationFields, ['typeLabel', 'partnerLabel', 'onBoardLabel', 'fromLabel', 'bookLabel']))],
+    'bundle' => ['label' => 'Bundle banner', 'fields' => $bindFields('presentation', $pickFields($searchPresentationFields, ['bundleTitle', 'bundleText', 'bundleButton', 'bundleHref']))],
+    'seo' => $pageSeoSection,
+];
+
+$listingFigmaSections = [
+    'badge' => ['label' => 'Badge', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['typeLabel']))],
+    'about' => ['label' => 'About', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['aboutTitle', 'winter']))],
+    'included' => ['label' => 'Included', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['includedTitle', 'included']))],
+    'features' => ['label' => 'Features', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['featuresTitle']))],
+    'extras' => ['label' => 'Extras', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['extrasTitle', 'extrasLead']))],
+    'pickup' => ['label' => 'Pick-up and drop-off', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['pickupTitle']))],
+    'room' => ['label' => 'Room details', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['roomTitle']))],
+    'rules' => ['label' => 'House rules', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['rulesTitle', 'rules']))],
+    'know' => ['label' => 'Good to know', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['knowTitle', 'know', 'conditionsLink']))],
+    'location' => ['label' => 'Location', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['locationTitle', 'locationNote', 'mapButton']))],
+    'reviews' => ['label' => 'Reviews', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['reviewsTitle', 'writeReview', 'emptyReviews', 'emptyReviewsLead']))],
+    'host' => ['label' => 'Host', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['hostKicker', 'hostButton']))],
+    'booking' => ['label' => 'Booking card', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['bookCta', 'processLink', 'insuranceTitle', 'priceLabel', 'chargeNote', 'process']))],
+    'stay' => ['label' => 'Add a stay or vehicle', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['stayTitle', 'stayText', 'addVehicleTitle', 'addVehicleText']))],
+    'similar' => ['label' => 'Similar listings', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['similarTitle', 'similarButton']))],
+    'stays' => ['label' => 'Places to stay strip', 'fields' => $bindFields('frame', $pickFields($listingFrameFields, ['staysEyebrow', 'staysTitle', 'staysButton']))],
+    'seo' => $pageSeoSection,
+];
+
+$aboutSections = [
+    'hero' => ['label' => 'Hero', 'fields' => [
+        ['key' => 'crumb', 'type' => 'text', 'label' => 'Breadcrumb'],
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'primaryLabel', 'type' => 'text', 'label' => 'Primary button'],
+        ['key' => 'primaryHref', 'type' => 'text', 'label' => 'Primary link'],
+        ['key' => 'secondaryLabel', 'type' => 'text', 'label' => 'Secondary button'],
+        ['key' => 'secondaryHref', 'type' => 'text', 'label' => 'Secondary link'],
+        ['key' => 'image', 'type' => 'image', 'label' => 'Photo'],
+    ]],
+    'stats' => ['label' => 'Stats', 'fields' => [
+        ['key' => 'stats', 'type' => 'repeater', 'label' => 'Stats', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'icon', 'type' => 'text', 'label' => 'Icon'],
+            ['key' => 'value', 'type' => 'text', 'label' => 'Value'],
+            ['key' => 'text', 'type' => 'text', 'label' => 'Text', 'columnSpanFull' => true],
+        ]],
+    ]],
+    'story' => ['label' => 'Story', 'fields' => [
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'image', 'type' => 'image', 'label' => 'Photo'],
+        ['key' => 'address', 'type' => 'text', 'label' => 'Address', 'columnSpanFull' => true],
+        ['key' => 'paragraphs', 'type' => 'repeater', 'label' => 'Paragraphs', 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
+        ]],
+    ]],
+    'values' => ['label' => 'Values', 'fields' => [
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'items', 'type' => 'repeater', 'label' => 'Values', 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'icon', 'type' => 'text', 'label' => 'Icon'],
+            ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
+            ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
+        ]],
+    ]],
+    'products' => ['label' => 'Products', 'fields' => [
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'button', 'type' => 'text', 'label' => 'Header link'],
+        ['key' => 'href', 'type' => 'text', 'label' => 'Header link URL'],
+        ['key' => 'items', 'type' => 'repeater', 'label' => 'Cards', 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'icon', 'type' => 'text', 'label' => 'Icon'],
+            ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
+            ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
+            ['key' => 'meta', 'type' => 'text', 'label' => 'Meta line'],
+            ['key' => 'button', 'type' => 'text', 'label' => 'Button'],
+            ['key' => 'href', 'type' => 'text', 'label' => 'Link'],
+            ['key' => 'image', 'type' => 'image', 'label' => 'Photo'],
+        ]],
+    ]],
+    'cta' => ['label' => 'Closing CTA', 'fields' => [
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'primaryLabel', 'type' => 'text', 'label' => 'Primary button'],
+        ['key' => 'primaryHref', 'type' => 'text', 'label' => 'Primary link'],
+        ['key' => 'secondaryLabel', 'type' => 'text', 'label' => 'Secondary button'],
+        ['key' => 'secondaryHref', 'type' => 'text', 'label' => 'Secondary link'],
+    ]],
+    'seo' => $pageSeoSection,
+];
+
+$faqSections = [
+    'hero' => ['label' => 'Hero', 'fields' => [
+        ['key' => 'crumb', 'type' => 'text', 'label' => 'Breadcrumb'],
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'searchPlaceholder', 'type' => 'text', 'label' => 'Search placeholder'],
+        ['key' => 'searchButton', 'type' => 'text', 'label' => 'Search button'],
+        ['key' => 'popularLabel', 'type' => 'text', 'label' => 'Popular label'],
+        ['key' => 'chips', 'type' => 'tags', 'label' => 'Popular chips'],
+    ]],
+    'categories' => ['label' => 'Category tabs', 'fields' => [
+        ['key' => 'categories', 'type' => 'repeater', 'label' => 'Tabs', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'id', 'type' => 'text', 'label' => 'ID'],
+            ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
+            ['key' => 'icon', 'type' => 'text', 'label' => 'Icon'],
+        ]],
+    ]],
+    'items' => ['label' => 'Questions', 'fields' => [
+        ['key' => 'items', 'type' => 'repeater', 'label' => 'Questions', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'num', 'type' => 'text', 'label' => 'Number'],
+            ['key' => 'cat', 'type' => 'text', 'label' => 'Category ID'],
+            ['key' => 'label', 'type' => 'text', 'label' => 'Category label'],
+            ['key' => 'q', 'type' => 'text', 'label' => 'Question', 'columnSpanFull' => true],
+            ['key' => 'a', 'type' => 'textarea', 'label' => 'Answer', 'columnSpanFull' => true],
+            ['key' => 'linkLabel', 'type' => 'text', 'label' => 'Link label'],
+            ['key' => 'linkHref', 'type' => 'text', 'label' => 'Link'],
+            ['key' => 'extra', 'type' => 'toggle', 'label' => 'Hidden until show more'],
+        ]],
+    ]],
+    'help' => ['label' => 'Need a human', 'fields' => [
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'body', 'type' => 'textarea', 'label' => 'Body', 'columnSpanFull' => true],
+        ['key' => 'phoneLabel', 'type' => 'text', 'label' => 'Phone label'],
+        ['key' => 'phone', 'type' => 'text', 'label' => 'Phone'],
+        ['key' => 'emailLabel', 'type' => 'text', 'label' => 'Email label'],
+        ['key' => 'email', 'type' => 'text', 'label' => 'Email'],
+        ['key' => 'hoursLabel', 'type' => 'text', 'label' => 'Hours label'],
+        ['key' => 'hours', 'type' => 'text', 'label' => 'Hours'],
+        ['key' => 'buttonLabel', 'type' => 'text', 'label' => 'Button'],
+        ['key' => 'buttonHref', 'type' => 'text', 'label' => 'Button link'],
+    ]],
+    'guide' => ['label' => 'Guide card', 'fields' => [
+        ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
+        ['key' => 'body', 'type' => 'textarea', 'label' => 'Body', 'columnSpanFull' => true],
+        ['key' => 'buttonLabel', 'type' => 'text', 'label' => 'Button'],
+        ['key' => 'buttonHref', 'type' => 'text', 'label' => 'Button link'],
+    ]],
+    'more' => ['label' => 'Show more', 'fields' => [
+        ['key' => 'prompt', 'type' => 'text', 'label' => 'Prompt', 'columnSpanFull' => true],
+        ['key' => 'button', 'type' => 'text', 'label' => 'Button'],
+        ['key' => 'empty', 'type' => 'text', 'label' => 'Empty search', 'columnSpanFull' => true],
+    ]],
+    'seo' => $pageSeoSection,
+];
+
+$contactSections = [
+    'hero' => ['label' => 'Hero', 'fields' => [
+        ['key' => 'crumb', 'type' => 'text', 'label' => 'Breadcrumb'],
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+    ]],
+    'methods' => ['label' => 'Contact methods', 'fields' => [
+        ['key' => 'methods', 'type' => 'repeater', 'label' => 'Methods', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'icon', 'type' => 'text', 'label' => 'Icon'],
+            ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
+            ['key' => 'value', 'type' => 'text', 'label' => 'Value', 'columnSpanFull' => true],
+            ['key' => 'note', 'type' => 'text', 'label' => 'Note', 'columnSpanFull' => true],
+            ['key' => 'action', 'type' => 'text', 'label' => 'Action'],
+            ['key' => 'href', 'type' => 'text', 'label' => 'Link'],
+        ]],
+    ]],
+    'social' => ['label' => 'Social', 'fields' => [
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'text', 'type' => 'text', 'label' => 'Text', 'columnSpanFull' => true],
+        ['key' => 'links', 'type' => 'repeater', 'label' => 'Links', 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
+            ['key' => 'href', 'type' => 'text', 'label' => 'Link'],
+            ['key' => 'icon', 'type' => 'text', 'label' => 'Icon'],
+        ]],
+    ]],
+    'form' => ['label' => 'Message form', 'fields' => [
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading'],
+        ['key' => 'lead', 'type' => 'text', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'nameLabel', 'type' => 'text', 'label' => 'Name label'],
+        ['key' => 'emailLabel', 'type' => 'text', 'label' => 'Email label'],
+        ['key' => 'topicLabel', 'type' => 'text', 'label' => 'Topic label'],
+        ['key' => 'messageLabel', 'type' => 'text', 'label' => 'Message label'],
+        ['key' => 'topics', 'type' => 'tags', 'label' => 'Topics'],
+        ['key' => 'privacy', 'type' => 'text', 'label' => 'Privacy note', 'columnSpanFull' => true],
+        ['key' => 'submit', 'type' => 'text', 'label' => 'Submit button'],
+        ['key' => 'sending', 'type' => 'text', 'label' => 'Sending label'],
+        ['key' => 'email', 'type' => 'text', 'label' => 'Inbox email', 'path' => 'email', 'helperText' => 'Messages are delivered here.'],
+    ]],
+    'map' => ['label' => 'Map', 'fields' => [
+        ['key' => 'title', 'type' => 'text', 'label' => 'Card title'],
+        ['key' => 'address', 'type' => 'text', 'label' => 'Address'],
+        ['key' => 'button', 'type' => 'text', 'label' => 'Button'],
+        ['key' => 'href', 'type' => 'text', 'label' => 'Directions link', 'columnSpanFull' => true],
+        ['key' => 'embed', 'type' => 'text', 'label' => 'Map embed URL', 'columnSpanFull' => true],
+    ]],
+    'seo' => $pageSeoSection,
+];
+
+$legalSections = [
+    'hero' => ['label' => 'Hero', 'fields' => [
+        ['key' => 'crumb', 'type' => 'text', 'label' => 'Breadcrumb'],
+        ['key' => 'kicker', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'titleBefore', 'type' => 'text', 'label' => 'Title before italic'],
+        ['key' => 'titleEm', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'titleAfter', 'type' => 'text', 'label' => 'Title after italic'],
+        ['key' => 'updated', 'type' => 'text', 'label' => 'Last updated'],
+        ['key' => 'company', 'type' => 'text', 'label' => 'Company line'],
+        ['key' => 'intro', 'type' => 'textarea', 'label' => 'Intro', 'columnSpanFull' => true],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+    ]],
+    'chapters' => ['label' => 'Chapters', 'fields' => [
+        ['key' => 'chapters', 'type' => 'repeater', 'label' => 'Chapters', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'id', 'type' => 'text', 'label' => 'Anchor'],
+            ['key' => 'num', 'type' => 'text', 'label' => 'Number'],
+            ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
+            ['key' => 'body', 'type' => 'textarea', 'label' => 'Paragraphs', 'columnSpanFull' => true, 'helperText' => 'Separate paragraphs with a blank line.'],
+            ['key' => 'bullets', 'type' => 'tags', 'label' => 'Bullet list'],
+            ['key' => 'calloutTitle', 'type' => 'text', 'label' => 'Callout title'],
+            ['key' => 'calloutBody', 'type' => 'textarea', 'label' => 'Callout body', 'columnSpanFull' => true],
+        ]],
+    ]],
+    'ask' => ['label' => 'Questions card', 'fields' => [
+        ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
+        ['key' => 'body', 'type' => 'textarea', 'label' => 'Body', 'columnSpanFull' => true],
+    ]],
+    'seo' => $pageSeoSection,
+];
+
+$guideSections = [
+    'hero' => ['label' => 'Hero', 'fields' => [
+        ['key' => 'crumb', 'type' => 'text', 'label' => 'Breadcrumb'],
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'searchPlaceholder', 'type' => 'text', 'label' => 'Search placeholder'],
+        ['key' => 'categories', 'type' => 'tags', 'label' => 'Category tabs'],
+    ]],
+    'list' => ['label' => 'Guide list', 'fields' => [
+        ['key' => 'heading', 'type' => 'text', 'label' => 'List heading'],
+        ['key' => 'sortNewest', 'type' => 'text', 'label' => 'Newest label'],
+        ['key' => 'sortOldest', 'type' => 'text', 'label' => 'Oldest label'],
+        ['key' => 'readLabel', 'type' => 'text', 'label' => 'Read label'],
+        ['key' => 'featuredLabel', 'type' => 'text', 'label' => 'Featured label'],
+        ['key' => 'featuredButton', 'type' => 'text', 'label' => 'Featured button'],
+    ]],
+    'newsletter' => ['label' => 'Newsletter', 'fields' => [
+        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'columnSpanFull' => true],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'placeholder', 'type' => 'text', 'label' => 'Email placeholder'],
+        ['key' => 'button', 'type' => 'text', 'label' => 'Button'],
+    ]],
+    'seo' => $pageSeoSection,
+];
+
+$campSections = [
+    'hero' => ['label' => 'Hero', 'fields' => [
+        ['key' => 'crumb', 'type' => 'text', 'label' => 'Breadcrumb'],
+        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'button', 'type' => 'text', 'label' => 'Button'],
+        ['key' => 'buttonHref', 'type' => 'text', 'label' => 'Button link'],
+    ]],
+    'filters' => ['label' => 'Filters', 'fields' => [
+        ['key' => 'searchPlaceholder', 'type' => 'text', 'label' => 'Search placeholder'],
+        ['key' => 'regionLabel', 'type' => 'text', 'label' => 'Region label'],
+        ['key' => 'regions', 'type' => 'tags', 'label' => 'Regions'],
+        ['key' => 'winterLabel', 'type' => 'text', 'label' => 'Winter filter'],
+        ['key' => 'clearLabel', 'type' => 'text', 'label' => 'Clear label'],
+    ]],
+    'sites' => ['label' => 'Campsites', 'fields' => [
+        ['key' => 'sites', 'type' => 'repeater', 'label' => 'Campsites', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'name', 'type' => 'text', 'label' => 'Name'],
+            ['key' => 'region', 'type' => 'text', 'label' => 'Region'],
+            ['key' => 'place', 'type' => 'text', 'label' => 'Place'],
+            ['key' => 'season', 'type' => 'text', 'label' => 'Season'],
+            ['key' => 'winter', 'type' => 'toggle', 'label' => 'Open in winter'],
+            ['key' => 'facilities', 'type' => 'tags', 'label' => 'Facilities', 'helperText' => 'bath, zap, wifi, house, sparkles'],
+        ]],
+    ]],
+    'seo' => $pageSeoSection,
+];
+
+$loginSections = [
+    'visual' => ['label' => 'Photo panel', 'fields' => [
+        ['key' => 'kicker', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'headingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'headingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'headingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'image', 'type' => 'image', 'label' => 'Photo'],
+        ['key' => 'pills', 'type' => 'repeater', 'label' => 'Pills', 'columnSpanFull' => true, 'fields' => [
+            ['key' => 'icon', 'type' => 'text', 'label' => 'Icon'],
+            ['key' => 'text', 'type' => 'text', 'label' => 'Text'],
+        ]],
+    ]],
+    'chrome' => ['label' => 'Form chrome', 'isRootSection' => true, 'fields' => [
+        ['key' => 'backLabel', 'type' => 'text', 'label' => 'Back link'],
+        ['key' => 'newPrompt', 'type' => 'text', 'label' => 'New account prompt'],
+        ['key' => 'newLink', 'type' => 'text', 'label' => 'Create account link'],
+        ['key' => 'copyright', 'type' => 'text', 'label' => 'Copyright'],
+    ]],
+    'form' => ['label' => 'Sign-in form', 'isRootSection' => true, 'fields' => [
+        ['key' => 'formKicker', 'type' => 'text', 'label' => 'Eyebrow'],
+        ['key' => 'formHeadingBefore', 'type' => 'text', 'label' => 'Heading before italic'],
+        ['key' => 'formHeadingAccent', 'type' => 'text', 'label' => 'Italic word'],
+        ['key' => 'formHeadingAfter', 'type' => 'text', 'label' => 'Heading after italic'],
+        ['key' => 'formLead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
+        ['key' => 'emailLabel', 'type' => 'text', 'label' => 'Email label'],
+        ['key' => 'passwordLabel', 'type' => 'text', 'label' => 'Password label'],
+        ['key' => 'rememberLabel', 'type' => 'text', 'label' => 'Remember me'],
+        ['key' => 'forgotPasswordLabel', 'type' => 'text', 'label' => 'Forgot password'],
+        ['key' => 'submitLabel', 'type' => 'text', 'label' => 'Sign in button'],
+        ['key' => 'signingInLabel', 'type' => 'text', 'label' => 'Signing in label'],
+        ['key' => 'orLabel', 'type' => 'text', 'label' => 'Divider'],
+        ['key' => 'registerLink', 'type' => 'text', 'label' => 'Create account button'],
+        ['key' => 'hostSignInLabel', 'type' => 'text', 'label' => 'Host sign-in link'],
+    ]],
+    'seo' => $pageSeoSection,
 ];
 
 return [
@@ -504,33 +877,6 @@ return [
             'preview_route' => '/',
             'sort_order' => 1,
             'sections' => [
-                'hero' => [
-                    'label' => 'Hero',
-                    'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading (desktop)', 'columnSpanFull' => true],
-                        ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle (desktop)', 'columnSpanFull' => true],
-                        ['key' => 'backgroundImage', 'type' => 'image', 'label' => 'Background image (desktop)'],
-                        ['key' => 'backgroundAlt', 'type' => 'text', 'label' => 'Background image alt'],
-                        ['key' => 'mobileHeading', 'type' => 'text', 'label' => 'Heading (mobile)', 'helperText' => 'Uses desktop heading if empty.', 'columnSpanFull' => true],
-                        ['key' => 'mobileSubtitle', 'type' => 'textarea', 'label' => 'Subtitle (mobile)', 'helperText' => 'Uses desktop subtitle if empty.', 'columnSpanFull' => true],
-                        ['key' => 'mobileBackgroundImage', 'type' => 'image', 'label' => 'Background image (mobile)', 'helperText' => 'Uses desktop image if empty.'],
-                        ['key' => 'tabs', 'type' => 'repeater', 'label' => 'Search tabs', 'fields' => [
-                            ['key' => 'id', 'type' => 'text', 'label' => 'ID'],
-                            ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
-                        ], 'columnSpanFull' => true],
-                        ['key' => 'searchLabel', 'type' => 'text', 'label' => 'Search button'],
-                        ['key' => 'footerHint', 'type' => 'text', 'label' => 'Footer hint'],
-                        ['key' => 'footerLinkLabel', 'type' => 'text', 'label' => 'Footer link label'],
-                        ['key' => 'footerLinkHref', 'type' => 'text', 'label' => 'Footer link URL'],
-                        ['key' => 'experienceLabel', 'type' => 'text', 'label' => 'Experience label', 'columnSpanFull' => true, 'helperText' => 'Kept for older hero layouts. The live search form uses Global chrome → Search form & filters.'],
-                        ['key' => 'experiencePlaceholder', 'type' => 'text', 'label' => 'Experience placeholder'],
-                        ['key' => 'datesLabel', 'type' => 'text', 'label' => 'Dates label'],
-                        ['key' => 'startDateLabel', 'type' => 'text', 'label' => 'Start date label'],
-                        ['key' => 'endDateLabel', 'type' => 'text', 'label' => 'End date label'],
-                        ['key' => 'travelersLabel', 'type' => 'text', 'label' => 'Travelers label'],
-                        ['key' => 'travelersValue', 'type' => 'text', 'label' => 'Travelers default value'],
-                    ],
-                ],
                 'cover' => [
                     'label' => 'Cover',
                     'fields' => [
@@ -558,6 +904,7 @@ return [
                         ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
                         ['key' => 'heading', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
                         ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
+                        ['key' => 'tabs', 'type' => 'tags', 'label' => 'Region tabs', 'helperText' => 'First tab should be All.'],
                         ['key' => 'cards', 'type' => 'repeater', 'label' => 'Country cards', 'fields' => [
                             ['key' => 'code', 'type' => 'text', 'label' => 'Code'],
                             ['key' => 'name', 'type' => 'text', 'label' => 'Name'],
@@ -637,6 +984,7 @@ return [
                         ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
                         ['key' => 'heading', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
                         ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
+                        ['key' => 'tabs', 'type' => 'tags', 'label' => 'Stay tabs', 'helperText' => 'First tab should be All.'],
                         ['key' => 'buttonLabel', 'type' => 'text', 'label' => 'Button label'],
                         ['key' => 'buttonHref', 'type' => 'text', 'label' => 'Button link'],
                     ],
@@ -674,153 +1022,6 @@ return [
                         ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Photo alt'],
                     ],
                 ],
-                'trustItems' => [
-                    'label' => 'Trust strip',
-                    'fields' => [
-                        ['key' => 'trustItems', 'type' => 'repeater', 'label' => 'Items', 'fields' => $trustItemFields, 'columnSpanFull' => true, 'isRootList' => true],
-                    ],
-                ],
-                'horizonSection' => [
-                    'label' => 'Destinations',
-                    'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'columnSpanFull' => true],
-                        ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
-                        ['key' => 'cards', 'type' => 'repeater', 'label' => 'Destinations to show', 'helperText' => 'Choose which countries appear on the homepage, and which region tab they belong to. Leave the image empty for a placeholder. A price is shown only when that country has a bookable vehicle.', 'fields' => [
-                            ['key' => 'countryCode', 'type' => 'select', 'label' => 'Country', 'optionsFrom' => 'destinations', 'searchable' => true, 'required' => true],
-                            ['key' => 'region', 'type' => 'select', 'label' => 'Region', 'options' => ['Europe' => 'Europe', 'Oceania' => 'Oceania', 'America' => 'America'], 'required' => true],
-                            ['key' => 'image', 'type' => 'image', 'label' => 'Image', 'helperText' => 'Optional. Empty cards use a placeholder.'],
-                        ], 'columnSpanFull' => true],
-                    ],
-                ],
-                'rentSection' => [
-                    'label' => 'What we rent',
-                    'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading'],
-                        ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
-                        ['key' => 'cards', 'type' => 'repeater', 'label' => 'Cards', 'fields' => [
-                            ['key' => 'name', 'type' => 'text', 'label' => 'Name'],
-                            ['key' => 'tagline', 'type' => 'text', 'label' => 'Tagline'],
-                            ['key' => 'listingCount', 'type' => 'text', 'label' => 'Listing count'],
-                            ['key' => 'href', 'type' => 'text', 'label' => 'Link'],
-                            ['key' => 'image', 'type' => 'image', 'label' => 'Image'],
-                            ['key' => 'alt', 'type' => 'text', 'label' => 'Image alt'],
-                        ], 'columnSpanFull' => true],
-                    ],
-                ],
-                'whySection' => [
-                    'label' => 'Why MyTerraBook',
-                    'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'columnSpanFull' => true],
-                        ['key' => 'subheading', 'type' => 'textarea', 'label' => 'Subheading', 'columnSpanFull' => true],
-                        ['key' => 'photo', 'type' => 'image', 'label' => 'Photo'],
-                        ['key' => 'photoAlt', 'type' => 'text', 'label' => 'Photo alt text'],
-                        ['key' => 'learnMoreLabel', 'type' => 'text', 'label' => 'Learn more label'],
-                        ['key' => 'badgeFromLabel', 'type' => 'text', 'label' => 'Badge prefix'],
-                        ['key' => 'badge_rating', 'type' => 'text', 'label' => 'Badge rating', 'path' => 'whySection.badge.rating'],
-                        ['key' => 'badge_reviewBold', 'type' => 'text', 'label' => 'Badge bold text', 'path' => 'whySection.badge.reviewBold'],
-                        ['key' => 'badge_reviewRest', 'type' => 'text', 'label' => 'Badge rest text', 'path' => 'whySection.badge.reviewRest'],
-                        ['key' => 'featuresLeft', 'type' => 'repeater', 'label' => 'Left column features', 'path' => 'whySection.featuresLeft', 'fields' => $whyFeatureFields, 'columnSpanFull' => true],
-                        ['key' => 'featuresRight', 'type' => 'repeater', 'label' => 'Right column features', 'path' => 'whySection.featuresRight', 'fields' => $whyFeatureFields, 'columnSpanFull' => true],
-                    ],
-                ],
-                'picksSection' => [
-                    'label' => 'Hand-picked',
-                    'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading'],
-                        ['key' => 'emptyLabel', 'type' => 'text', 'label' => 'Empty state'],
-                        ['key' => 'tabs', 'type' => 'repeater', 'label' => 'Tabs', 'fields' => [
-                            ['key' => 'id', 'type' => 'text', 'label' => 'Tab ID'],
-                            ['key' => 'label', 'type' => 'text', 'label' => 'Tab label'],
-                            ['key' => 'allLabel', 'type' => 'text', 'label' => 'View all label'],
-                            ['key' => 'allHref', 'type' => 'text', 'label' => 'View all link'],
-                        ], 'columnSpanFull' => true],
-                        ['key' => 'camperPicks', 'type' => 'repeater', 'label' => 'Campervan cards', 'path' => 'picksSection.items.camper', 'fields' => $productCardFields, 'columnSpanFull' => true],
-                        ['key' => 'carPicks', 'type' => 'repeater', 'label' => 'Car cards', 'path' => 'picksSection.items.car', 'fields' => $productCardFields, 'columnSpanFull' => true],
-                    ],
-                ],
-                'howSection' => [
-                    'label' => 'How it works',
-                    'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'columnSpanFull' => true],
-                        ['key' => 'steps', 'type' => 'repeater', 'label' => 'Steps', 'fields' => $howStepFields, 'columnSpanFull' => true],
-                    ],
-                ],
-                'staySection' => [
-                    'label' => 'Guesthouses',
-                    'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading'],
-                        ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
-                        ['key' => 'allLabel', 'type' => 'text', 'label' => 'View all label'],
-                        ['key' => 'allHref', 'type' => 'text', 'label' => 'View all link'],
-                        ['key' => 'emptyLabel', 'type' => 'text', 'label' => 'Empty state'],
-                        ['key' => 'cards', 'type' => 'repeater', 'label' => 'Fallback cards', 'fields' => $productCardFields, 'columnSpanFull' => true],
-                    ],
-                ],
-                'blogSection' => [
-                    'label' => 'Blog bento',
-                    'fields' => [
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'helperText' => 'Cards come from the five newest published posts in Blog. Publish or update a post there to change this section.'],
-                        ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
-                        ['key' => 'allLabel', 'type' => 'text', 'label' => 'View all label'],
-                        ['key' => 'allHref', 'type' => 'text', 'label' => 'View all link'],
-                    ],
-                ],
-                'hostCtaSection' => [
-                    'label' => 'Host CTA',
-                    'fields' => [
-                        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading', 'columnSpanFull' => true],
-                        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
-                        ['key' => 'earnAmount', 'type' => 'text', 'label' => 'Earn amount'],
-                        ['key' => 'earnNote', 'type' => 'textarea', 'label' => 'Earn note', 'columnSpanFull' => true],
-                        ['key' => 'points', 'type' => 'tags', 'label' => 'Bullet points'],
-                        ['key' => 'primaryLabel', 'type' => 'text', 'label' => 'Primary CTA'],
-                        ['key' => 'primaryHref', 'type' => 'text', 'label' => 'Primary link'],
-                        ['key' => 'secondaryLabel', 'type' => 'text', 'label' => 'Secondary CTA'],
-                        ['key' => 'secondaryHref', 'type' => 'text', 'label' => 'Secondary link'],
-                        ['key' => 'earnPeriod', 'type' => 'text', 'label' => 'Earn period'],
-                        ['key' => 'houseImage', 'type' => 'image', 'label' => 'House photo'],
-                        ['key' => 'houseImageAlt', 'type' => 'text', 'label' => 'House photo alt'],
-                        ['key' => 'vanImage', 'type' => 'image', 'label' => 'Van photo'],
-                        ['key' => 'vanImageAlt', 'type' => 'text', 'label' => 'Van photo alt'],
-                        ['key' => 'vanTag', 'type' => 'text', 'label' => 'Van tag'],
-                        ['key' => 'chipHeading', 'type' => 'text', 'label' => 'Chip heading'],
-                        ['key' => 'chipAmount', 'type' => 'text', 'label' => 'Chip amount'],
-                        ['key' => 'chipLabel', 'type' => 'text', 'label' => 'Chip label'],
-                    ],
-                ],
-                'reviewsSection' => [
-                    'label' => 'Reviews',
-                    'fields' => [
-                        ['key' => 'eyebrow', 'type' => 'text', 'label' => 'Eyebrow'],
-                        ['key' => 'heading', 'type' => 'text', 'label' => 'Heading'],
-                        ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
-                        ['key' => 'trustLine', 'type' => 'text', 'label' => 'Trust line', 'columnSpanFull' => true],
-                        ['key' => 'ratingIntro', 'type' => 'text', 'label' => 'Rating intro'],
-                        ['key' => 'ratingOn', 'type' => 'text', 'label' => 'Rating source connector'],
-                        ['key' => 'reviewerLabel', 'type' => 'text', 'label' => 'Reviewer label'],
-                        ['key' => 'googleReviewerLabel', 'type' => 'text', 'label' => 'Google reviewer label'],
-                        ['key' => 'ratingSourceLabel', 'type' => 'text', 'label' => 'Rating source label'],
-                        ['key' => 'googleRatingSourceLabel', 'type' => 'text', 'label' => 'Google source label'],
-                        ['key' => 'ctaLabel', 'type' => 'text', 'label' => 'CTA label'],
-                        ['key' => 'ctaHref', 'type' => 'text', 'label' => 'CTA link'],
-                        ['key' => 'googleEnabled', 'type' => 'toggle', 'label' => 'Connect Google Reviews', 'helperText' => 'Pull live rating and reviews from your Google Business profile. Add the Google Maps API key in Global chrome → Google Maps.'],
-                        ['key' => 'googlePlaceId', 'type' => 'text', 'label' => 'Google Place ID', 'helperText' => 'Find this in Google Maps → your business → Share → Embed a map, or use the Place ID finder.', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => true], 'columnSpanFull' => true],
-                        ['key' => 'rating', 'type' => 'text', 'label' => 'Rating (demo)', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false]],
-                        ['key' => 'ratingCount', 'type' => 'text', 'label' => 'Rating count (demo)', 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false]],
-                        ['key' => 'reviews', 'type' => 'repeater', 'label' => 'Review cards', 'helperText' => 'Shown on the homepage when Google Reviews is off or cannot be loaded. Clear quote and name to hide a card. Remove every card to hide the section.', 'fields' => $reviewCardFields, 'visibleWhen' => ['field' => 'googleEnabled', 'value' => false], 'columnSpanFull' => true],
-                    ],
-                ],
-                'guestHousesHighlight' => [
-                    'label' => 'Guest houses highlight',
-                    'fields' => [
-                        ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
-                        ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
-                        ['key' => 'featured_slugs', 'type' => 'tags', 'label' => 'Featured slugs'],
-                        ['key' => 'ctaLabel', 'type' => 'text', 'label' => 'CTA label'],
-                        ['key' => 'ctaHref', 'type' => 'text', 'label' => 'CTA link'],
-                    ],
-                ],
                 'seo' => $pageSeoSection,
             ],
         ],
@@ -829,204 +1030,56 @@ return [
             'group' => 'Marketing',
             'preview_route' => '/about',
             'sort_order' => 2,
-            'sections' => [
-                'hero' => ['label' => 'Hero', 'fields' => array_merge($heroFields, [
-                    ['key' => 'primaryLabel', 'type' => 'text', 'label' => 'Primary button label'],
-                    ['key' => 'primaryHref', 'type' => 'text', 'label' => 'Primary button link'],
-                    ['key' => 'secondaryLabel', 'type' => 'text', 'label' => 'Secondary button label'],
-                    ['key' => 'secondaryHref', 'type' => 'text', 'label' => 'Secondary button link'],
-                    ['key' => 'image', 'type' => 'image', 'label' => 'Hero image'],
-                    ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Hero image alt'],
-                    ['key' => 'pinTitle', 'type' => 'text', 'label' => 'Location pin title'],
-                    ['key' => 'pinSubtitle', 'type' => 'text', 'label' => 'Location pin subtitle'],
-                ])],
-                'storySection' => ['label' => 'Story section header', 'fields' => $sectionHeaderFields],
-                'storyBlocks' => ['label' => 'Story chapters', 'fields' => [
-                    ['key' => 'storyBlocks', 'type' => 'repeater', 'label' => 'Chapters', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
-                        ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
-                        ['key' => 'image', 'type' => 'image', 'label' => 'Photo'],
-                        ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Photo alt text'],
-                    ]],
-                ]],
-                'storyBody' => ['label' => 'Story body (rich text)', 'fields' => [
-                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true, 'helperText' => 'Optional. When story chapters are empty, paragraph text from this field is used instead.'],
-                ]],
-                'stats' => ['label' => 'Stats', 'fields' => [
-                    ['key' => 'stats', 'type' => 'repeater', 'label' => 'Stats', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
-                        ['key' => 'value', 'type' => 'text', 'label' => 'Value'],
-                        ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
-                        ['key' => 'sub', 'type' => 'text', 'label' => 'Subtext'],
-                    ]],
-                ]],
-                'valuesSection' => ['label' => 'Values section header', 'fields' => $sectionHeaderFields],
-                'pillars' => ['label' => 'Values', 'fields' => [
-                    ['key' => 'pillars', 'type' => 'repeater', 'label' => 'Pillars', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
-                        ['key' => 'icon', 'type' => 'select', 'label' => 'Icon', 'options' => ['shield' => 'Shield', 'price' => 'Price', 'route' => 'Route']],
-                        $iconImageField,
-                        ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
-                        ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
-                    ]],
-                ]],
-                'offeringsSection' => ['label' => 'Offerings section header', 'fields' => $sectionHeaderFields],
-                'offerings' => ['label' => 'Offerings cards', 'fields' => [
-                    ['key' => 'offerings', 'type' => 'repeater', 'label' => 'Cards', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
-                        ['key' => 'label', 'type' => 'text', 'label' => 'Title'],
-                        ['key' => 'tag', 'type' => 'text', 'label' => 'Tagline'],
-                        ['key' => 'href', 'type' => 'text', 'label' => 'Link'],
-                        ['key' => 'linkLabel', 'type' => 'text', 'label' => 'Button label', 'helperText' => 'Defaults to “Browse listings”.'],
-                        ['key' => 'image', 'type' => 'image', 'label' => 'Image'],
-                    ]],
-                ]],
-                'cta' => ['label' => 'Bottom CTA', 'fields' => $ctaFields],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $aboutSections,
         ],
         'faq' => [
             'label' => 'FAQ',
             'group' => 'Marketing',
             'preview_route' => '/faq',
             'sort_order' => 3,
-            'sections' => [
-                'hero' => ['label' => 'Hero', 'fields' => array_merge($heroFields, [
-                    ['key' => 'searchPlaceholder', 'type' => 'text', 'label' => 'Search placeholder', 'columnSpanFull' => true],
-                ])],
-                'stats' => ['label' => 'Support highlights', 'fields' => [
-                    ['key' => 'stats', 'type' => 'repeater', 'label' => 'Stats', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
-                        ['key' => 'value', 'type' => 'text', 'label' => 'Value'],
-                        ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
-                    ]],
-                ]],
-                'items' => ['label' => 'FAQ items', 'fields' => [
-                    ['key' => 'items', 'type' => 'repeater', 'label' => 'Items', 'fields' => $faqItemRepeater, 'columnSpanFull' => true, 'isRootList' => true],
-                ]],
-                'categories' => ['label' => 'Category tabs', 'fields' => [
-                    ['key' => 'allCategoryLabel', 'type' => 'text', 'label' => 'All questions label', 'path' => 'allCategoryLabel'],
-                    ['key' => 'categories', 'type' => 'repeater', 'label' => 'Categories', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
-                        ['key' => 'id', 'type' => 'text', 'label' => 'ID'],
-                        ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
-                        ['key' => 'nums', 'type' => 'tags', 'label' => 'Question numbers', 'columnSpanFull' => true],
-                    ]],
-                ]],
-                'helpCard' => ['label' => 'Sidebar help card', 'fields' => [
-                    ['key' => 'tag', 'type' => 'text', 'label' => 'Tag'],
-                    ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
-                    ['key' => 'body', 'type' => 'textarea', 'label' => 'Body', 'columnSpanFull' => true],
-                    ['key' => 'phoneLabel', 'type' => 'text', 'label' => 'Phone label'],
-                    ['key' => 'phone', 'type' => 'text', 'label' => 'Phone'],
-                    ['key' => 'emailLabel', 'type' => 'text', 'label' => 'Email label'],
-                    ['key' => 'email', 'type' => 'text', 'label' => 'Email'],
-                    ['key' => 'buttonLabel', 'type' => 'text', 'label' => 'Button label'],
-                    ['key' => 'buttonHref', 'type' => 'text', 'label' => 'Button link'],
-                ]],
-                'quickLinks' => ['label' => 'Sidebar quick links', 'fields' => [
-                    ['key' => 'quickLinks', 'type' => 'repeater', 'label' => 'Links', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
-                        ['key' => 'label', 'type' => 'text', 'label' => 'Label'],
-                        ['key' => 'href', 'type' => 'text', 'label' => 'Link'],
-                        ['key' => 'icon', 'type' => 'select', 'label' => 'Icon', 'options' => ['chat' => 'Chat', 'book' => 'Book', 'home' => 'Home']],
-                        $iconImageField,
-                    ]],
-                ]],
-                'emptyState' => ['label' => 'Empty search state', 'fields' => [
-                    ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
-                    ['key' => 'body', 'type' => 'textarea', 'label' => 'Body', 'columnSpanFull' => true],
-                    ['key' => 'buttonLabel', 'type' => 'text', 'label' => 'Button label'],
-                ]],
-                'cta' => ['label' => 'Bottom CTA', 'fields' => $ctaFields],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $faqSections,
         ],
         'contact' => [
             'label' => 'Contact',
             'group' => 'Marketing',
             'preview_route' => '/contact',
             'sort_order' => 4,
-            'sections' => [
-                'hero' => ['label' => 'Hero', 'fields' => $heroFields],
-                'details' => ['label' => 'Contact details', 'isRootSection' => true, 'fields' => [
-                    ['key' => 'phoneLabel', 'type' => 'text', 'label' => 'Phone label'],
-                    ['key' => 'phone', 'type' => 'text', 'label' => 'Phone'],
-                    ['key' => 'emailLabel', 'type' => 'text', 'label' => 'Email label'],
-                    ['key' => 'email', 'type' => 'text', 'label' => 'Email'],
-                    ['key' => 'addressLabel', 'type' => 'text', 'label' => 'Address label'],
-                    ['key' => 'address', 'type' => 'textarea', 'label' => 'Address', 'columnSpanFull' => true],
-                    ['key' => 'hoursLabel', 'type' => 'text', 'label' => 'Hours label'],
-                    ['key' => 'hours', 'type' => 'text', 'label' => 'Hours'],
-                    ['key' => 'show_form', 'type' => 'toggle', 'label' => 'Show contact form'],
-                ]],
-                'formLabels' => ['label' => 'Form labels', 'fields' => [
-                    ['key' => 'name', 'type' => 'text', 'label' => 'Name field'],
-                    ['key' => 'email', 'type' => 'text', 'label' => 'Email field'],
-                    ['key' => 'message', 'type' => 'text', 'label' => 'Message field'],
-                    ['key' => 'submit', 'type' => 'text', 'label' => 'Submit button'],
-                    ['key' => 'sending', 'type' => 'text', 'label' => 'Sending label'],
-                ]],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $contactSections,
         ],
         'terms' => [
             'label' => 'Terms',
             'group' => 'Marketing',
             'preview_route' => '/terms',
             'sort_order' => 5,
-            'sections' => [
-                'hero' => ['label' => 'Hero', 'fields' => $heroFields],
-                'body' => ['label' => 'Body', 'fields' => [
-                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
-                ]],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $legalSections,
         ],
         'privacy' => [
             'label' => 'Privacy',
             'group' => 'Marketing',
             'preview_route' => '/privacy',
             'sort_order' => 6,
-            'sections' => [
-                'hero' => ['label' => 'Hero', 'fields' => $heroFields],
-                'body' => ['label' => 'Body', 'fields' => [
-                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
-                ]],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $legalSections,
         ],
         'refund-policy' => [
             'label' => 'Refund Policy',
             'group' => 'Marketing',
             'preview_route' => '/refund-policy',
             'sort_order' => 7,
-            'sections' => [
-                'hero' => ['label' => 'Hero', 'fields' => $heroFields],
-                'body' => ['label' => 'Body', 'fields' => [
-                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
-                ]],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $legalSections,
         ],
         'cookies' => [
             'label' => 'Cookies',
             'group' => 'Marketing',
             'preview_route' => '/cookies',
             'sort_order' => 8,
-            'sections' => [
-                'hero' => ['label' => 'Hero', 'fields' => $heroFields],
-                'body' => ['label' => 'Body', 'fields' => [
-                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
-                ]],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $legalSections,
         ],
         'cardholder-terms' => [
             'label' => 'Cardholder Terms',
             'group' => 'Marketing',
             'preview_route' => '/cardholder-terms',
             'sort_order' => 9,
-            'sections' => [
-                'hero' => ['label' => 'Hero', 'fields' => $heroFields],
-                'body' => ['label' => 'Body', 'fields' => [
-                    ['key' => 'body', 'type' => 'richtext', 'label' => 'Body', 'columnSpanFull' => true, 'isRoot' => true],
-                ]],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $legalSections,
         ],
         'become-a-host' => [
             'label' => 'Become a host',
@@ -1131,172 +1184,60 @@ return [
             'group' => 'Marketing',
             'preview_route' => '/good-to-know',
             'sort_order' => 10,
-            'sections' => [
-                'header' => ['label' => 'Page header', 'fields' => [
-                    ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
-                    ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
-                ]],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $guideSections,
         ],
         'campsite-map' => [
             'label' => 'Campsite map',
             'group' => 'Marketing',
             'preview_route' => '/campsite-map',
             'sort_order' => 9,
-            'sections' => [
-                'header' => ['label' => 'Page header', 'fields' => [
-                    ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
-                    ['key' => 'lead', 'type' => 'textarea', 'label' => 'Lead', 'columnSpanFull' => true],
-                    ['key' => 'image', 'type' => 'image', 'label' => 'Header photo'],
-                    ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Header photo alt text'],
-                ]],
-                'map' => ['label' => 'Map', 'fields' => [
-                    ['key' => 'embedUrl', 'type' => 'text', 'label' => 'Google Maps embed URL', 'columnSpanFull' => true, 'helperText' => 'Paste the full iframe src URL from Google My Maps.'],
-                    ['key' => 'image', 'type' => 'image', 'label' => 'Static map image', 'helperText' => 'Optional fallback image when no embed URL is set.'],
-                    ['key' => 'imageAlt', 'type' => 'text', 'label' => 'Map image alt text'],
-                ]],
-                'footnote' => ['label' => 'Footnote', 'isRootSection' => true, 'fields' => [
-                    ['key' => 'note', 'type' => 'textarea', 'label' => 'Note below map', 'columnSpanFull' => true],
-                ]],
-                'photos' => ['label' => 'Photo gallery', 'fields' => [
-                    ['key' => 'photos', 'type' => 'repeater', 'label' => 'Photos', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => [
-                        ['key' => 'image', 'type' => 'image', 'label' => 'Photo'],
-                        ['key' => 'alt', 'type' => 'text', 'label' => 'Alt text'],
-                        ['key' => 'caption', 'type' => 'textarea', 'label' => 'Caption', 'columnSpanFull' => true],
-                    ]],
-                ]],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $campSections,
         ],
         'search-campervan' => [
             'label' => 'Search, Campervans',
             'group' => 'Transactional',
             'preview_route' => '/campervans',
             'sort_order' => 10,
-            'sections' => [
-                'routing' => ['label' => 'Routing & defaults', 'isRootSection' => true, 'fields' => $searchRoutingFields],
-                'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => $searchCopyFields],
-                'presentation' => [
-                    'label' => 'Search page',
-                    'fields' => [
-                        ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
-                        ['key' => 'insuranceNote', 'type' => 'text', 'label' => 'Insurance note', 'columnSpanFull' => true],
-                        ['key' => 'breadcrumbHome', 'type' => 'text', 'label' => 'Breadcrumb home'],
-                        ['key' => 'breadcrumbSection', 'type' => 'text', 'label' => 'Breadcrumb section'],
-                        ['key' => 'breadcrumbPlace', 'type' => 'text', 'label' => 'Breadcrumb place'],
-                        ['key' => 'pickupLabel', 'type' => 'text', 'label' => 'Pick-up label'],
-                        ['key' => 'datesLabel', 'type' => 'text', 'label' => 'Dates label'],
-                        ['key' => 'dropoffLabel', 'type' => 'text', 'label' => 'Drop-off label'],
-                        ['key' => 'dropoffSame', 'type' => 'text', 'label' => 'Same drop-off'],
-                        ['key' => 'updateLabel', 'type' => 'text', 'label' => 'Update button'],
-                        ['key' => 'filtersLabel', 'type' => 'text', 'label' => 'Filters button'],
-                        ['key' => 'filtersTitle', 'type' => 'text', 'label' => 'Filters sheet title'],
-                        ['key' => 'sortTitle', 'type' => 'text', 'label' => 'Sort sheet title'],
-                        ['key' => 'partnerLabel', 'type' => 'text', 'label' => 'Partner label'],
-                        ['key' => 'showAllLabel', 'type' => 'text', 'label' => 'Show all label'],
-                        ['key' => 'bundleTitle', 'type' => 'text', 'label' => 'Bundle title', 'columnSpanFull' => true],
-                        ['key' => 'bundleText', 'type' => 'textarea', 'label' => 'Bundle text', 'columnSpanFull' => true],
-                        ['key' => 'bundleButton', 'type' => 'text', 'label' => 'Bundle button'],
-                        ['key' => 'bundleHref', 'type' => 'text', 'label' => 'Bundle link'],
-                        ['key' => 'showingLabel', 'type' => 'text', 'label' => 'Showing line', 'helperText' => 'Use {shown} and {total}.'],
-                        ['key' => 'loadMoreLabel', 'type' => 'text', 'label' => 'Show more button'],
-                        ['key' => 'onBoardLabel', 'type' => 'text', 'label' => 'On board label'],
-                        ['key' => 'fromLabel', 'type' => 'text', 'label' => 'Price prefix'],
-                        ['key' => 'bookLabel', 'type' => 'text', 'label' => 'Book button'],
-                        ['key' => 'typeLabel', 'type' => 'text', 'label' => 'Type badge'],
-                        ['key' => 'clearLabel', 'type' => 'text', 'label' => 'Clear filters'],
-                        ['key' => 'showLabel', 'type' => 'text', 'label' => 'Show results', 'helperText' => 'Use {count}.'],
-                    ],
-                ],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $searchFigmaSections,
         ],
         'search-car' => [
             'label' => 'Search, Cars',
             'group' => 'Transactional',
             'preview_route' => '/cars',
             'sort_order' => 11,
-            'sections' => [
-                'routing' => ['label' => 'Routing & defaults', 'isRootSection' => true, 'fields' => $searchRoutingFields],
-                'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => $searchCopyFields],
-                'presentation' => ['label' => 'Search page', 'fields' => $searchPresentationFields],
-                'seo' => $pageSeoSection,
-            ],
+            'sections' => $searchFigmaSections,
         ],
         'search-guesthouse' => [
             'label' => 'Search, Guesthouses',
             'group' => 'Transactional',
             'preview_route' => '/guesthouses',
             'sort_order' => 12,
-            'sections' => [
-                'routing' => ['label' => 'Routing & defaults', 'isRootSection' => true, 'fields' => array_merge($searchRoutingFields, [
+            'sections' => array_replace($searchFigmaSections, [
+                'routing' => ['label' => 'Catalog routing', 'isRootSection' => true, 'fields' => array_merge($searchRoutingFields, [
                     ['key' => 'introLocationDefault', 'type' => 'text', 'label' => 'Default location intro'],
                 ])],
-                'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => $searchCopyFields],
-                'presentation' => ['label' => 'Search page', 'fields' => $searchPresentationFields],
-                'seo' => $pageSeoSection,
-            ],
+            ]),
         ],
         'listing-campervan' => [
             'label' => 'Listing, Campervan',
             'group' => 'Transactional',
             'preview_route' => '/campervans',
             'sort_order' => 13,
-            'sections' => [
-                'labels' => ['label' => 'Labels & copy', 'isRootSection' => true, 'fields' => $listingLabelFields],
-                'frame' => ['label' => 'Listing page', 'fields' => $listingFrameFields],
-                'tabs' => ['label' => 'Detail tabs', 'fields' => [
-                    ['key' => 'tabs', 'type' => 'repeater', 'label' => 'Tabs', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $listingTabFields],
-                ]],
-                'trustPoints' => ['label' => 'Trust points', 'fields' => [
-                    ['key' => 'trustPoints', 'type' => 'repeater', 'label' => 'Points', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $trustPointFields],
-                ]],
-                'bookingSteps' => ['label' => 'Booking steps', 'fields' => [
-                    ['key' => 'bookingSteps', 'type' => 'repeater', 'label' => 'Steps', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $bookingStepFields],
-                ]],
-                'sectionDescriptions' => ['label' => 'Detail section descriptions', 'fields' => $listingSectionDescriptionFields],
-            ],
+            'sections' => $listingFigmaSections,
         ],
         'listing-car' => [
             'label' => 'Listing, Car',
             'group' => 'Transactional',
             'preview_route' => '/cars',
             'sort_order' => 14,
-            'sections' => [
-                'labels' => ['label' => 'Labels & copy', 'isRootSection' => true, 'fields' => $listingLabelFields],
-                'frame' => ['label' => 'Listing page', 'fields' => $listingFrameFields],
-                'tabs' => ['label' => 'Detail tabs', 'fields' => [
-                    ['key' => 'tabs', 'type' => 'repeater', 'label' => 'Tabs', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $listingTabFields],
-                ]],
-                'trustPoints' => ['label' => 'Trust points', 'fields' => [
-                    ['key' => 'trustPoints', 'type' => 'repeater', 'label' => 'Points', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $trustPointFields],
-                ]],
-                'bookingSteps' => ['label' => 'Booking steps', 'fields' => [
-                    ['key' => 'bookingSteps', 'type' => 'repeater', 'label' => 'Steps', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $bookingStepFields],
-                ]],
-                'sectionDescriptions' => ['label' => 'Detail section descriptions', 'fields' => $listingSectionDescriptionFields],
-            ],
+            'sections' => $listingFigmaSections,
         ],
         'listing-guesthouse' => [
             'label' => 'Listing, Guesthouse',
             'group' => 'Transactional',
             'preview_route' => '/guesthouses',
             'sort_order' => 15,
-            'sections' => [
-                'labels' => ['label' => 'Labels & copy', 'isRootSection' => true, 'fields' => $listingLabelFields],
-                'frame' => ['label' => 'Listing page', 'fields' => $listingFrameFields],
-                'tabs' => ['label' => 'Detail tabs', 'fields' => [
-                    ['key' => 'tabs', 'type' => 'repeater', 'label' => 'Tabs', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $listingTabFields],
-                ]],
-                'trustPoints' => ['label' => 'Trust points', 'fields' => [
-                    ['key' => 'trustPoints', 'type' => 'repeater', 'label' => 'Points', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $trustPointFields],
-                ]],
-                'bookingSteps' => ['label' => 'Booking steps', 'fields' => [
-                    ['key' => 'bookingSteps', 'type' => 'repeater', 'label' => 'Steps', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $bookingStepFields],
-                ]],
-                'sectionDescriptions' => ['label' => 'Detail section descriptions', 'fields' => $listingSectionDescriptionFields],
-            ],
+            'sections' => $listingFigmaSections,
         ],
         'checkout' => [
             'label' => 'Checkout',
@@ -1329,23 +1270,7 @@ return [
             'group' => 'App',
             'preview_route' => '/login',
             'sort_order' => 17,
-            'sections' => [
-                'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => [
-                    ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
-                    ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
-                    ['key' => 'emailLabel', 'type' => 'text', 'label' => 'Email label'],
-                    ['key' => 'passwordLabel', 'type' => 'text', 'label' => 'Password label'],
-                    ['key' => 'rememberLabel', 'type' => 'text', 'label' => 'Remember me label'],
-                    ['key' => 'submitLabel', 'type' => 'text', 'label' => 'Submit label'],
-                    ['key' => 'registerPrompt', 'type' => 'text', 'label' => 'Register prompt'],
-                    ['key' => 'registerLink', 'type' => 'text', 'label' => 'Register link text'],
-                    ['key' => 'forgotPasswordLabel', 'type' => 'text', 'label' => 'Forgot password label'],
-                    ['key' => 'signingInLabel', 'type' => 'text', 'label' => 'Signing in label'],
-                    ['key' => 'heroTitle', 'type' => 'text', 'label' => 'Side title', 'columnSpanFull' => true],
-                    ['key' => 'heroText', 'type' => 'textarea', 'label' => 'Side text', 'columnSpanFull' => true],
-                    ['key' => 'orLabel', 'type' => 'text', 'label' => 'Divider label'],
-                    ['key' => 'hostSignInLabel', 'type' => 'text', 'label' => 'Host sign-in link'],
-                ]],
+            'sections' => array_merge(array_diff_key($loginSections, ['seo' => true]), [
                 'hostLogin' => ['label' => 'Host sign in', 'fields' => [
                     ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
                     ['key' => 'subtitle', 'type' => 'textarea', 'label' => 'Subtitle', 'columnSpanFull' => true],
@@ -1392,7 +1317,7 @@ return [
                     ['key' => 'hostSignInLabel', 'type' => 'text', 'label' => 'Host sign-in link'],
                 ]],
                 'seo' => $pageSeoSection,
-            ],
+            ]),
         ],
         'auth-register' => [
             'label' => 'Register',
