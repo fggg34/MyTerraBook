@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import AboutPageContent from '../components/content/AboutPageContent'
+import AboutFigma from '../components/content/AboutFigma'
 import ContentPageHero from '../components/content/ContentPageHero'
 import ContentProse from '../components/content/ContentProse'
 import FaqPageContent from '../components/content/FaqPageContent'
@@ -58,7 +58,7 @@ export default function SitePagePage({ forcedSlug }) {
     return (
       <>
         <PageHead {...seo} />
-        <AboutPageContent page={page} />
+        <AboutFigma />
       </>
     )
   }
