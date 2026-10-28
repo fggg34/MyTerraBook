@@ -245,6 +245,22 @@ class AdminScreen
             return [$link('New tracking campaign', \App\Filament\Resources\TrackingCampaigns\TrackingCampaignResource::getUrl('create'), true)];
         }
 
+        if (self::on('admin/payment-methods') && PaymentMethodResource::canCreate()) {
+            return [$link('New payment method', PaymentMethodResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/custom-fields') && \App\Filament\Resources\CustomFields\CustomFieldResource::canCreate()) {
+            return [$link('New custom field', \App\Filament\Resources\CustomFields\CustomFieldResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/conditional-texts') && \App\Filament\Resources\ConditionalTexts\ConditionalTextResource::canCreate()) {
+            return [$link('New conditional text', \App\Filament\Resources\ConditionalTexts\ConditionalTextResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/backups') && \App\Filament\Resources\Backups\BackupResource::canCreate()) {
+            return [$link('New backup', \App\Filament\Resources\Backups\BackupResource::getUrl('create'), true)];
+        }
+
         if (self::on('admin/email-templates')) {
             $actions = [[
                 'label' => 'Install default templates',

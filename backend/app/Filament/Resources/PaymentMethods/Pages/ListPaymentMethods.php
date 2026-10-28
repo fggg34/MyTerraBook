@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\PaymentMethods\Pages;
 
+use App\Filament\Concerns\EmbedsCatalogTable;
 use App\Filament\Resources\PaymentMethods\PaymentMethodResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListPaymentMethods extends ListRecords
 {
+    use EmbedsCatalogTable;
+
     protected static string $resource = PaymentMethodResource::class;
 
     protected function getHeaderActions(): array

@@ -456,8 +456,8 @@
                         <div class="ir-global-field">
                             <label class="ir-global-label">Theme</label>
                             <select class="ir-global-select" wire:model.live="state.theme_name">
-                                <option value="default">default</option>
-                                <option value="modern">modern</option>
+                                <option value="default">Default</option>
+                                <option value="modern">Modern</option>
                             </select>
                         </div>
                         <div class="ir-global-field">

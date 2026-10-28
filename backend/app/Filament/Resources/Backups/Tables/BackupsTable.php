@@ -44,6 +44,7 @@ class BackupsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->view('filament.admin.backups');
     }
 }

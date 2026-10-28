@@ -40,6 +40,7 @@ class ConditionalTextsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->view('filament.admin.conditional-texts');
     }
 }
