@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LocationFees\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -14,6 +15,8 @@ class LocationFeesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['pickupLocation', 'dropoffLocation', 'taxRate']))
+            ->view('filament.admin.location-fees')
             ->columns([
                 TextColumn::make('pickupLocation.name')
                     ->searchable(),
@@ -42,7 +45,12 @@ class LocationFeesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('pickup_location_id')
+                    ->label('Pickup')
+                    ->relationship('pickupLocation', 'name'),
+                SelectFilter::make('dropoff_location_id')
+                    ->label('Drop-off')
+                    ->relationship('dropoffLocation', 'name'),
             ])
             ->recordActions([
                 EditAction::make(),

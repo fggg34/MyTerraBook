@@ -5,6 +5,7 @@ namespace App\Services\Partners;
 use App\Enums\UserRole;
 use App\Models\Setting;
 use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class GreenlightSettings
@@ -57,6 +58,10 @@ class GreenlightSettings
 
     public function host(): ?User
     {
+        if (! Schema::hasColumn('users', 'partner_provider')) {
+            return null;
+        }
+
         return User::query()
             ->where('role', UserRole::Host)
             ->where('partner_provider', self::PROVIDER)

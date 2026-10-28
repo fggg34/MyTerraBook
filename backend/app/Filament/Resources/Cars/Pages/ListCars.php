@@ -10,9 +10,12 @@ use App\Models\Car;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
+use Livewire\Attributes\Url;
 
 class ListCars extends ListRecords
 {
@@ -20,21 +23,43 @@ class ListCars extends ListRecords
 
     protected static ?string $title = 'Vehicles';
 
+    #[Url(as: 'view')]
     public string $viewMode = 'grid';
+
+    public function mount(): void
+    {
+        parent::mount();
+
+        $this->tableFilters = array_replace_recursive([
+            'listing_status' => ['value' => null],
+            'sub_category_id' => ['value' => null],
+            'locations' => ['value' => null],
+            'drive_type' => ['value' => null],
+            'user_id' => ['value' => null],
+            'is_active' => ['value' => null],
+        ], $this->tableFilters ?? []);
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema->components([
+            EmbeddedTable::make(),
+        ]);
+    }
 
     public function getTabs(): array
     {
         return [
             'all' => Tab::make('All')
-                ->badge(Car::query()->count() ?: null),
+                ->badge((string) Car::query()->count()),
             'active' => Tab::make('Active')
-                ->badge(Car::query()->where('is_active', true)->count() ?: null)
+                ->badge((string) Car::query()->where('is_active', true)->count())
                 ->modifyQueryUsing(fn ($query) => $query->where('is_active', true)),
             'inactive' => Tab::make('Inactive')
-                ->badge(Car::query()->where('is_active', false)->count() ?: null)
+                ->badge((string) Car::query()->where('is_active', false)->count())
                 ->modifyQueryUsing(fn ($query) => $query->where('is_active', false)),
             'pending_review' => Tab::make('Pending review')
-                ->badge(Car::query()->where('listing_status', ListingApprovalStatus::PendingReview)->count() ?: null)
+                ->badge((string) Car::query()->where('listing_status', ListingApprovalStatus::PendingReview)->count())
                 ->modifyQueryUsing(fn ($query) => $query->where('listing_status', ListingApprovalStatus::PendingReview)),
         ];
     }

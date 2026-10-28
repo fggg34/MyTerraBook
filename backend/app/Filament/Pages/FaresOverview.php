@@ -53,8 +53,14 @@ class FaresOverview extends Page
     /** @var array<int, string> */
     public array $displayDates = [];
 
-    /** @var array<int, array{id:int,name:string,units_available:int,prices:array<int,int>}> */
+    /** @var array<int, array{id:int,name:string,units_available:int,has_base:bool,prices:array<int,int>}> */
     public array $overviewRows = [];
+
+    public ?int $carToAdd = null;
+
+    public ?int $calculatorTotalCents = null;
+
+    public bool $calculatorHasBase = false;
 
     public function mount(): void
     {
@@ -106,6 +112,9 @@ class FaresOverview extends Page
 
         if ($this->selectedCarIds === [] || $this->displayDates === []) {
             $this->overviewRows = [];
+            $specials = SpecialPrice::query()->where('is_active', true)->orderBy('id')->get();
+            $priceTypeId = PriceType::query()->where('is_active', true)->orderBy('id')->value('id');
+            $this->fillCalculatorTotal($specials, $priceTypeId !== null ? (int) $priceTypeId : null);
 
             return;
         }
@@ -158,11 +167,65 @@ class FaresOverview extends Page
                 'id' => (int) $car->id,
                 'name' => (string) $car->name,
                 'units_available' => (int) $car->units_available,
+                'has_base' => $dailyFareMap->get($car->id) !== null,
                 'prices' => $prices,
             ];
         }
 
         $this->overviewRows = $rows;
+        $this->fillCalculatorTotal($specials, $priceTypeId !== null ? (int) $priceTypeId : null);
+    }
+
+    public function addCar(mixed $id): void
+    {
+        $id = (int) $id;
+        $selected = array_map(intval(...), $this->selectedCarIds);
+
+        if ($id > 0 && ! in_array($id, $selected, true)) {
+            $selected[] = $id;
+        }
+
+        $this->selectedCarIds = $selected;
+        $this->carToAdd = null;
+        $this->calculateRates();
+    }
+
+    public function removeCar(int $id): void
+    {
+        $this->selectedCarIds = array_values(array_filter(
+            array_map(intval(...), $this->selectedCarIds),
+            fn (int $carId): bool => $carId !== $id,
+        ));
+        $this->calculateRates();
+    }
+
+    private function fillCalculatorTotal($specials, ?int $priceTypeId): void
+    {
+        $this->calculatorTotalCents = null;
+        $this->calculatorHasBase = false;
+
+        if ($this->calculatorCarId === null) {
+            return;
+        }
+
+        $fare = DailyFare::query()
+            ->where('car_id', $this->calculatorCarId)
+            ->where('from_days', '<=', $this->rentalDays)
+            ->where('to_days', '>=', $this->rentalDays)
+            ->orderByDesc('from_days')
+            ->first();
+
+        $this->calculatorHasBase = $fare !== null;
+        $pickupAt = Carbon::parse($this->pickupDate)->startOfDay();
+
+        $this->calculatorTotalCents = $this->applyOverviewSpecials(
+            (int) ($fare?->price_per_day_cents ?? 0),
+            $specials->all(),
+            (int) $this->calculatorCarId,
+            $priceTypeId,
+            $pickupAt,
+            $pickupAt->copy()->addDays($this->rentalDays),
+        );
     }
 
     private function applyOverviewSpecials(

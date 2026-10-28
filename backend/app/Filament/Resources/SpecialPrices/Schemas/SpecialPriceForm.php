@@ -104,24 +104,42 @@ class SpecialPriceForm
                                     ->native(false)
                                     ->required(),
 
-                                TextInput::make('value_percent_bips')
-                                    ->label('Value (percentage basis points)')
-                                    ->helperText('100 = 1%, 1000 = 10%')
-                                    ->numeric()
-                                    ->minValue(0)
+                                \App\Support\AdminInputs::percentFromBips('value_percent_bips', 'Value (%)')
                                     ->visible(fn ($get): bool => $get('value_mode') === 'percentage'),
 
-                                TextInput::make('value_fixed_cents')
-                                    ->label('Value (fixed cents)')
-                                    ->numeric()
-                                    ->minValue(0)
+                                \App\Support\AdminInputs::isk('value_fixed_cents', 'Value')
                                     ->visible(fn ($get): bool => $get('value_mode') === 'fixed'),
 
                                 KeyValue::make('day_overrides')
-                                    ->label('Value Overrides')
-                                    ->helperText('Override by rental day count, e.g. 3 => 1200 (cents).')
-                                    ->keyLabel('Rental Days')
-                                    ->valueLabel('Value (cents)')
+                                    ->label('Value overrides')
+                                    ->helperText('Override by rental length. The key is the number of days and the value is the daily amount in ISK.')
+                                    ->keyLabel('Rental days')
+                                    ->valueLabel('Amount (ISK)')
+                                    ->afterStateHydrated(function (KeyValue $component, mixed $state): void {
+                                        if (! is_array($state)) {
+                                            return;
+                                        }
+                                        $component->state(collect($state)->map(function (mixed $value): mixed {
+                                            if ($value === null || $value === '') {
+                                                return $value;
+                                            }
+
+                                            return (string) intdiv((int) $value, 100);
+                                        })->all());
+                                    })
+                                    ->dehydrateStateUsing(function (mixed $state): mixed {
+                                        if (! is_array($state)) {
+                                            return $state;
+                                        }
+
+                                        return collect($state)->map(function (mixed $value): mixed {
+                                            if ($value === null || $value === '') {
+                                                return $value;
+                                            }
+
+                                            return (int) round(((float) $value) * 100);
+                                        })->all();
+                                    })
                                     ->columnSpanFull(),
 
                                 Select::make('round_to_integer')

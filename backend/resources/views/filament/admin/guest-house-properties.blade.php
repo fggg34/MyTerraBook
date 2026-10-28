@@ -4,11 +4,12 @@
     use App\Filament\GuestHouse\Resources\GuestHouseResource;
     use App\Models\GuestHouse;
     use App\Models\User;
+    use App\Support\AdminTableBadgeColors;
     use Illuminate\Support\Facades\Storage;
 
     $records = $getRecords();
     $pageName = $this->getTablePaginationPageName();
-    $types = collect(GuestHouseType::cases())->mapWithKeys(fn (GuestHouseType $type): array => [$type->value => ucfirst($type->value)]);
+    $types = collect(GuestHouseType::cases())->mapWithKeys(fn (GuestHouseType $type): array => [$type->value => AdminTableBadgeColors::humanize($type)]);
     $cities = GuestHouse::query()->whereNotNull('city')->where('city', '!=', '')->distinct()->orderBy('city')->pluck('city', 'city');
     $hosts = User::query()
         ->whereIn('id', GuestHouse::query()->whereNotNull('user_id')->distinct()->pluck('user_id'))
@@ -21,14 +22,7 @@
 @endphp
 
 <div class="tb-list" x-data="{ colsOpen: false, openFilter: null, cols: { type: true, capacity: true, price: true, host: true, status: true, updated: true } }">
-    <div class="tb-seg" role="tablist" aria-label="Status">
-        @foreach ($this->getTabs() as $key => $tab)
-            <button type="button" wire:click="$set('activeTab', '{{ $key }}')" @class(['is-active' => ($this->activeTab ?? 'all') === $key])>
-                {{ $tab->getLabel() }}
-                <span>{{ $tab->getBadge() }}</span>
-            </button>
-        @endforeach
-    </div>
+    <x-admin.status-tabs :tabs="$this->getTabs()" :active="$this->activeTab ?? 'all'" />
 
 <div
     class="tb-table-card"
@@ -130,18 +124,12 @@
                     x-bind:checked="isRecordSelected(@js($key)) ? 'checked' : null"
                 >
             </span>
-            <span class="tb-entity tb-keep">
-                @if (filled($thumbPath))
-                    <img class="tb-cover" src="{{ Storage::disk('public')->url($thumbPath) }}" alt="">
-                @else
-                    <span class="tb-cover"></span>
-                @endif
-                <span>
-                    <strong>{{ $record->name }}</strong>
-                    <small>{{ $subline }}</small>
-                </span>
-            </span>
-            <span :style="cols.type ? '' : 'visibility:hidden'"><span class="tb-pill tb-pill-info">{{ $types[$record->type?->value ?? $record->type] ?? ucfirst((string) ($record->type?->value ?? $record->type)) }}</span></span>
+            <x-admin.entity-cell
+                :title="$record->name"
+                :subtitle="$subline"
+                :image="filled($thumbPath) ? Storage::disk('public')->url($thumbPath) : null"
+            />
+            <span :style="cols.type ? '' : 'visibility:hidden'"><x-admin.status-pill tone="info">{{ $types[$record->type?->value ?? $record->type] ?? AdminTableBadgeColors::humanize($record->type) }}</x-admin.status-pill></span>
             <span class="tb-stack" :style="cols.capacity ? '' : 'visibility:hidden'">
                 <strong>{{ (int) $record->max_guests }} guest{{ (int) $record->max_guests === 1 ? '' : 's' }}</strong>
                 <small>{{ $bedrooms }} bedroom{{ $bedrooms === 1 ? '' : 's' }} · {{ $bathrooms }} bath{{ $bathrooms === 1 ? '' : 's' }}</small>
@@ -151,46 +139,28 @@
                 <small>min. {{ $nights }} night{{ $nights === 1 ? '' : 's' }}</small>
             </span>
             <span :style="cols.host ? '' : 'visibility:hidden'">{{ $record->host?->name }}</span>
-            <span :style="cols.status ? '' : 'visibility:hidden'"><span class="tb-pill tb-pill-{{ $tone }}">{{ \App\Support\AdminTableBadgeColors::humanize($record->status) }}</span></span>
+            <span :style="cols.status ? '' : 'visibility:hidden'"><x-admin.status-pill :tone="$tone">{{ \App\Support\AdminTableBadgeColors::humanize($record->status) }}</x-admin.status-pill></span>
             <span class="tb-muted" :style="cols.updated ? '' : 'visibility:hidden'">{{ $record->updated_at?->format('j M Y') }}</span>
-            <span class="tb-actions tb-keep">
-                <a class="tb-row-btn" href="{{ GuestHouseResource::getUrl('edit', ['record' => $record]) }}" aria-label="Edit">
-                    <img src="{{ asset('admin-redesign/icon-tb-pencil.svg') }}" alt="" width="16" height="16">
-                </a>
-                <details class="tb-menu">
-                    <summary class="tb-row-btn" aria-label="More">
-                        <img src="{{ asset('admin-redesign/icon-tb-more.svg') }}" alt="" width="16" height="16">
-                    </summary>
-                    <menu>
-                        @if (filled($record->slug))
-                            <li><a href="{{ $frontend }}/guesthouses/{{ $record->slug }}" target="_blank" rel="noopener noreferrer"><img src="{{ asset('admin-redesign/icon-tb-eye.svg') }}" alt="" width="16" height="16">Preview</a></li>
-                        @endif
-                        <li><button type="button" wire:click="mountTableAction('duplicate', '{{ $key }}')"><img src="{{ asset('admin-redesign/icon-tb-copy.svg') }}" alt="" width="16" height="16">Duplicate</button></li>
-                        @if ($status === 'pending_review')
-                            <li><button type="button" wire:click="mountTableAction('approve', '{{ $key }}')">Approve</button></li>
-                            <li><button type="button" wire:click="mountTableAction('reject', '{{ $key }}')">Reject</button></li>
-                            <li><button type="button" wire:click="mountTableAction('requestChanges', '{{ $key }}')">Request changes</button></li>
-                        @endif
-                        <li><button type="button" class="is-danger" wire:click="mountTableAction('delete', '{{ $key }}')"><img src="{{ asset('admin-redesign/icon-tb-trash.svg') }}" alt="" width="16" height="16">Delete…</button></li>
-                    </menu>
-                </details>
-            </span>
+            @php
+                $menu = [];
+                if (filled($record->slug)) {
+                    $menu[] = ['label' => 'Preview', 'icon' => 'icon-tb-eye.svg', 'href' => $frontend.'/guesthouses/'.$record->slug, 'external' => true];
+                }
+                $menu[] = ['label' => 'Duplicate', 'icon' => 'icon-tb-copy.svg', 'wire' => "mountTableAction('duplicate', '{$key}')"];
+                if ($status === 'pending_review') {
+                    $menu[] = ['label' => 'Approve', 'wire' => "mountTableAction('approve', '{$key}')"];
+                    $menu[] = ['label' => 'Reject', 'wire' => "mountTableAction('reject', '{$key}')"];
+                    $menu[] = ['label' => 'Request changes', 'wire' => "mountTableAction('requestChanges', '{$key}')"];
+                }
+                $menu[] = ['label' => 'Delete…', 'icon' => 'icon-tb-trash.svg', 'wire' => "mountTableAction('delete', '{$key}')", 'danger' => true];
+            @endphp
+            <x-admin.row-menu :edit-url="GuestHouseResource::getUrl('edit', ['record' => $record])" :items="$menu" />
         </div>
     @empty
         <p class="tb-empty">No guest houses match these filters.</p>
     @endforelse
 
-    <div class="tb-foot">
-        <span>
-            @if (method_exists($records, 'total') && $records->total() > 0)
-                Showing {{ $records->firstItem() }}–{{ $records->lastItem() }} of {{ $records->total() }}
-            @else
-                Showing 0 of 0
-            @endif
-        </span>
-        <button type="button" class="tb-btn tb-btn-sm" wire:click="previousPage(@js($pageName))" @disabled(method_exists($records, 'onFirstPage') && $records->onFirstPage())>Previous</button>
-        <button type="button" class="tb-btn tb-btn-sm" wire:click="nextPage(@js($pageName))" @disabled(method_exists($records, 'hasMorePages') && ! $records->hasMorePages())>Next</button>
-    </div>
+    <x-admin.table-footer :records="$records" :page-name="$pageName" />
 </div>
 
 </div>

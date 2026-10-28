@@ -25,6 +25,7 @@ class OrdersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.car-reservations')
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['car', 'carUnit', 'pickupLocation', 'dropoffLocation', 'payments']))
             ->defaultSort('created_at', 'desc')
             ->searchPlaceholder('Search bookings...')

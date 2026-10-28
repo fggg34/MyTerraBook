@@ -18,6 +18,8 @@ class RentalConditionsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->reorderable('sort_order')
+            ->view('filament.admin.rental-conditions')
             ->columns([
                 TextColumn::make('name')
                     ->label('Admin name')

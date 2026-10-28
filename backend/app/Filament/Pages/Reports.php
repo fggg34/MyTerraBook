@@ -34,6 +34,8 @@ class Reports extends Page
 
     public string $reportType = 'occupancy_ranking';
 
+    public string $period = '30';
+
     /** @var array{confirmed_orders:int,revenue_cents:int,revenue:string,average_order_value_cents:int,average_order_value:string} */
     public array $revenueSummary = [];
 
@@ -55,11 +57,27 @@ class Reports extends Page
 
     public function updatedFrom(AdminReportsService $reportsService): void
     {
+        $this->period = 'custom';
         $this->loadReportData($reportsService);
     }
 
     public function updatedTo(AdminReportsService $reportsService): void
     {
+        $this->period = 'custom';
+        $this->loadReportData($reportsService);
+    }
+
+    public function setReportPeriod(string $period, AdminReportsService $reportsService): void
+    {
+        $this->period = $period;
+        $today = now();
+        $this->from = match ($period) {
+            '7' => $today->copy()->subDays(6)->toDateString(),
+            '90' => $today->copy()->subDays(89)->toDateString(),
+            'year' => $today->copy()->startOfYear()->toDateString(),
+            default => $today->copy()->subDays(29)->toDateString(),
+        };
+        $this->to = $today->toDateString();
         $this->loadReportData($reportsService);
     }
 

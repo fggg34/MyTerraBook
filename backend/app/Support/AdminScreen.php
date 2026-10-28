@@ -7,6 +7,7 @@ use App\Filament\GuestHouse\Resources\GuestHouseAmenityResource;
 use App\Filament\GuestHouse\Resources\GuestHouseBookingResource;
 use App\Filament\GuestHouse\Resources\GuestHouseResource;
 use App\Filament\Pages\EmailSettings;
+use App\Filament\Pages\OrdersCalendar;
 use App\Filament\Pages\EmailTesting;
 use App\Filament\Pages\FaresOverview;
 use App\Filament\Pages\GlobalConfiguration;
@@ -31,6 +32,7 @@ use App\Filament\Resources\EmailLogs\EmailLogResource;
 use App\Filament\Resources\EmailTemplates\EmailTemplateResource;
 use App\Filament\Resources\ExtraHourFares\ExtraHourFareResource;
 use App\Filament\Resources\HourlyFares\HourlyFareResource;
+use App\Filament\Pages\SiteContentHub;
 use App\Filament\Resources\ListingReviews\ListingReviewResource;
 use App\Filament\Resources\LocationFees\LocationFeeResource;
 use App\Filament\Resources\Locations\LocationResource;
@@ -40,6 +42,7 @@ use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\OutOfHoursFees\OutOfHoursFeeResource;
 use App\Filament\Resources\PaymentMethods\PaymentMethodResource;
 use App\Filament\Resources\RentalConditions\RentalConditionResource;
+use App\Filament\Resources\RegisteredHosts\RegisteredHostResource;
 use App\Filament\Resources\RentalOptions\RentalOptionResource;
 use App\Filament\Resources\SpecialPrices\SpecialPriceResource;
 use App\Filament\Resources\SubCategories\SubCategoryResource;
@@ -56,10 +59,8 @@ class AdminScreen
     public static function current(): ?array
     {
         foreach (self::pages() as $page) {
-            foreach ($page['match'] as $pattern) {
-                if (request()->is($pattern)) {
-                    return $page;
-                }
+            if (self::matches($page['match'])) {
+                return $page;
             }
         }
 
@@ -67,8 +68,218 @@ class AdminScreen
     }
 
     /**
+     * Livewire updates arrive at /livewire/update, so the page path is the referer.
+     */
+    private static function pageRequest(): \Illuminate\Http\Request
+    {
+        $current = request();
+        $livewire = $current->headers->has('X-Livewire') || str_contains($current->path(), 'livewire/');
+        if (! $livewire) {
+            return $current;
+        }
+
+        $referer = (string) $current->headers->get('referer');
+        $parts = parse_url($referer);
+        $path = is_array($parts) ? (string) ($parts['path'] ?? '') : '';
+        if ($path === '') {
+            return $current;
+        }
+
+        $uri = $path.(isset($parts['query']) ? '?'.$parts['query'] : '');
+
+        return \Illuminate\Http\Request::create($uri, 'GET');
+    }
+
+    /**
      * @return list<array{label: string, url: string, active: bool, count: ?int, group: ?string}>
      */
+    /**
+     * Header buttons for the current list frame. Edit pages keep their own header.
+     *
+     * @return list<array{label: string, url: ?string, primary: bool, wire: ?string}>
+     */
+    public static function headerActions(): array
+    {
+        $link = fn (string $label, string $url, bool $primary = false, ?string $icon = null): array => [
+            'label' => $label,
+            'url' => $url,
+            'primary' => $primary,
+            'wire' => null,
+            'icon' => $icon,
+        ];
+
+        if (self::on('admin/impact-rent/car-units') && CarUnitResource::canCreate()) {
+            return [$link('New fleet unit', CarUnitResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/main-categories')) {
+            $actions = [];
+            if (CategoryResource::canCreate()) {
+                $actions[] = $link('New main category', CategoryResource::getUrl('create'));
+            }
+            if (SubCategoryResource::canCreate()) {
+                $actions[] = $link('New sub category', SubCategoryResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
+        if (self::on('admin/impact-rent/sub-categories') && SubCategoryResource::canCreate()) {
+            return [$link('New sub category', SubCategoryResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/characteristics') && CharacteristicResource::canCreate()) {
+            return [$link('New feature', CharacteristicResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/locations') && LocationResource::canCreate()) {
+            return [$link('New location', LocationResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/rental-conditions') && RentalConditionResource::canCreate()) {
+            return [$link('New rental condition', RentalConditionResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/orders')) {
+            $actions = [$link('Calendar view', OrdersCalendar::getUrl(), false, 'admin-redesign/icon-tb-calendar.svg')];
+            if (OrderResource::canCreate()) {
+                $actions[] = $link('New booking', OrderResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
+        if (self::on('admin/guest-houses/guest-house-bookings')) {
+            return [$link('Calendar view', OrdersCalendar::getUrl().'?catalog=stays', false, 'admin-redesign/icon-tb-calendar.svg')];
+        }
+
+        if (self::on('admin/impact-rent/orders-calendar', 'admin/orders-calendar') && OrderResource::canCreate()) {
+            return [$link('New booking', OrderResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/guest-houses/guest-house-amenities') && GuestHouseAmenityResource::canCreate()) {
+            return [[
+                'label' => 'New amenity',
+                'url' => null,
+                'primary' => true,
+                'wire' => null,
+                'event' => 'tb-amenity-create',
+            ]];
+        }
+
+        if (self::on('admin/impact-rent/special-prices')) {
+            $actions = [$link('Rates calculator', FaresOverview::getUrl(), false, 'admin-redesign/icon-tb-pricing.svg')];
+            if (SpecialPriceResource::canCreate()) {
+                $actions[] = $link('New pricing rule', SpecialPriceResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
+        if (self::on('admin/impact-rent/hourly-fares') && HourlyFareResource::canCreate()) {
+            return [$link('New hourly fare', HourlyFareResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/extra-hour-fares') && ExtraHourFareResource::canCreate()) {
+            return [$link('New extra hour fare', ExtraHourFareResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/out-of-hours-fees') && OutOfHoursFeeResource::canCreate()) {
+            return [$link('New out-of-hours fee', OutOfHoursFeeResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/location-fees') && LocationFeeResource::canCreate()) {
+            return [$link('New location fee', LocationFeeResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/rental-options') && RentalOptionResource::canCreate()) {
+            return [$link('New add-on', RentalOptionResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/coupons') && CouponResource::canCreate()) {
+            return [$link('New discount code', CouponResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/booking-restrictions') && BookingRestrictionResource::canCreate()) {
+            return [$link('New restriction', BookingRestrictionResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/tax-rates', 'admin/impact-rent/price-types')) {
+            $actions = [];
+            if (class_exists(\App\Filament\Resources\PriceTypes\PriceTypeResource::class) && \App\Filament\Resources\PriceTypes\PriceTypeResource::canCreate()) {
+                $actions[] = $link('New price type', \App\Filament\Resources\PriceTypes\PriceTypeResource::getUrl('create'));
+            }
+            if (TaxRateResource::canCreate()) {
+                $actions[] = $link('New tax rate', TaxRateResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
+        if (self::on('admin/registered-hosts') && RegisteredHostResource::canCreate()) {
+            return [$link('Add host / partner', RegisteredHostResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/listing-reviews') && ListingReviewResource::canCreate()) {
+            return [$link('New listing review', ListingReviewResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/blog-posts')) {
+            $actions = [$link('Page text', SiteContentHub::getUrl().'?tab=good-to-know', false, 'admin-redesign/icon-tb-copy.svg')];
+            if (BlogPostResource::canCreate()) {
+                $actions[] = $link('New post', BlogPostResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
+        if (self::on('admin/newsletter-subscribers', 'admin/newsletter-campaigns') && NewsletterCampaignResource::canCreate()) {
+            return [$link('New campaign', NewsletterCampaignResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/tracking-statistics', 'admin/tracking-statistics')) {
+            return [$link('Tracking settings', \App\Filament\Resources\TrackingCampaigns\TrackingCampaignResource::getUrl('index'), false, 'admin-redesign/icon-tb-columns.svg')];
+        }
+
+        if (self::on('admin/impact-rent/tracking-campaigns') && \App\Filament\Resources\TrackingCampaigns\TrackingCampaignResource::canCreate()) {
+            return [$link('New tracking campaign', \App\Filament\Resources\TrackingCampaigns\TrackingCampaignResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/payment-methods') && PaymentMethodResource::canCreate()) {
+            return [$link('New payment method', PaymentMethodResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/custom-fields') && \App\Filament\Resources\CustomFields\CustomFieldResource::canCreate()) {
+            return [$link('New custom field', \App\Filament\Resources\CustomFields\CustomFieldResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/conditional-texts') && \App\Filament\Resources\ConditionalTexts\ConditionalTextResource::canCreate()) {
+            return [$link('New conditional text', \App\Filament\Resources\ConditionalTexts\ConditionalTextResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/backups') && \App\Filament\Resources\Backups\BackupResource::canCreate()) {
+            return [$link('New backup', \App\Filament\Resources\Backups\BackupResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/email-templates')) {
+            $actions = [[
+                'label' => 'Install default templates',
+                'url' => null,
+                'primary' => false,
+                'wire' => null,
+                'mount' => 'installDefaults',
+                'plain' => true,
+            ]];
+            if (EmailTemplateResource::canCreate()) {
+                $actions[] = $link('New email template', EmailTemplateResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
+        return [];
+    }
+
     public static function links(?string $nav): array
     {
         return match ($nav) {
@@ -104,30 +315,38 @@ class AdminScreen
             ['match' => ['admin/impact-rent/cars/*'], 'crumb' => 'Vehicles', 'title' => null, 'description' => null, 'nav' => 'vehicles', 'settings' => false],
             ['match' => ['admin/impact-rent/car-units', 'admin/impact-rent/car-units/*'], 'crumb' => 'Catalog · Vehicles', 'title' => 'Fleet units', 'description' => 'Each unit is one physical car or camper that can be booked.', 'nav' => 'vehicles', 'settings' => false],
             ['match' => ['admin/impact-rent/main-categories', 'admin/impact-rent/main-categories/*', 'admin/impact-rent/sub-categories', 'admin/impact-rent/sub-categories/*'], 'crumb' => 'Catalog · Vehicles', 'title' => 'Categories', 'description' => 'Main categories group the sub categories shown in search.', 'nav' => 'vehicles', 'settings' => false],
-            ['match' => ['admin/impact-rent/characteristics', 'admin/impact-rent/characteristics/*'], 'crumb' => 'Catalog · Vehicles', 'title' => 'Features', 'description' => 'Icons and labels shown on vehicle cards and listings. (Same data as “Characteristics”.)', 'nav' => 'vehicles', 'settings' => false],
+            ['match' => ['admin/impact-rent/characteristics', 'admin/impact-rent/characteristics/*'], 'crumb' => 'Catalog · Vehicles', 'title' => 'Features', 'description' => 'Icons and labels shown on vehicle cards and listings.', 'nav' => 'vehicles', 'settings' => false],
             ['match' => ['admin/impact-rent/locations', 'admin/impact-rent/locations/*'], 'crumb' => 'Catalog · Vehicles', 'title' => 'Locations', 'description' => 'Pickup and drop-off places. Opening hours decide when out-of-hours fees apply.', 'nav' => 'vehicles', 'settings' => false],
             ['match' => ['admin/impact-rent/rental-conditions', 'admin/impact-rent/rental-conditions/*'], 'crumb' => 'Catalog · Vehicles', 'title' => 'Rental conditions', 'description' => 'Short rules shown on each vehicle listing.', 'nav' => 'vehicles', 'settings' => false],
-            ['match' => ['admin/impact-rent/special-prices', 'admin/impact-rent/special-prices/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Pricing rules', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/daily-fares', 'admin/impact-rent/daily-fares/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Base prices', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/fares-overview', 'admin/impact-rent/fares-overview/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Fares overview', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/booking-restrictions', 'admin/impact-rent/booking-restrictions/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Booking restrictions', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/extra-hour-fares', 'admin/impact-rent/extra-hour-fares/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Extra hour fares', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/hourly-fares', 'admin/impact-rent/hourly-fares/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Hourly fares', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/out-of-hours-fees', 'admin/impact-rent/out-of-hours-fees/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Out-of-hours fees', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/location-fees', 'admin/impact-rent/location-fees/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Location fees', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/rental-options', 'admin/impact-rent/rental-options/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Add-ons', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/coupons', 'admin/impact-rent/coupons/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Discount codes', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/tax-rates', 'admin/impact-rent/tax-rates/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'VAT used by vehicles, fees and add-ons.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/price-types', 'admin/impact-rent/price-types/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Types of price', 'description' => 'Each price type points to a tax rate.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/registered-hosts', 'admin/registered-hosts/*'], 'crumb' => 'People', 'title' => 'Hosts', 'description' => 'Manage profiles, partner API and commission.', 'nav' => null, 'settings' => false],
-            ['match' => ['admin/registered-clients', 'admin/registered-clients/*'], 'crumb' => 'People', 'title' => 'Clients', 'description' => 'Registered clients and their bookings.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/impact-rent/special-prices'], 'crumb' => 'Catalog · Pricing', 'title' => 'Pricing', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/daily-fares'], 'crumb' => 'Catalog · Pricing', 'title' => 'Base prices', 'description' => 'Daily price by rental length, per vehicle and price type. (Same data as “Daily Fares / Insert Fares”.)', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/fares-overview'], 'crumb' => 'Catalog · Pricing', 'title' => 'Fares overview', 'description' => 'Final price per day after rules, and how many units are free.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/booking-restrictions'], 'crumb' => 'Catalog · Pricing', 'title' => 'Booking restrictions', 'description' => 'Minimum or maximum rental length for specific dates, e.g. at least 3 days in July.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/extra-hour-fares'], 'crumb' => 'Catalog · Pricing', 'title' => 'Extra hour fares', 'description' => 'What a late return costs per extra hour, per vehicle and price type.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/hourly-fares'], 'crumb' => 'Catalog · Pricing', 'title' => 'Hourly fares', 'description' => 'Price for short rentals measured in minutes, e.g. 3 hours.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/out-of-hours-fees'], 'crumb' => 'Catalog · Pricing', 'title' => 'Out-of-hours fees', 'description' => 'Extra charge when pickup or drop-off is outside opening hours.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/location-fees'], 'crumb' => 'Catalog · Pricing', 'title' => 'Location fees', 'description' => 'Fee for picking up in one place and returning in another.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/rental-options'], 'crumb' => 'Catalog · Pricing', 'title' => 'Add-ons', 'description' => 'Extras customers can add at checkout. (Same data as “Rental Options”.)', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/coupons'], 'crumb' => 'Catalog · Pricing', 'title' => 'Discount codes', 'description' => 'Codes customers type at checkout. (Same data as “Coupons”.)', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/tax-rates'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'VAT used by vehicles, fees and add-ons.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/price-types'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'VAT used by vehicles, fees and add-ons.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/special-prices/*', 'admin/impact-rent/daily-fares/*', 'admin/impact-rent/booking-restrictions/*', 'admin/impact-rent/extra-hour-fares/*', 'admin/impact-rent/hourly-fares/*', 'admin/impact-rent/out-of-hours-fees/*', 'admin/impact-rent/location-fees/*', 'admin/impact-rent/rental-options/*', 'admin/impact-rent/coupons/*', 'admin/impact-rent/tax-rates/*', 'admin/impact-rent/price-types/*'], 'crumb' => '', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
+            ['match' => ['admin/registered-hosts'], 'crumb' => 'People', 'title' => 'Hosts', 'description' => 'Manage profiles, partner API and commission.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/registered-hosts/*'], 'crumb' => 'Hosts', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
+            ['match' => ['admin/registered-clients'], 'crumb' => 'People', 'title' => 'Clients', 'description' => 'Registered clients and their bookings.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/registered-clients/*'], 'crumb' => 'Clients', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/listing-approvals', 'admin/listing-approvals/*'], 'crumb' => 'Moderation', 'title' => 'Listing approvals', 'description' => 'Newest submissions first. Approve, request changes or reject.', 'nav' => null, 'settings' => false],
-            ['match' => ['admin/listing-reviews', 'admin/listing-reviews/*', 'admin/guest-houses/guest-reviews'], 'crumb' => 'Moderation', 'title' => 'Listing reviews', 'description' => 'Guest reviews shown on vehicle and guest house pages.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/listing-reviews', 'admin/guest-houses/guest-reviews'], 'crumb' => 'Moderation', 'title' => 'Listing reviews', 'description' => 'Guest reviews shown on vehicle and guest house pages.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/listing-reviews/*'], 'crumb' => 'Listing reviews', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/site-content', 'admin/site-content/*', 'admin/homepage-cms', 'admin/footer-settings'], 'crumb' => 'Website · Site content', 'title' => 'Site content', 'description' => 'Copy and media shown on the public website.', 'nav' => null, 'settings' => false],
-            ['match' => ['admin/blog-posts', 'admin/blog-posts/*'], 'crumb' => 'Website', 'title' => 'Good to Know', 'description' => 'Travel guides and tips shown on the blog. The page header text is edited under Site content › Good to Know.', 'nav' => null, 'settings' => false],
-            ['match' => ['admin/newsletter-subscribers', 'admin/newsletter-subscribers/*', 'admin/newsletter-campaigns', 'admin/newsletter-campaigns/*'], 'crumb' => 'Marketing', 'title' => 'Newsletter', 'description' => 'People who signed up on the website, and the e-mails sent to them.', 'nav' => 'newsletter', 'settings' => false],
-            ['match' => ['admin/email-templates', 'admin/email-templates/*', 'admin/email-settings', 'admin/email-testing', 'admin/email-logs', 'admin/email-logs/*'], 'crumb' => 'Marketing', 'title' => 'Email', 'description' => 'Every e-mail the system sends, its sender settings and history.', 'nav' => 'email', 'settings' => false],
-            ['match' => ['admin/reports', 'admin/reports/*', 'admin/tracking-statistics', 'admin/tracking-statistics/*', 'admin/impact-rent/reports', 'admin/impact-rent/reports/*', 'admin/impact-rent/tracking-statistics', 'admin/impact-rent/tracking-statistics/*', 'admin/impact-rent/tracking-campaigns', 'admin/impact-rent/tracking-campaigns/*'], 'crumb' => 'Marketing', 'title' => 'Analytics', 'description' => 'Rental reports, website visits and campaign links.', 'nav' => 'analytics', 'settings' => false],
+            ['match' => ['admin/blog-posts'], 'crumb' => 'Website', 'title' => 'Good to Know', 'description' => 'Travel guides and tips shown on the blog. The page header text is edited under Site content › Good to Know.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/blog-posts/*'], 'crumb' => 'Good to Know', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
+            ['match' => ['admin/newsletter-subscribers', 'admin/newsletter-campaigns'], 'crumb' => 'Marketing', 'title' => 'Newsletter', 'description' => 'People who signed up on the website, and the e-mails sent to them.', 'nav' => 'newsletter', 'settings' => false],
+            ['match' => ['admin/newsletter-subscribers/*', 'admin/newsletter-campaigns/*'], 'crumb' => 'Newsletter', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
+            ['match' => ['admin/email-templates', 'admin/email-settings', 'admin/email-testing', 'admin/email-logs'], 'crumb' => 'Marketing', 'title' => 'Email', 'description' => 'Every e-mail the system sends, its sender settings and history.', 'nav' => 'email', 'settings' => false],
+            ['match' => ['admin/email-templates/*', 'admin/email-logs/*'], 'crumb' => 'Email', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
+            ['match' => ['admin/reports', 'admin/reports/*', 'admin/tracking-statistics', 'admin/tracking-statistics/*', 'admin/impact-rent/reports', 'admin/impact-rent/reports/*', 'admin/impact-rent/tracking-statistics', 'admin/impact-rent/tracking-statistics/*', 'admin/impact-rent/tracking-campaigns'], 'crumb' => 'Marketing', 'title' => 'Analytics', 'description' => 'Rental reports, website visits and campaign links.', 'nav' => 'analytics', 'settings' => false],
+            ['match' => ['admin/impact-rent/tracking-campaigns/*'], 'crumb' => 'Analytics', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/global-configuration', 'admin/global-configuration/*'], 'crumb' => 'Settings', 'title' => null, 'description' => null, 'nav' => 'settings', 'settings' => true],
             ['match' => ['admin/payment-methods', 'admin/payment-methods/*'], 'crumb' => 'Settings', 'title' => 'Payment methods', 'description' => null, 'nav' => 'settings', 'settings' => true],
             ['match' => ['admin/custom-fields', 'admin/custom-fields/*'], 'crumb' => 'Settings', 'title' => 'Custom fields', 'description' => null, 'nav' => 'settings', 'settings' => true],
@@ -145,12 +364,12 @@ class AdminScreen
     private static function vehicleLinks(): array
     {
         return array_values(array_filter([
-            self::item('All vehicles', CarResource::class, ['admin/impact-rent/cars', 'admin/impact-rent/cars/*']),
-            self::item('Fleet units', CarUnitResource::class, ['admin/impact-rent/car-units', 'admin/impact-rent/car-units/*']),
-            self::item('Categories', CategoryResource::class, ['admin/impact-rent/main-categories', 'admin/impact-rent/main-categories/*', 'admin/impact-rent/sub-categories', 'admin/impact-rent/sub-categories/*']),
-            self::item('Features', CharacteristicResource::class, ['admin/impact-rent/characteristics', 'admin/impact-rent/characteristics/*']),
-            self::item('Locations', LocationResource::class, ['admin/impact-rent/locations', 'admin/impact-rent/locations/*']),
-            self::item('Rental conditions', RentalConditionResource::class, ['admin/impact-rent/rental-conditions', 'admin/impact-rent/rental-conditions/*']),
+            self::counted('All vehicles', CarResource::class, ['admin/impact-rent/cars', 'admin/impact-rent/cars/*'], self::safeCount(fn (): int => \App\Models\Car::query()->count()), 'icon-tb-car.svg'),
+            self::counted('Fleet units', CarUnitResource::class, ['admin/impact-rent/car-units', 'admin/impact-rent/car-units/*'], self::safeCount(fn (): int => \App\Models\CarUnit::query()->count()), 'icon-tb-fleet.svg'),
+            self::counted('Categories', CategoryResource::class, ['admin/impact-rent/main-categories', 'admin/impact-rent/main-categories/*', 'admin/impact-rent/sub-categories', 'admin/impact-rent/sub-categories/*'], self::safeCount(fn (): int => \App\Models\MainCategory::query()->count() + \App\Models\SubCategory::query()->count()), 'icon-tb-categories.svg'),
+            self::counted('Features', CharacteristicResource::class, ['admin/impact-rent/characteristics', 'admin/impact-rent/characteristics/*'], self::safeCount(fn (): int => \App\Models\Characteristic::query()->count()), 'icon-tb-feature.svg'),
+            self::counted('Locations', LocationResource::class, ['admin/impact-rent/locations', 'admin/impact-rent/locations/*'], self::safeCount(fn (): int => \App\Models\Location::query()->count()), 'icon-tb-pin.svg'),
+            self::counted('Rental conditions', RentalConditionResource::class, ['admin/impact-rent/rental-conditions', 'admin/impact-rent/rental-conditions/*'], self::safeCount(fn (): int => \App\Models\RentalCondition::query()->count()), 'icon-tb-shield.svg'),
         ]));
     }
 
@@ -173,21 +392,27 @@ class AdminScreen
      */
     private static function pricingLinks(): array
     {
+        $taxUrl = self::url(TaxRateResource::class);
+            $types = $taxUrl
+            ? self::plain('Types of price', $taxUrl.'#types-of-price', self::matches(['admin/impact-rent/price-types', 'admin/impact-rent/price-types/*']), 'Discounts & tax')
+            : null;
+        if ($types) {
+            $types['count'] = self::safeCount(fn (): int => \App\Models\PriceType::query()->count());
+        }
+
         return array_values(array_filter([
-            self::item('Base prices', DailyFareResource::class, ['admin/impact-rent/daily-fares', 'admin/impact-rent/daily-fares/*'], 'Rates'),
-            self::item('Pricing rules', SpecialPriceResource::class, ['admin/impact-rent/special-prices', 'admin/impact-rent/special-prices/*'], 'Rates'),
-            self::item('Fares overview', FaresOverview::class, ['admin/impact-rent/fares-overview', 'admin/impact-rent/fares-overview/*'], 'Rates'),
-            self::item('Booking restrictions', BookingRestrictionResource::class, ['admin/impact-rent/booking-restrictions', 'admin/impact-rent/booking-restrictions/*'], 'Rates'),
-            self::item('Extra hour fares', ExtraHourFareResource::class, ['admin/impact-rent/extra-hour-fares', 'admin/impact-rent/extra-hour-fares/*'], 'Time based'),
-            self::item('Hourly fares', HourlyFareResource::class, ['admin/impact-rent/hourly-fares', 'admin/impact-rent/hourly-fares/*'], 'Time based'),
-            self::item('Out-of-hours fees', OutOfHoursFeeResource::class, ['admin/impact-rent/out-of-hours-fees', 'admin/impact-rent/out-of-hours-fees/*'], 'Time based'),
-            self::item('Location fees', LocationFeeResource::class, ['admin/impact-rent/location-fees', 'admin/impact-rent/location-fees/*'], 'Extras & fees'),
-            self::item('Add-ons', RentalOptionResource::class, ['admin/impact-rent/rental-options', 'admin/impact-rent/rental-options/*'], 'Extras & fees'),
-            self::item('Discount codes', CouponResource::class, ['admin/impact-rent/coupons', 'admin/impact-rent/coupons/*'], 'Discounts & tax'),
-            self::item('Tax rates', TaxRateResource::class, ['admin/impact-rent/tax-rates', 'admin/impact-rent/tax-rates/*'], 'Discounts & tax'),
-            ($taxUrl = self::url(TaxRateResource::class))
-                ? self::plain('Types of price', $taxUrl.'#types-of-price', request()->is('admin/impact-rent/price-types', 'admin/impact-rent/price-types/*'), 'Discounts & tax')
-                : null,
+            self::counted('Base prices', DailyFareResource::class, ['admin/impact-rent/daily-fares', 'admin/impact-rent/daily-fares/*'], self::safeCount(fn (): int => \App\Models\DailyFare::query()->count()), null, 'Rates'),
+            self::counted('Pricing rules', SpecialPriceResource::class, ['admin/impact-rent/special-prices', 'admin/impact-rent/special-prices/*'], self::safeCount(fn (): int => \App\Models\SpecialPrice::query()->count()), null, 'Rates'),
+            self::counted('Fares overview', FaresOverview::class, ['admin/impact-rent/fares-overview', 'admin/impact-rent/fares-overview/*'], null, null, 'Rates'),
+            self::counted('Booking restrictions', BookingRestrictionResource::class, ['admin/impact-rent/booking-restrictions', 'admin/impact-rent/booking-restrictions/*'], self::safeCount(fn (): int => \App\Models\BookingRestriction::query()->count()), null, 'Rates'),
+            self::counted('Extra hour fares', ExtraHourFareResource::class, ['admin/impact-rent/extra-hour-fares', 'admin/impact-rent/extra-hour-fares/*'], self::safeCount(fn (): int => \App\Models\ExtraHourFare::query()->count()), null, 'Time based'),
+            self::counted('Hourly fares', HourlyFareResource::class, ['admin/impact-rent/hourly-fares', 'admin/impact-rent/hourly-fares/*'], self::safeCount(fn (): int => \App\Models\HourlyFare::query()->count()), null, 'Time based'),
+            self::counted('Out-of-hours fees', OutOfHoursFeeResource::class, ['admin/impact-rent/out-of-hours-fees', 'admin/impact-rent/out-of-hours-fees/*'], self::safeCount(fn (): int => \App\Models\OutOfHoursFee::query()->count()), null, 'Time based'),
+            self::counted('Location fees', LocationFeeResource::class, ['admin/impact-rent/location-fees', 'admin/impact-rent/location-fees/*'], self::safeCount(fn (): int => \App\Models\LocationFee::query()->count()), null, 'Extras & fees'),
+            self::counted('Add-ons', RentalOptionResource::class, ['admin/impact-rent/rental-options', 'admin/impact-rent/rental-options/*'], self::safeCount(fn (): int => \App\Models\RentalOption::query()->count()), null, 'Extras & fees'),
+            self::counted('Discount codes', CouponResource::class, ['admin/impact-rent/coupons', 'admin/impact-rent/coupons/*'], self::safeCount(fn (): int => \App\Models\Coupon::query()->count()), null, 'Discounts & tax'),
+            self::counted('Tax rates', TaxRateResource::class, ['admin/impact-rent/tax-rates', 'admin/impact-rent/tax-rates/*'], self::safeCount(fn (): int => \App\Models\TaxRate::query()->count()), null, 'Discounts & tax'),
+            $types,
         ]));
     }
 
@@ -235,17 +460,17 @@ class AdminScreen
         $config = self::url(GlobalConfiguration::class);
 
         return array_values(array_filter([
-            $config ? self::plain('Shop & rentals', $config.'?tab=shop', request()->is('admin/global-configuration') && request()->query('tab', 'shop') === 'shop', 'Configuration') : null,
-            $config ? self::plain('Prices & payments', $config.'?tab=prices', request()->is('admin/global-configuration') && request()->query('tab') === 'prices', 'Configuration') : null,
-            $config ? self::plain('Views & layout', $config.'?tab=views', request()->is('admin/global-configuration') && request()->query('tab') === 'views', 'Configuration') : null,
-            $config ? self::plain('Orders & company', $config.'?tab=orders', request()->is('admin/global-configuration') && request()->query('tab') === 'orders', 'Configuration') : null,
+            $config ? self::plain('Shop & rentals', $config.'?tab=shop', self::pageRequest()->is('admin/global-configuration') && self::pageRequest()->query('tab', 'shop') === 'shop', 'Configuration') : null,
+            $config ? self::plain('Prices & payments', $config.'?tab=prices', self::pageRequest()->is('admin/global-configuration') && self::pageRequest()->query('tab') === 'prices', 'Configuration') : null,
+            $config ? self::plain('Views & layout', $config.'?tab=views', self::pageRequest()->is('admin/global-configuration') && self::pageRequest()->query('tab') === 'views', 'Configuration') : null,
+            $config ? self::plain('Orders & company', $config.'?tab=orders', self::pageRequest()->is('admin/global-configuration') && self::pageRequest()->query('tab') === 'orders', 'Configuration') : null,
             self::item('Conditional texts', ConditionalTextResource::class, ['admin/impact-rent/conditional-texts', 'admin/impact-rent/conditional-texts/*'], 'Configuration'),
             self::item('Payment methods', PaymentMethodResource::class, ['admin/payment-methods', 'admin/payment-methods/*'], 'Checkout'),
             self::item('Custom fields', CustomFieldResource::class, ['admin/custom-fields', 'admin/custom-fields/*'], 'Checkout'),
             self::item('Users', ManageUsers::class, ['admin/users', 'admin/users/*'], 'Access'),
             self::item('Logged-in users', LoggedInUsers::class, ['admin/logged-in-users', 'admin/logged-in-users/*'], 'Access'),
             self::item('Backups', BackupResource::class, ['admin/impact-rent/backups', 'admin/impact-rent/backups/*'], 'System'),
-            ($profile = filament()->getProfileUrl()) ? self::plain('Profile', $profile, request()->is('admin/profile'), 'System') : null,
+            ($profile = filament()->getProfileUrl()) ? self::plain('Profile', $profile, self::matches(['admin/profile']), 'System') : null,
         ]));
     }
 
@@ -257,9 +482,9 @@ class AdminScreen
      * @param  list<string>  $active
      * @return array{label: string, url: string, active: bool, count: ?int, group: ?string, icon: ?string}|null
      */
-    private static function counted(string $label, string $class, array $active, ?int $count, ?string $icon): ?array
+    private static function counted(string $label, string $class, array $active, ?int $count, ?string $icon, ?string $group = null): ?array
     {
-        $item = self::item($label, $class, $active);
+        $item = self::item($label, $class, $active, $group);
         if ($item === null) {
             return null;
         }
@@ -306,10 +531,24 @@ class AdminScreen
     /**
      * @param  list<string>  $patterns
      */
+    public static function on(string ...$patterns): bool
+    {
+        return self::pageRequest()->is(...$patterns);
+    }
+
+    public static function query(string $key, mixed $default = null): mixed
+    {
+        return self::pageRequest()->query($key, $default);
+    }
+
+    /**
+     * @param  list<string>  $patterns
+     */
     private static function matches(array $patterns): bool
     {
+        $page = self::pageRequest();
         foreach ($patterns as $pattern) {
-            if (request()->is($pattern)) {
+            if ($page->is($pattern)) {
                 return true;
             }
         }

@@ -366,7 +366,13 @@
             border-color: #dbe3ec;
             border-radius: 12px;
         }
-        html.tb-redesign .la-stat-label,
+        html.tb-redesign .la-stat-label {
+            font-family: "IBM Plex Sans", sans-serif;
+            letter-spacing: 0;
+            color: #5c6b7a;
+            text-transform: none;
+            font-size: 13px;
+        }
         html.tb-redesign .la-table thead th {
             font-family: "IBM Plex Mono", ui-monospace, monospace;
             letter-spacing: 0.8px;
@@ -393,8 +399,9 @@
         html.tb-redesign .la-muted,
         html.tb-redesign .la-toolbar-note,
         html.tb-redesign .la-empty-text { color: #5b6b7d; }
-        html.tb-redesign .la-btn--approve { background: #1f7a4d; }
-        html.tb-redesign .la-btn--changes { background: #fdf1dc; border-color: #e8a33a; color: #9a5b00; }
+        html.tb-redesign .la-toolbar-note { display: none; }
+        html.tb-redesign .la-btn--approve { background: #041e37; }
+        html.tb-redesign .la-btn--changes { background: #fff; border-color: #d5deea; color: #041e37; }
         html.tb-redesign .la-btn--reject { background: #fde7e5; border-color: #f7c4c0; color: #b42318; }
         html.tb-redesign .la-btn--edit { background: #fff; border-color: #dbe3ec; color: #0d1b2a; }
         html.tb-redesign .la-badge--purple { background: #e8eff7; color: #4474a4; }
@@ -483,9 +490,7 @@
                         wire:click="setActiveTab('guesthouses')"
                     >
                         Guest houses
-                        @if ($this->pendingGuestHouseCount > 0)
-                            <span class="la-tab-badge">{{ $this->pendingGuestHouseCount }}</span>
-                        @endif
+                        <span class="la-tab-badge">{{ $this->pendingGuestHouseCount }}</span>
                     </button>
                     <button
                         type="button"
@@ -494,9 +499,7 @@
                         wire:click="setActiveTab('vehicles')"
                     >
                         Vehicles
-                        @if ($this->pendingVehicleCount > 0)
-                            <span class="la-tab-badge">{{ $this->pendingVehicleCount }}</span>
-                        @endif
+                        <span class="la-tab-badge">{{ $this->pendingVehicleCount }}</span>
                     </button>
                 </div>
                 <p class="la-toolbar-note">

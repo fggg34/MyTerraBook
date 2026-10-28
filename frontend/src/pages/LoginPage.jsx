@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthPageLayout from '../components/auth/AuthPageLayout'
 import PasswordInput from '../components/auth/PasswordInput'
+import FigmaIcon from '../components/site/FigmaIcon'
 import PageHead from '../components/seo/PageHead'
 import { getPostLoginPath, normalizeUserRole, useAuth, useRedirectIfAuthenticated } from '../context/AuthContext'
 import { usePageContent } from '../context/SiteContentContext'
@@ -57,28 +58,22 @@ export default function LoginPage({ hostIntent = false }) {
   return (
     <>
       <PageHead {...seo} />
-      <AuthPageLayout
-      variant="login"
-      heroTitle={mergedCopy.heroTitle ?? (hostIntent ? 'Welcome back, host' : 'Sign in to MyTerraBook')}
-      heroText={mergedCopy.heroText ?? (hostIntent
-        ? 'Manage your guesthouses, campervans and bookings from one dashboard.'
-        : 'Pick up where you left off. Your bookings, saved listings and trip details are waiting.')}
-    >
-      <div className="auth-form-head">
-        <h1>{mergedCopy.title ?? (hostIntent ? 'Host sign in' : 'Sign in')}</h1>
-        <p>{mergedCopy.subtitle ?? (hostIntent ? 'Manage your listings, bookings and payouts.' : 'Enter your details to access your account.')}</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="auth-form">
+      <AuthPageLayout variant="login">
+      <form onSubmit={handleSubmit} className="tb-login">
         {errors.form && <div className="auth-form-error" role="alert">{errors.form}</div>}
+        <div>
+          <p className="kicker">WELCOME BACK</p>
+          <h1>Sign in to your <em>trip</em>.</h1>
+          <p className="lead">Manage bookings, download vouchers and pick up right where you left off.</p>
+        </div>
 
-        <div className="auth-field">
-          <label htmlFor="email">{mergedCopy.emailLabel ?? 'Email address'}</label>
-          <div className={`auth-input-wrap${errors.email ? ' auth-input-wrap--error' : ''}`}>
+        <div>
+          <label htmlFor="email">Email</label>
+          <div className={`tb-field${errors.email ? ' is-error' : ''}`}>
+            <FigmaIcon name="mail-navy" size={16} />
             <input
               id="email"
               type="email"
-              className="auth-input"
               placeholder="you@example.com"
               autoComplete="email"
               value={form.email}
@@ -88,59 +83,42 @@ export default function LoginPage({ hostIntent = false }) {
           {errors.email && <p className="auth-field-error">{errors.email}</p>}
         </div>
 
-        <div className="auth-field">
-          <label htmlFor="password">{mergedCopy.passwordLabel ?? 'Password'}</label>
+        <div>
+          <label htmlFor="password">Password</label>
           <PasswordInput
             id="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             autoComplete="current-password"
             hasError={!!errors.password}
+            placeholder="••••••••••"
           />
           {errors.password && <p className="auth-field-error">{errors.password}</p>}
         </div>
 
-        <div className="auth-form-meta">
+        <div className="row">
           <label className="auth-checkbox">
             <input
               type="checkbox"
               checked={form.remember}
               onChange={(e) => setForm({ ...form, remember: e.target.checked })}
             />
-            {mergedCopy.rememberLabel ?? 'Remember me'}
+            Remember me
           </label>
-          <Link
-            to={hostIntent ? '/host/forgot-password' : '/forgot-password'}
-            className="auth-forgot-link"
-          >
-            {mergedCopy.forgotPasswordLabel ?? 'Forgot your password?'}
+          <Link to={hostIntent ? '/host/forgot-password' : '/forgot-password'} className="tb-link">
+            Forgot password?
           </Link>
         </div>
 
         <button type="submit" className="auth-submit" disabled={loading}>
-          {loading ? (mergedCopy.signingInLabel ?? 'Signing in…') : (mergedCopy.submitLabel ?? (hostIntent ? 'Sign in to host panel' : 'Sign in'))}
+          {loading ? 'Signing in…' : 'Sign in'} <FigmaIcon name="arrow-white" size={16} />
         </button>
-      </form>
-
-      <footer className="auth-layout__footer">
-        <p className="auth-switch">
-          {mergedCopy.registerPrompt ?? (hostIntent ? 'New host?' : 'New here?')}{' '}
-          <Link to={hostIntent ? '/host/register' : '/register'}>
-            {mergedCopy.registerLink ?? (hostIntent ? 'Create a host account' : 'Create an account')}
-          </Link>
-        </p>
+        <div className="or">or</div>
+        <Link to={hostIntent ? '/host/register' : '/register'} className="outline">Create an account <FigmaIcon name="arrow" size={16} /></Link>
         {!hostIntent && (
-          <>
-            <div className="auth-divider" aria-hidden="true">{mergedCopy.orLabel ?? 'or'}</div>
-            <Link to="/host/login" className="auth-host-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
-                <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5Z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {authPage.header?.hostSignInLabel || authPage.hostSignInLabel || 'Sign in as a host'}
-            </Link>
-          </>
+          <Link to="/host/login" className="host"><FigmaIcon name="briefcase" size={16} />Sign in as a host →</Link>
         )}
-      </footer>
+      </form>
     </AuthPageLayout>
     </>
   )

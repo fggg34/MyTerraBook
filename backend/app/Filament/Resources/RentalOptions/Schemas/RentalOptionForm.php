@@ -61,12 +61,8 @@ class RentalOptionForm
                                     ->label('Resize Image')
                                     ->dehydrated(false),
 
-                                TextInput::make('cost_cents')
-                                    ->label('Option Price')
-                                    ->required()
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->prefix('ISK'),
+                                \App\Support\AdminInputs::isk('cost_cents', 'Price')
+                                    ->required(),
 
                                 Select::make('tax_rate_id')
                                     ->label('Tax Rate')
@@ -79,12 +75,8 @@ class RentalOptionForm
                                     ->label('Daily Cost')
                                     ->required(),
 
-                                TextInput::make('max_cost_cap_cents')
-                                    ->label('Maximum Cost')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->default(0)
-                                    ->prefix('ISK'),
+                                \App\Support\AdminInputs::isk('max_cost_cap_cents', 'Maximum cost')
+                                    ->default(0),
 
                                 Toggle::make('has_quantity')
                                     ->label('Selectable Quantity')

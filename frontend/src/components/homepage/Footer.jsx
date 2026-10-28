@@ -1,459 +1,95 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
-import SiteLogo from '../branding/SiteLogo'
-import UserAvatar from '../account/UserAvatar'
-import { getDashboardLabel, getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
-import { usePageContent } from '../../context/SiteContentContext'
-import { useToast } from '../../context/ToastContext'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../../api'
-import LangCurrencyMenu from './LangCurrencyMenu'
-import useMediaQuery from '../../hooks/useMediaQuery'
-import { cmsText } from '../../data/searchFormCopy'
+import Container from '../site/Container'
+import FigmaIcon from '../site/FigmaIcon'
+import { useToast } from '../../context/ToastContext'
 
-function FooterLink({ href, children, className }) {
-  if (href?.startsWith('/') && !href.startsWith('//')) {
-    return (
-      <Link to={href} className={className || undefined}>
-        {children}
-      </Link>
-    )
-  }
-  return (
-    <a href={href || '#'} className={className || undefined}>
-      {children}
-    </a>
-  )
-}
-
-const BOOK_LINKS = [
-  { label: 'Campervans', href: '/campervans' },
-  { label: 'Cars', href: '/cars' },
-  { label: 'Guesthouses', href: '/guesthouses' },
-]
-
-const COMPANY_LINKS = [
-  { label: 'Campsite Map', href: '/campsite-map' },
-  { label: 'Good to Know', href: '/good-to-know' },
-  { label: 'About us', href: '/about' },
-  { label: 'FAQs', href: '/faq' },
-  { label: 'Contact', href: '/contact' },
-]
-
-function FooterSocialIcon({ label }) {
-  const normalized = label?.toLowerCase() ?? ''
-  if (normalized.includes('facebook')) {
-    return (
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.7c0-.9.3-1.5 1.5-1.5h1.5V4.6c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.2H8v3h2.6V21h2.9Z" />
-      </svg>
-    )
-  }
-  if (normalized.includes('instagram')) {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="3" y="3" width="18" height="18" rx="5" />
-        <circle cx="12" cy="12" r="4" />
-        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-      </svg>
-    )
-  }
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" />
-    </svg>
-  )
-}
-
-function findColumn(columns, { key, titles, index }) {
-  return (
-    columns.find((column) => key && column.key === key) ||
-    columns.find((column) => titles.some((title) => column.title?.toLowerCase().includes(title))) ||
-    columns[index] ||
-    null
-  )
-}
-
-const ACCOUNT_LINKS = [
-  { label: 'Sign in', href: '/login' },
-  { label: 'Create account', href: '/register' },
-]
-
-function FooterColumnToggle({ id, title, open, onToggle, children }) {
-  return (
-    <div className={`ftr-col ftr-col--${id}${open ? ' is-open' : ''}`}>
-      <button
-        type="button"
-        className="ftr-col-toggle"
-        aria-expanded={open}
-        aria-controls={`ftr-panel-${id}`}
-        id={`ftr-toggle-${id}`}
-        onClick={onToggle}
-      >
-        <span>{title}</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </button>
-      <div className="ftr-col-panel" id={`ftr-panel-${id}`} role="region" aria-labelledby={`ftr-toggle-${id}`} aria-hidden={!open}>
-        {children}
-      </div>
-    </div>
-  )
-}
-
-function FooterAccountBlock({
-  user,
-  dashboardPath,
-  dashboardLabel,
-  accountLinks,
-  hostCtaLabel,
-  hostCtaHref,
-  hostSubtitle,
-  logoutLabel,
-  accountTitle,
-  showHostCta,
-  onLogout,
-}) {
-  const signInLink = accountLinks.find((link) => /sign in|log in/i.test(link.label)) ?? accountLinks[0]
-  const registerLink =
-    accountLinks.find((link) => /create account|register|sign up/i.test(link.label)) ??
-    accountLinks.find((link) => link !== signInLink)
-
-  return (
-    <div className="ftr-account">
-      <p className="ftr-account-label">{accountTitle}</p>
-
-      {user ? (
-        <>
-          <div className="ftr-account-user">
-            <UserAvatar user={user} />
-            <div className="ftr-account-user-meta">
-              <span className="ftr-account-user-name">{user.name}</span>
-              <span className="ftr-account-user-role">{dashboardLabel}</span>
-            </div>
-          </div>
-          <div className="ftr-account-actions">
-            <FooterLink href={dashboardPath} className="ftr-account-btn ftr-account-btn--solid">
-              {dashboardLabel}
-            </FooterLink>
-            <button type="button" className="ftr-account-btn ftr-account-btn--logout" onClick={onLogout}>
-              {logoutLabel}
-            </button>
-          </div>
-        </>
-      ) : (
-        <div className="ftr-account-actions">
-          {signInLink && (
-            <FooterLink href={signInLink.href} className="ftr-account-btn">
-              {signInLink.label}
-            </FooterLink>
-          )}
-          {registerLink && (
-            <FooterLink href={registerLink.href} className="ftr-account-btn ftr-account-btn--solid">
-              {registerLink.label}
-            </FooterLink>
-          )}
-        </div>
-      )}
-
-      {showHostCta && hostCtaLabel && (
-        <FooterLink href={hostCtaHref || '/become-a-host'} className="ftr-account-host">
-          <span className="ftr-account-host-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" />
-            </svg>
-          </span>
-          <span className="ftr-account-host-copy">
-            <strong>{hostCtaLabel}</strong>
-            <span>{hostSubtitle}</span>
-          </span>
-          <svg className="ftr-account-host-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" />
-          </svg>
-        </FooterLink>
-      )}
-    </div>
-  )
+function FooterLink({ href, children }) {
+  if (href?.startsWith('/')) return <Link to={href}>{children}</Link>
+  return <a href={href || '#'}>{children}</a>
 }
 
 export default function Footer({
   tagline,
-  address,
   columns = [],
   copyright,
-  legal = [],
+  paymentsLabel,
   social = [],
-  hostCtaLabel,
-  hostCtaHref,
-  paymentsLabel = 'We accept',
-  logoutLabel = 'Log out',
-  hostSubtitle = 'List your van or guesthouse',
+  newsletterHeading,
+  newsletterLead,
+  newsletterPlaceholder,
+  newsletterButton,
 }) {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
   const { toast } = useToast()
-  const { page: globalPage } = usePageContent('global')
-  const news = globalPage.newsSection || {}
-  const isMobile = useMediaQuery('(max-width: 768px)')
-  const [openSections, setOpenSections] = useState({ book: true, company: false })
-  const [newsEmail, setNewsEmail] = useState('')
-  const [newsLoading, setNewsLoading] = useState(false)
-  const [paymentMethods, setPaymentMethods] = useState([])
+  const [email, setEmail] = useState('')
+  const [sending, setSending] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-    api.get('/payment-methods').then((res) => {
-      if (cancelled) return
-      const rows = res.data?.data || res.data || []
-      setPaymentMethods(Array.isArray(rows) ? rows : [])
-    }).catch(() => {})
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  const handleNewsletter = async (event) => {
+  async function subscribe(event) {
     event.preventDefault()
-    setNewsLoading(true)
+    if (!email || sending) return
+    setSending(true)
     try {
-      await api.post('/newsletter/subscribe', { email: newsEmail, source: 'footer' })
-      setNewsEmail('')
-      toast(cmsText(news.successMessage, 'Takk! Check your inbox to confirm.'), 'success')
-    } catch (err) {
-      toast(err.response?.data?.message || cmsText(news.errorMessage, 'Could not subscribe right now'), 'error')
+      await api.post('/newsletter/subscribe', { email, source: 'footer' })
+      setEmail('')
+      toast('Subscribed.', 'success')
+    } catch {
+      toast('Could not subscribe.', 'error')
     } finally {
-      setNewsLoading(false)
+      setSending(false)
     }
   }
-
-  const role = normalizeUserRole(user)
-  const dashboardPath = user ? getPostLoginPath(user) : null
-  const dashboardLabel = getDashboardLabel(role)
-  const showHostCta = !user || (role !== 'host' && role !== 'admin')
-
-  const handleLogout = async () => {
-    await logout()
-    navigate('/')
-  }
-
-  const bookColumn = findColumn(columns, { key: 'book', titles: ['book', 'menu'], index: 0 })
-  const companyColumn = findColumn(columns, { key: 'company', titles: ['company', 'pages', 'explore'], index: 1 })
-  const accountColumn = findColumn(columns, { key: 'account', titles: ['account'], index: 2 })
-  const bookTitle = bookColumn?.title || 'Book'
-  const companyTitle = companyColumn?.title || 'Company'
-  const accountTitle = accountColumn?.title || 'Account'
-  const bookLinks = bookColumn?.links?.length ? bookColumn.links : BOOK_LINKS
-  const companyLinks = companyColumn?.links?.length ? companyColumn.links : COMPANY_LINKS
-  const accountLinks = accountColumn?.links?.length ? accountColumn.links : ACCOUNT_LINKS
-  const addressLine = address?.split('\n').filter(Boolean)[0]
-
-  const toggleSection = useCallback((id) => {
-    setOpenSections((current) => ({ ...current, [id]: !current[id] }))
-  }, [])
-
-  useEffect(() => {
-    if (!isMobile) {
-      setOpenSections({ book: true, company: true })
-    } else {
-      setOpenSections({ book: true, company: false })
-    }
-  }, [isMobile])
-
-  const bookList = (
-    <ul>
-      {bookLinks.map((link) => (
-        <li key={link.label}>
-          <FooterLink href={link.href}>{link.label}</FooterLink>
-        </li>
-      ))}
-    </ul>
-  )
-
-  const companyList = (
-    <ul>
-      {companyLinks.map((link) => (
-        <li key={link.label}>
-          <FooterLink href={link.href}>
-            {link.label}
-            {link.badge && <span className="new-pill">{link.badge}</span>}
-          </FooterLink>
-        </li>
-      ))}
-    </ul>
-  )
-
-  const mobileAccountBlock = (
-    <FooterAccountBlock
-      user={user}
-      dashboardPath={dashboardPath}
-      dashboardLabel={dashboardLabel}
-      accountLinks={accountLinks}
-      hostCtaLabel={hostCtaLabel}
-      hostCtaHref={hostCtaHref}
-      hostSubtitle={hostSubtitle}
-      logoutLabel={logoutLabel}
-      accountTitle={accountTitle}
-      showHostCta={showHostCta}
-      onLogout={handleLogout}
-    />
-  )
-
-  const desktopAccountBlock = user ? (
-    <>
-      <ul className="ftr-host-links">
-        <li>
-          <FooterLink href={dashboardPath}>{dashboardLabel}</FooterLink>
-        </li>
-        <li>
-          <button type="button" className="ftr-host-logout" onClick={handleLogout}>
-            {logoutLabel}
-          </button>
-        </li>
-      </ul>
-      {showHostCta && hostCtaLabel && (
-        <FooterLink href={hostCtaHref || '/become-a-host'} className="ftr-host-cta">
-          {hostCtaLabel}
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" />
-          </svg>
-        </FooterLink>
-      )}
-    </>
-  ) : (
-    <>
-      <ul className="ftr-host-links">
-        {accountLinks.map((link) => (
-          <li key={link.label}>
-            <FooterLink href={link.href}>{link.label}</FooterLink>
-          </li>
-        ))}
-      </ul>
-      {hostCtaLabel && (
-        <FooterLink href={hostCtaHref || '/become-a-host'} className="ftr-host-cta">
-          {hostCtaLabel}
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" />
-          </svg>
-        </FooterLink>
-      )}
-    </>
-  )
 
   return (
-    <footer className="ftr">
-      <div className="wrap">
-        <div className="ftr-card">
-          <div className="ftr-grid">
-            <div className="ftr-brand">
-              <SiteLogo variant="footer" className="logo" />
-              {tagline && <p className="ftr-tag">{tagline}</p>}
-              {social.length > 0 && (
-                <div className="ftr-social">
-                  {social.map((item) => (
-                    <FooterLink key={item.label} href={item.href}>
-                      <span aria-label={item.label}>
-                        <FooterSocialIcon label={item.label} />
-                      </span>
-                    </FooterLink>
-                  ))}
-                </div>
-              )}
+    <footer className="tb-footer">
+      <Container>
+        <div className="tb-footer-top">
+          <div className="tb-footer-brand">
+            <img src="/figma/logo-light.svg" alt="MyTerraBook" />
+            {tagline ? <p>{tagline}</p> : null}
+            <div className="tb-footer-social">
+              {social.map((item) => (
+                <a key={item.label || item.icon} href={item.href || '#'} aria-label={item.label || item.icon}>
+                  <FigmaIcon name={item.icon || 'mail'} size={18} />
+                </a>
+              ))}
             </div>
-
-            {isMobile ? (
-              <>
-                <FooterColumnToggle
-                  id="book"
-                  title={bookTitle}
-                  open={openSections.book}
-                  onToggle={() => toggleSection('book')}
-                >
-                  {bookList}
-                </FooterColumnToggle>
-                <FooterColumnToggle
-                  id="company"
-                  title={companyTitle}
-                  open={openSections.company}
-                  onToggle={() => toggleSection('company')}
-                >
-                  {companyList}
-                </FooterColumnToggle>
-                {mobileAccountBlock}
-              </>
-            ) : (
-              <>
-                <div className="ftr-col">
-                  <h4>{bookTitle}</h4>
-                  {bookList}
-                </div>
-                <div className="ftr-col">
-                  <h4>{companyTitle}</h4>
-                  {companyList}
-                </div>
-                <div className="ftr-host">
-                  <h4>{accountTitle}</h4>
-                  {desktopAccountBlock}
-                </div>
-              </>
-            )}
           </div>
-
-          <div className="ftr-news">
-            <h3>{cmsText(news.heading, 'Trip ideas, once a month.')}</h3>
-            <form className="ftr-news-form" onSubmit={handleNewsletter}>
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                value={newsEmail}
-                onChange={(event) => setNewsEmail(event.target.value)}
-                placeholder={cmsText(news.placeholder, 'Email address')}
-                aria-label={cmsText(news.placeholder, 'Email address')}
-              />
-              <button type="submit" className="site-btn site-btn--accent site-btn--m" disabled={newsLoading}>
-                <span>{newsLoading ? cmsText(news.buttonLoadingLabel, 'Subscribing...') : cmsText(news.buttonLabel, 'Subscribe')}</span>
-                <ArrowRight size={16} aria-hidden />
-              </button>
-            </form>
-          </div>
-
-          <div className="ftr-meta">
-            {paymentMethods.length > 0 && (
-            <div className="ftr-pay">
-              <span className="pay-label">{paymentsLabel}</span>
-              <div className="pay-row">
-                {paymentMethods.map((method) => (
-                  <span key={method.code || method.name} className={`pay ${String(method.code || '').toLowerCase()}`}>
-                    {method.name}
-                  </span>
-                ))}
-              </div>
+          {columns.map((column) => (
+            <div key={column.key || column.title} className="tb-footer-col">
+              <h4>{column.title}</h4>
+              {(column.links || []).map((link) => (
+                <FooterLink key={link.label} href={link.href}>{link.label}</FooterLink>
+              ))}
             </div>
-            )}
-
-            {!isMobile && <LangCurrencyMenu variant="footer" />}
-          </div>
-
-          <div className="ftr-bot">
-            <div className="ftr-bot-left">
-              <span className="copy">{copyright}</span>
-              {addressLine && <span className="ftr-addr-inline">{addressLine}</span>}
-            </div>
-            {legal.length > 0 && (
-              <div className="ftr-legal">
-                {legal.map((item, index) => (
-                  <span key={item.label}>
-                    {index > 0 && <span className="dot" />}
-                    <FooterLink href={item.href}>{item.label}</FooterLink>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+          ))}
         </div>
-      </div>
+        <form className="tb-news" onSubmit={subscribe}>
+          <div>
+            {newsletterHeading ? <h3>{newsletterHeading}</h3> : null}
+            {newsletterLead ? <p>{newsletterLead}</p> : null}
+          </div>
+          <label className="tb-news-field">
+            <FigmaIcon name="mail" size={16} />
+            <input
+              type="email"
+              required
+              value={email}
+              placeholder={newsletterPlaceholder || ''}
+              onChange={(event) => setEmail(event.target.value)}
+              aria-label={newsletterPlaceholder || 'Email'}
+            />
+          </label>
+          <button type="submit" disabled={sending}>
+            {newsletterButton}
+            <FigmaIcon name="arrow" size={18} />
+          </button>
+        </form>
+        <div className="tb-footer-bottom">
+          <span>{copyright}</span>
+          <span>{paymentsLabel}</span>
+        </div>
+      </Container>
     </footer>
   )
 }

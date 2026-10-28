@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Mail\TemplatedMail;
 use App\Models\EmailTemplate;
 use App\Services\Email\EmailSettingsService;
+use App\Services\Email\EmailTemplateRenderer;
 use App\Services\Email\EmailTestSampleData;
 use BackedEnum;
 use Filament\Notifications\Notification;
@@ -54,6 +55,32 @@ class EmailTesting extends Page
             ->orderBy('sort_order')
             ->pluck('name', 'key')
             ->all();
+    }
+
+    /**
+     * @return array{name: string, subject: string, html: string}|null
+     */
+    public function renderedPreview(): ?array
+    {
+        if ($this->templateKey === null || $this->templateKey === '') {
+            return null;
+        }
+
+        $template = EmailTemplate::findByKey($this->templateKey);
+        if ($template === null) {
+            return null;
+        }
+
+        $rendered = app(EmailTemplateRenderer::class)->render(
+            $template,
+            EmailTestSampleData::forTemplate($template),
+        );
+
+        return [
+            'name' => $template->name,
+            'subject' => (string) ($rendered['subject'] ?? ''),
+            'html' => view('mail.layouts.brand', $rendered)->render(),
+        ];
     }
 
     public function saveTestEmail(EmailSettingsService $service): void

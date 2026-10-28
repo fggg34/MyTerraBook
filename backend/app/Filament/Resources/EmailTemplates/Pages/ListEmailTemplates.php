@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmailTemplates\Pages;
 
+use App\Filament\Concerns\EmbedsCatalogTable;
 use App\Filament\Resources\EmailTemplates\EmailTemplateResource;
 use App\Models\EmailTemplate;
 use Database\Seeders\EmailTemplateSeeder;
@@ -9,11 +10,20 @@ use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
-use Illuminate\Contracts\View\View;
 
 class ListEmailTemplates extends ListRecords
 {
+    use EmbedsCatalogTable;
+
     protected static string $resource = EmailTemplateResource::class;
+
+    public function mount(): void
+    {
+        parent::mount();
+        $this->tableFilters = array_replace_recursive([
+            'category' => ['value' => null],
+        ], $this->tableFilters ?? []);
+    }
 
     protected function getHeaderActions(): array
     {
@@ -73,16 +83,4 @@ class ListEmailTemplates extends ListRecords
         $template->update(['is_enabled' => ! $template->is_enabled]);
     }
 
-    public function getFooter(): ?View
-    {
-        $groups = EmailTemplate::query()
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get()
-            ->groupBy(fn (EmailTemplate $template): string => (string) ($template->category ?: 'general'));
-
-        return view('filament.email.templates-board', [
-            'groups' => $groups,
-        ]);
-    }
 }

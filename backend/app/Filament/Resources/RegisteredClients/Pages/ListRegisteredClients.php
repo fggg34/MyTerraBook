@@ -3,12 +3,15 @@
 namespace App\Filament\Resources\RegisteredClients\Pages;
 
 use App\Enums\UserRole;
+use App\Filament\Concerns\EmbedsCatalogTable;
 use App\Filament\Resources\RegisteredClients\RegisteredClientResource;
 use App\Models\User;
 use Filament\Resources\Pages\ListRecords;
 
 class ListRegisteredClients extends ListRecords
 {
+    use EmbedsCatalogTable;
+
     protected static string $resource = RegisteredClientResource::class;
 
     public function getSubheading(): ?string

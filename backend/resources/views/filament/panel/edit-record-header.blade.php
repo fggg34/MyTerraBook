@@ -45,7 +45,17 @@
 @if ($sections !== [])
     <nav class="tb-form-toc" aria-label="Sections">
         @foreach ($sections as $id => $label)
-            <a href="#{{ $id }}">{{ $label }}</a>
+            <a href="#{{ $id }}" @if ($loop->first) class="is-active" @endif>{{ $label }}</a>
         @endforeach
     </nav>
+    <script>
+        document.querySelectorAll('.tb-form-toc').forEach((nav) => {
+            nav.addEventListener('click', (event) => {
+                const link = event.target.closest('a');
+                if (!link) return;
+                nav.querySelectorAll('a').forEach((item) => item.classList.remove('is-active'));
+                link.classList.add('is-active');
+            });
+        });
+    </script>
 @endif

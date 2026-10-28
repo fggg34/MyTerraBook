@@ -292,5 +292,15 @@ export function mergeHomepageData(apiData = {}, { useImageFallbacks = true } = {
       ),
     },
     footer,
+    cover: apiData.cover || {},
+    countries: apiData.countries || {},
+    roadSigns: apiData.roadSigns || {},
+    popularCampervans: apiData.popularCampervans || {},
+    seasons: apiData.seasons || {},
+    popularCars: apiData.popularCars || {},
+    howTicket: apiData.howTicket || {},
+    placesToStay: apiData.placesToStay || {},
+    guides: apiData.guides || {},
+    hostBanner: apiData.hostBanner || {},
   }
 }

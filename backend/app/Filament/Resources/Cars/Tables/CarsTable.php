@@ -32,6 +32,7 @@ class CarsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.vehicles')
             ->modifyQueryUsing(fn ($query) => $query->with(['subCategory.mainCategory', 'host', 'dailyFares']))
             ->searchPlaceholder('Search vehicle or host...')
             ->emptyStateHeading('No vehicles match')
@@ -132,7 +133,7 @@ class CarsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('listing_status')->options(collect(ListingApprovalStatus::cases())->mapWithKeys(fn ($c) => [$c->value => str_replace('_', ' ', ucfirst($c->value))])),
+                SelectFilter::make('listing_status')->options(collect(ListingApprovalStatus::cases())->mapWithKeys(fn ($c) => [$c->value => AdminTableBadgeColors::humanize($c)])),
                 SelectFilter::make('sub_category_id')->label('Category')->relationship('subCategory', 'name')->searchable()->preload(),
                 SelectFilter::make('locations')->label('Location')->relationship('locations', 'name')->searchable()->preload(),
                 SelectFilter::make('drive_type')

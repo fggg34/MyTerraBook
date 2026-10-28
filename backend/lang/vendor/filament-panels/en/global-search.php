@@ -3,8 +3,8 @@
 return [
 
     'field' => [
-        'label' => 'Search',
-        'placeholder' => 'Search bookings, clients, vehicles, pages…',
+        'label' => 'Global search',
+        'placeholder' => 'Search bookings, clients, vehicles, pages...',
     ],
 
     'no_results_message' => 'No search results found.',

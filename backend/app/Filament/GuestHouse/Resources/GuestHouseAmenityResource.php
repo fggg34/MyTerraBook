@@ -53,6 +53,7 @@ class GuestHouseAmenityResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->view('filament.guest-houses.amenities-board')
             ->columns([
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('icon')

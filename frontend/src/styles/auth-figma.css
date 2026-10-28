@@ -1,0 +1,340 @@
+body.tb-auth-screen {
+  background: #fff;
+}
+
+body.tb-auth-screen .tb-header,
+body.tb-auth-screen .tb-footer,
+body.tb-auth-screen .tb-cookie {
+  display: none;
+}
+
+.tb-split-auth {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #fff;
+  color: #041e37;
+}
+
+.tb-split-visual {
+  position: relative;
+  min-height: 100vh;
+  background: #041e37;
+  overflow: hidden;
+}
+
+.tb-split-visual > img:first-child {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tb-split-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(4, 30, 55, 0.15) 0%, rgba(4, 30, 55, 0.2) 40%, rgba(4, 30, 55, 0.94) 100%);
+}
+
+.tb-split-logo,
+.tb-split-quote {
+  z-index: 2;
+}
+
+.tb-split-logo {
+  position: absolute;
+  top: 64px;
+  left: 64px;
+  width: 184px;
+  height: auto;
+}
+
+.tb-split-quote {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  bottom: 72px;
+  color: #fff;
+}
+
+.tb-split-quote p {
+  margin: 0 0 16px;
+  color: #f4a83c;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+}
+
+.tb-split-quote h2 {
+  margin: 0 0 16px;
+  font-family: "Instrument Serif", serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 64px;
+  line-height: 1;
+  color: #fff;
+}
+
+.tb-split-quote h2 em {
+  color: #f4a83c;
+  font-style: italic;
+}
+
+.tb-split-quote > span {
+  display: block;
+  max-width: 520px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #fff;
+  opacity: 0.82;
+}
+
+.tb-split-quote div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.tb-split-quote b {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tb-split-form {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 64px;
+}
+
+.tb-split-top,
+.tb-split-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+  color: #546375;
+}
+
+.tb-split-top a,
+.tb-split-bottom a {
+  color: #546375;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tb-split-top span a,
+.tb-login .tb-link {
+  color: #4474a4;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tb-split-bottom {
+  font-size: 12px;
+  color: #8794a3;
+}
+
+.tb-split-bottom span {
+  display: flex;
+  gap: 16px;
+}
+
+.tb-split-body {
+  flex: 1;
+  display: grid;
+  place-items: center;
+}
+
+.tb-login {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 22px;
+}
+
+.tb-login .kicker {
+  margin: 0;
+  color: #4474a4;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+}
+
+.tb-login h1 {
+  margin: 8px 0;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 44px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.tb-login h1 em {
+  font-family: "Instrument Serif", serif;
+  font-style: italic;
+  font-weight: 400;
+  color: #4474a4;
+  font-size: 49px;
+}
+
+.tb-login .lead {
+  margin: 0;
+  color: #546375;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.tb-login label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tb-login .auth-input-wrap,
+.tb-login .tb-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e3e5eb;
+  border-radius: 12px;
+  padding: 0 14px;
+  min-height: 48px;
+  background: #fff;
+}
+
+.tb-login .auth-input-wrap {
+  background: #fff url('/figma/icon-lock.svg') 14px center / 16px no-repeat;
+}
+
+.tb-login .auth-input-wrap input {
+  padding-left: 22px;
+}
+
+.tb-login input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  font: inherit;
+  font-size: 15px;
+  min-height: 46px;
+  background: transparent;
+}
+
+.tb-login .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.tb-login .auth-submit {
+  width: 100%;
+  height: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: #041e37;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.tb-login .outline {
+  width: 100%;
+  height: 52px;
+  border: 1px solid #e0e5ed;
+  border-radius: 14px;
+  background: #fff;
+  color: #041e37;
+  font: inherit;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.tb-login .or {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #8794a3;
+  font-size: 13px;
+}
+
+.tb-login .or::before,
+.tb-login .or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e3e5eb;
+}
+
+.tb-login .host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  color: #4474a4;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tb-login .auth-checkbox input {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid #8794a3;
+  border-radius: 6px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.tb-login .auth-checkbox input:checked {
+  background: #041e37 url('/figma/icon-check-white.svg') center / 13px no-repeat;
+  border-color: #041e37;
+}
+.tb-login .auth-field-error {
+  color: #b42318;
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+@media (max-width: 900px) {
+  .tb-split-auth {
+    grid-template-columns: 1fr;
+  }
+
+  .tb-split-visual {
+    min-height: 280px;
+  }
+
+  .tb-split-quote h2 {
+    font-size: 40px;
+  }
+
+  .tb-split-form {
+    padding: 24px 16px 32px;
+  }
+}

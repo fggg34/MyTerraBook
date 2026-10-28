@@ -30,6 +30,8 @@ class GuestHouseBookingResource extends Resource
 {
     protected static ?string $model = GuestHouseBooking::class;
 
+    protected static ?string $recordTitleAttribute = 'booking_reference';
+
     protected static ?string $cluster = GuestHouseCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
@@ -72,6 +74,8 @@ class GuestHouseBookingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->view('filament.admin.guest-house-bookings')
+            ->modifyQueryUsing(fn ($query) => $query->with('guestHouse'))
             ->columns([
                 TextColumn::make('booking_reference')->label('Reference')->searchable(),
                 TextColumn::make('guest_name')->label('Guest')->searchable(),
@@ -97,7 +101,7 @@ class GuestHouseBookingResource extends Resource
                     ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
             ])
             ->filters([
-                SelectFilter::make('status')->options(collect(GuestHouseBookingStatus::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)])),
+                SelectFilter::make('status')->options(collect(GuestHouseBookingStatus::cases())->mapWithKeys(fn ($c) => [$c->value => AdminTableBadgeColors::humanize($c)])),
                 SelectFilter::make('guest_house_id')
                     ->relationship('guestHouse', 'name')
                     ->label('Property'),

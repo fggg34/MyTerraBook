@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { buildCheckoutParams } from '../components/cars/BookingForm'
-import ListingPageContent from '../components/listing/ListingPageContent'
+import FigmaListing from '../components/listing/FigmaListing'
 import PageHead from '../components/seo/PageHead'
 import EmptyState from '../components/ui/EmptyState'
 import { useToast } from '../context/ToastContext'
@@ -93,7 +93,10 @@ function ListingPageBody({ listingType = 'campervan' }) {
       }
 
       const priceTypeId =
-        car.price_types?.[0]?.id || listing?.priceTypes?.[0]?.id || queryDefaults.price_type_id
+        bookingDatesRef.current.priceTypeId
+        || car.price_types?.[0]?.id
+        || listing?.priceTypes?.[0]?.id
+        || queryDefaults.price_type_id
       const pickupParts = parseTimeParts(car.pickup_time_from) || { hours: 9, minutes: 0 }
       const dropoffParts = parseTimeParts(car.dropoff_time_from) || { hours: 10, minutes: 0 }
       const pickup_at = formatDateTimeAt(selectedPickup, pickupParts.hours, pickupParts.minutes) || queryDefaults.pickup_at || ''
@@ -165,8 +168,8 @@ function ListingPageBody({ listingType = 'campervan' }) {
   return (
     <>
       <PageHead {...seo} />
-      <div className="listing-page" ref={rootRef}>
-      <ListingPageContent
+      <div className="tb-listing-page" ref={rootRef}>
+      <FigmaListing
         listing={listing}
         related={related}
         searchQuery={searchQuery}

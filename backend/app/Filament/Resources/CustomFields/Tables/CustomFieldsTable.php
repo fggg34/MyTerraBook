@@ -20,6 +20,7 @@ class CustomFieldsTable
                 TextColumn::make('label')
                     ->searchable(),
                 TextColumn::make('type')
+                    ->formatStateUsing(fn (mixed $state): string => $state === 'select' ? 'Dropdown' : ($state === 'text' ? 'Text' : \App\Support\AdminTableBadgeColors::humanize((string) $state)))
                     ->searchable(),
                 IconColumn::make('is_required')
                     ->boolean(),
@@ -51,6 +52,7 @@ class CustomFieldsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->view('filament.admin.custom-fields');
     }
 }

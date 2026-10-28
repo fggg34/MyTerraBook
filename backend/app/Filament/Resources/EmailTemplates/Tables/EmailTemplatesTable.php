@@ -55,6 +55,7 @@ class EmailTemplatesTable
                 EditAction::make(),
             ])
             ->defaultSort('sort_order')
-            ->paginated(false);
+            ->paginated(false)
+            ->view('filament.admin.email-templates');
     }
 }

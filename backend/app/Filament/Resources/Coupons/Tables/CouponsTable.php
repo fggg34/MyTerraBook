@@ -2,18 +2,23 @@
 
 namespace App\Filament\Resources\Coupons\Tables;
 
+use App\Models\Coupon;
+use App\Support\AdminTableBadgeColors;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CouponsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.discount-codes')
             ->columns([
                 TextColumn::make('code')
                     ->searchable(),
@@ -48,7 +53,35 @@ class CouponsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('type')
+                    ->label('Type')
+                    ->options(fn (): array => Coupon::query()
+                        ->whereNotNull('type')
+                        ->where('type', '!=', '')
+                        ->distinct()
+                        ->orderBy('type')
+                        ->pluck('type', 'type')
+                        ->mapWithKeys(fn ($type): array => [(string) $type => AdminTableBadgeColors::humanize((string) $type)])
+                        ->all()),
+                SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'active' => 'Active',
+                        'expired' => 'Expired',
+                        'inactive' => 'Inactive',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return match ($data['value'] ?? null) {
+                            'expired' => $query->whereNotNull('valid_to')->whereDate('valid_to', '<', now()->toDateString()),
+                            'inactive' => $query->where('is_active', false)->where(function (Builder $inner): void {
+                                $inner->whereNull('valid_to')->orWhereDate('valid_to', '>=', now()->toDateString());
+                            }),
+                            'active' => $query->where('is_active', true)->where(function (Builder $inner): void {
+                                $inner->whereNull('valid_to')->orWhereDate('valid_to', '>=', now()->toDateString());
+                            }),
+                            default => $query,
+                        };
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),

@@ -37,6 +37,12 @@ class ManageUsers extends Page implements HasTable
         return auth()->user()?->isFullAdmin() ?? false;
     }
 
+    public function mount(): void
+    {
+        $this->tableFilters ??= [];
+        $this->tableFilters['role'] ??= ['value' => null];
+    }
+
     public function content(Schema $schema): Schema
     {
         return $schema->components([
@@ -61,7 +67,7 @@ class ManageUsers extends Page implements HasTable
                     ->sortable(),
                 TextColumn::make('role')
                     ->badge()
-                    ->formatStateUsing(fn (UserRole|string $state): string => ucfirst($state instanceof UserRole ? $state->value : $state))
+                    ->formatStateUsing(fn (UserRole|string $state): string => \App\Support\AdminTableBadgeColors::humanize($state instanceof UserRole ? $state->value : (string) $state))
                     ->sortable(),
                 TextColumn::make('phone')
                     ->placeholder('—')
@@ -74,9 +80,10 @@ class ManageUsers extends Page implements HasTable
             ->filters([
                 SelectFilter::make('role')
                     ->options(collect(UserRole::cases())->mapWithKeys(
-                        fn (UserRole $role): array => [$role->value => ucfirst($role->value)],
+                        fn (UserRole $role): array => [$role->value => \App\Support\AdminTableBadgeColors::humanize($role->value)],
                     )->all()),
             ])
+            ->view('filament.admin.users')
             ->recordActions([
                 Action::make('changePassword')
                     ->label('Change password')

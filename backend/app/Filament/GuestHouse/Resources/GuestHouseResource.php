@@ -36,6 +36,8 @@ class GuestHouseResource extends Resource
 {
     protected static ?string $model = GuestHouse::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     protected static ?string $cluster = GuestHouseCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHome;
@@ -74,7 +76,7 @@ class GuestHouseResource extends Resource
                 TextColumn::make('name')
                     ->label('Property')
                     ->description(fn (GuestHouse $record): ?string => $record->slug ? '/guesthouses/'.$record->slug : ($record->city ?: null))
-                    ->searchable()
+                    ->searchable(['name', 'city'])
                     ->sortable(),
                 TextColumn::make('type')
                     ->badge()
@@ -97,7 +99,7 @@ class GuestHouseResource extends Resource
                 TextColumn::make('updated_at')->label('Updated')->date('d M Y')->sortable(),
             ])
             ->filters([
-                SelectFilter::make('type')->options(collect(GuestHouseType::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)])),
+                SelectFilter::make('type')->options(collect(GuestHouseType::cases())->mapWithKeys(fn ($c) => [$c->value => AdminTableBadgeColors::humanize($c)])),
                 SelectFilter::make('city')->options(fn () => GuestHouse::query()->whereNotNull('city')->distinct()->pluck('city', 'city')),
                 SelectFilter::make('user_id')
                     ->label('Host')

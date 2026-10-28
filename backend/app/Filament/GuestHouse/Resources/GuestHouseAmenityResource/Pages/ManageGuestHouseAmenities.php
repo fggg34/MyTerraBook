@@ -16,17 +16,4 @@ class ManageGuestHouseAmenities extends ManageRecords
     {
         return [CreateAction::make()->label('New amenity')];
     }
-
-    public function getFooter(): ?View
-    {
-        $groups = GuestHouseAmenity::query()
-            ->orderBy('group')
-            ->orderBy('name')
-            ->get()
-            ->groupBy(fn (GuestHouseAmenity $amenity): string => $amenity->group ?: 'General');
-
-        return view('filament.guest-houses.amenities-board', [
-            'groups' => $groups,
-        ]);
-    }
 }

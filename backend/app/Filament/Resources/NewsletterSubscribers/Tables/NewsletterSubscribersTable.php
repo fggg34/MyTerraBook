@@ -4,6 +4,7 @@ namespace App\Filament\Resources\NewsletterSubscribers\Tables;
 
 use App\Models\NewsletterSubscriber;
 use App\Support\AdminTableBadgeColors;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -40,8 +41,17 @@ class NewsletterSubscribersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('source')
+                    ->options(fn (): array => NewsletterSubscriber::query()
+                        ->whereNotNull('source')
+                        ->where('source', '!=', '')
+                        ->distinct()
+                        ->orderBy('source')
+                        ->pluck('source', 'source')
+                        ->mapWithKeys(fn ($source): array => [(string) $source => AdminTableBadgeColors::humanize((string) $source)])
+                        ->all()),
                 TernaryFilter::make('is_active')
-                    ->label('Active subscribers'),
+                    ->label('Status'),
             ])
             ->recordActions([
                 Action::make('deactivate')
@@ -85,6 +95,7 @@ class NewsletterSubscribersTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('subscribed_at', 'desc');
+            ->defaultSort('subscribed_at', 'desc')
+            ->view('filament.admin.newsletter-subscribers');
     }
 }

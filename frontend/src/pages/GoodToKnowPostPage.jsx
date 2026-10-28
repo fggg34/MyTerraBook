@@ -4,6 +4,7 @@ import PageHead from '../components/seo/PageHead'
 import useBlogPosts from '../hooks/useBlogPosts'
 import usePageSeo from '../hooks/usePageSeo'
 import '../styles/content-pages.css'
+import '../styles/content-figma.css'
 
 function formatDate(iso) {
   if (!iso) return null

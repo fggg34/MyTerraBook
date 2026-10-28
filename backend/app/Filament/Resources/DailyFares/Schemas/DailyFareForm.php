@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DailyFares\Schemas;
 
+use App\Support\AdminInputs;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -13,10 +14,12 @@ class DailyFareForm
         return $schema
             ->components([
                 Select::make('car_id')
+                    ->label('Vehicle')
                     ->relationship('car', 'name')
                     ->required()
                     ->searchable(),
                 Select::make('price_type_id')
+                    ->label('Price type')
                     ->relationship('priceType', 'name')
                     ->required()
                     ->searchable(),
@@ -31,11 +34,8 @@ class DailyFareForm
                     ->numeric()
                     ->minValue(1)
                     ->rule('gte:from_days'),
-                TextInput::make('price_per_day_cents')
-                    ->label('Price per day (cents)')
-                    ->required()
-                    ->numeric()
-                    ->minValue(0),
+                AdminInputs::isk('price_per_day_cents', 'Price per day')
+                    ->required(),
             ]);
     }
 }

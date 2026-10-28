@@ -56,6 +56,7 @@ class EmailSettings extends Page
     {
         return $schema->components([
             Section::make('Sender')
+                ->description('Who the e-mail comes from.')
                 ->columns(2)
                 ->schema([
                     TextInput::make('brand_name')
@@ -67,28 +68,33 @@ class EmailSettings extends Page
                         ->required()
                         ->maxLength(255),
                     TextInput::make('sender_email')
-                        ->label('Sender email (from)')
+                        ->label('Sender e-mail (from)')
                         ->email()
                         ->required()
                         ->maxLength(255)
                         ->helperText('SMTP "from" address. Use the same mailbox you configure on your mail server.'),
                     TextInput::make('admin_email')
-                        ->label('Admin notification email')
+                        ->label('Admin notification e-mail')
                         ->email()
                         ->maxLength(255)
-                        ->helperText('Receives new order alerts (order_new_admin template). Often the same address as the sender email.'),
+                        ->live()
+                        ->extraInputAttributes(fn (Get $get): array => filled($get('admin_email')) ? [] : ['class' => 'tb-input-warn'], merge: true)
+                        ->helperText(fn (Get $get): string => filled($get('admin_email'))
+                            ? 'Receives new order alerts (order_new_admin template). Often the same address as the sender email.'
+                            : 'Empty — new order alerts are not delivered.'),
                     TextInput::make('reply_to')
-                        ->label('Reply-to email')
+                        ->label('Reply-to e-mail')
                         ->email()
                         ->maxLength(255)
                         ->helperText('Optional. Replies go here instead of the sender address.'),
                     TextInput::make('support_email')
-                        ->label('Support email')
+                        ->label('Support e-mail')
                         ->email()
                         ->maxLength(255)
                         ->helperText('Shown in the email footer as the help contact.'),
                 ]),
             Section::make('Branding')
+                ->description('How e-mails look.')
                 ->columns(2)
                 ->schema([
                     Select::make('logo_mode')
@@ -150,6 +156,13 @@ class EmailSettings extends Page
                             ->action(null)
                             ->icon('heroicon-o-check')
                             ->keyBindings(['mod+s']),
+                        Action::make('discard')
+                            ->label('Discard')
+                            ->color('gray')
+                            ->action(function (EmailSettingsService $service): void {
+                                $this->data = $service->loadForForm();
+                                $this->form->fill($this->data);
+                            }),
                     ]),
                 ]),
         ]);

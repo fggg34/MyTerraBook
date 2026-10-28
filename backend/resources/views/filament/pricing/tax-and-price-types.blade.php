@@ -87,5 +87,4 @@
             </tbody>
         </table>
     </section>
-    <p class="tb-dual-note">Tax rates and Types of price share one page because each price type points to a tax rate. Both lists stay complete and editable.</p>
 </div>

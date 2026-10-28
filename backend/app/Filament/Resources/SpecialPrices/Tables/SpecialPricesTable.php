@@ -14,6 +14,7 @@ class SpecialPricesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.pricing-rules')
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),

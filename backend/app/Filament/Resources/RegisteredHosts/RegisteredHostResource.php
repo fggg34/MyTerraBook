@@ -25,6 +25,8 @@ class RegisteredHostResource extends Resource
 {
     protected static ?string $model = User::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     protected static ?string $slug = 'registered-hosts';
 
     protected static ?string $navigationLabel = 'Hosts';

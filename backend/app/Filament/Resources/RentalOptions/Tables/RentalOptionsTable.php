@@ -19,6 +19,9 @@ class RentalOptionsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->reorderable('sort_order')
+            ->modifyQueryUsing(fn ($query) => $query->with('taxRate'))
+            ->view('filament.admin.add-ons')
             ->columns([
                 TextColumn::make('name')
                     ->label('Option Name')

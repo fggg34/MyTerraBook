@@ -25,6 +25,7 @@ class RegisteredClientsTable
                     ->copyable(),
                 TextColumn::make('phone')
                     ->placeholder('—')
+                    ->searchable()
                     ->toggleable(),
                 TextColumn::make('orders_count')
                     ->label('Vehicle bookings')
@@ -56,7 +57,8 @@ class RegisteredClientsTable
                         }),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->view('filament.admin.clients');
     }
 
     public static function makeDeleteAction(): DeleteAction

@@ -21,6 +21,8 @@ class RegisteredClientResource extends Resource
 {
     protected static ?string $model = User::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     protected static ?string $slug = 'registered-clients';
 
     protected static ?string $navigationLabel = 'Clients';

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\RegisteredHosts\Tables;
 
 use App\Models\User;
 use App\Services\Hosts\HostLoginInvite;
+use Illuminate\Support\Facades\Schema;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Notifications\Notification;
@@ -22,6 +23,10 @@ class RegisteredHostsTable
 {
     public static function configure(Table $table): Table
     {
+        $hasApi = Schema::hasColumn('users', 'partner_api_enabled');
+        $hasRate = Schema::hasColumn('users', 'partner_commission_rate');
+        $hasProvider = Schema::hasColumn('users', 'partner_provider');
+
         return $table
             ->searchPlaceholder('Search hosts by name or email')
             ->striped()
@@ -57,18 +62,22 @@ class RegisteredHostsTable
                     ->label('Guesthouses')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('partner_api_enabled')
-                    ->label('Partner API')
-                    ->badge()
-                    ->formatStateUsing(fn (bool $state): string => $state ? 'Enabled' : 'Disabled')
-                    ->color(fn (bool $state): string => $state ? 'success' : 'gray')
-                    ->sortable(),
-                TextColumn::make('partner_commission_rate')
-                    ->label('Commission')
-                    ->state(fn (User $record): string => $record->partner_commission_rate !== null
-                        ? rtrim(rtrim($record->partner_commission_rate, '0'), '.').'%'
-                        : ((float) config('rapyd.commission_rate', 0.15) * 100).'% · Default')
-                    ->toggleable(),
+                ...($hasApi ? [
+                    TextColumn::make('partner_api_enabled')
+                        ->label('Partner API')
+                        ->badge()
+                        ->formatStateUsing(fn (bool $state): string => $state ? 'Enabled' : 'Disabled')
+                        ->color(fn (bool $state): string => $state ? 'success' : 'gray')
+                        ->sortable(),
+                ] : []),
+                ...($hasRate ? [
+                    TextColumn::make('partner_commission_rate')
+                        ->label('Commission')
+                        ->state(fn (User $record): string => $record->partner_commission_rate !== null
+                            ? rtrim(rtrim((string) $record->partner_commission_rate, '0'), '.').'%'
+                            : ((float) config('rapyd.commission_rate', 0.15) * 100).'% · Default')
+                        ->toggleable(),
+                ] : []),
                 TextColumn::make('created_at')
                     ->label('Registered')
                     ->date()
@@ -83,9 +92,13 @@ class RegisteredHostsTable
             ->filters([
                 SelectFilter::make('country_code')->label('Operating country')
                     ->options(config('destinations', []))->searchable(),
-                SelectFilter::make('partner_provider')->label('Connection type')
-                    ->options(['greenlight' => 'Greenlight', 'caren' => 'Caren', 'foxie' => 'Foxie Camper', 'custom' => 'Custom API']),
-                TernaryFilter::make('partner_api_enabled')->label('API enabled'),
+                ...($hasProvider ? [
+                    SelectFilter::make('partner_provider')->label('Connection type')
+                        ->options(['greenlight' => 'Greenlight', 'caren' => 'Caren', 'foxie' => 'Foxie Camper', 'custom' => 'Custom API']),
+                ] : []),
+                ...($hasApi ? [
+                    TernaryFilter::make('partner_api_enabled')->label('API enabled'),
+                ] : []),
             ])
             ->recordActions([
                 self::sendLoginAction(),
@@ -103,7 +116,8 @@ class RegisteredHostsTable
                         }),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->view('filament.admin.hosts');
     }
 
     public static function sendLoginAction(): Action

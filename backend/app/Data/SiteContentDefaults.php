@@ -26,7 +26,51 @@ class SiteContentDefaults
      */
     public static function forPage(string $pageKey): array
     {
-        return self::all()[$pageKey] ?? [];
+        $page = self::all()[$pageKey] ?? [];
+        $extra = match ($pageKey) {
+            'home' => FigmaHomepage::sections(),
+            'global' => FigmaHomepage::chrome(),
+            default => [],
+        };
+
+        if ($extra === []) {
+            if ($pageKey === 'search-campervan') {
+                $page['presentation'] = FigmaHomepage::searchCampervan();
+            }
+            if ($pageKey === 'search-car') {
+                $page['presentation'] = FigmaHomepage::searchCar();
+            }
+            if ($pageKey === 'search-guesthouse') {
+                $page['presentation'] = FigmaHomepage::searchGuesthouse();
+            }
+            if ($pageKey === 'listing-campervan') {
+                $page['frame'] = FigmaHomepage::listingCampervan();
+            }
+            if ($pageKey === 'listing-car') {
+                $page['frame'] = FigmaHomepage::listingCar();
+            }
+            if ($pageKey === 'listing-guesthouse') {
+                $page['frame'] = FigmaHomepage::listingGuesthouse();
+            }
+
+            return $page;
+        }
+
+        $merged = array_replace_recursive($page, $extra);
+
+        if (isset($extra['header']['navLinks'])) {
+            $merged['header']['navLinks'] = $extra['header']['navLinks'];
+        }
+
+        if (isset($extra['footer']['columns'])) {
+            $merged['footer']['columns'] = $extra['footer']['columns'];
+        }
+
+        if ($pageKey === 'search-campervan') {
+            $merged['presentation'] = FigmaHomepage::searchCampervan();
+        }
+
+        return $merged;
     }
 
     /**
