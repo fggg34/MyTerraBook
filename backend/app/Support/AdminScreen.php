@@ -32,6 +32,7 @@ use App\Filament\Resources\EmailLogs\EmailLogResource;
 use App\Filament\Resources\EmailTemplates\EmailTemplateResource;
 use App\Filament\Resources\ExtraHourFares\ExtraHourFareResource;
 use App\Filament\Resources\HourlyFares\HourlyFareResource;
+use App\Filament\Pages\SiteContentHub;
 use App\Filament\Resources\ListingReviews\ListingReviewResource;
 use App\Filament\Resources\LocationFees\LocationFeeResource;
 use App\Filament\Resources\Locations\LocationResource;
@@ -219,6 +220,23 @@ class AdminScreen
             return [$link('Add host / partner', RegisteredHostResource::getUrl('create'), true)];
         }
 
+        if (self::on('admin/listing-reviews') && ListingReviewResource::canCreate()) {
+            return [$link('New listing review', ListingReviewResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/blog-posts')) {
+            $actions = [$link('Page text', SiteContentHub::getUrl().'?tab=good-to-know', false, 'admin-redesign/icon-tb-copy.svg')];
+            if (BlogPostResource::canCreate()) {
+                $actions[] = $link('New post', BlogPostResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
+        if (self::on('admin/newsletter-subscribers', 'admin/newsletter-campaigns') && NewsletterCampaignResource::canCreate()) {
+            return [$link('New campaign', NewsletterCampaignResource::getUrl('create'), true)];
+        }
+
         return [];
     }
 
@@ -278,10 +296,13 @@ class AdminScreen
             ['match' => ['admin/registered-clients'], 'crumb' => 'People', 'title' => 'Clients', 'description' => 'Registered clients and their bookings.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/registered-clients/*'], 'crumb' => 'Clients', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/listing-approvals', 'admin/listing-approvals/*'], 'crumb' => 'Moderation', 'title' => 'Listing approvals', 'description' => 'Newest submissions first. Approve, request changes or reject.', 'nav' => null, 'settings' => false],
-            ['match' => ['admin/listing-reviews', 'admin/listing-reviews/*', 'admin/guest-houses/guest-reviews'], 'crumb' => 'Moderation', 'title' => 'Listing reviews', 'description' => 'Guest reviews shown on vehicle and guest house pages.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/listing-reviews', 'admin/guest-houses/guest-reviews'], 'crumb' => 'Moderation', 'title' => 'Listing reviews', 'description' => 'Guest reviews shown on vehicle and guest house pages.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/listing-reviews/*'], 'crumb' => 'Listing reviews', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/site-content', 'admin/site-content/*', 'admin/homepage-cms', 'admin/footer-settings'], 'crumb' => 'Website · Site content', 'title' => 'Site content', 'description' => 'Copy and media shown on the public website.', 'nav' => null, 'settings' => false],
-            ['match' => ['admin/blog-posts', 'admin/blog-posts/*'], 'crumb' => 'Website', 'title' => 'Good to Know', 'description' => 'Travel guides and tips shown on the blog. The page header text is edited under Site content › Good to Know.', 'nav' => null, 'settings' => false],
-            ['match' => ['admin/newsletter-subscribers', 'admin/newsletter-subscribers/*', 'admin/newsletter-campaigns', 'admin/newsletter-campaigns/*'], 'crumb' => 'Marketing', 'title' => 'Newsletter', 'description' => 'People who signed up on the website, and the e-mails sent to them.', 'nav' => 'newsletter', 'settings' => false],
+            ['match' => ['admin/blog-posts'], 'crumb' => 'Website', 'title' => 'Good to Know', 'description' => 'Travel guides and tips shown on the blog. The page header text is edited under Site content › Good to Know.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/blog-posts/*'], 'crumb' => 'Good to Know', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
+            ['match' => ['admin/newsletter-subscribers', 'admin/newsletter-campaigns'], 'crumb' => 'Marketing', 'title' => 'Newsletter', 'description' => 'People who signed up on the website, and the e-mails sent to them.', 'nav' => 'newsletter', 'settings' => false],
+            ['match' => ['admin/newsletter-subscribers/*', 'admin/newsletter-campaigns/*'], 'crumb' => 'Newsletter', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/email-templates', 'admin/email-templates/*', 'admin/email-settings', 'admin/email-testing', 'admin/email-logs', 'admin/email-logs/*'], 'crumb' => 'Marketing', 'title' => 'Email', 'description' => 'Every e-mail the system sends, its sender settings and history.', 'nav' => 'email', 'settings' => false],
             ['match' => ['admin/reports', 'admin/reports/*', 'admin/tracking-statistics', 'admin/tracking-statistics/*', 'admin/impact-rent/reports', 'admin/impact-rent/reports/*', 'admin/impact-rent/tracking-statistics', 'admin/impact-rent/tracking-statistics/*', 'admin/impact-rent/tracking-campaigns', 'admin/impact-rent/tracking-campaigns/*'], 'crumb' => 'Marketing', 'title' => 'Analytics', 'description' => 'Rental reports, website visits and campaign links.', 'nav' => 'analytics', 'settings' => false],
             ['match' => ['admin/global-configuration', 'admin/global-configuration/*'], 'crumb' => 'Settings', 'title' => null, 'description' => null, 'nav' => 'settings', 'settings' => true],

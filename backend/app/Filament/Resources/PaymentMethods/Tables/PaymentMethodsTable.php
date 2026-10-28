@@ -24,14 +24,20 @@ class PaymentMethodsTable
                 IconColumn::make('auto_confirm_order')
                     ->boolean(),
                 TextColumn::make('charge_or_discount')
+                    ->label('Charge or discount')
+                    ->formatStateUsing(fn (mixed $state): string => \App\Support\AdminTableBadgeColors::humanize($state))
                     ->searchable(),
                 TextColumn::make('charge_discount_type')
+                    ->label('Amount type')
+                    ->formatStateUsing(fn (mixed $state): string => $state === 'fixed' ? 'Fixed amount' : \App\Support\AdminTableBadgeColors::humanize($state))
                     ->searchable(),
                 TextColumn::make('charge_fixed_cents')
-                    ->numeric()
+                    ->label('Fixed amount')
+                    ->formatStateUsing(fn ($state): string => $state === null ? '—' : \App\Support\AdminMoney::fromCents((int) $state))
                     ->sortable(),
                 TextColumn::make('charge_percent_bips')
-                    ->numeric()
+                    ->label('Percent')
+                    ->formatStateUsing(fn ($state): string => $state === null ? '—' : rtrim(rtrim(number_format(((int) $state) / 100, 2, '.', ''), '0'), '.').'%')
                     ->sortable(),
                 TextColumn::make('sort_order')
                     ->numeric()

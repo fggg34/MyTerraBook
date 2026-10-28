@@ -62,7 +62,14 @@
         'admin/impact-rent/tax-rates',
         'admin/impact-rent/price-types',
     );
-    $peopleList = \App\Support\AdminScreen::on('admin/registered-hosts', 'admin/registered-clients');
+    $peopleList = \App\Support\AdminScreen::on(
+        'admin/registered-hosts',
+        'admin/registered-clients',
+        'admin/listing-reviews',
+        'admin/blog-posts',
+        'admin/newsletter-subscribers',
+        'admin/newsletter-campaigns',
+    );
 @endphp
 @if ($screen && ($screen['crumb'] !== '' || $screen['title'] || $screen['description'] || $links !== []))
     <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $pricingList || $peopleList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>

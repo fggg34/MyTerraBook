@@ -24,11 +24,19 @@ class CouponForm
                 TextInput::make('code')
                     ->label('Code')
                     ->required(),
-                TextInput::make('type')
+                Select::make('type')
                     ->label('Type')
+                    ->options([
+                        'permanent' => 'Permanent',
+                        'gift' => 'Gift',
+                    ])
                     ->required(),
-                TextInput::make('discount_type')
+                Select::make('discount_type')
                     ->label('Discount type')
+                    ->options([
+                        'percentage' => 'Percentage',
+                        'fixed' => 'Fixed amount',
+                    ])
                     ->required(),
                 AdminInputs::isk('discount_fixed_cents', 'Discount amount'),
                 AdminInputs::percentFromBips('discount_percent_bips', 'Discount (%)'),

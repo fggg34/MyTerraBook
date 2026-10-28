@@ -275,6 +275,12 @@ html.tb-redesign .tb-list .tb-pill-muted { background: #eef2f6; color: #5c6b7a; 
 .tb-initials { display: flex; align-items: center; justify-content: center; background: #e8eff7; color: #4474a4; font-size: 11px; font-weight: 700; }
 .tb-mini-btn { border: 1px solid #d5deea; background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; color: #041e37; cursor: pointer; white-space: nowrap; }
 .tb-api-tabs { margin: 0 0 12px; }
+.tb-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+.tb-stat { background: #fff; border: 1px solid #e3e8ef; border-radius: 12px; padding: 16px; }
+.tb-stat span { display: block; color: #5c6b7a; font-size: 13px; margin-bottom: 6px; }
+.tb-stat strong { font-size: 28px; color: #041e37; font-weight: 650; }
+.tb-stars { color: #c9841a; letter-spacing: 1px; }
+.tb-empty-card .tb-btn { margin-top: 8px; }
 .tb-muted { color: var(--tb-secondary); font-size: 14px; line-height: 20px; }
 .tb-actions { display: flex; gap: 10px; justify-content: flex-end; }
 .tb-row-btn {

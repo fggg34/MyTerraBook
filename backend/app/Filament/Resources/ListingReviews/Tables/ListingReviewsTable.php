@@ -98,6 +98,15 @@ class ListingReviewsTable
                         Car::class => 'Car / Campervan',
                         GuestHouse::class => 'Guest house',
                     ]),
+                SelectFilter::make('rating')
+                    ->label('Rating')
+                    ->options([
+                        1 => '1 star',
+                        2 => '2 stars',
+                        3 => '3 stars',
+                        4 => '4 stars',
+                        5 => '5 stars',
+                    ]),
                 TernaryFilter::make('is_approved')
                     ->label('Visible on site'),
             ])
@@ -126,6 +135,7 @@ class ListingReviewsTable
                         ->deselectRecordsAfterCompletion(),
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->view('filament.admin.listing-reviews');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PaymentMethods\Schemas;
 
 use App\Support\AdminInputs;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -28,12 +29,21 @@ class PaymentMethodForm
                     ->label('Confirm the order automatically')
                     ->default(false)
                     ->required(),
-                TextInput::make('charge_or_discount')
+                Select::make('charge_or_discount')
                     ->label('Charge or discount')
+                    ->options([
+                        'none' => 'None',
+                        'charge' => 'Charge',
+                        'discount' => 'Discount',
+                    ])
                     ->required()
                     ->default('none'),
-                TextInput::make('charge_discount_type')
-                    ->label('Amount type'),
+                Select::make('charge_discount_type')
+                    ->label('Amount type')
+                    ->options([
+                        'percentage' => 'Percentage',
+                        'fixed' => 'Fixed amount',
+                    ]),
                 AdminInputs::isk('charge_fixed_cents', 'Fixed amount'),
                 AdminInputs::percentFromBips('charge_percent_bips', 'Percent'),
                 Textarea::make('config')

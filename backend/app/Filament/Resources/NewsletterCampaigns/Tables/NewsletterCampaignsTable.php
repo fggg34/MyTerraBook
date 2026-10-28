@@ -39,6 +39,7 @@ class NewsletterCampaignsTable
             ->recordActions([
                 EditAction::make(),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->view('filament.admin.newsletter-campaigns');
     }
 }
