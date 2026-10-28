@@ -34,9 +34,13 @@ class NewsletterController extends Controller
     {
         $validated = $request->validate([
             'token' => ['required', 'string', 'size:64'],
+            'reason' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $unsubscribed = $this->newsletterService->unsubscribe($validated['token']);
+        $unsubscribed = $this->newsletterService->unsubscribe(
+            $validated['token'],
+            $validated['reason'] ?? null,
+        );
 
         if (! $unsubscribed) {
             return response()->json([

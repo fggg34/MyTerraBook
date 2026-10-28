@@ -1,6 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import ArticleFrame from '../components/content/ArticleFrame'
-import { GUIDE_ARTICLES } from '../components/content/guidesData'
+import ArticleBlocks from '../components/content/ArticleBlocks'
 import ContentProse from '../components/content/ContentProse'
 import PageHead from '../components/seo/PageHead'
 import { usePageContent } from '../context/SiteContentContext'
@@ -62,15 +61,6 @@ export default function GoodToKnowPostPage() {
     skipPageSeo: true,
     source: post || {},
   })
-
-  if (GUIDE_ARTICLES.some((article) => article.slug === slug)) {
-    return (
-      <>
-        <PageHead {...seo} title={GUIDE_ARTICLES.find((article) => article.slug === slug)?.title} />
-        <ArticleFrame slug={slug} />
-      </>
-    )
-  }
 
   if (loading) {
     return <PageHead {...seo} />
@@ -149,7 +139,7 @@ export default function GoodToKnowPostPage() {
                 {post.excerpt && <h2 className="gtk-article-subtitle">{post.excerpt}</h2>}
 
                 <div className="gtk-article-content">
-                  <ContentProse html={post.body} />
+                  {post.blocks?.length ? <ArticleBlocks blocks={post.blocks} /> : <ContentProse html={post.body} />}
                 </div>
                 <p className="gtk-article-author">
                   <strong>{post.author_name || 'Written by the MyTerraBook team'}</strong>

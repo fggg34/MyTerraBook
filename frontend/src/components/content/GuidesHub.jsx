@@ -5,7 +5,7 @@ import Container from '../site/Container'
 import StrokeIcon from './StrokeIcon'
 import { usePageContent } from '../../context/SiteContentContext'
 import useBlogPosts from '../../hooks/useBlogPosts'
-import { GUIDE_ARTICLES, GUIDE_CATEGORIES } from './guidesData'
+import { GUIDE_CATEGORIES } from './guidesData'
 import '../../styles/frames.css'
 
 function filled(value, fallback) {
@@ -15,18 +15,16 @@ function filled(value, fallback) {
 export default function GuidesHub() {
   const { page } = usePageContent('good-to-know')
   const { posts } = useBlogPosts()
-  const articles = posts.length
-    ? posts.map((post) => ({
-      slug: post.slug,
-      title: post.title,
-      excerpt: post.excerpt || '',
-      category: post.kicker || 'Guide',
-      image: post.featured_image || '/figma/about-camper.png',
-      read: post.read_time || '',
-      date: post.published_at ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
-      featured: Boolean(post.is_featured),
-    }))
-    : GUIDE_ARTICLES
+  const articles = posts.map((post) => ({
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt || '',
+    category: post.kicker || 'Guide',
+    image: post.featured_image || '/figma/about-camper.png',
+    read: post.read_time || '',
+    date: post.published_at ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+    featured: Boolean(post.is_featured),
+  }))
   const hero = page.hero || {}
   const listCopy = page.list || {}
   const news = page.newsletter || {}

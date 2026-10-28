@@ -23,6 +23,11 @@ class BlogPostResource extends JsonResource
             'og_image' => $this->resolveImageUrl($this->og_image),
             'kicker' => $this->kicker,
             'excerpt' => $this->excerpt,
+            'blocks' => $this->when(
+                $request->route()?->getName() === 'api.blog-posts.show'
+                    || (bool) $request->input('include_body'),
+                $this->blocks ?? [],
+            ),
             'body' => $this->when(
                 $request->route()?->getName() === 'api.blog-posts.show'
                     || (bool) $request->input('include_body'),

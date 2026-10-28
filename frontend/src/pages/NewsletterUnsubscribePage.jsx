@@ -74,7 +74,20 @@ export default function NewsletterUnsubscribePage() {
               ))}
             </div>
             <div className="tb-unsub-actions">
-              <button type="button" className="tb-btn" disabled={!reason || sent} onClick={() => setSent(true)}>{sent ? filled(copy.thanks, 'Thanks') : filled(copy.submitLabel, 'Send feedback')}</button>
+              <button type="button" className="tb-btn" disabled={!reason || sent} onClick={async () => {
+                if (!token) {
+                  setStatus('error')
+                  setMessage(filled(copy.missingMessage, 'Missing unsubscribe link.'))
+                  return
+                }
+                try {
+                  await api.post('/newsletter/unsubscribe', { token, reason })
+                  setSent(true)
+                } catch (err) {
+                  setStatus('error')
+                  setMessage(err.response?.data?.message || filled(copy.errorMessage, 'Could not save that reason.'))
+                }
+              }}>{sent ? filled(copy.thanks, 'Thanks') : filled(copy.submitLabel, 'Send feedback')}</button>
               <Link className="tb-btn ghost" to="/">{filled(copy.backLabel, 'Back to the site')}</Link>
             </div>
             <p className="foot">{sent ? 'Noted. You can change email preferences any time in Account → Settings.' : 'Changed your mind later? Manage email preferences any time in Account → Settings.'}</p>

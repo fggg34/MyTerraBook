@@ -18,6 +18,7 @@ class BlogPost extends Model
         'kicker',
         'excerpt',
         'body',
+        'blocks',
         'featured_image',
         'image_alt',
         'author_name',
@@ -41,6 +42,7 @@ class BlogPost extends Model
             'published_at' => 'datetime',
             'sort_order' => 'integer',
             'tags' => 'array',
+            'blocks' => 'array',
         ];
     }
 

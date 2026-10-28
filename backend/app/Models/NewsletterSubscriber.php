@@ -14,6 +14,7 @@ class NewsletterSubscriber extends Model
         'unsubscribe_token',
         'subscribed_at',
         'unsubscribed_at',
+        'unsubscribe_reason',
     ];
 
     protected function casts(): array
