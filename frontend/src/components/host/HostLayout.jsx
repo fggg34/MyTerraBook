@@ -1,5 +1,5 @@
 import { Car, Calendar, Home, LayoutDashboard, LogOut, MoreHorizontal, Plug, Settings } from 'lucide-react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { usePageContent } from '../../context/SiteContentContext'
 import PageHead from '../seo/PageHead'
@@ -36,17 +36,28 @@ function resolveNavItems(cmsItems, defaults) {
 
 export default function HostLayout() {
   const { page: copy } = usePageContent('host-panel')
+  const { pathname } = useLocation()
+  const sidebar = copy.sidebar || {}
+  const topbar = copy.topbar || {}
   const navItems = resolveNavItems(copy.navItems, DEFAULT_NAV).map((item) => ({
     ...item,
     icon: ICONS[item.to] ?? LayoutDashboard,
     end: item.to === '/host',
   }))
+  const pageTitle = {
+    '/host': topbar.pageTitle || 'Dashboard',
+    '/host/cars': copy.vehicles?.title || 'Cars & vans',
+    '/host/guesthouses': copy.stays?.title || 'Guesthouses',
+    '/host/bookings': copy.bookings?.title || 'Bookings',
+    '/host/integrations': copy.api?.title || 'API connections',
+    '/host/settings': copy.settings?.title || 'Settings',
+  }[pathname] || topbar.pageTitle || 'Dashboard'
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const seo = usePageSeo(null, {
     skipPageSeo: true,
     robots: 'noindex',
-    source: { title: copy.sidebarTitle ?? 'Host panel' },
+    source: { title: sidebar.hostTag ?? 'Host panel' },
   })
 
   const handleLogout = async () => {
@@ -63,10 +74,11 @@ export default function HostLayout() {
           <div className="host-rail-brand">
             <span className="host-rail-mark" aria-hidden="true">H</span>
             <div>
-              <p className="host-rail-name">{copy.sidebarTitle ?? 'Host panel'}</p>
-              <p className="host-rail-sub">{copy.eyebrow ?? 'Account'}</p>
+              <p className="host-rail-name">MyTerraBook</p>
+              <p className="host-rail-sub">{sidebar.hostTag ?? 'Host'}</p>
             </div>
           </div>
+          <p className="host-rail-menu">{sidebar.menuLabel ?? 'MENU'}</p>
           <nav className="host-nav">
             {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? 'active' : '')}>
@@ -75,6 +87,10 @@ export default function HostLayout() {
               </NavLink>
             ))}
           </nav>
+          <div className="host-rail-help">
+            <strong>{sidebar.supportTitle ?? 'Host support'}</strong>
+            <span>{sidebar.supportLine ?? '+354 787 0707 · info@myterrabook.com'}</span>
+          </div>
           <button type="button" className="host-rail-signout" onClick={handleLogout}>
             <LogOut size={16} />
             <span>{copy.signOutLabel ?? 'Sign out'}</span>
@@ -83,8 +99,9 @@ export default function HostLayout() {
         <main className="host-main">
           <div className="host-panel-topbar">
             <div className="host-panel-topbar__intro">
-              <p className="host-panel-kicker">{copy.eyebrow ?? 'Host panel'}</p>
-              <h1>Welcome, {user?.name}</h1>
+              <p className="host-panel-kicker">{topbar.accountRole ?? 'Host account'}</p>
+              <h1>{pageTitle}</h1>
+              <p className="host-panel-user">{user?.name}</p>
             </div>
             <button type="button" className="host-btn secondary host-panel-topbar__signout" onClick={handleLogout}>
               <LogOut size={16} />

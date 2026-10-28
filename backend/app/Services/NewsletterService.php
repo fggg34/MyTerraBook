@@ -37,21 +37,30 @@ class NewsletterService
         ]);
     }
 
-    public function unsubscribe(string $token): bool
+    public function unsubscribe(string $token, ?string $reason = null): bool
     {
         $subscriber = NewsletterSubscriber::query()
             ->where('unsubscribe_token', $token)
-            ->where('is_active', true)
             ->first();
 
         if (! $subscriber) {
             return false;
         }
 
-        $subscriber->update([
-            'is_active' => false,
-            'unsubscribed_at' => now(),
-        ]);
+        if ($subscriber->is_active) {
+            $subscriber->is_active = false;
+            $subscriber->unsubscribed_at = now();
+        }
+
+        if ($reason !== null && trim($reason) !== '') {
+            $subscriber->unsubscribe_reason = trim($reason);
+        }
+
+        if (! $subscriber->isDirty()) {
+            return true;
+        }
+
+        $subscriber->save();
 
         return true;
     }

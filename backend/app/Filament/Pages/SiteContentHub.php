@@ -32,11 +32,11 @@ class SiteContentHub extends Page
      */
     private const PICKER_GROUPS = [
         'Global' => ['global'],
-        'Main pages' => ['home', 'about', 'faq', 'contact', 'become-a-host', 'campsite-map', 'good-to-know'],
+        'Main pages' => ['home', 'about', 'faq', 'contact', 'become-a-host', 'campsite-map', 'good-to-know', 'article'],
         'Legal' => ['terms', 'privacy', 'refund-policy', 'cookies', 'cardholder-terms'],
         'Search & listings' => ['search-campervan', 'search-car', 'search-guesthouse', 'listing-campervan', 'listing-car', 'listing-guesthouse'],
         'Checkout & accounts' => ['checkout', 'auth-login', 'auth-register', 'auth-host-register'],
-        'Panels & system' => ['user-dashboard', 'admin-dashboard', 'client-panel', 'host-panel', 'newsletter-unsubscribe', 'under-construction'],
+        'Panels & system' => ['user-dashboard', 'admin-dashboard', 'client-panel', 'host-panel', 'newsletter-unsubscribe', 'coming-soon', 'under-construction'],
     ];
 
     /**
@@ -44,7 +44,7 @@ class SiteContentHub extends Page
      *
      * @var list<string>
      */
-    private const HOMEPAGE_PATTERN = ['home', 'about', 'faq', 'contact', 'become-a-host', 'campsite-map', 'good-to-know'];
+    private const HOMEPAGE_PATTERN = ['home', 'about', 'faq', 'contact', 'become-a-host', 'campsite-map', 'good-to-know', 'article', 'coming-soon'];
 
     /**
      * Long legal pages. Every other tab uses the Homepage or Global chrome card layout.
@@ -404,6 +404,10 @@ class SiteContentHub extends Page
 
     private function ensureValidPageKey(): void
     {
+        if ($this->activePageKey === 'refund') {
+            $this->activePageKey = 'refund-policy';
+        }
+
         if (! config("site_content.pages.{$this->activePageKey}")) {
             $this->activePageKey = 'global';
         }

@@ -4,7 +4,8 @@ import { api } from '../../api'
 import Container from '../site/Container'
 import StrokeIcon from './StrokeIcon'
 import { usePageContent } from '../../context/SiteContentContext'
-import { GUIDE_ARTICLES, GUIDE_CATEGORIES } from './guidesData'
+import useBlogPosts from '../../hooks/useBlogPosts'
+import { GUIDE_CATEGORIES } from './guidesData'
 import '../../styles/frames.css'
 
 function filled(value, fallback) {
@@ -13,6 +14,17 @@ function filled(value, fallback) {
 
 export default function GuidesHub() {
   const { page } = usePageContent('good-to-know')
+  const { posts } = useBlogPosts()
+  const articles = posts.map((post) => ({
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt || '',
+    category: post.kicker || 'Guide',
+    image: post.featured_image || '/figma/about-camper.png',
+    read: post.read_time || '',
+    date: post.published_at ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+    featured: Boolean(post.is_featured),
+  }))
   const hero = page.hero || {}
   const listCopy = page.list || {}
   const news = page.newsletter || {}
@@ -23,16 +35,16 @@ export default function GuidesHub() {
   const [email, setEmail] = useState('')
   const [note, setNote] = useState('')
 
-  const featured = GUIDE_ARTICLES.find((article) => article.featured)
+  const featured = articles.find((article) => article.featured) || articles[0]
   const cards = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const list = GUIDE_ARTICLES.filter((article) => !article.featured).filter((article) => {
+    const list = articles.filter((article) => article.slug !== featured?.slug).filter((article) => {
       if (category !== 'All' && article.category !== category) return false
       if (!q) return true
       return `${article.title} ${article.excerpt} ${article.category}`.toLowerCase().includes(q)
     })
     return newest ? list : [...list].reverse()
-  }, [query, category, newest])
+  }, [articles, featured?.slug, query, category, newest])
 
   const subscribe = async (event) => {
     event.preventDefault()
@@ -83,7 +95,7 @@ export default function GuidesHub() {
                   <span><StrokeIcon name="star" size={14} /> {filled(listCopy.featuredLabel, 'Featured')}</span>
                   <em>{featured.category}</em>
                 </div>
-                <h2>How to plan a road trip in <em>7 days</em></h2>
+                <h2>{featured.title}</h2>
                 <p>{featured.excerpt}</p>
                 <div className="tb-meta">
                   <span><StrokeIcon name="clock" size={14} /> {featured.read}</span>
@@ -105,6 +117,12 @@ export default function GuidesHub() {
               Sort: {newest ? filled(listCopy.sortNewest, 'Newest') : filled(listCopy.sortOldest, 'Oldest')} <StrokeIcon name="chevronDown" size={12} />
             </button>
           </div>
+          {!cards.length && (
+            <div className="tb-guide-empty">
+              <h3>{filled(listCopy.emptyTitle, 'No guides yet')}</h3>
+              <p>{filled(listCopy.emptyText, 'New routes and driving notes will show up here.')}</p>
+            </div>
+          )}
           <div className="tb-guide-grid">
             {cards.map((article) => (
               <Link key={article.slug} className="tb-guide-card" to={`/good-to-know/${article.slug}`}>

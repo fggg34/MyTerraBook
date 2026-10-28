@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertCircle, Car, Home, Plus } from 'lucide-react'
 import { getHostCarBookings, getHostDashboard, getHostGuestHouseBookings } from '../../api/host'
+import { usePageContent } from '../../context/SiteContentContext'
 import { getStoredToken } from '../../auth'
 import HostReservationsCalendar from '../../components/host/HostReservationsCalendar'
 import { formatCurrency } from '../../utils/format'
@@ -37,6 +38,14 @@ function OverviewCard({ tone, icon: Icon, title, href, metrics, footer }) {
 }
 
 export default function HostDashboardPage() {
+  const { page: copy } = usePageContent('host-panel')
+  const onboarding = copy.onboarding || {}
+  const overview = copy.overview || {}
+  const steps = onboarding.steps?.length ? onboarding.steps : [
+    { title: 'Complete your host profile', text: 'Company details, kennitala, partner logo and contract rental terms.' },
+    { title: 'Add your first listing', text: 'Create a vehicle or guesthouse with photos, pricing and availability.' },
+    { title: 'Submit for review', text: 'The MyTerraBook team checks your listing, then it goes live for travellers.' },
+  ]
   const [stats, setStats] = useState(null)
   const [carBookings, setCarBookings] = useState([])
   const [stayBookings, setStayBookings] = useState([])
@@ -105,12 +114,19 @@ export default function HostDashboardPage() {
     <div className="host-dashboard">
       {showOnboarding && (
         <section className="host-onboarding">
-          <h2>Welcome, let&apos;s get your first listing live</h2>
-          <p>It takes three quick steps:</p>
+          <p className="host-panel-kicker">{onboarding.eyebrow || 'GETTING STARTED'}</p>
+          <h2>{onboarding.title || "Welcome, let's get your first listing live"}</h2>
+          <p>{onboarding.lead || 'Three short steps and travellers can book your vehicles and guesthouses on MyTerraBook.'}</p>
           <ol className="host-onboarding-steps">
-            <li><span className="host-onboarding-num">1</span> Add your vehicle or guesthouse details</li>
-            <li><span className="host-onboarding-num">2</span> Add photos and set a price</li>
-            <li><span className="host-onboarding-num">3</span> Submit for approval, we review and publish it for you</li>
+            {steps.map((step, index) => (
+              <li key={step.title}>
+                <span className="host-onboarding-num">{index + 1}</span>
+                <span>
+                  <strong>{step.title}</strong>
+                  {step.text ? <span> {step.text}</span> : null}
+                </span>
+              </li>
+            ))}
           </ol>
           <div className="host-actions">
             <Link to="/host/cars/new" className="host-btn vehicle"><Plus size={15} /> Add vehicle</Link>
@@ -123,11 +139,14 @@ export default function HostDashboardPage() {
         carBookings={carBookings}
         stayBookings={stayBookings}
         loading={loading}
+        labels={copy.calendar}
+        upcomingLabel={copy.upcoming?.title}
       />
 
       <section className="host-overview">
         <div className="host-overview-head">
-          <h2>Overview</h2>
+          <h2>{overview.title || 'Overview'}</h2>
+          {overview.lead ? <p>{overview.lead}</p> : null}
           {error && <p className="host-overview-error">{error}</p>}
         </div>
 

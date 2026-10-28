@@ -72,4 +72,27 @@ class NewsletterApiTest extends TestCase
         $this->assertFalse($subscriber->is_active);
         $this->assertNotNull($subscriber->unsubscribed_at);
     }
+
+    public function test_unsubscribe_stores_the_reason_after_the_link_is_used(): void
+    {
+        $subscriber = NewsletterSubscriber::query()->create([
+            'email' => 'traveler@example.com',
+            'is_active' => true,
+            'source' => 'homepage',
+            'unsubscribe_token' => NewsletterSubscriber::generateUnsubscribeToken(),
+            'subscribed_at' => now(),
+        ]);
+
+        $this->postJson('/api/newsletter/unsubscribe', [
+            'token' => $subscriber->unsubscribe_token,
+        ])->assertOk();
+
+        $this->postJson('/api/newsletter/unsubscribe', [
+            'token' => $subscriber->unsubscribe_token,
+            'reason' => 'I get too many emails',
+        ])->assertOk();
+
+        $subscriber->refresh();
+        $this->assertSame('I get too many emails', $subscriber->unsubscribe_reason);
+    }
 }

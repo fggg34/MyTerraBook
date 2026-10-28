@@ -34,6 +34,15 @@ class SiteContentFormBuilder
         $cards = [];
         foreach ($sections as $sectionKey => $sectionConfig) {
             $fields = $sectionConfig['fields'] ?? [];
+            if ($sectionKey !== 'seo' && ! collect($fields)->contains(fn (array $field): bool => ($field['key'] ?? '') === 'visible')) {
+                array_unshift($fields, [
+                    'key' => 'visible',
+                    'type' => 'toggle',
+                    'label' => 'Show section',
+                    'path' => $sectionKey.'.visible',
+                    'default' => true,
+                ]);
+            }
             $isRootSection = (bool) ($sectionConfig['isRootSection'] ?? false);
             $components = $this->layoutSectionFields($pageKey, (string) $sectionKey, $fields, $isRootSection);
 
@@ -194,6 +203,10 @@ class SiteContentFormBuilder
 
         if (isset($field['label'])) {
             $component->label($field['label']);
+        }
+
+        if (array_key_exists('default', $field)) {
+            $component->default($field['default']);
         }
 
         if ($field['required'] ?? false) {

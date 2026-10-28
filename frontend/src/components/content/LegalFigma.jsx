@@ -100,6 +100,7 @@ export default function LegalFigma({ slug }) {
     updated: hero.updated || 'Last updated 1 June 2026',
     company: hero.company || 'MyTerraBook ehf.',
   }
+  const richBody = typeof cms.body === 'string' && cms.body.replace(/<[^>]+>/g, '').trim() ? cms.body : ''
   const [active, setActive] = useState(page.sections[0]?.id || '')
 
   useEffect(() => {
@@ -142,20 +143,22 @@ export default function LegalFigma({ slug }) {
           </nav>
           <div className="tb-legal-grid">
             <aside className="tb-toc">
-              <p>ON THIS PAGE</p>
+              <p>{hero.tocLabel || 'ON THIS PAGE'}</p>
               {page.sections.filter((section) => section.title).map((section) => (
                 <button key={section.id} type="button" className={active === section.id ? 'is-on' : ''} onClick={() => jump(section.id)}>
                   {section.num} {section.title}
                 </button>
               ))}
               <div className="tools">
-                <button type="button" onClick={() => window.print()}><StrokeIcon name="download" size={16} /> Download as PDF</button>
-                <button type="button" onClick={() => window.print()}><StrokeIcon name="file" size={16} /> Print this page</button>
+                <button type="button" onClick={() => window.print()}><StrokeIcon name="download" size={16} /> {hero.downloadLabel || 'Download as PDF'}</button>
+                <button type="button" onClick={() => window.print()}><StrokeIcon name="file" size={16} /> {hero.printLabel || 'Print this page'}</button>
               </div>
             </aside>
             <article className="tb-legal-copy">
               <p className="lead">{page.lead}</p>
-              {page.sections.map((section) => (
+              {richBody ? (
+                <div className="tb-legal-rich" dangerouslySetInnerHTML={{ __html: richBody }} />
+              ) : page.sections.map((section) => (
                 <section key={section.id} id={section.id}>
                   {section.title && <h2><b>{section.num}</b> {section.title}</h2>}
                   {section.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}

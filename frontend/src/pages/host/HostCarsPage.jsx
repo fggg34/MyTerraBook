@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { deleteHostCar, listHostCars } from '../../api/host'
 import ListingStatusBadge from '../../components/host/ListingStatusBadge'
+import { usePageContent } from '../../context/SiteContentContext'
 import { useToast } from '../../context/ToastContext'
 
 export default function HostCarsPage() {
   const { toast } = useToast()
+  const { page: copy } = usePageContent('host-panel')
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -36,8 +38,8 @@ export default function HostCarsPage() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-bold text-brand-950">Your vehicles</h2>
-        <Link to="/host/cars/new" className="host-btn primary">New vehicle</Link>
+        <h2 className="text-xl font-bold text-brand-950">{copy.vehicles?.title || 'Cars & vans'}</h2>
+        <Link to="/host/cars/new" className="host-btn primary">{copy.vehicles?.addLabel || 'Add vehicle'}</Link>
       </div>
       <div className="host-table-wrap">
         <table className="host-table">

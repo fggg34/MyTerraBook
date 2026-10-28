@@ -22,6 +22,8 @@ const PERIOD_FILTERS = [
 
 export default function ClientHistoryPage() {
   const { page: copy } = usePageContent('user-dashboard')
+  const { page: panel } = usePageContent('client-panel')
+  const history = panel.history || {}
   const [searchParams, setSearchParams] = useSearchParams()
   const [items, setItems] = useState([])
   const [summary, setSummary] = useState(null)
@@ -96,8 +98,8 @@ export default function ClientHistoryPage() {
     <div className="client-history">
       <div className="client-page-head client-page-head--split">
         <div>
-          <h2>{copy.historyTitle ?? 'Trip history'}</h2>
-          <p>{copy.historySubtitle ?? 'Cars, campervans and guesthouses you have booked with MyTerraBook.'}</p>
+          <h2>{history.title || copy.historyTitle || 'Trip history'}</h2>
+          <p>{history.lead || copy.historySubtitle || 'Cars, campervans and guesthouses you have booked with MyTerraBook.'}</p>
         </div>
         {hasItems && (
           <button type="button" className="client-btn secondary client-export-btn" onClick={exportCsv}>
@@ -164,8 +166,8 @@ export default function ClientHistoryPage() {
           <div className="client-empty-icon">
             <Car size={28} />
           </div>
-          <h3>{copy.emptyHistory ?? 'No trips yet'}</h3>
-          <p>{copy.emptyHistoryText ?? 'When you book a car, campervan or guesthouse, it will appear here.'}</p>
+          <h3>{history.emptyTitle || copy.emptyHistory || 'No trips yet'}</h3>
+          <p>{history.emptyText || copy.emptyHistoryText || 'When you book a car, campervan or guesthouse, it will appear here.'}</p>
           <div className="client-empty-actions">
             <Link to="/cars" className="client-btn primary">
               <Car size={15} />

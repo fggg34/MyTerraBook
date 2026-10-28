@@ -18,8 +18,13 @@ class BlogPost extends Model
         'kicker',
         'excerpt',
         'body',
+        'blocks',
         'featured_image',
         'image_alt',
+        'author_name',
+        'author_role',
+        'author_photo',
+        'tags',
         'read_time',
         'is_featured',
         'aurora',
@@ -36,6 +41,8 @@ class BlogPost extends Model
             'status' => BlogPostStatus::class,
             'published_at' => 'datetime',
             'sort_order' => 'integer',
+            'tags' => 'array',
+            'blocks' => 'array',
         ];
     }
 

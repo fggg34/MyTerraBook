@@ -6,8 +6,10 @@ use App\Enums\BlogPostStatus;
 use App\Models\BlogPost;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -36,6 +38,35 @@ class BlogPostForm
             TextInput::make('kicker')->maxLength(80),
             Textarea::make('excerpt')->rows(3)->columnSpanFull(),
             RichEditor::make('body')->columnSpanFull(),
+            Repeater::make('blocks')
+                ->label('Article blocks')
+                ->helperText('Shown on the article instead of the rich-text body when at least one block is filled.')
+                ->columnSpanFull()
+                ->collapsed()
+                ->schema([
+                    Select::make('type')
+                        ->options([
+                            'heading' => 'Heading',
+                            'paragraph' => 'Paragraph',
+                            'image' => 'Image',
+                            'callout' => 'Callout',
+                            'quote' => 'Quote',
+                            'list' => 'List',
+                            'day' => 'Day',
+                            'route' => 'Route card',
+                        ])
+                        ->required(),
+                    TextInput::make('heading')->label('Heading'),
+                    Textarea::make('text')->label('Text')->rows(3)->columnSpanFull(),
+                    TextInput::make('image')->label('Image path or URL'),
+                    TextInput::make('imageAlt')->label('Image alt'),
+                    TextInput::make('kicker')->label('Kicker'),
+                    TextInput::make('meta')->label('Meta'),
+                    TagsInput::make('items')->label('List items'),
+                    TextInput::make('button')->label('Button label'),
+                    TextInput::make('href')->label('Button link'),
+                ])
+                ->columns(2),
             FileUpload::make('featured_image')
                 ->label('Featured image')
                 ->disk('public')
@@ -43,6 +74,15 @@ class BlogPostForm
                 ->image()
                 ->maxSize(8192),
             TextInput::make('image_alt')->maxLength(255),
+            TextInput::make('author_name')->label('Author name')->maxLength(255)->placeholder('Written by the MyTerraBook team'),
+            TextInput::make('author_role')->label('Author role')->maxLength(255)->placeholder('Local guides from Reykjanesbær'),
+            FileUpload::make('author_photo')
+                ->label('Author photo')
+                ->disk('public')
+                ->directory('blog/authors')
+                ->image()
+                ->maxSize(4096),
+            TagsInput::make('tags')->label('Tags')->columnSpanFull(),
             TextInput::make('read_time')->label('Read time label')->placeholder('12 min read'),
             Toggle::make('is_featured')->label('Featured on the blog page'),
             Toggle::make('aurora')->label('Aurora card style'),

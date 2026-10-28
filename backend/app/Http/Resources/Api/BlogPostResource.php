@@ -23,6 +23,11 @@ class BlogPostResource extends JsonResource
             'og_image' => $this->resolveImageUrl($this->og_image),
             'kicker' => $this->kicker,
             'excerpt' => $this->excerpt,
+            'blocks' => $this->when(
+                $request->route()?->getName() === 'api.blog-posts.show'
+                    || (bool) $request->input('include_body'),
+                $this->blocks ?? [],
+            ),
             'body' => $this->when(
                 $request->route()?->getName() === 'api.blog-posts.show'
                     || (bool) $request->input('include_body'),
@@ -30,6 +35,10 @@ class BlogPostResource extends JsonResource
             ),
             'featured_image' => $this->resolveImageUrl($this->featured_image),
             'image_alt' => $this->image_alt,
+            'author_name' => $this->author_name,
+            'author_role' => $this->author_role,
+            'author_photo' => $this->resolveImageUrl($this->author_photo),
+            'tags' => $this->tags ?? [],
             'read_time' => $this->read_time,
             'is_featured' => $this->is_featured,
             'aurora' => $this->aurora,

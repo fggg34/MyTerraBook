@@ -12,8 +12,10 @@ export default function AuthPageLayout({
   variant = 'login',
   children,
 }) {
-  const { page } = usePageContent('auth-login')
-  const visual = page.visual || {}
+  const { page: loginPage } = usePageContent('auth-login')
+  const { page: registerPage } = usePageContent('auth-register')
+  const page = variant === 'register' ? { ...loginPage, ...registerPage } : loginPage
+  const visual = (variant === 'register' ? registerPage.visual : loginPage.visual) || loginPage.visual || {}
   const pills = visual.pills?.length ? visual.pills : [
     { icon: 'star', text: '4.9/5 · 12,400+ reviews' },
     { icon: 'shield', text: 'Free cancellation 48h' },

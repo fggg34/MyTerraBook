@@ -55,6 +55,13 @@ class SiteContentFormBuilderTest extends TestCase
         $this->assertArrayHasKey('story', $sections);
         $this->assertArrayHasKey('values', $sections);
         $this->assertArrayHasKey('products', $sections);
+        $host = config('site_content.pages.host-panel.sections', []);
+        $this->assertArrayHasKey('onboarding', $host);
+        $this->assertArrayHasKey('calendar', $host);
+        $this->assertArrayNotHasKey('content', $host);
+        $client = config('site_content.pages.client-panel.sections', []);
+        $this->assertArrayHasKey('trips', $client);
+        $this->assertArrayNotHasKey('content', $client);
         $this->assertSame('image', $this->findFieldType($sections['hero']['fields'] ?? [], 'image'));
         $this->assertSame('image', $this->findFieldType($sections['story']['fields'] ?? [], 'image'));
         $this->assertSame('image', $this->findFieldType($sections['products']['fields'][7]['fields'] ?? [], 'image'));

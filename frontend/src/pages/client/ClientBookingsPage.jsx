@@ -7,6 +7,9 @@ import { getMeOrders } from '../../api/me'
 
 export default function ClientBookingsPage() {
   const { page: copy } = usePageContent('user-dashboard')
+  const { page: panel } = usePageContent('client-panel')
+  const trips = panel.trips || {}
+  const actions = panel.actions || {}
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -29,8 +32,8 @@ export default function ClientBookingsPage() {
   return (
     <div>
       <div className="client-page-head">
-        <h2>{copy.title ?? 'My bookings'}</h2>
-        <p>Car and campervan rentals you have booked through MyTerraBook.</p>
+        <h2>{trips.title || copy.title || 'My trips'}</h2>
+        <p>{trips.lead || 'Campervans, cars and guesthouses you have booked.'}</p>
       </div>
 
       {!loading && orders.length === 0 ? (
@@ -38,9 +41,9 @@ export default function ClientBookingsPage() {
           <div className="client-empty-icon">
             <Car size={28} />
           </div>
-          <h3>{copy.emptyBookings ?? 'No bookings yet'}</h3>
-          <p>When you rent a car or campervan, it will show up here.</p>
-          <Link to="/cars" className="client-btn primary">Browse vehicles</Link>
+          <h3>{trips.emptyTitle || copy.emptyBookings || 'No trips yet'}</h3>
+          <p>{trips.emptyText || 'When you book a campervan, car or guesthouse, it will show up here.'}</p>
+          <Link to={trips.browseHref || '/campervans'} className="client-btn primary">{trips.browseLabel || 'Find a ride'}</Link>
         </div>
       ) : (
         <div className="client-cards">
@@ -48,8 +51,8 @@ export default function ClientBookingsPage() {
             <ClientBookingCard
               key={order.id}
               order={order}
-              addToCalendarLabel={copy.addToCalendarLabel ?? 'Add to calendar'}
-              viewListingLabel={copy.viewListingLabel ?? 'View vehicle'}
+              addToCalendarLabel={actions.addToCalendarLabel || copy.addToCalendarLabel || 'Add to calendar'}
+              viewListingLabel={actions.viewListingLabel || copy.viewListingLabel || 'View listing'}
             />
           ))}
         </div>

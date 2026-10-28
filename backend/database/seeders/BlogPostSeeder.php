@@ -596,14 +596,75 @@ HTML,
         ];
 
         foreach ($posts as $post) {
-            BlogPost::query()->updateOrCreate(
-                ['slug' => $post['slug']],
-                [
-                    ...$post,
-                    'status' => BlogPostStatus::Published,
-                    'published_at' => now(),
-                ],
-            );
+            $this->fillIfMissing($post);
         }
+
+        $this->fillIfMissing($this->sevenDayGuide());
+    }
+
+    /**
+     * @param  array<string, mixed>  $post
+     */
+    private function fillIfMissing(array $post): void
+    {
+        $existing = BlogPost::query()->where('slug', $post['slug'])->first();
+
+        if ($existing) {
+            if (blank($existing->blocks) && ! empty($post['blocks'])) {
+                $existing->forceFill(['blocks' => $post['blocks']])->save();
+            }
+
+            return;
+        }
+
+        BlogPost::query()->create([
+            ...$post,
+            'status' => BlogPostStatus::Published,
+            'published_at' => $post['published_at'] ?? now(),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function sevenDayGuide(): array
+    {
+        return [
+            'slug' => 'how-to-plan-a-road-trip-in-7-days',
+            'title' => 'How to plan a road trip in 7 days',
+            'kicker' => 'Itinerary',
+            'excerpt' => 'A day-by-day route around Iceland’s south and west — where to pick up your campervan, which detours are worth the extra kilometres, and where to sleep each night.',
+            'body' => '<p>Seven days is the sweet spot for a first road trip in Iceland.</p>',
+            'featured_image' => '/figma/about-camper.png',
+            'image_alt' => 'Campervan on an Iceland road',
+            'author_name' => 'Written by the MyTerraBook team',
+            'author_role' => 'Local guides from Reykjanesbær · Updated 12 Oct 2026',
+            'read_time' => '8 min read',
+            'is_featured' => true,
+            'aurora' => false,
+            'sort_order' => 0,
+            'published_at' => '2026-10-12 09:00:00',
+            'blocks' => [
+                ['type' => 'paragraph', 'text' => 'Seven days is the sweet spot for a first road trip in Iceland: enough time for the Golden Circle and the south coast all the way to the glacier lagoon, without spending every hour behind the wheel. This route starts and ends at Keflavík airport, so you can pick up your vehicle the moment you land.'],
+                ['type' => 'heading', 'heading' => 'Before you go'],
+                ['type' => 'paragraph', 'text' => 'Book your campervan or car early — especially for June to August — and choose the insurance that matches your route. Gravel roads and sand on the south coast are the most common causes of damage, so most travellers add Premium or Platinum cover.'],
+                ['type' => 'callout', 'kicker' => 'LOCAL TIP', 'text' => 'Fill up whenever you pass a petrol station east of Vík — the next one can be 100 km away. Most pumps are card-only and ask for a PIN.'],
+                ['type' => 'heading', 'heading' => 'The 7-day route'],
+                ['type' => 'day', 'kicker' => 'DAY 1', 'heading' => 'Keflavík → Reykjavík', 'text' => 'Pick up your vehicle at the airport, stop at the Bridge Between Continents and settle into the capital.', 'meta' => '50 km · 45 min'],
+                ['type' => 'day', 'kicker' => 'DAY 2', 'heading' => 'Golden Circle', 'text' => 'Þingvellir National Park, the Geysir geothermal area and Gullfoss waterfall in one loop.', 'meta' => '230 km · 3 h 30'],
+                ['type' => 'day', 'kicker' => 'DAY 3', 'heading' => 'Waterfalls of the south coast', 'text' => 'Seljalandsfoss, Skógafoss and the black-sand beach at Reynisfjara before sleeping in Vík.', 'meta' => '180 km · 2 h 40'],
+                ['type' => 'day', 'kicker' => 'DAY 4', 'heading' => 'Vík → Skaftafell', 'text' => 'Cross the Eldhraun lava field and Fjaðrárgljúfur canyon to the edge of Vatnajökull.', 'meta' => '140 km · 2 h'],
+                ['type' => 'day', 'kicker' => 'DAY 5', 'heading' => 'Glacier lagoon day', 'text' => 'Jökulsárlón and Diamond Beach at sunrise, then a glacier walk from Skaftafell.', 'meta' => '120 km · 1 h 40'],
+                ['type' => 'day', 'kicker' => 'DAY 6', 'heading' => 'Back west to Hella', 'text' => 'Slow drive back with stops you missed — overnight in a guesthouse near Hella.', 'meta' => '250 km · 3 h 20'],
+                ['type' => 'day', 'kicker' => 'DAY 7', 'heading' => 'Reykjanes & home', 'text' => 'Lava fields, the Gunnuhver hot springs and a last soak before returning your vehicle.', 'meta' => '140 km · 2 h'],
+                ['type' => 'heading', 'heading' => 'Where to sleep', 'kicker' => 'h3'],
+                ['type' => 'paragraph', 'text' => 'With a campervan you can stay at registered campsites along the whole route — Reykjavík, Vík and Skaftafell are open all year. Prefer a real bed? Mix in a guesthouse night in Vík or Hella; you can add it to the same booking.'],
+                ['type' => 'route', 'kicker' => 'DRIVE THIS ROUTE', 'heading' => 'Book a campervan for this route', 'text' => 'Pick up at Keflavík airport, unlimited mileage and free cancellation until 48h before pick-up.', 'button' => 'See campervans', 'href' => '/campervans', 'image' => '/figma/camper-card.png', 'imageAlt' => '4×4 campervan'],
+                ['type' => 'heading', 'heading' => 'Driving tips for the route'],
+                ['type' => 'paragraph', 'text' => 'Speed limits are 90 km/h on paved roads, 80 km/h on gravel and 50 km/h in towns. Headlights stay on day and night, and you should never stop on the road for photos — use the marked pull-outs instead.'],
+                ['type' => 'heading', 'heading' => 'Weather & road conditions', 'kicker' => 'h3'],
+                ['type' => 'paragraph', 'text' => 'Check road.is and vedur.is every morning; wind is the biggest risk for high vehicles on the south coast. In winter, pick a winter-ready vehicle and keep an extra day free in case a pass closes.'],
+            ],
+        ];
     }
 }

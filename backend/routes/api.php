@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Admin\CategoryApiController;
 use App\Http\Controllers\Api\Admin\OrderCheckinPdfController;
 use App\Http\Controllers\Api\Admin\OrderContractPdfController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BlogPostController;
 use App\Http\Controllers\Api\BookingChangeRequestController;
 use App\Http\Controllers\Api\BookingConfirmationController;
 use App\Http\Controllers\Api\CatalogController;
