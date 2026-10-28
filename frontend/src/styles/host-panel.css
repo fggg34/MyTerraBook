@@ -104,11 +104,44 @@
   font-weight: 600;
 }
 
+.host-rail-menu {
+  margin: 0.85rem 1rem 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.host-rail-help {
+  margin: auto 0.75rem 0.75rem;
+  padding: 0.85rem;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.host-rail-help strong,
+.host-rail-help span {
+  display: block;
+}
+
+.host-rail-help strong {
+  font-size: 0.8125rem;
+  color: #0f172a;
+}
+
+.host-rail-help span {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
 .host-rail-signout {
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  margin-top: auto;
+  margin-top: 0;
   width: 100%;
   border: none;
   border-top: 1px solid #e2e8f0;

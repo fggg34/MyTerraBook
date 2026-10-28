@@ -117,9 +117,10 @@ export default function RegisterPage() {
       heroTitle={copy.heroTitle || 'Create your account'}
       heroText={copy.heroText || 'Join travelers who book guesthouses, campervans and cars across Iceland, all in one trusted marketplace.'}
     >
-      <div className="auth-form-head">
-        <h1>{copy.title ?? 'Create an account'}</h1>
-        <p>{copy.subtitle ?? 'Fill in your details to get started.'}</p>
+      <div className="tb-login">
+        <p className="kicker">{copy.formKicker || 'CREATE ACCOUNT'}</p>
+        <h1>{copy.formHeadingBefore || 'Start your '}<em>{copy.formHeadingAccent || 'account'}</em>{copy.formHeadingAfter || '.'}</h1>
+        <p className="lead">{copy.formLead || 'Book campervans, cars and guesthouses with one login.'}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="auth-form auth-form--register">

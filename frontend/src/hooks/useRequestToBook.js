@@ -84,10 +84,10 @@ export default function useRequestToBook() {
     const labels = checkoutPage?.labels ?? {}
     const base = {
       ...defaults,
-      step1: { ...defaults.step1, title: labels.tripTitle ?? defaults.step1.title },
-      step2: { ...defaults.step2, title: labels.extrasTitle ?? defaults.step2.title },
-      step3: { ...defaults.step3, title: labels.detailsTitle ?? defaults.step3.title },
-      step4: { ...defaults.step4, title: labels.paymentTitle ?? defaults.step4.title },
+      step1: { ...defaults.step1, title: labels.tripTitle ?? defaults.step1.title, subtitle: labels.tripSubtitle ?? defaults.step1.subtitle },
+      step2: { ...defaults.step2, title: labels.extrasTitle ?? defaults.step2.title, subtitle: labels.extrasSubtitle ?? defaults.step2.subtitle },
+      step3: { ...defaults.step3, title: labels.detailsTitle ?? defaults.step3.title, subtitle: labels.detailsSubtitle ?? defaults.step3.subtitle },
+      step4: { ...defaults.step4, title: labels.paymentTitle ?? defaults.step4.title, subtitle: labels.paymentSubtitle ?? defaults.step4.subtitle },
     }
     if (checkoutPage?.stepperSteps?.length) {
       return {

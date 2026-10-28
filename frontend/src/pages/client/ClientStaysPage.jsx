@@ -8,6 +8,9 @@ import { cancelMeGuestHouseBooking, getMeGuestHouseBookings } from '../../api/me
 
 export default function ClientStaysPage() {
   const { page: copy } = usePageContent('user-dashboard')
+  const { page: panel } = usePageContent('client-panel')
+  const stays = panel.stays || {}
+  const actions = panel.actions || {}
   const { toast } = useToast()
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -55,8 +58,8 @@ export default function ClientStaysPage() {
   return (
     <div>
       <div className="client-page-head">
-        <h2>My stays</h2>
-        <p>Guesthouse reservations for your Iceland trip.</p>
+        <h2>{stays.title || 'Stays'}</h2>
+        <p>{stays.lead || 'Guesthouse nights you have booked.'}</p>
       </div>
 
       {!loading && bookings.length === 0 ? (
@@ -64,8 +67,8 @@ export default function ClientStaysPage() {
           <div className="client-empty-icon">
             <Home size={28} />
           </div>
-          <h3>{copy.emptyStays ?? 'No stays yet'}</h3>
-          <p>When you book a guesthouse, it will appear here.</p>
+          <h3>{stays.emptyTitle || copy.emptyStays || 'No stays yet'}</h3>
+          <p>{stays.emptyText || 'When you book a guesthouse, it will show up here.'}</p>
           <Link to="/guesthouses" className="client-btn primary">Browse guesthouses</Link>
         </div>
       ) : (
@@ -76,8 +79,8 @@ export default function ClientStaysPage() {
               booking={booking}
               onCancel={handleCancel}
               cancelLoading={cancelLoading}
-              viewListingLabel={copy.viewListingLabel ?? 'View property'}
-              cancelBookingLabel={copy.cancelBookingLabel ?? 'Cancel booking'}
+              viewListingLabel={actions.viewListingLabel || copy.viewListingLabel || 'View listing'}
+              cancelBookingLabel={actions.cancelBookingLabel || copy.cancelBookingLabel || 'Cancel booking'}
             />
           ))}
         </div>

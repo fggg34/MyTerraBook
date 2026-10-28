@@ -45,6 +45,8 @@ export default function HostReservationsCalendar({
   carBookings = [],
   stayBookings = [],
   loading = false,
+  labels = {},
+  upcomingLabel = 'Upcoming',
 }) {
   const [tab, setTab] = useState('cars')
   const [monthOffset, setMonthOffset] = useState(0)
@@ -98,7 +100,7 @@ export default function HostReservationsCalendar({
     <section className="host-calendar-panel">
       <div className="host-calendar-toolbar">
         <div className="host-calendar-toolbar-left">
-          <h2>Reservations</h2>
+          <h2>{labels?.title || 'Reservations calendar'}</h2>
           <div className="host-calendar-tabs" role="tablist" aria-label="Reservation type">
             <button
               type="button"
@@ -110,7 +112,7 @@ export default function HostReservationsCalendar({
                 setSelectedKey(null)
               }}
             >
-              Vehicles
+              {labels?.vehiclesTab || 'Vehicles'}
               <span className="host-calendar-tab-count">{carBookings.length}</span>
             </button>
             <button
@@ -123,7 +125,7 @@ export default function HostReservationsCalendar({
                 setSelectedKey(null)
               }}
             >
-              Guesthouses
+              {labels?.staysTab || 'Guesthouses'}
               <span className="host-calendar-tab-count">{stayBookings.length}</span>
             </button>
           </div>
@@ -138,7 +140,7 @@ export default function HostReservationsCalendar({
               setSelectedKey(todayKey)
             }}
           >
-            Today
+            {labels?.today || 'Today'}
           </button>
           <div className="host-calendar-nav">
             <button
@@ -204,7 +206,7 @@ export default function HostReservationsCalendar({
         </div>
 
         <aside className="host-calendar-side">
-          <h3>{selectedKey ? formatDate(selectedKey) : 'Upcoming'}</h3>
+          <h3>{selectedKey ? formatDate(selectedKey) : (upcomingLabel || 'Upcoming')}</h3>
           {(selectedKey ? selectedBookings : upcoming).length === 0 ? (
             <p className="host-calendar-empty">
               {selectedKey ? 'Nothing booked this day.' : 'No upcoming reservations.'}

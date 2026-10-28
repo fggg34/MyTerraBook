@@ -9,11 +9,13 @@ import '../../styles/client-panel.css'
 
 const ICONS = {
   '/dashboard': Clock,
+  '/dashboard/stays': Clock,
   '/dashboard/settings': Settings,
 }
 
 const DEFAULT_NAV = [
-  { to: '/dashboard', label: 'Trip history', end: true },
+  { to: '/dashboard', label: 'My trips', end: true },
+  { to: '/dashboard/stays', label: 'Stays' },
   { to: '/dashboard/settings', label: 'Settings' },
 ]
 
@@ -45,10 +47,10 @@ export default function ClientLayout() {
       <div className="host-panel-page mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="host-panel-topbar">
           <div className="host-panel-topbar__intro">
-            <p className="text-sm font-semibold text-slate-500">{copy.eyebrow ?? 'My account'}</p>
-            <h1 className="text-2xl font-bold text-brand-950">Welcome back, {firstName}</h1>
+            <p className="text-sm font-semibold text-slate-500">{copy.trips?.kicker ?? 'MY TRIPS'}</p>
+            <h1 className="text-2xl font-bold text-brand-950">{copy.trips?.welcome ?? 'Welcome back'}, {firstName}</h1>
             <p className="mt-1 text-sm text-slate-500">
-              {copy.heroText ?? 'Your cars, campervans and guesthouse stays, all in one place.'}
+              {copy.trips?.lead ?? 'Campervans, cars and guesthouses you have booked.'}
             </p>
           </div>
           <button type="button" className="host-btn secondary host-panel-topbar__signout" onClick={handleLogout}>
@@ -58,7 +60,7 @@ export default function ClientLayout() {
         </div>
         <div className="host-shell">
           <aside className="host-sidebar">
-            <h2>{copy.sidebarTitle ?? 'My account'}</h2>
+            <h2>{copy.sidebarTitle ?? 'My trips'}</h2>
             <nav className="host-nav">
               {navItems.map((item) => (
                 <NavLink
