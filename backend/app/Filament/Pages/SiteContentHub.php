@@ -46,6 +46,13 @@ class SiteContentHub extends Page
      */
     private const HOMEPAGE_PATTERN = ['home', 'about', 'faq', 'contact', 'become-a-host', 'campsite-map', 'good-to-know'];
 
+    /**
+     * Long legal pages. Every other tab uses the Homepage or Global chrome card layout.
+     *
+     * @var list<string>
+     */
+    private const TERMS_PATTERN = ['terms', 'privacy', 'refund-policy', 'cookies', 'cardholder-terms'];
+
     protected static ?string $navigationLabel = 'Site content';
 
     protected static ?string $title = 'Site content';
@@ -121,7 +128,11 @@ class SiteContentHub extends Page
             return 'homepage';
         }
 
-        return 'terms';
+        if (in_array($this->activePageKey, self::TERMS_PATTERN, true)) {
+            return 'terms';
+        }
+
+        return 'chrome';
     }
 
     public function editorIntro(): string
@@ -129,13 +140,12 @@ class SiteContentHub extends Page
         $label = (string) config("site_content.pages.{$this->activePageKey}.label", 'this page');
         $count = count(config("site_content.pages.{$this->activePageKey}.sections", []));
 
-        $legal = ['terms', 'privacy', 'refund-policy', 'cookies', 'cardholder-terms'];
-
-        return match (true) {
-            $this->editorPattern() === 'chrome' => 'Logo, colors, header, footer and the other blocks already stored for every page.',
-            $this->editorPattern() === 'homepage' => "{$count} sections, the same fields already stored for {$label}, in collapsible cards.",
-            in_array($this->activePageKey, $legal, true) => "Hero, body and SEO, the same fields already stored for {$label}.",
-            default => "{$count} sections, the same fields already stored for {$label}, in the Terms card layout.",
+        return match ($this->editorPattern()) {
+            'chrome' => $this->activePageKey === 'global'
+                ? 'Logo, colors, header, footer and the other blocks already stored for every page.'
+                : "{$count} sections, the same fields already stored for {$label}, in the Global chrome card layout.",
+            'homepage' => "{$count} sections, the same fields already stored for {$label}, in collapsible cards.",
+            default => "Hero, body and SEO, the same fields already stored for {$label}.",
         };
     }
 
@@ -354,7 +364,7 @@ class SiteContentHub extends Page
     {
         $builder = app(SiteContentFormBuilder::class);
 
-        return $schema->components($builder->buildSectionsForPage($this->activePageKey));
+        return $schema->components($builder->buildSectionsForPage($this->activePageKey, $this->editorPattern()));
     }
 
     public function content(Schema $schema): Schema
@@ -366,8 +376,12 @@ class SiteContentHub extends Page
                 ->extraAttributes(['novalidate' => true, 'class' => 'site-content-form'])
                 ->footer([
                     Actions::make([
+                        Action::make('discard')
+                            ->label('Discard')
+                            ->color('gray')
+                            ->action('loadPage'),
                         Action::make('save')
-                            ->label('Save all page changes')
+                            ->label('Publish changes')
                             ->icon(Heroicon::OutlinedCheck)
                             ->submit('save')
                             ->action(null)

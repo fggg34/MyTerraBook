@@ -12,6 +12,7 @@ use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Str;
@@ -25,7 +26,7 @@ class SiteContentFormBuilder
      *
      * @return list<Section>
      */
-    public function buildSectionsForPage(string $pageKey): array
+    public function buildSectionsForPage(string $pageKey, string $pattern = 'homepage'): array
     {
         $pageConfig = config("site_content.pages.{$pageKey}", []);
         $sections = $pageConfig['sections'] ?? [];
@@ -33,21 +34,70 @@ class SiteContentFormBuilder
         $cards = [];
         foreach ($sections as $sectionKey => $sectionConfig) {
             $fields = $sectionConfig['fields'] ?? [];
-            $components = $this->buildFields($pageKey, $sectionKey, $fields, (bool) ($sectionConfig['isRootSection'] ?? false));
+            $isRootSection = (bool) ($sectionConfig['isRootSection'] ?? false);
+            $components = $this->layoutSectionFields($pageKey, (string) $sectionKey, $fields, $isRootSection);
 
             if ($components === []) {
                 continue;
             }
 
+            $onlyColors = $fields !== [] && collect($fields)->every(
+                fn (array $field): bool => ($field['type'] ?? '') === 'color',
+            );
+            $hasMobile = collect($fields)->contains(
+                fn (array $field): bool => str_starts_with((string) ($field['key'] ?? ''), 'mobile'),
+            );
+
             $cards[] = Section::make($sectionConfig['label'] ?? str($sectionKey)->headline()->toString())
                 ->schema($components)
-                ->columns(2)
+                ->columns($pattern === 'terms' || $hasMobile ? 1 : ($onlyColors ? ['default' => 1, 'md' => 3] : ['default' => 1, 'md' => 2]))
                 ->collapsible()
-                ->collapsed($cards !== [])
+                ->collapsed($pattern === 'terms' ? false : $cards !== [])
                 ->extraAttributes(['class' => 'site-content-card']);
         }
 
         return $cards;
+    }
+
+    /**
+     * Desktop and mobile copies stay in the form together.
+     * A hidden tab would drop the concealed fields from a save.
+     *
+     * @param  list<array<string, mixed>>  $fields
+     * @return list<Component|Group>
+     */
+    private function layoutSectionFields(string $pageKey, string $sectionKey, array $fields, bool $isRootSection): array
+    {
+        $desktop = [];
+        $mobile = [];
+
+        foreach ($fields as $field) {
+            if (str_starts_with((string) ($field['key'] ?? ''), 'mobile')) {
+                $mobile[] = $field;
+            } else {
+                $desktop[] = $field;
+            }
+        }
+
+        if ($mobile === []) {
+            return $this->buildFields($pageKey, $sectionKey, $fields, $isRootSection);
+        }
+
+        $groups = [];
+
+        if ($desktop !== []) {
+            $groups[] = Group::make($this->buildFields($pageKey, $sectionKey, $desktop, $isRootSection))
+                ->columns(['default' => 1, 'md' => 2])
+                ->columnSpanFull()
+                ->extraAttributes(['class' => 'site-content-device site-content-device-desktop']);
+        }
+
+        $groups[] = Group::make($this->buildFields($pageKey, $sectionKey, $mobile, $isRootSection))
+            ->columns(['default' => 1, 'md' => 2])
+            ->columnSpanFull()
+            ->extraAttributes(['class' => 'site-content-device site-content-device-mobile']);
+
+        return $groups;
     }
 
     /**
@@ -150,9 +200,11 @@ class SiteContentFormBuilder
             $component->required();
         }
 
-        if ($field['columnSpanFull'] ?? in_array($type, ['repeater', 'richtext', 'textarea', 'image', 'file'], true)) {
+        if ($field['columnSpanFull'] ?? in_array($type, ['repeater', 'richtext', 'textarea'], true)) {
             $component->columnSpanFull();
         }
+
+        $component->extraAttributes(['class' => $this->fieldClass($field)], merge: true);
 
         if (isset($field['helperText'])) {
             $component->helperText($field['helperText']);
@@ -241,10 +293,11 @@ class SiteContentFormBuilder
         $repeater = Repeater::make($statePath)
             ->collapsible()
             ->collapsed()
-            ->columns(2)
+            ->columns(['default' => 1, 'md' => 2])
             ->itemNumbers()
             ->truncateItemLabel()
-            ->reorderableWithButtons()
+            ->reorderable()
+            ->extraAttributes(['class' => 'site-content-repeater'], merge: true)
             ->addActionLabel('Add '.Str::lower(Str::singular($field['label'] ?? 'item')))
             ->helperText(trim(($field['helperText'] ?? '').' Expand an item to edit it. Drag or use the arrows to change its display order.'))
             ->defaultItems(0);
@@ -321,6 +374,30 @@ class SiteContentFormBuilder
         $options = $field['options'] ?? [];
 
         return is_array($options) ? $options : [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $field
+     */
+    private function fieldClass(array $field): string
+    {
+        $type = (string) ($field['type'] ?? 'text');
+        $key = (string) ($field['key'] ?? '');
+        $classes = ['site-content-field', 'site-content-field-'.$type];
+
+        if (str_starts_with($key, 'mobile')) {
+            $classes[] = 'site-content-field-mobile';
+        }
+
+        if (preg_match('/(alt|imageAlt|backgroundAlt)$/i', $key) === 1) {
+            $classes[] = 'site-content-field-alt';
+        }
+
+        if (in_array($key, ['label', 'href'], true) || preg_match('/(Label|Href|Url)$/', $key) === 1) {
+            $classes[] = 'site-content-field-link';
+        }
+
+        return implode(' ', $classes);
     }
 
     private function statePath(string $sectionKey, ?string $key, array $field, bool $isRootSection): string
