@@ -301,6 +301,15 @@ html.tb-redesign .tb-list .tb-pill-muted { background: #eef2f6; color: #5c6b7a; 
 .tb-mail-preview header { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; color: #5c6b7a; font-size: 13px; }
 .tb-mail-preview header strong { color: #041e37; }
 .tb-mail-preview iframe { width: 100%; height: 520px; border: 0; border-top: 1px solid #eef2f6; background: #fff; }
+html.tb-redesign .tb-report .tb-seg { display: inline-flex; gap: 2px; margin: 0; padding: 4px; border-radius: 10px; background: var(--tb-soft); }
+html.tb-redesign .tb-report .tb-seg button { border: 0; border-radius: 7px; background: transparent; color: var(--tb-secondary); padding: 7px 12px; font: 500 14px/20px "IBM Plex Sans", sans-serif; cursor: pointer; }
+html.tb-redesign .tb-report .tb-seg button.is-active { background: #fff; color: var(--tb-text); font-weight: 600; box-shadow: 0 1px 1px rgb(4 30 55 / 10%); }
+.tb-report-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 12px; }
+.tb-report-bar label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5c6b7a; }
+.tb-report-bar select, .tb-report-bar input, .tb-report-dates input { border: 1px solid #d5dee8; border-radius: 8px; padding: 8px 10px; background: #fff; }
+.tb-report-dates { display: flex; gap: 8px; margin-bottom: 12px; }
+.tb-report-split { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(240px, 0.8fr); gap: 12px; }
+.tb-report .tb-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .tb-input-warn { border-color: #d92d20 !important; }
 .fi-fo-field-wrp:has(.tb-input-warn) .fi-fo-field-wrp-helper-text { color: #b42318; }
 html.tb-redesign .fi-page:has(.tb-catalog-list) .fi-sc-actions { position: sticky; bottom: 0; top: auto; height: auto; background: #fff; border-top: 1px solid #e3e8ef; z-index: 5; }

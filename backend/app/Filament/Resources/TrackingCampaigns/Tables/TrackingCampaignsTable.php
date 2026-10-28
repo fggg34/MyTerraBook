@@ -46,6 +46,7 @@ class TrackingCampaignsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->view('filament.admin.tracking-campaigns');
     }
 }

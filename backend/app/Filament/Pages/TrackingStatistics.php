@@ -144,6 +144,13 @@ class TrackingStatistics extends Page
         if ($this->trackingDates === 'this_month') {
             $this->from = $today->copy()->startOfMonth()->toDateString();
             $this->to = $today->copy()->endOfMonth()->toDateString();
+
+            return;
+        }
+
+        if ($this->trackingDates === 'last_90_days') {
+            $this->from = $today->copy()->subDays(89)->toDateString();
+            $this->to = $today->copy()->toDateString();
         }
     }
 

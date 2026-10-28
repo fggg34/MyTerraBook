@@ -76,9 +76,16 @@
         'admin/email-testing',
         'admin/email-logs',
     );
+    $analyticsList = \App\Support\AdminScreen::on(
+        'admin/reports',
+        'admin/impact-rent/reports',
+        'admin/tracking-statistics',
+        'admin/impact-rent/tracking-statistics',
+        'admin/impact-rent/tracking-campaigns',
+    );
 @endphp
 @if ($screen && ($screen['crumb'] !== '' || $screen['title'] || $screen['description'] || $links !== []))
-    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $pricingList || $peopleList || $emailList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
+    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $pricingList || $peopleList || $emailList || $analyticsList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
         <div class="tb-lead-top">
             <div>
         @if ($screen['crumb'] !== '')

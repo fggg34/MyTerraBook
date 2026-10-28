@@ -1,233 +1,85 @@
+@php
+    use App\Support\AdminMoney;
+    use Carbon\Carbon;
+
+    $bookedDays = array_sum(array_column($this->occupancyRanking, 'booked_days'));
+    $orders = (int) ($this->revenueSummary['confirmed_orders'] ?? 0);
+    $averageDays = $orders > 0 ? $bookedDays / $orders : 0;
+    $fromLabel = Carbon::parse($this->from)->format('j M');
+    $toLabel = Carbon::parse($this->to)->format('j M Y');
+@endphp
 <x-filament-panels::page>
-    <style>
-        .ir-reports-card {
-            border: 1px solid #d9dee7;
-            border-radius: 6px;
-            background: #fff;
-            padding: 12px;
-        }
-
-        .ir-reports-controls {
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .ir-reports-field {
-            width: 100%;
-            border: 1px solid #cfd7e2;
-            border-radius: 2px;
-            background: #fff;
-            font-size: 12px;
-            padding: 6px 8px;
-            color: #1f2b37;
-        }
-
-        .ir-reports-label {
-            font-size: 12px;
-            color: #607080;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .ir-reports-period {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .ir-reports-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            min-width: 32rem;
-        }
-
-        .ir-reports-table-wrap {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .ir-reports-table th {
-            background: #334e68;
-            color: #fff;
-            text-align: left;
-            border: 1px solid #1f6f95;
-            padding: 8px;
-            font-weight: 700;
-        }
-
-        .ir-reports-table td {
-            border: 1px solid #d6dce5;
-            padding: 8px;
-            color: #1f2b37;
-            background: #fff;
-        }
-
-        .ir-reports-table tbody tr:nth-child(even) td {
-            background: #f8fafc;
-        }
-
-        .ir-reports-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 8px;
-        }
-
-        .ir-reports-summary-item {
-            border: 1px solid #d6dce5;
-            border-radius: 4px;
-            background: #f8fafc;
-            padding: 10px;
-        }
-
-        .ir-reports-summary-key {
-            font-size: 11px;
-            color: #607080;
-            margin-bottom: 4px;
-        }
-
-        .ir-reports-summary-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1f2b37;
-            line-height: 1.2;
-        }
-
-        .ir-reports-empty {
-            font-size: 12px;
-            color: #607080;
-        }
-
-        @media (max-width: 900px) {
-            .ir-reports-controls {
-                grid-template-columns: 1fr;
-            }
-
-            .ir-reports-period {
-                grid-template-columns: 1fr;
-            }
-
-            .ir-reports-summary-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-
-    <section class="ir-reports-card">
-        <div class="ir-reports-controls">
-            <div>
-                <label class="ir-reports-label" for="ReportTypeSelect">Select Report Type</label>
-                <select id="ReportTypeSelect" class="ir-reports-field" wire:model.live="reportType">
-                    <option value="occupancy_ranking">Occupancy Ranking</option>
+    <div class="tb-report">
+        <div class="tb-report-bar">
+            <label>
+                Report type
+                <select wire:model.live="reportType">
+                    <option value="occupancy_ranking">Occupancy ranking</option>
                     <option value="revenue">Revenue</option>
-                    <option value="rate_plan_revenue">Rate Plans Revenue</option>
-                    <option value="top_countries">Top Countries</option>
+                    <option value="rate_plan_revenue">Rate plans revenue</option>
+                    <option value="top_countries">Top countries</option>
                 </select>
-            </div>
-
-            <div>
-                <span class="ir-reports-label">Period</span>
-                <div class="ir-reports-period">
-                    <input type="date" class="ir-reports-field" wire:model.live="from" />
-                    <input type="date" class="ir-reports-field" wire:model.live="to" />
-                </div>
+            </label>
+            <div class="tb-seg" role="tablist" aria-label="Period">
+                <button type="button" @class(['is-active' => $this->period === '7']) wire:click="setReportPeriod('7')">7 days</button>
+                <button type="button" @class(['is-active' => $this->period === '30']) wire:click="setReportPeriod('30')">30 days</button>
+                <button type="button" @class(['is-active' => $this->period === '90']) wire:click="setReportPeriod('90')">90 days</button>
+                <button type="button" @class(['is-active' => $this->period === 'year']) wire:click="setReportPeriod('year')">This year</button>
+                <button type="button" @class(['is-active' => $this->period === 'custom']) wire:click="$set('period', 'custom')">Custom</button>
             </div>
         </div>
-
-        @if ($this->reportType === 'occupancy_ranking')
-            @if ($this->occupancyRanking === [])
-                <p class="ir-reports-empty">No occupancy data for the selected period.</p>
-            @else
-                <div class="ir-reports-table-wrap">
-                <table class="ir-reports-table">
-                    <thead>
-                        <tr>
-                            <th>Car</th>
-                            <th>Confirmed Orders</th>
-                            <th>Booked Hours</th>
-                            <th>Booked Days</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($this->occupancyRanking as $row)
-                            <tr>
-                                <td>{{ $row['car_name'] }}</td>
-                                <td>{{ $row['confirmed_orders'] }}</td>
-                                <td>{{ $row['booked_hours'] }}</td>
-                                <td>{{ number_format($row['booked_days'], 2) }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                </div>
-            @endif
-        @elseif ($this->reportType === 'revenue')
-            <div class="ir-reports-summary-grid">
-                <div class="ir-reports-summary-item">
-                    <div class="ir-reports-summary-key">Confirmed Orders</div>
-                    <div class="ir-reports-summary-value">{{ $this->revenueSummary['confirmed_orders'] ?? 0 }}</div>
-                </div>
-                <div class="ir-reports-summary-item">
-                    <div class="ir-reports-summary-key">Revenue</div>
-                    <div class="ir-reports-summary-value">{{ $this->revenueSummary['revenue'] ?? '0.00' }}</div>
-                </div>
-                <div class="ir-reports-summary-item">
-                    <div class="ir-reports-summary-key">Average Order Value</div>
-                    <div class="ir-reports-summary-value">{{ $this->revenueSummary['average_order_value'] ?? '0.00' }}</div>
-                </div>
+        @if ($this->period === 'custom')
+            <div class="tb-report-dates">
+                <input type="date" wire:model.live="from" aria-label="From">
+                <input type="date" wire:model.live="to" aria-label="To">
             </div>
-        @elseif ($this->reportType === 'rate_plan_revenue')
-            @if ($this->ratePlanRevenue === [])
-                <p class="ir-reports-empty">No rate plan revenue data for the selected period.</p>
-            @else
-                <div class="ir-reports-table-wrap">
-                <table class="ir-reports-table">
-                    <thead>
-                        <tr>
-                            <th>Rate Plan</th>
-                            <th>Confirmed Orders</th>
-                            <th>Revenue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($this->ratePlanRevenue as $row)
-                            <tr>
-                                <td>{{ $row['rate_plan_name'] }}</td>
-                                <td>{{ $row['confirmed_orders'] }}</td>
-                                <td>{{ $row['revenue'] }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                </div>
-            @endif
-        @elseif ($this->reportType === 'top_countries')
-            @if ($this->topCountries === [])
-                <p class="ir-reports-empty">No country revenue data for the selected period.</p>
-            @else
-                <div class="ir-reports-table-wrap">
-                <table class="ir-reports-table">
-                    <thead>
-                        <tr>
-                            <th>Country</th>
-                            <th>Confirmed Orders</th>
-                            <th>Revenue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($this->topCountries as $row)
-                            <tr>
-                                <td>{{ $row['country'] }}</td>
-                                <td>{{ $row['confirmed_orders'] }}</td>
-                                <td>{{ $row['revenue'] }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                </div>
-            @endif
         @endif
-    </section>
+        <div class="tb-stats">
+            <div class="tb-stat"><span>Booked days</span><strong>{{ number_format($bookedDays, 0, '.', '.') }}</strong></div>
+            <div class="tb-stat"><span>Occupancy</span><strong>—</strong></div>
+            <div class="tb-stat"><span>Revenue (confirmed)</span><strong>{{ AdminMoney::fromCents((int) ($this->revenueSummary['revenue_cents'] ?? 0)) }}</strong></div>
+            <div class="tb-stat"><span>Average booked days</span><strong>{{ number_format($averageDays, 0, '.', '.') }} days</strong></div>
+        </div>
+        <section class="tb-table-card">
+            @if ($this->reportType === 'revenue')
+                <div class="tb-stats" style="padding:16px">
+                    <div class="tb-stat"><span>Confirmed orders</span><strong>{{ $orders }}</strong></div>
+                    <div class="tb-stat"><span>Revenue</span><strong>{{ AdminMoney::fromCents((int) ($this->revenueSummary['revenue_cents'] ?? 0)) }}</strong></div>
+                    <div class="tb-stat"><span>Average order value</span><strong>{{ AdminMoney::fromCents((int) ($this->revenueSummary['average_order_value_cents'] ?? 0)) }}</strong></div>
+                </div>
+            @elseif ($this->reportType === 'occupancy_ranking')
+                <header class="tb-email-group header" style="padding:14px 16px"><strong>Occupancy ranking · {{ $fromLabel }} – {{ $toLabel }}</strong></header>
+                @if ($this->occupancyRanking === [])
+                    <div class="tb-empty-card"><strong>No occupancy data for this period</strong><p>Change the period or report type. Data appears once bookings are confirmed.</p></div>
+                @else
+                    <div class="tb-head tb-grid" style="grid-template-columns:minmax(160px,1.4fr) 140px 120px 120px"><span>Vehicle</span><span>Confirmed orders</span><span>Booked hours</span><span>Booked days</span></div>
+                    @foreach ($this->occupancyRanking as $row)
+                        <div class="tb-row tb-grid" style="grid-template-columns:minmax(160px,1.4fr) 140px 120px 120px">
+                            <span>{{ $row['car_name'] }}</span><span>{{ $row['confirmed_orders'] }}</span><span>{{ $row['booked_hours'] }}</span><span>{{ number_format($row['booked_days'], 2) }}</span>
+                        </div>
+                    @endforeach
+                @endif
+            @elseif ($this->reportType === 'rate_plan_revenue')
+                @if ($this->ratePlanRevenue === [])
+                    <div class="tb-empty-card"><strong>No rate plan revenue for this period</strong></div>
+                @else
+                    <div class="tb-head tb-grid" style="grid-template-columns:minmax(160px,1.4fr) 160px 140px"><span>Rate plan</span><span>Confirmed orders</span><span>Revenue</span></div>
+                    @foreach ($this->ratePlanRevenue as $row)
+                        <div class="tb-row tb-grid" style="grid-template-columns:minmax(160px,1.4fr) 160px 140px">
+                            <span>{{ $row['rate_plan_name'] }}</span><span>{{ $row['confirmed_orders'] }}</span><span>{{ AdminMoney::fromCents((int) $row['revenue_cents']) }}</span>
+                        </div>
+                    @endforeach
+                @endif
+            @elseif ($this->topCountries === [])
+                <div class="tb-empty-card"><strong>No country revenue for this period</strong></div>
+            @else
+                <div class="tb-head tb-grid" style="grid-template-columns:minmax(160px,1.4fr) 160px 140px"><span>Country</span><span>Confirmed orders</span><span>Revenue</span></div>
+                @foreach ($this->topCountries as $row)
+                    <div class="tb-row tb-grid" style="grid-template-columns:minmax(160px,1.4fr) 160px 140px">
+                        <span>{{ $row['country'] }}</span><span>{{ $row['confirmed_orders'] }}</span><span>{{ AdminMoney::fromCents((int) $row['revenue_cents']) }}</span>
+                    </div>
+                @endforeach
+            @endif
+        </section>
+    </div>
 </x-filament-panels::page>
