@@ -39,6 +39,9 @@ function gearLabel(value) {
 }
 
 export default function CampervanSearch({
+  variant = 'campervan',
+  pageKey = 'search-campervan',
+  pageSize = 6,
   seo,
   config,
   loading,
@@ -50,56 +53,71 @@ export default function CampervanSearch({
   totalCount,
   pickupLabel,
   dropoffLabel,
+  guestsLabel,
   query,
   updateSearch,
   sort,
   setSort,
-  sortOptions,
-  quickFilters,
-  toggleQuick,
+  sortOptions = [],
+  quickFilters = [],
+  toggleQuick = () => {},
   clearFilters,
-  filters,
-  setFilters,
+  filters = {},
+  setFilters = () => {},
   priceBounds,
-  categoryFilterOptions,
-  partners,
-  partnerTotal,
-  selectedPartnerId,
-  selectPartner,
+  categoryFilterOptions = [],
+  partners = [],
+  partnerTotal = 0,
+  selectedPartnerId = '',
+  selectPartner = () => {},
   locations = [],
+  quickFilterOptions = [],
 }) {
-  const { page } = usePageContent('search-campervan')
+  const { page } = usePageContent(pageKey)
   const copy = page.presentation || {}
   const fmt = useFormatPrice()
+  const isStay = variant === 'guesthouse'
+  const startValue = isStay ? query.check_in : query.pickup_at
+  const endValue = isStay ? query.check_out : query.dropoff_at
   const [sheet, setSheet] = useState('')
   const [draft, setDraft] = useState({
-    pickup: query.pickup_location_id || '',
+    pickup: isStay ? (query.city || '') : (query.pickup_location_id || ''),
     dropoff: query.dropoff_location_id || '',
-    start: query.pickup_at ? String(query.pickup_at).slice(0, 10) : '',
-    end: query.dropoff_at ? String(query.dropoff_at).slice(0, 10) : '',
+    start: startValue ? String(startValue).slice(0, 10) : '',
+    end: endValue ? String(endValue).slice(0, 10) : '',
+    guests: query.guests || '2',
   })
 
   useEffect(() => {
     document.body.classList.add('tb-camper-search')
-    setVisibleCount(6)
+    setVisibleCount(pageSize)
     return () => document.body.classList.remove('tb-camper-search')
-  }, [setVisibleCount])
+  }, [pageSize, setVisibleCount])
 
   useEffect(() => {
     document.body.classList.toggle('tb-sheet-open', Boolean(sheet))
   }, [sheet])
 
-  const datesText = formatRange(query.pickup_at, query.dropoff_at, copy.datesEmpty)
-  const priceText = priceBounds?.max > 0 ? `from ${fmt.format(priceBounds.min)} to ${fmt.format(priceBounds.max)} per day` : ''
+  const place = !pickupLabel || pickupLabel === 'All destinations' ? (copy.breadcrumbPlace || pickupLabel) : pickupLabel
+  const datesText = formatRange(startValue, endValue, copy.datesEmpty)
+  const perWord = isStay ? 'night' : 'day'
+  const priceText = priceBounds?.max > 0 ? `from ${fmt.format(priceBounds.min)} to ${fmt.format(priceBounds.max)} per ${perWord}` : ''
   const resultsLine = loading
     ? ''
-    : `${totalCount} ready near ${pickupLabel || copy.breadcrumbPlace}${priceText ? ` · ${priceText}` : ''}${copy.insuranceNote ? ` · ${copy.insuranceNote}` : ''}`
+    : isStay
+      ? `${totalCount} stays in ${place}${copy.insuranceNote ? ` · ${copy.insuranceNote}` : ''}`
+      : `${totalCount} ready near ${place}${priceText ? ` · ${priceText}` : ''}${copy.insuranceNote ? ` · ${copy.insuranceNote}` : ''}`
   const selectedFeatures = ['4x4', 'auto', 'winter'].filter((id) => quickFilters.includes(id)).length
   const hintFor = (id) => (copy.sortHints || []).find((item) => item.id === id)?.hint || ''
 
+  const chips = isStay
+    ? ['Price', 'Type', 'Guests', 'Bedrooms', 'Amenities']
+    : variant === 'car'
+      ? ['Price', 'Transmission', 'Vehicle type', 'Seats', '4×4', 'Automatic', 'Winter-ready']
+      : ['Price', 'Transmission', 'Vehicle type', 'Seats', 'Sleeps', '4×4', 'Automatic', 'Winter-ready']
   const cards = visibleCards || []
-  const firstRow = cards.slice(0, 3)
-  const rest = cards.slice(3)
+  const firstRow = cards.slice(0, isStay ? 4 : 3)
+  const rest = cards.slice(isStay ? 4 : 3)
 
   const board = (card) => {
     const items = []
@@ -112,16 +130,25 @@ export default function CampervanSearch({
   }
 
   function applySearch() {
-    updateSearch({
-      pickup_location_id: draft.pickup,
-      dropoff_location_id: draft.dropoff,
-      pickup_at: draft.start,
-      dropoff_at: draft.end,
-    })
+    if (isStay) {
+      updateSearch({
+        city: draft.pickup,
+        check_in: draft.start,
+        check_out: draft.end,
+        guests: draft.guests,
+      })
+    } else {
+      updateSearch({
+        pickup_location_id: draft.pickup,
+        dropoff_location_id: draft.dropoff,
+        pickup_at: draft.start,
+        dropoff_at: draft.end,
+      })
+    }
     setSheet('')
   }
 
-  const summary = `${pickupLabel || copy.breadcrumbPlace}${datesText ? ` · ${datesText}` : ''}`
+  const summary = `${place}${datesText ? ` · ${datesText}` : ''}`
 
   const filterCount = useMemo(() => {
     let count = selectedFeatures
@@ -140,7 +167,7 @@ export default function CampervanSearch({
         <Container className="tb-strip-bar">
           <div className="tb-type-tabs">
             {TABS.map((tab) => (
-              <Link key={tab.id} to={tab.href} className={tab.id === 'campervan' ? 'is-on' : ''}>
+              <Link key={tab.id} to={tab.href} className={tab.id === variant ? 'is-on' : ''}>
                 <FigmaIcon name={tab.icon} size={14} />
                 {tab.label}
               </Link>
@@ -157,7 +184,7 @@ export default function CampervanSearch({
             </button>
             <button type="button" onClick={() => setSheet('edit')}>
               <FigmaIcon name="users" size={16} />
-              <span><small>{copy.dropoffLabel}</small><strong>{dropoffLabel || copy.dropoffSame}</strong></span>
+              <span><small>{isStay ? copy.whoLabel : copy.dropoffLabel}</small><strong>{isStay ? (guestsLabel || query.guests || copy.whoValue) : (dropoffLabel || copy.dropoffSame)}</strong></span>
             </button>
             <button type="button" className="tb-update" onClick={applySearch}>
               <FigmaIcon name="search" size={16} />
@@ -168,7 +195,7 @@ export default function CampervanSearch({
             <FigmaIcon name="search" size={16} />
             <span>
               <strong>{summary}</strong>
-              <small>{datesText ? `${datesText} · ${copy.dropoffSame}` : copy.dropoffSame}</small>
+              <small>{isStay ? `${startValue && endValue ? datesText : copy.datesEmpty} · ${guestsLabel || copy.whoValue || ''}` : (datesText ? `${datesText} · ${copy.dropoffSame}` : copy.dropoffSame)}</small>
             </span>
             <FigmaIcon name="pencil" size={16} />
           </button>
@@ -183,7 +210,7 @@ export default function CampervanSearch({
               <span>/</span>
               <span>{copy.breadcrumbSection}</span>
               <span>/</span>
-              <span>{pickupLabel || copy.breadcrumbPlace}</span>
+              <span>{place}</span>
             </nav>
             <h1>{copy.title || config.titleLead}</h1>
             <p>{resultsLine}</p>
@@ -204,7 +231,7 @@ export default function CampervanSearch({
             {copy.sortLabel}
             <FigmaIcon name="chevron" size={12} />
           </button>
-          {['Price', 'Transmission', 'Vehicle type', 'Seats', 'Sleeps', '4×4', 'Automatic', 'Winter-ready'].map((label) => (
+          {chips.map((label) => (
             <button
               key={label}
               type="button"
@@ -222,6 +249,17 @@ export default function CampervanSearch({
           ))}
         </div>
 
+        {isStay && quickFilterOptions.length > 0 && (
+          <div className="tb-partners">
+            <span>Type</span>
+            <button type="button" className={!quickFilterOptions.some((item) => quickFilters.includes(item.id)) ? 'is-on' : ''} onClick={() => quickFilterOptions.forEach((item) => { if (quickFilters.includes(item.id)) toggleQuick(item.id) })}>All types</button>
+            {quickFilterOptions.map((item) => (
+              <button key={item.id} type="button" className={quickFilters.includes(item.id) ? 'is-on' : ''} onClick={() => toggleQuick(item.id)}>{item.label}</button>
+            ))}
+          </div>
+        )}
+
+        {!isStay && (
         <div className="tb-partners">
           <span><FigmaIcon name="key" size={14} />{copy.partnerLabel}</span>
           <button type="button" className={!selectedPartnerId ? 'is-on' : ''} onClick={() => selectPartner('')}>
@@ -233,19 +271,20 @@ export default function CampervanSearch({
             </button>
           ))}
         </div>
+        )}
 
-        {loading && <p className="tb-status">Loading campervans…</p>}
+        {loading && <p className="tb-status">Loading {copy.breadcrumbSection || 'results'}…</p>}
         {!loading && error && (
           <p className="tb-status">
-            Couldn’t load campervans. <button type="button" onClick={retry}>Try again</button>
+            Couldn’t load {(copy.breadcrumbSection || 'results').toLowerCase()}. <button type="button" onClick={retry}>Try again</button>
           </p>
         )}
-        {!loading && !error && totalCount === 0 && <p className="tb-status">No campervans match this search.</p>}
+        {!loading && !error && totalCount === 0 && <p className="tb-status">No {(copy.breadcrumbSection || 'results').toLowerCase()} match this search.</p>}
 
         {!loading && !error && totalCount > 0 && (
           <>
-            <div className="tb-van-grid">
-              {firstRow.map((card) => <VanCard key={card.id} card={card} copy={copy} board={board(card)} />)}
+            <div className={isStay ? 'tb-van-grid is-stay' : 'tb-van-grid'}>
+              {firstRow.map((card) => <VanCard key={card.id} card={card} copy={copy} board={board(card)} stay={isStay} />)}
             </div>
             <aside className="tb-bundle">
               <span><FigmaIcon name="bed" size={22} /></span>
@@ -256,14 +295,14 @@ export default function CampervanSearch({
               <Link to={copy.bundleHref || '/guesthouses'}>{copy.bundleButton}</Link>
             </aside>
             {rest.length > 0 && (
-              <div className="tb-van-grid">
-                {rest.map((card) => <VanCard key={card.id} card={card} copy={copy} board={board(card)} />)}
+              <div className={isStay ? 'tb-van-grid is-stay' : 'tb-van-grid'}>
+                {rest.map((card) => <VanCard key={card.id} card={card} copy={copy} board={board(card)} stay={isStay} />)}
               </div>
             )}
             <div className="tb-more">
               <p>{fill(copy.showingLabel, { shown: Math.min(visibleCount, totalCount), total: totalCount })}</p>
               {visibleCount < totalCount && (
-                <button type="button" onClick={() => setVisibleCount((count) => count + 6)}>{copy.loadMoreLabel}</button>
+                <button type="button" onClick={() => setVisibleCount((count) => count + pageSize)}>{copy.loadMoreLabel}</button>
               )}
             </div>
           </>
@@ -372,7 +411,7 @@ export default function CampervanSearch({
   )
 }
 
-function VanCard({ card, copy, board }) {
+function VanCard({ card, copy, board, stay }) {
   return (
     <article className="tb-van">
       <Link to={card.href} className="tb-van-media">
@@ -384,23 +423,34 @@ function VanCard({ card, copy, board }) {
             event.currentTarget.src = '/figma/camper-card.png'
           }}
         />
-        <span className="tb-sleeps"><FigmaIcon name="bed" size={15} />{card.sortSleeps ? `Sleeps ${card.sortSleeps}` : copy.typeLabel}</span>
+        <span className="tb-sleeps"><FigmaIcon name={stay ? 'users' : 'bed'} size={15} />{stay ? (card.houseType ? card.houseType.charAt(0).toUpperCase() + card.houseType.slice(1) : (copy.typeLabel || 'Stay')) : (card.sortSleeps ? `Sleeps ${card.sortSleeps}` : (card.sortSeats ? `Seats ${card.sortSeats}` : copy.typeLabel))}</span>
         <span className="tb-save" aria-hidden="true"><FigmaIcon name="heart" size={16} /></span>
       </Link>
       <div className="tb-van-body">
-        <div className="tb-van-meta">
-          <span><FigmaIcon name="tent" size={13} />{card.categoryName || copy.typeLabel}</span>
-          <em>{card.partner?.name}</em>
-        </div>
-        <h2>{card.name}</h2>
-        <div className="tb-board">
-          <p>{copy.onBoardLabel}</p>
-          <div>
-            {board.map((item) => (
-              <span key={item.label}><FigmaIcon name={item.icon} size={18} />{item.label}</span>
-            ))}
+        {stay ? (
+          <div className="tb-stay-where"><FigmaIcon name="pin" size={13} />{card.city || copy.breadcrumbPlace}</div>
+        ) : (
+          <div className="tb-van-meta">
+            <span><FigmaIcon name="tent" size={13} />{card.categoryName || card.badge || copy.typeLabel}</span>
+            <em>{card.partner?.name}</em>
           </div>
-        </div>
+        )}
+        <h2>{card.name}</h2>
+        {stay && card.specs?.length > 0 && (
+          <div className="tb-stay-specs">
+            {card.specs.slice(0, 3).map((item) => <span key={item.label}>{item.label}</span>)}
+          </div>
+        )}
+        {!stay && (
+          <div className="tb-board">
+            <p>{copy.onBoardLabel}</p>
+            <div>
+              {board.map((item) => (
+                <span key={item.label}><FigmaIcon name={item.icon} size={18} />{item.label}</span>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="tb-van-price">
           <div>
             <small>{copy.fromLabel}</small>

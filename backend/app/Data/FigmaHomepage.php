@@ -265,4 +265,48 @@ class FigmaHomepage
             ],
         ];
     }
+
+    public static function searchCar(): array
+    {
+        $base = self::searchCampervan();
+        return array_replace($base, [
+            'title' => 'Cars & 4×4s for every road',
+            'insuranceNote' => 'basic insurance (CDW) included',
+            'breadcrumbSection' => 'Cars & 4×4s',
+            'breadcrumbPlace' => 'Iceland',
+            'showingLabel' => 'Showing {shown} of {total} cars',
+            'typeLabel' => 'Car',
+            'showLabel' => 'Show {count} cars',
+            'matchLabel' => '{count} cars match',
+            'bundleTitle' => 'Need a bed for the night?',
+            'bundleText' => 'Add a guesthouse along your route — one booking, one payment.',
+            'bundleButton' => 'Add a guesthouse',
+            'bundleHref' => '/guesthouses',
+        ]);
+    }
+
+    public static function searchGuesthouse(): array
+    {
+        $base = self::searchCampervan();
+        return array_replace($base, [
+            'title' => 'Guesthouses along the route',
+            'insuranceNote' => 'guesthouses, cottages, cabins and apartments along the Ring Road',
+            'breadcrumbSection' => 'Guesthouses',
+            'breadcrumbPlace' => 'Iceland',
+            'pickupLabel' => 'City or area',
+            'datesLabel' => 'Check-in → Check-out',
+            'whoLabel' => 'Guests',
+            'whoValue' => '2 guests',
+            'showingLabel' => 'Showing {shown} of {total} stays',
+            'typeLabel' => 'Guesthouse',
+            'bookLabel' => 'View',
+            'perLabel' => '/ night',
+            'showLabel' => 'Show {count} stays',
+            'matchLabel' => '{count} stays match',
+            'bundleTitle' => 'Need wheels too?',
+            'bundleText' => 'Add a campervan or car to the same trip — one booking, one payment.',
+            'bundleButton' => 'Browse vehicles',
+            'bundleHref' => '/campervans',
+        ]);
+    }
 }

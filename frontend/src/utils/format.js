@@ -1,3 +1,16 @@
+import { CURRENCIES } from '../data/localePreferences'
+
+function metaForDisplay(code, currencyMeta = {}) {
+  if (!code || code === currencyMeta.code) return currencyMeta
+  const known = CURRENCIES.find((item) => item.code === code)
+  return {
+    decimals: code === 'ISK' ? 0 : 2,
+    decimal_separator: code === 'ISK' ? ',' : '.',
+    thousand_separator: code === 'ISK' ? '.' : ',',
+    symbol: known?.symbol || '',
+  }
+}
+
 export function formatCurrency(amount, currency = 'EUR') {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount
   if (Number.isNaN(num)) return `${currency} 0`
@@ -82,10 +95,7 @@ export function createPriceFormatter({
 } = {}) {
   const formatConverted = (amountInBase) => {
     const converted = convertFromBase(amountInBase, displayCurrency, exchangeRates, baseCurrency)
-    return formatMajorUnits(converted, displayCurrency, {
-      ...currencyMeta,
-      decimals: displayCurrency === 'ISK' ? 0 : currencyMeta.decimals,
-    })
+    return formatMajorUnits(converted, displayCurrency, metaForDisplay(displayCurrency, currencyMeta))
   }
 
   return {

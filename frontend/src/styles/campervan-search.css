@@ -228,6 +228,16 @@ body.tb-camper-search .scroll-progress {
   margin-top: 24px;
 }
 
+.tb-van-grid.is-stay {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .tb-van-grid.is-stay {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .tb-van {
   background: #fff;
   border-radius: 28px;
@@ -277,6 +287,24 @@ body.tb-camper-search .scroll-progress {
 
 .tb-van-body {
   padding: 18px 20px 20px;
+}
+
+.tb-stay-where {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #8794a3;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tb-stay-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 8px 0 4px;
+  color: #5c6b80;
+  font-size: 13px;
 }
 
 .tb-van-meta {
@@ -670,7 +698,8 @@ body.tb-camper-search .scroll-progress {
     font-size: 34px;
   }
 
-  .tb-van-grid {
+  .tb-van-grid,
+  .tb-van-grid.is-stay {
     grid-template-columns: 1fr;
   }
 

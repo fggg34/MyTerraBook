@@ -163,6 +163,36 @@ $searchCopyFields = [
     ['key' => 'loadMoreLabel', 'type' => 'text', 'label' => 'Load more label'],
 ];
 
+$searchPresentationFields = [
+    ['key' => 'title', 'type' => 'text', 'label' => 'Title', 'columnSpanFull' => true],
+    ['key' => 'insuranceNote', 'type' => 'text', 'label' => 'Result note', 'columnSpanFull' => true],
+    ['key' => 'breadcrumbHome', 'type' => 'text', 'label' => 'Breadcrumb home'],
+    ['key' => 'breadcrumbSection', 'type' => 'text', 'label' => 'Breadcrumb section'],
+    ['key' => 'breadcrumbPlace', 'type' => 'text', 'label' => 'Breadcrumb place'],
+    ['key' => 'pickupLabel', 'type' => 'text', 'label' => 'First field label'],
+    ['key' => 'datesLabel', 'type' => 'text', 'label' => 'Dates label'],
+    ['key' => 'dropoffLabel', 'type' => 'text', 'label' => 'Third field label'],
+    ['key' => 'whoLabel', 'type' => 'text', 'label' => 'Guests label'],
+    ['key' => 'whoValue', 'type' => 'text', 'label' => 'Guests default'],
+    ['key' => 'dropoffSame', 'type' => 'text', 'label' => 'Same drop-off'],
+    ['key' => 'updateLabel', 'type' => 'text', 'label' => 'Update button'],
+    ['key' => 'filtersLabel', 'type' => 'text', 'label' => 'Filters button'],
+    ['key' => 'filtersTitle', 'type' => 'text', 'label' => 'Filters title'],
+    ['key' => 'sortTitle', 'type' => 'text', 'label' => 'Sort title'],
+    ['key' => 'partnerLabel', 'type' => 'text', 'label' => 'Partner label'],
+    ['key' => 'showAllLabel', 'type' => 'text', 'label' => 'Show all'],
+    ['key' => 'bundleTitle', 'type' => 'text', 'label' => 'Bundle title', 'columnSpanFull' => true],
+    ['key' => 'bundleText', 'type' => 'textarea', 'label' => 'Bundle text', 'columnSpanFull' => true],
+    ['key' => 'bundleButton', 'type' => 'text', 'label' => 'Bundle button'],
+    ['key' => 'bundleHref', 'type' => 'text', 'label' => 'Bundle link'],
+    ['key' => 'showingLabel', 'type' => 'text', 'label' => 'Showing line'],
+    ['key' => 'loadMoreLabel', 'type' => 'text', 'label' => 'Show more'],
+    ['key' => 'bookLabel', 'type' => 'text', 'label' => 'Book button'],
+    ['key' => 'typeLabel', 'type' => 'text', 'label' => 'Type badge'],
+    ['key' => 'clearLabel', 'type' => 'text', 'label' => 'Clear'],
+    ['key' => 'showLabel', 'type' => 'text', 'label' => 'Show results'],
+];
+
 $listingSectionDescriptionFields = [
     ['key' => 'amenities', 'type' => 'textarea', 'label' => 'Amenities / features section', 'rows' => 2, 'columnSpanFull' => true],
     ['key' => 'optionalExtras', 'type' => 'textarea', 'label' => 'Optional extras section (vehicles only)', 'rows' => 2, 'columnSpanFull' => true],
@@ -1135,6 +1165,7 @@ return [
             'sections' => [
                 'routing' => ['label' => 'Routing & defaults', 'isRootSection' => true, 'fields' => $searchRoutingFields],
                 'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => $searchCopyFields],
+                'presentation' => ['label' => 'Search page', 'fields' => $searchPresentationFields],
                 'seo' => $pageSeoSection,
             ],
         ],
@@ -1148,6 +1179,7 @@ return [
                     ['key' => 'introLocationDefault', 'type' => 'text', 'label' => 'Default location intro'],
                 ])],
                 'content' => ['label' => 'Page copy', 'isRootSection' => true, 'fields' => $searchCopyFields],
+                'presentation' => ['label' => 'Search page', 'fields' => $searchPresentationFields],
                 'seo' => $pageSeoSection,
             ],
         ],

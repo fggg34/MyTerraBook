@@ -119,9 +119,12 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     },
   })
 
-  if (vehicleType === 'campervan') {
+  if (vehicleType === 'campervan' || vehicleType === 'car' || isGuesthouse) {
     return (
       <CampervanSearch
+        variant={isGuesthouse ? 'guesthouse' : vehicleType}
+        pageKey={searchPageKey}
+        pageSize={isGuesthouse ? 8 : 6}
         seo={seo}
         config={config}
         loading={loading}
@@ -133,12 +136,14 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
         totalCount={totalCount}
         pickupLabel={pickupLabel}
         dropoffLabel={dropoffLabel}
+        guestsLabel={guestsLabel}
         query={query}
         updateSearch={updateSearch}
         sort={sort}
         setSort={setSort}
         sortOptions={sortOptions}
         quickFilters={quickFilters}
+        quickFilterOptions={quickFilterOptions}
         toggleQuick={toggleQuick}
         clearFilters={clearFilters}
         filters={filters}

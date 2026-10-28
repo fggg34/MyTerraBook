@@ -37,6 +37,12 @@ class SiteContentDefaults
             if ($pageKey === 'search-campervan') {
                 $page['presentation'] = FigmaHomepage::searchCampervan();
             }
+            if ($pageKey === 'search-car') {
+                $page['presentation'] = FigmaHomepage::searchCar();
+            }
+            if ($pageKey === 'search-guesthouse') {
+                $page['presentation'] = FigmaHomepage::searchGuesthouse();
+            }
 
             return $page;
         }
