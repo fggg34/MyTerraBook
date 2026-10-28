@@ -66,12 +66,12 @@ const FRAME = {
     aboutTitle: 'About this car',
     featuresTitle: 'Features',
     includedTitle: "What's included",
-    included: ['Unlimited kilometres', 'Basic insurance (CDW)', '24/7 roadside assistance', 'Airport pick-up and drop-off'],
+    included: ['Unlimited kilometres', 'Basic insurance (CDW)', '24/7 roadside assistance', 'Airport pick-up and drop-off', 'Winter tyres in season'],
     extrasTitle: 'Optional extras',
     extrasLead: 'Priced per day or one-time — added to the same booking.',
-    pickupTitle: 'Pick-up & drop-off',
+    pickupTitle: 'Pick-up & drop-off locations',
     knowTitle: 'Good to know',
-    conditionsLink: 'Read full rental conditions',
+    conditionsLink: '',
     reviewsTitle: 'Reviews',
     writeReview: 'Write a review',
     emptyReviews: 'No reviews yet',
@@ -79,24 +79,22 @@ const FRAME = {
     hostKicker: 'Meet the host',
     hostButton: 'View profile',
     bookCta: 'Request to book',
+    priceLabel: 'Daily rate',
     processLink: 'View the booking process',
     insuranceTitle: 'Insurance',
     stayTitle: 'Add a night in a guesthouse',
     stayText: 'Same booking, one payment.',
-    similarTitle: 'Similar cars',
+    similarTitle: 'Similar rentals',
     similarButton: 'See all cars',
-    staysEyebrow: 'Complete your trip',
-    staysTitle: 'Stays near the pick-up',
-    staysButton: 'See stays',
     tiers: [
       { name: 'Basic', note: 'CDW · standard excess', included: true },
       { name: 'Premium', note: 'Lower excess · gravel & windscreen' },
       { name: 'Platinum', note: 'Zero excess · sand & ash' },
     ],
     know: [
-      { icon: 'calendar', title: 'Cancellation', text: 'Free cancellation up to 14 days before pick-up.' },
+      { icon: 'calendar', title: 'Cancellation', text: 'Free cancellation up to 48 hours before pick-up.' },
       { icon: 'shield', title: 'Deposit', text: 'Held on your card, released after return.' },
-      { icon: 'users', title: 'Driver age', text: 'Minimum 20 years, licence held 2+ years.' },
+      { icon: 'users', title: 'Driver age', text: 'Minimum 20 years, licence held 1+ year.' },
     ],
     winter: 'Winter rental: winter tyres included. Gravel roads need extra care.',
     process: [
@@ -109,13 +107,11 @@ const FRAME = {
     typeLabel: 'Guesthouse',
     aboutTitle: 'About this stay',
     featuresTitle: 'Amenities',
-    includedTitle: "What's included",
-    included: ['Fresh linen', 'Towels', 'Self check-in', 'Kitchen access'],
-    extrasTitle: 'Optional extras',
-    extrasLead: 'Added to the same booking.',
-    pickupTitle: 'Where you’ll stay',
-    knowTitle: 'Good to know',
-    conditionsLink: 'Read the house rules',
+    roomTitle: 'Room details',
+    rulesTitle: 'House rules',
+    locationTitle: 'Location',
+    locationNote: 'Exact address shared after your booking is approved.',
+    mapButton: 'Open in maps',
     reviewsTitle: 'Reviews',
     writeReview: 'Write a review',
     emptyReviews: 'No reviews yet',
@@ -123,20 +119,20 @@ const FRAME = {
     hostKicker: 'Meet the host',
     hostButton: 'View profile',
     bookCta: 'Request to book',
+    priceLabel: 'Nightly rate',
     processLink: 'View the booking process',
-    insuranceTitle: '',
-    stayTitle: '',
+    chargeNote: 'Your host reviews this request. Nothing is charged today.',
+    addVehicleTitle: 'Add a campervan or car to this trip',
+    addVehicleText: 'Same booking, one payment.',
     similarTitle: 'Similar stays',
     similarButton: 'See all stays',
-    staysEyebrow: '',
-    staysTitle: '',
-    tiers: [],
-    know: [
-      { icon: 'calendar', title: 'Cancellation', text: 'Free cancellation up to 14 days before check-in.' },
-      { icon: 'users', title: 'Guests', text: 'The price is for the guests selected in your search.' },
-      { icon: 'key', title: 'Check-in', text: 'Self check-in details arrive after the host approves.' },
+    rules: [
+      { icon: 'calendar', title: 'Check-in', text: 'From 16:00' },
+      { icon: 'key', title: 'Check-out', text: 'By 11:00' },
+      { icon: 'snowflake', title: 'Minimum stay', text: '1 night' },
+      { icon: 'users', title: 'Guests', text: 'Up to 2 guests' },
+      { icon: 'calendar', title: 'Cancellation', text: 'Strict cancellation' },
     ],
-    winter: '',
     process: [
       { title: 'Request', text: 'You send a request with dates. Nothing is charged yet.' },
       { title: 'Approval', text: 'The host confirms the stay. You pay the prepayment to lock it in.' },
@@ -206,6 +202,7 @@ export default function FigmaListing({
 }) {
   const type = listing.listingType || 'campervan'
   const isStay = type === 'guesthouse'
+  const isCar = type === 'car'
   const { page } = usePageContent(`listing-${type}`)
   const copy = { ...FRAME[type], ...(page.frame || {}) }
   const { toast } = useToast()
@@ -338,6 +335,23 @@ export default function FigmaListing({
     onRequestBook?.({ pickupDate: startDate, dropoffDate: endDate })
   }
 
+  const vehicle = listing.car || {}
+  const carSpecCards = [
+    { icon: 'users', title: 'Seats', value: vehicle.seats ? String(vehicle.seats) : '' },
+    { icon: 'tent', title: 'Doors · bags', value: [vehicle.doors, vehicle.bags ? `${vehicle.bags} bags` : ''].filter(Boolean).join(' · ') },
+    { icon: 'gauge', title: 'Gearbox', value: vehicle.transmission || '' },
+    { icon: 'gauge', title: 'Fuel', value: vehicle.fuel_type || '' },
+    { icon: 'pin', title: 'Drive', value: vehicle.drive_type || '' },
+    { icon: 'key', title: 'Units', value: vehicle.units_available != null ? `${vehicle.units_available} available` : '' },
+  ].filter((item) => item.value)
+  const staySpecCards = [
+    { icon: 'users', title: 'Sleeps', value: vehicle.max_guests ? `${vehicle.max_guests} guests` : '' },
+    { icon: 'bed', title: 'Bedrooms', value: vehicle.bedrooms ? String(vehicle.bedrooms) : '' },
+    { icon: 'gauge', title: 'Bathrooms', value: vehicle.bathrooms ? String(vehicle.bathrooms) : '' },
+    { icon: 'heart', title: 'Type', value: listing.categoryName || '' },
+    { icon: 'pin', title: 'Location', value: listing.location?.city || '' },
+  ].filter((item) => item.value)
+  const specCards = isStay ? staySpecCards : isCar ? carSpecCards : null
   const timeLabel = (window) => (window?.from ? String(window.from).slice(0, 5) : '')
 
   return (
@@ -356,14 +370,30 @@ export default function FigmaListing({
         <header className="tb-listing-head">
           <div>
             <div className="tb-pills">
-              <span><FigmaIcon name={isStay ? 'heart' : 'tent'} size={13} />{copy.typeLabel}</span>
-              {sleeps ? <span><FigmaIcon name="bed" size={13} />{sleeps.label}</span> : null}
-              {units ? <span><FigmaIcon name="check" size={13} />{units.label}</span> : null}
+              {isStay ? (
+                <>
+                  <span><FigmaIcon name="heart" size={13} />{listing.categoryName || copy.typeLabel}</span>
+                  {vehicle.max_guests ? <span><FigmaIcon name="users" size={13} />Sleeps {vehicle.max_guests}</span> : null}
+                  <span><FigmaIcon name="sparkles" size={13} />{(listing.reviews || []).length ? `${listing.rating?.score || ''} rating` : 'New listing'}</span>
+                </>
+              ) : isCar ? (
+                <>
+                  <span><FigmaIcon name="gauge" size={13} />{listing.categoryName || 'Car'}</span>
+                  {vehicle.drive_type ? <span><FigmaIcon name="mountain" size={13} />{vehicle.drive_type}</span> : null}
+                  {vehicle.units_available != null ? <span><FigmaIcon name="check" size={13} />{vehicle.units_available} units available</span> : null}
+                </>
+              ) : (
+                <>
+                  <span><FigmaIcon name="tent" size={13} />{copy.typeLabel}</span>
+                  {sleeps ? <span><FigmaIcon name="bed" size={13} />{sleeps.label}</span> : null}
+                  {units ? <span><FigmaIcon name="check" size={13} />{units.label}</span> : null}
+                </>
+              )}
             </div>
             <h1>{listing.name}</h1>
             <p className="tb-listing-where">
-              <span><FigmaIcon name="pin" size={15} />{isStay ? 'Stay' : 'Pick-up'}: {pickupLine}</span>
-              {listing.partner?.name ? <span><FigmaIcon name="key" size={15} />{listing.partner.name}</span> : null}
+              <span><FigmaIcon name="pin" size={15} />{isStay ? (listing.location?.formattedLine || pickupLine) : `Pick-up: ${pickupLine}`}</span>
+              {!isStay && listing.partner?.name ? <span><FigmaIcon name="key" size={15} />{listing.partner.name}</span> : null}
             </p>
           </div>
           <div className="tb-listing-actions">
@@ -392,7 +422,17 @@ export default function FigmaListing({
 
         <div className="tb-listing-grid">
           <div className="tb-listing-main">
-            {specs.length > 0 && (
+            {specCards ? (
+              <div className={`tb-specs${isStay ? ' is-stay' : ''}`}>
+                {specCards.map((item) => (
+                  <div key={item.title}>
+                    <FigmaIcon name={item.icon} size={22} />
+                    <small>{item.title}</small>
+                    <strong>{item.value}</strong>
+                  </div>
+                ))}
+              </div>
+            ) : specs.length > 0 && (
               <div className="tb-specs">
                 {specs.map((item) => (
                   <div key={`${item.icon}-${item.label}`}>
@@ -412,6 +452,67 @@ export default function FigmaListing({
               ) : null}
             </section>
 
+            {isStay ? (
+              <>
+                {features.length > 0 && (
+                  <section>
+                    <h2>{copy.featuresTitle}</h2>
+                    <div className="tb-amenities">
+                      {features.map((item, index) => (
+                        <div key={item.name}>
+                          <span><FigmaIcon name={FEATURE_ICONS[index % FEATURE_ICONS.length]} size={18} /></span>
+                          {item.name}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                {listing.sleeping?.beds?.length > 0 && (
+                  <section>
+                    <h2>{copy.roomTitle}</h2>
+                    <div className="tb-rooms">
+                      {listing.sleeping.beds.map((room) => (
+                        <article key={room.title}>
+                          <FigmaIcon name="bed" size={22} />
+                          <strong>{room.title}</strong>
+                          <p>{room.text}</p>
+                          {room.dim ? <p>{room.dim}</p> : null}
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                <section>
+                  <h2>{copy.rulesTitle}</h2>
+                  <div className="tb-rules">
+                    {(copy.rules || []).map((rule) => (
+                      <article key={rule.title}>
+                        <FigmaIcon name={rule.icon} size={20} />
+                        <span>
+                          <small>{rule.title}</small>
+                          <strong>{rule.title === 'Guests' && vehicle.max_guests ? `Up to ${vehicle.max_guests} guests` : rule.text}</strong>
+                        </span>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+                <section>
+                  <h2>{copy.locationTitle}</h2>
+                  <div className="tb-map">
+                    <FigmaIcon name="pin" size={22} />
+                    <span>{listing.location?.city ? `Map · ${listing.location.city}` : 'Map'}</span>
+                  </div>
+                  <div className="tb-map-foot">
+                    <div>
+                      <strong>{listing.location?.formattedLine || listing.location?.city || 'Iceland'}</strong>
+                      <p>{copy.locationNote}</p>
+                    </div>
+                    {listing.location?.mapsUrl ? <a href={listing.location.mapsUrl} target="_blank" rel="noreferrer">{copy.mapButton}</a> : null}
+                  </div>
+                </section>
+              </>
+            ) : (
+              <>
             {features.length > 0 && (
               <section>
                 <h2>{copy.featuresTitle}</h2>
@@ -462,15 +563,32 @@ export default function FigmaListing({
 
             <section>
               <h2>{copy.pickupTitle}</h2>
-              <div className="tb-pickup">
-                <div className="tb-minimap" aria-hidden="true"><FigmaIcon name="pin" size={18} /></div>
-                <div>
-                  <p><FigmaIcon name="pin" size={18} /><span><small>Location</small><strong>{locationName}</strong></span></p>
-                  <p><FigmaIcon name="calendar" size={18} /><span><small>{isStay ? 'Check-in' : 'Pick-up'}</small><strong>{timeLabel(listing.pickupTimeWindow) ? `From ${timeLabel(listing.pickupTimeWindow)}` : 'Times confirmed after approval'}</strong></span></p>
-                  <p><FigmaIcon name="calendar" size={18} /><span><small>{isStay ? 'Check-out' : 'Drop-off'}</small><strong>{timeLabel(listing.dropoffTimeWindow) ? `Until ${timeLabel(listing.dropoffTimeWindow)}` : 'Same location'}</strong></span></p>
-                  <p><FigmaIcon name="check" size={18} /><span><small>Bring</small><strong>{isStay ? 'The name on the booking' : 'Driving licence (2+ years), credit card for deposit'}</strong></span></p>
+              {isCar ? (
+                <div className="tb-pickup">
+                  <div className="tb-minimap" aria-hidden="true"><FigmaIcon name="pin" size={18} /></div>
+                  <div>
+                    {(listing.pickupLocations || []).slice(0, 4).map((place) => (
+                      <p key={place.id || place.name}><FigmaIcon name="pin" size={18} /><span><strong>{place.name}</strong></span></p>
+                    ))}
+                    {!listing.pickupLocations?.length && (
+                      <p><FigmaIcon name="pin" size={18} /><span><strong>{locationName}</strong></span></p>
+                    )}
+                    <p><FigmaIcon name="calendar" size={18} /><span><small>Pick-up hours</small><strong>{timeLabel(listing.pickupTimeWindow) ? `From ${timeLabel(listing.pickupTimeWindow)}` : 'Times confirmed after approval'}</strong></span></p>
+                    <p><FigmaIcon name="calendar" size={18} /><span><small>Drop-off</small><strong>{timeLabel(listing.dropoffTimeWindow) ? `Until ${timeLabel(listing.dropoffTimeWindow)}` : 'Any listed location'}</strong></span></p>
+                    <p><FigmaIcon name="check" size={18} /><span><small>Bring</small><strong>Driving licence, credit card for deposit</strong></span></p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="tb-pickup">
+                  <div className="tb-minimap" aria-hidden="true"><FigmaIcon name="pin" size={18} /></div>
+                  <div>
+                    <p><FigmaIcon name="pin" size={18} /><span><small>Location</small><strong>{locationName}</strong></span></p>
+                    <p><FigmaIcon name="calendar" size={18} /><span><small>Pick-up</small><strong>{timeLabel(listing.pickupTimeWindow) ? `From ${timeLabel(listing.pickupTimeWindow)}` : 'Times confirmed after approval'}</strong></span></p>
+                    <p><FigmaIcon name="calendar" size={18} /><span><small>Drop-off</small><strong>{timeLabel(listing.dropoffTimeWindow) ? `Until ${timeLabel(listing.dropoffTimeWindow)}` : 'Same location'}</strong></span></p>
+                    <p><FigmaIcon name="check" size={18} /><span><small>Bring</small><strong>Driving licence (2+ years), credit card for deposit</strong></span></p>
+                  </div>
+                </div>
+              )}
             </section>
 
             <section>
@@ -484,8 +602,12 @@ export default function FigmaListing({
                   </article>
                 ))}
               </div>
-              <button type="button" className="tb-text-link" onClick={() => setSheet('conditions')}>{copy.conditionsLink}</button>
+              {copy.conditionsLink ? (
+                <button type="button" className="tb-text-link" onClick={() => setSheet('conditions')}>{copy.conditionsLink}</button>
+              ) : null}
             </section>
+              </>
+            )}
 
             <section className="tb-reviews">
               <div className="tb-reviews-head">
@@ -527,7 +649,7 @@ export default function FigmaListing({
 
           <BookingCard
             copy={copy}
-            isStay={isStay}
+            layout={isStay ? 'stay' : isCar ? 'car' : 'camper'}
             fmt={fmt}
             priceFrom={listing.priceFrom}
             unit={unit}
@@ -559,7 +681,7 @@ export default function FigmaListing({
               <h2>{copy.similarTitle}</h2>
               <Link to={archive}>{copy.similarButton}</Link>
             </div>
-            <div className="tb-similar-grid">
+            <div className={isStay ? 'tb-near-grid' : 'tb-similar-grid'}>
               {relatedCards.map((card) => (
                 <Link key={card.id} to={card.href} className="tb-similar-card">
                   <img src={card.image || '/figma/camper-card.png'} alt="" />
@@ -572,7 +694,7 @@ export default function FigmaListing({
         </section>
       )}
 
-      {!isStay && stays.length > 0 && (
+      {type === 'campervan' && stays.length > 0 && (
         <section className="tb-near">
           <Container>
             <div className="tb-similar-head">
@@ -646,7 +768,7 @@ export default function FigmaListing({
             {sheet === 'book' && (
               <BookingCard
                 copy={copy}
-                isStay={isStay}
+                layout={isStay ? 'stay' : isCar ? 'car' : 'camper'}
                 fmt={fmt}
                 priceFrom={listing.priceFrom}
                 unit={unit}
@@ -677,36 +799,51 @@ export default function FigmaListing({
 }
 
 function BookingCard({
-  copy, isStay, fmt, priceFrom, unit, startDate, endDate, setStartDate, setEndDate,
+  copy, layout = 'camper', fmt, priceFrom, unit, startDate, endDate, setStartDate, setEndDate,
   timeLabel, listing, locationName, tiers, tierIndex, setTierIndex, showWinter, book,
   prepayPercent, nights, rental, total, onProcess,
 }) {
+  const isStay = layout === 'stay'
+  const isCar = layout === 'car'
   const tier = tiers[tierIndex]
   const money = (amount) => (amount == null ? '—' : fmt.format(amount))
+  const dropName = listing.dropoffLocations?.[0]?.name || locationName
   return (
     <aside className="tb-book">
-      <p className="tb-book-price"><small>from</small><strong>{priceFrom || '—'}</strong><em>/ {unit}</em></p>
+      <p className="tb-book-price">
+        <small>{copy.priceLabel || 'from'}</small>
+        <strong>{priceFrom || '—'}</strong>
+        <em>/ {unit}</em>
+      </p>
       <div className="tb-book-dates">
+        {isCar && (
+          <>
+            <div><small>PICK-UP LOCATION</small><strong>{locationName}</strong></div>
+            <div><small>DROP-OFF LOCATION</small><strong>{dropName}</strong></div>
+          </>
+        )}
         <label>
           <small>{isStay ? 'CHECK-IN' : 'PICK-UP'}</small>
-          <strong>{formatWhen(startDate, timeLabel(listing.pickupTimeWindow))}</strong>
+          <strong>{formatWhen(startDate, isStay ? '' : timeLabel(listing.pickupTimeWindow))}</strong>
           <input type="date" value={toIso(startDate)} onChange={(event) => setStartDate(fromIso(event.target.value))} />
         </label>
         <label>
           <small>{isStay ? 'CHECK-OUT' : 'DROP-OFF'}</small>
-          <strong>{formatWhen(endDate, timeLabel(listing.dropoffTimeWindow))}</strong>
+          <strong>{formatWhen(endDate, isStay ? '' : timeLabel(listing.dropoffTimeWindow))}</strong>
           <input type="date" value={toIso(endDate)} onChange={(event) => setEndDate(fromIso(event.target.value))} />
         </label>
-        <div>
-          <small>{isStay ? 'WHERE' : 'PICK-UP / DROP-OFF'}</small>
-          <strong>{locationName}{!isStay && locationName ? ` → ${locationName}` : ''}</strong>
-        </div>
+        {!isCar && (
+          <div>
+            <small>{isStay ? 'GUESTS' : 'PICK-UP / DROP-OFF'}</small>
+            <strong>{isStay ? `${listing.car?.max_guests || 2} guests` : `${locationName}${locationName ? ` → ${locationName}` : ''}`}</strong>
+          </div>
+        )}
       </div>
       {!isStay && tiers.length > 0 && (
         <div className="tb-insure">
           <p><FigmaIcon name="shield" size={15} />{copy.insuranceTitle}</p>
           {tiers.map((item, index) => (
-            <button key={item.name} type="button" className={index === tierIndex ? 'is-on' : ''} onClick={() => setTierIndex(index)}>
+            <button key={item.name || index} type="button" className={index === tierIndex ? 'is-on' : ''} onClick={() => setTierIndex(index)}>
               <i />
               <span><strong>{item.name}</strong><small>{item.note}</small></span>
               <em>{item.included || !item.daily ? 'Included' : `${fmt.format(item.daily)} / day`}</em>
@@ -714,18 +851,28 @@ function BookingCard({
           ))}
         </div>
       )}
-      {showWinter && <p className="tb-winter"><FigmaIcon name="snowflake" size={16} />{copy.winter}</p>}
+      {showWinter && layout === 'camper' && <p className="tb-winter"><FigmaIcon name="snowflake" size={16} />{copy.winter}</p>}
       <button type="button" className="tb-book-cta" onClick={book}>{copy.bookCta} <FigmaIcon name="arrow" size={16} /></button>
       <p className="tb-book-note">{prepayPercent}% prepayment on approval · balance due on {isStay ? 'arrival' : 'pick-up'}</p>
       <button type="button" className="tb-text-link" onClick={onProcess}>{copy.processLink}</button>
       <div className="tb-lines">
         <p><span>{isStay ? 'Nightly rate' : 'Daily rate'}{nights ? ` × ${nights} ${nights === 1 ? unit : `${unit}s`}` : ''}</span><strong>{money(rental)}</strong></p>
+        {isStay && <p><span>Cleaning fee</span><strong>—</strong></p>}
+        {isStay && <p><span>Accommodation tax</span><strong>—</strong></p>}
         {!isStay && <p><span>Optional extras</span><strong>{nights ? money(0) : '—'}</strong></p>}
-        {!isStay && tier && !tier.included && <p><span>{tier.name} insurance{nights ? ` × ${nights}` : ''}</span><strong>{nights && tier.daily ? money(tier.daily * nights) : '—'}</strong></p>}
+        {!isStay && <p><span>{tier?.name ? `Insurance (${tier.name})` : 'Insurance'}</span><strong>{tier?.included || !tier?.daily ? 'Included' : (nights ? money(tier.daily * nights) : '—')}</strong></p>}
+        {isCar && <p><span>Location / one-way fee</span><strong>—</strong></p>}
         <p><span>Service fee</span><strong>{total != null && rental != null ? money(Math.max(0, total - rental)) : '—'}</strong></p>
       </div>
       <div className="tb-total"><span>Total</span><strong>{money(total)}</strong></div>
-      {!isStay && (
+      {isStay && <p className="tb-book-note">{copy.chargeNote}</p>}
+      {isStay ? (
+        <Link to="/campervans" className="tb-add-stay">
+          <span><FigmaIcon name="gauge" size={17} /></span>
+          <em><strong>{copy.addVehicleTitle}</strong><small>{copy.addVehicleText}</small></em>
+          <FigmaIcon name="arrow" size={16} />
+        </Link>
+      ) : (
         <Link to="/guesthouses" className="tb-add-stay">
           <span><FigmaIcon name="bed" size={17} /></span>
           <em><strong>{copy.stayTitle}</strong><small>{copy.stayText}</small></em>

@@ -367,34 +367,67 @@ class FigmaHomepage
      */
     public static function listingCar(): array
     {
-        return array_replace(self::listingCampervan(), [
+        $base = self::listingCampervan();
+        return array_replace($base, [
             'typeLabel' => 'Car',
             'aboutTitle' => 'About this car',
-            'similarTitle' => 'Similar cars',
+            'pickupTitle' => 'Pick-up & drop-off locations',
+            'conditionsLink' => '',
+            'priceLabel' => 'Daily rate',
+            'similarTitle' => 'Similar rentals',
             'similarButton' => 'See all cars',
-            'winter' => 'Winter rental: winter tyres included. Gravel roads need extra care.',
+            'included' => [
+                ['text' => 'Unlimited kilometres'],
+                ['text' => 'Basic insurance (CDW)'],
+                ['text' => '24/7 roadside assistance'],
+                ['text' => 'Airport pick-up and drop-off'],
+                ['text' => 'Winter tyres in season'],
+            ],
+            'know' => [
+                ['icon' => 'calendar', 'title' => 'Cancellation', 'text' => 'Free cancellation up to 48 hours before pick-up.'],
+                ['icon' => 'shield', 'title' => 'Deposit', 'text' => 'Held on your card, released after return.'],
+                ['icon' => 'users', 'title' => 'Driver age', 'text' => 'Minimum 20 years, licence held 1+ year.'],
+            ],
         ]);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public static function listingGuesthouse(): array
     {
-        return array_replace(self::listingCampervan(), [
+        return [
             'typeLabel' => 'Guesthouse',
             'aboutTitle' => 'About this stay',
             'featuresTitle' => 'Amenities',
-            'pickupTitle' => 'Where you’ll stay',
-            'conditionsLink' => 'Read the house rules',
+            'roomTitle' => 'Room details',
+            'rulesTitle' => 'House rules',
+            'locationTitle' => 'Location',
+            'locationNote' => 'Exact address shared after your booking is approved.',
+            'mapButton' => 'Open in maps',
+            'reviewsTitle' => 'Reviews',
+            'writeReview' => 'Write a review',
+            'emptyReviews' => 'No reviews yet',
             'emptyReviewsLead' => 'Be the first to share how your stay went.',
+            'hostKicker' => 'Meet the host',
+            'hostButton' => 'View profile',
+            'bookCta' => 'Request to book',
+            'priceLabel' => 'Nightly rate',
+            'processLink' => 'View the booking process',
+            'chargeNote' => 'Your host reviews this request. Nothing is charged today.',
+            'addVehicleTitle' => 'Add a campervan or car to this trip',
+            'addVehicleText' => 'Same booking, one payment.',
             'similarTitle' => 'Similar stays',
             'similarButton' => 'See all stays',
-            'insuranceTitle' => '',
-            'stayTitle' => '',
-            'winter' => '',
-            'staysEyebrow' => '',
-            'staysTitle' => '',
-        ]);
+            'rules' => [
+                ['icon' => 'calendar', 'title' => 'Check-in', 'text' => 'From 16:00'],
+                ['icon' => 'key', 'title' => 'Check-out', 'text' => 'By 11:00'],
+                ['icon' => 'snowflake', 'title' => 'Minimum stay', 'text' => '1 night'],
+                ['icon' => 'users', 'title' => 'Guests', 'text' => 'Up to 2 guests'],
+                ['icon' => 'calendar', 'title' => 'Cancellation', 'text' => 'Strict cancellation'],
+            ],
+            'process' => [
+                ['title' => 'Request', 'text' => 'You send a request with dates. Nothing is charged yet.'],
+                ['title' => 'Approval', 'text' => 'The host confirms the stay. You pay the prepayment to lock it in.'],
+                ['title' => 'Check-in', 'text' => 'The balance is due before you arrive.'],
+            ],
+        ];
     }
 }

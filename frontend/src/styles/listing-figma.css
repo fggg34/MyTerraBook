@@ -773,6 +773,82 @@
   line-height: 1.6;
 }
 
+.tb-specs.is-stay {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.tb-amenities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.tb-amenities div,
+.tb-rooms article,
+.tb-rules article {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.tb-rooms,
+.tb-rules {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tb-rules {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tb-rules small {
+  display: block;
+  color: #8794a3;
+  font-size: 12px;
+}
+
+.tb-map {
+  height: 240px;
+  border-radius: 18px;
+  background: #e8eff7;
+  display: grid;
+  place-items: center;
+  color: #041e37;
+  font-weight: 700;
+}
+
+.tb-map-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.tb-map-foot a {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid #041e37;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+@media (max-width: 800px) {
+  .tb-specs.is-stay,
+  .tb-amenities,
+  .tb-rooms,
+  .tb-rules {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 1100px) {
   .tb-gallery,
   .tb-listing-grid,
