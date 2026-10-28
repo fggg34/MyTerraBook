@@ -12,6 +12,10 @@ function filled(value, fallback) {
   return typeof value === 'string' && value.trim() !== '' ? value : fallback
 }
 
+function shown(section) {
+  return section?.visible !== false
+}
+
 export default function ContactFigma() {
   const { page } = usePageContent('contact')
   const hero = page.hero || {}
@@ -54,7 +58,7 @@ export default function ContactFigma() {
 
   return (
     <div className="tb-frame">
-      <section className="tb-contact-hero">
+      {shown(hero) && <section className="tb-contact-hero">
         <Container>
           <nav className="tb-crumbs">
             <Link to="/">Home</Link>
@@ -65,9 +69,9 @@ export default function ContactFigma() {
           <h1>{filled(hero.headingBefore, 'Talk to a local. We’re here to ')}<em>{filled(hero.headingAccent, 'help')}</em>{filled(hero.headingAfter, '.')}</h1>
           <p className="lead">{filled(hero.lead, 'Questions about a booking, a vehicle or becoming a host? Our team in Reykjanesbær answers every day, Mon–Sun 08–22.')}</p>
         </Container>
-      </section>
+      </section>}
 
-      <section className="tb-contact-main">
+      {shown(page.methods) && shown(formCopy) && <section className="tb-contact-main">
         <Container className="tb-contact-grid">
           <div>
             {methods.map((method) => {
@@ -113,20 +117,21 @@ export default function ContactFigma() {
                 <label htmlFor="contact-name">{filled(formCopy.nameLabel, 'Your name')} <i>*</i></label>
                 <div className="field">
                   <StrokeIcon name="user" size={16} />
-                  <input id="contact-name" required placeholder="e.g. Anna Jónsdóttir" value={form.name} onChange={set('name')} />
+                  <input id="contact-name" required placeholder={filled(formCopy.namePlaceholder, 'e.g. Anna Jónsdóttir')} value={form.name} onChange={set('name')} />
                 </div>
               </div>
               <div>
                 <label htmlFor="contact-email">{filled(formCopy.emailLabel, 'Email')} <i>*</i></label>
                 <div className="field">
                   <StrokeIcon name="mail" size={16} />
-                  <input id="contact-email" type="email" required placeholder="you@example.com" value={form.email} onChange={set('email')} />
+                  <input id="contact-email" type="email" required placeholder={filled(formCopy.emailPlaceholder, 'you@example.com')} value={form.email} onChange={set('email')} />
                 </div>
               </div>
             </div>
             <label htmlFor="contact-topic">{filled(formCopy.topicLabel, 'Topic')}</label>
             <div className="field">
               <select id="contact-topic" value={form.topic} onChange={set('topic')}>
+                <option value="">{filled(formCopy.topicPlaceholder, 'Choose a topic')}</option>
                 {topics.map((topic) => <option key={topic}>{topic}</option>)}
               </select>
               <StrokeIcon name="chevronDown" size={14} />
@@ -140,7 +145,7 @@ export default function ContactFigma() {
             </div>
             <label htmlFor="contact-message">{filled(formCopy.messageLabel, 'Message')} <i>*</i></label>
             <div className="field area">
-              <textarea id="contact-message" required placeholder="Tell us about your trip, your booking reference or your question…" value={form.message} onChange={set('message')} />
+              <textarea id="contact-message" required placeholder={filled(formCopy.messagePlaceholder, 'Tell us about your trip, your booking reference or your question…')} value={form.message} onChange={set('message')} />
             </div>
             <div className="tb-form-foot">
               <p>{filled(formCopy.privacy, 'By sending this message you agree to our')} <Link to="/privacy">Privacy Policy</Link>.</p>
@@ -150,16 +155,20 @@ export default function ContactFigma() {
             {error && <p className="err">{error}</p>}
           </form>
         </Container>
-      </section>
+      </section>}
 
-      <section className="tb-map">
+      {shown(map) && <section className="tb-map">
         <Container>
           <div className="tb-map-wrap">
-            <iframe
-              title="MyTerraBook in Reykjanesbær"
-              src={filled(map.embed, 'https://maps.google.com/maps?q=Reykjanesb%C3%A6r%20Iceland&z=11&output=embed')}
-              loading="lazy"
-            />
+            {map.image ? (
+              <img src={map.image} alt={filled(map.imageAlt, map.title || 'Map')} loading="lazy" />
+            ) : (
+              <iframe
+                title={filled(map.title, 'MyTerraBook in Reykjanesbær')}
+                src={filled(map.embed, 'https://maps.google.com/maps?q=Reykjanesb%C3%A6r%20Iceland&z=11&output=embed')}
+                loading="lazy"
+              />
+            )}
             <div className="tb-map-card">
               <strong><span><StrokeIcon name="pin" size={17} /></span> {filled(map.title, 'MyTerraBook ehf.')}</strong>
               <p>{filled(map.address, '260 Reykjanesbær, Iceland')}</p>
@@ -167,7 +176,7 @@ export default function ContactFigma() {
             </div>
           </div>
         </Container>
-      </section>
+      </section>}
     </div>
   )
 }
