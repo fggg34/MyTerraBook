@@ -277,6 +277,109 @@
   </div>
 </aside>
 
+@php
+    $mobileScreen = \App\Support\AdminScreen::current();
+    $mobileTitle = $mobileScreen['title'] ?? null;
+    if (! is_string($mobileTitle) || $mobileTitle === '') {
+        $mobileTitle = 'Dashboard';
+    }
+    $homeUrl = $href(Dashboard::class) ?? url('/admin');
+    $bookingsUrl = $href(OrderResource::class);
+    $calendarUrl = $firstUrl($calendarUrls);
+    $catalogUrl = $firstUrl($guestHouseUrls) ?? $firstUrl($vehicleUrls);
+    $tabHome = $current(array_filter([$homeUrl]), true);
+    $tabBookings = $current(array_filter([$bookingsUrl, $href(GuestHouseBookingResource::class), $href(BookingChangeRequestResource::class)]));
+    $tabCalendar = $current($calendarUrls);
+    $tabCatalog = $current(array_merge($guestHouseUrls, $vehicleUrls, $pricingUrls));
+@endphp
+
+<header class="tb-mbar">
+    <button type="button" class="tb-mbar-btn" data-tb-more aria-label="Menu">
+        <img src="{{ $icon('icon-m-menu.svg') }}" alt="" width="22" height="22">
+    </button>
+    <h1>{{ $mobileTitle }}</h1>
+    <button type="button" class="tb-mbar-btn" data-tb-search aria-label="Search">
+        <img src="{{ $icon('icon-m-search.svg') }}" alt="" width="20" height="20">
+    </button>
+    <span class="tb-mbar-bell"><img src="{{ $icon('icon-m-bell.svg') }}" alt="" width="40" height="40"></span>
+    <span class="tb-mbar-avatar">{{ $initials }}</span>
+</header>
+
+<nav class="tb-mtabs" aria-label="Admin">
+    <a href="{{ $homeUrl }}" @class(['is-active' => $tabHome])>
+        <span><img src="{{ $icon('icon-m-home.svg') }}" alt="" width="20" height="20"></span>
+        Home
+    </a>
+    @if ($bookingsUrl)
+        <a href="{{ $bookingsUrl }}" @class(['is-active' => $tabBookings])>
+            <span>
+                <img src="{{ $icon('icon-m-bookings.svg') }}" alt="" width="20" height="20">
+                @if ($pendingReservations)
+                    <i>{{ $pendingReservations }}</i>
+                @endif
+            </span>
+            Bookings
+        </a>
+    @endif
+    @if ($calendarUrl)
+        <a href="{{ $calendarUrl }}" @class(['is-active' => $tabCalendar])>
+            <span><img src="{{ $icon('icon-m-calendar.svg') }}" alt="" width="20" height="20"></span>
+            Calendar
+        </a>
+    @endif
+    @if ($catalogUrl)
+        <a href="{{ $catalogUrl }}" @class(['is-active' => $tabCatalog])>
+            <span><img src="{{ $icon('icon-m-catalog.svg') }}" alt="" width="20" height="20"></span>
+            Catalog
+        </a>
+    @endif
+    <button type="button" data-tb-more>
+        <span><img src="{{ $icon('icon-m-more.svg') }}" alt="" width="20" height="20"></span>
+        More
+    </button>
+</nav>
+
+<div class="tb-mmore" hidden>
+    <div class="tb-mmore-sheet">
+        <header>
+            <strong>More</strong>
+            <button type="button" data-tb-more-close aria-label="Close">Close</button>
+        </header>
+        @foreach ($groups as $group)
+            @if (count($group['items']))
+                @if ($group['label'])
+                    <p>{{ $group['label'] }}</p>
+                @endif
+                @foreach ($group['items'] as $item)
+                    <a href="{{ $item['url'] }}">{{ $item['label'] }}</a>
+                @endforeach
+            @endif
+        @endforeach
+        @if ($settings)
+            <p>Settings</p>
+            <a href="{{ $settings['url'] }}">{{ $settings['label'] }}</a>
+        @endif
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('[data-tb-more]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const sheet = document.querySelector('.tb-mmore');
+            if (sheet) sheet.hidden = !sheet.hidden;
+        });
+    });
+    document.querySelector('[data-tb-more-close]')?.addEventListener('click', () => {
+        const sheet = document.querySelector('.tb-mmore');
+        if (sheet) sheet.hidden = true;
+    });
+    document.querySelector('[data-tb-search]')?.addEventListener('click', () => {
+        const input = document.querySelector('.fi-global-search-field input');
+        document.documentElement.classList.toggle('tb-mobile-search');
+        input?.focus();
+    });
+</script>
+
 
 <style>
   html.tb-redesign {
@@ -1204,12 +1307,144 @@
     html.tb-redesign .fi-page:has(.tb-form-toc) { grid-template-columns: 1fr; }
     html.tb-redesign .tb-form-toc { position: static; display: flex; flex-wrap: wrap; gap: 4px; }
   }
-  @media (max-width: 720px) {
-    .tb-rail { width: 72px; padding: 10px; }
-    .tb-rail-logo, .tb-rail-label, .tb-rail-badge, .tb-rail-user-copy, .tb-rail-group { display: none; }
+  .tb-mbar, .tb-mtabs, .tb-mmore { display: none; }
+  @media (max-width: 768px) {
+    .tb-rail { display: none !important; }
     html.tb-redesign .fi-topbar-ctn,
     html.tb-redesign .fi-layout,
     html.tb-redesign.ir-shell .fi-topbar-ctn,
-    html.tb-redesign.ir-shell .fi-layout { padding-left: 72px !important; }
+    html.tb-redesign.ir-shell .fi-layout { padding-left: 0 !important; }
+    html.tb-redesign .fi-topbar { display: none; }
+    html.tb-mobile-search .fi-topbar { display: flex; }
+    html.tb-mobile-search .fi-global-search-ctn { width: 100%; max-width: none; }
+    .tb-mbar {
+      position: sticky;
+      top: 0;
+      z-index: 35;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 56px;
+      padding: 0 12px 0 8px;
+      border-bottom: 1px solid #dbe3ec;
+      background: #fff;
+    }
+    .tb-mbar h1 {
+      flex: 1;
+      margin: 0;
+      font-family: Manrope, sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: #041e37;
+    }
+    .tb-mbar-btn {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+    }
+    .tb-mbar-bell { display: grid; width: 40px; height: 40px; place-items: center; }
+    .tb-mbar-bell img { width: 40px; height: 40px; }
+    .tb-mbar-avatar {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border-radius: 16px;
+      background: #041e37;
+      color: #fff;
+      font-family: Manrope, sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .tb-mtabs {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 40;
+      display: flex;
+      height: 84px;
+      padding: 8px 6px 26px;
+      border-top: 1px solid #dbe3ec;
+      background: #fff;
+    }
+    .tb-mtabs a, .tb-mtabs button {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+      padding-top: 4px;
+      border: 0;
+      background: transparent;
+      color: #8a99a9;
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .tb-mtabs span {
+      position: relative;
+      display: grid;
+      width: 52px;
+      height: 30px;
+      place-items: center;
+      border-radius: 15px;
+    }
+    .tb-mtabs img { width: 20px; height: 20px; }
+    .tb-mtabs i {
+      position: absolute;
+      top: -2px;
+      left: 32px;
+      display: grid;
+      width: 16px;
+      height: 16px;
+      place-items: center;
+      border-radius: 8px;
+      background: #f4a83c;
+      color: #041e37;
+      font-family: Manrope, sans-serif;
+      font-size: 10px;
+      font-style: normal;
+      font-weight: 700;
+    }
+    .tb-mtabs .is-active { color: #041e37; }
+    .tb-mtabs .is-active span { background: #e8eff7; }
+    html.tb-redesign .fi-main { padding-bottom: 96px; }
+    .tb-mmore[hidden] { display: none; }
+    .tb-mmore {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: block;
+      background: rgb(4 30 55 / 40%);
+    }
+    .tb-mmore-sheet {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      max-height: 80dvh;
+      overflow: auto;
+      padding: 16px 16px 32px;
+      border-radius: 16px 16px 0 0;
+      background: #fff;
+    }
+    .tb-mmore-sheet header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .tb-mmore-sheet header button { border: 0; background: transparent; color: #4474a4; font-weight: 600; }
+    .tb-mmore-sheet p {
+      margin: 14px 0 4px;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #738fad;
+    }
+    .tb-mmore-sheet a { display: block; padding: 10px 0; color: #0d1b2a; font-size: 15px; font-weight: 500; text-decoration: none; }
   }
 </style>
