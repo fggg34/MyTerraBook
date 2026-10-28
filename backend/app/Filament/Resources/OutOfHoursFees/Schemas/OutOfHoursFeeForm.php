@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\OutOfHoursFees\Schemas;
 
 use App\Models\Car;
+use App\Support\AdminInputs;
 use App\Models\Location;
 use App\Models\Setting;
 use Filament\Forms\Components\CheckboxList;
@@ -53,37 +54,23 @@ class OutOfHoursFeeForm
                                     ->required()
                                     ->seconds(false),
 
-                                TextInput::make('pickup_cost_cents')
-                                    ->label('Pick Up Charge')
-                                    ->prefix($currencyCode)
-                                    ->numeric()
-                                    ->minValue(0)
+                                AdminInputs::isk('pickup_cost_cents', 'Pickup charge')
                                     ->required()
-                                    ->default(0)
-                                    ->formatStateUsing(fn ($state, $record): int => (int) ($state ?? $record?->cost_cents ?? 0)),
+                                    ->default(0),
 
-                                TextInput::make('dropoff_cost_cents')
-                                    ->label('Drop Off Charge')
-                                    ->prefix($currencyCode)
-                                    ->numeric()
-                                    ->minValue(0)
+                                AdminInputs::isk('dropoff_cost_cents', 'Drop-off charge')
                                     ->required()
-                                    ->default(0)
-                                    ->formatStateUsing(fn ($state, $record): int => (int) ($state ?? $record?->cost_cents ?? 0)),
+                                    ->default(0),
 
                                 TextInput::make('cost_cents')
                                     ->hidden()
                                     ->default(0)
                                     ->dehydrated(true),
 
-                                TextInput::make('max_combined_charge_cents')
-                                    ->label('Max Charge')
-                                    ->prefix($currencyCode)
-                                    ->numeric()
-                                    ->minValue(0),
+                                AdminInputs::isk('max_combined_charge_cents', 'Maximum charge'),
 
                                 Select::make('applies_to')
-                                    ->label('Pick up/Drop Off')
+                                    ->label('Applies to')
                                     ->options([
                                         'pickup' => 'Pick up only',
                                         'dropoff' => 'Drop off only',

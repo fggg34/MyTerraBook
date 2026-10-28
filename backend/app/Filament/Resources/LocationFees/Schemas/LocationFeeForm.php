@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources\LocationFees\Schemas;
 
-use App\Models\Setting;
+use App\Support\AdminInputs;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -16,12 +15,6 @@ class LocationFeeForm
 {
     public static function configure(Schema $schema): Schema
     {
-        $currencyCode = (string) data_get(
-            Setting::getValue('shop.currency', ['code' => 'EUR']),
-            'code',
-            'EUR'
-        );
-
         return $schema
             ->components([
                 Grid::make([
@@ -60,12 +53,8 @@ class LocationFeeForm
                                     ->default(false)
                                     ->required(),
 
-                                TextInput::make('cost_cents')
-                                    ->label('Cost')
-                                    ->prefix($currencyCode)
-                                    ->required()
-                                    ->numeric()
-                                    ->minValue(0),
+                                AdminInputs::isk('cost_cents', 'Fee')
+                                    ->required(),
 
                                 Toggle::make('multiply_by_days')
                                     ->label('Daily Cost')
@@ -90,10 +79,35 @@ class LocationFeeForm
                                     ->content('Tax rates can be managed in Rental > Tax Rates.'),
 
                                 KeyValue::make('day_overrides')
-                                    ->label('Cost Overrides')
-                                    ->helperText('Override fee by rental day count, for example 3 => 1500.')
+                                    ->label('Fee overrides')
+                                    ->helperText('The key is the number of days and the value is the fee in ISK.')
                                     ->keyLabel('Rental days')
-                                    ->valueLabel('Cost')
+                                    ->valueLabel('Fee (ISK)')
+                                    ->afterStateHydrated(function (KeyValue $component, mixed $state): void {
+                                        if (! is_array($state)) {
+                                            return;
+                                        }
+                                        $component->state(collect($state)->map(function (mixed $value): mixed {
+                                            if ($value === null || $value === '') {
+                                                return $value;
+                                            }
+
+                                            return (string) intdiv((int) $value, 100);
+                                        })->all());
+                                    })
+                                    ->dehydrateStateUsing(function (mixed $state): mixed {
+                                        if (! is_array($state)) {
+                                            return $state;
+                                        }
+
+                                        return collect($state)->map(function (mixed $value): mixed {
+                                            if ($value === null || $value === '') {
+                                                return $value;
+                                            }
+
+                                            return (int) round(((float) $value) * 100);
+                                        })->all();
+                                    })
                                     ->columnSpanFull(),
 
                                 Toggle::make('is_active')

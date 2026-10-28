@@ -9,6 +9,9 @@
     $pageName = $this->getTablePaginationPageName();
     $rules = SpecialPrice::query()->whereNotNull('date_from')->whereNotNull('date_to')->orderBy('date_from')->get();
     $overlapIds = [];
+    $overlapNames = [];
+    $overlapFrom = null;
+    $overlapTo = null;
     foreach ($rules as $index => $left) {
         foreach ($rules as $inner => $right) {
             if ($inner <= $index) {
@@ -17,9 +20,19 @@
             if ($left->date_from <= $right->date_to && $right->date_from <= $left->date_to) {
                 $overlapIds[$left->id] = true;
                 $overlapIds[$right->id] = true;
+                $overlapNames[$left->name] = true;
+                $overlapNames[$right->name] = true;
+                $sharedFrom = $left->date_from->greaterThan($right->date_from) ? $left->date_from : $right->date_from;
+                $sharedTo = $left->date_to->lessThan($right->date_to) ? $left->date_to : $right->date_to;
+                $overlapFrom = $overlapFrom === null || $sharedFrom->lessThan($overlapFrom) ? $sharedFrom : $overlapFrom;
+                $overlapTo = $overlapTo === null || $sharedTo->greaterThan($overlapTo) ? $sharedTo : $overlapTo;
             }
         }
     }
+    $overlapNameList = array_keys($overlapNames);
+    $overlapQuoted = count($overlapNameList) <= 1
+        ? '“'.($overlapNameList[0] ?? '').'”'
+        : '“'.implode('”, “', array_slice($overlapNameList, 0, -1)).'” and “'.end($overlapNameList).'”';
     $spanStart = $rules->min('date_from');
     $spanEnd = $rules->max('date_to');
     $months = [];
@@ -37,14 +50,14 @@
 <div class="tb-list" x-data="{ onlyOverlaps: false }">
     @if ($overlapIds !== [])
         <div class="tb-banner">
-            <span>{{ count($overlapIds) }} {{ count($overlapIds) === 1 ? 'rule overlaps' : 'rules overlap' }} on the same dates.</span>
+            <span>{{ count($overlapIds) }} {{ count($overlapIds) === 1 ? 'rule overlaps' : 'rules overlap' }}. {{ $overlapQuoted }} {{ count($overlapNameList) === 1 ? 'shares' : 'share' }} dates between {{ $overlapFrom?->format('j M') }} and {{ $overlapTo?->format('j M Y') }}. Check which one should win.</span>
             <button type="button" x-on:click="onlyOverlaps = !onlyOverlaps" x-text="onlyOverlaps ? 'Show all' : 'Show overlaps'"></button>
         </div>
     @endif
     @if ($months !== [])
         <section class="tb-cal-card">
             <h2>Rules on the calendar</h2>
-            <div class="tb-cal-legend"><span class="is-charge"></span> Charge <span class="is-discount"></span> Discount</div>
+            <div class="tb-cal-legend"><span class="is-charge"></span> Charge (price goes up) <span class="is-discount"></span> Discount (price goes down)</div>
             <div class="tb-cal-months">
                 @foreach ($months as $month)
                     <span>{{ $month->format('M Y') }}</span>

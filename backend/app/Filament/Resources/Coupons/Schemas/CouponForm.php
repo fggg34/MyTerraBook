@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Coupons\Schemas;
 
 use App\Models\Car;
+use App\Support\AdminInputs;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -21,15 +22,16 @@ class CouponForm
                     ->extraAttributes(['id' => 'tb-coupon-code'])
                     ->schema([
                 TextInput::make('code')
+                    ->label('Code')
                     ->required(),
                 TextInput::make('type')
+                    ->label('Type')
                     ->required(),
                 TextInput::make('discount_type')
+                    ->label('Discount type')
                     ->required(),
-                TextInput::make('discount_fixed_cents')
-                    ->numeric(),
-                TextInput::make('discount_percent_bips')
-                    ->numeric(),
+                AdminInputs::isk('discount_fixed_cents', 'Discount amount'),
+                AdminInputs::percentFromBips('discount_percent_bips', 'Discount (%)'),
                 Select::make('vehicle_ids')
                     ->label('Limit to vehicles')
                     ->multiple()
@@ -41,11 +43,13 @@ class CouponForm
                 Section::make('Validity')
                     ->extraAttributes(['id' => 'tb-coupon-validity'])
                     ->schema([
-                DatePicker::make('valid_from'),
-                DatePicker::make('valid_to'),
-                TextInput::make('min_order_total_cents')
-                    ->numeric(),
+                DatePicker::make('valid_from')
+                    ->label('Valid from'),
+                DatePicker::make('valid_to')
+                    ->label('Valid to'),
+                AdminInputs::isk('min_order_total_cents', 'Minimum order total'),
                 Toggle::make('is_active')
+                    ->label('Active')
                     ->default(true)
                     ->required(),
                     ]),

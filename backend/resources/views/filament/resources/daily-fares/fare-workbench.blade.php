@@ -166,6 +166,9 @@
             @endif
         </section>
     </div>
+    @if ($tab === 'daily')
+        <button type="button" class="tb-raw-toggle" x-data x-on:click="const page = $el.closest('.ir-daily-fares-page'); if (page) { page.classList.toggle('is-raw-open'); $el.setAttribute('aria-expanded', page.classList.contains('is-raw-open') ? 'true' : 'false'); }">Raw fare rows</button>
+    @endif
 </div>
 
 @if ($fares->showUpdateFaresModal)

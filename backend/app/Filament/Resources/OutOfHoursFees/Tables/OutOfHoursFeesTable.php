@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\OutOfHoursFees\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -54,7 +55,13 @@ class OutOfHoursFeesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('applies_to')
+                    ->label('Applies to')
+                    ->options([
+                        'pickup' => 'Pickup',
+                        'dropoff' => 'Drop-off',
+                        'both' => 'Both',
+                    ]),
             ])
             ->recordActions([
                 EditAction::make(),

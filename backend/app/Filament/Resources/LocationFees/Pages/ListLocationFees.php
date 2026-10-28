@@ -14,6 +14,15 @@ class ListLocationFees extends ListRecords
 
     protected static string $resource = LocationFeeResource::class;
 
+    public function mount(): void
+    {
+        parent::mount();
+        $this->tableFilters = array_replace_recursive([
+            'pickup_location_id' => ['value' => null],
+            'dropoff_location_id' => ['value' => null],
+        ], $this->tableFilters ?? []);
+    }
+
     public function toggleActive(int $id): void
     {
         $record = LocationFee::query()->findOrFail($id);

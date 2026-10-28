@@ -13,6 +13,15 @@ class ListCoupons extends ListRecords
 
     protected static string $resource = CouponResource::class;
 
+    public function mount(): void
+    {
+        parent::mount();
+        $this->tableFilters = array_replace_recursive([
+            'type' => ['value' => null],
+            'status' => ['value' => null],
+        ], $this->tableFilters ?? []);
+    }
+
     protected function getHeaderActions(): array
     {
         return [

@@ -5,6 +5,8 @@
 
     $records = $getRecords();
     $pageName = $this->getTablePaginationPageName();
+    $appliesValue = data_get($this->tableFilters, 'applies_to.value');
+    $appliesOptions = ['pickup' => 'Pickup', 'dropoff' => 'Drop-off', 'both' => 'Both'];
     $clock = function ($value): string {
         if (blank($value)) {
             return '—';
@@ -28,7 +30,7 @@
     };
 @endphp
 
-<div class="tb-list">
+<div class="tb-list" x-data="{ openFilter: null }">
     <div class="tb-table-card" x-data="filamentTable({ areGroupsCollapsedByDefault: false, canTrackDeselectedRecords: false, currentSelectionLivewireProperty: @js($getCurrentSelectionLivewireProperty()), maxSelectableRecords: null, selectsCurrentPageOnly: true, $wire })">
         <input type="hidden" value="{{ method_exists($records, 'total') ? $records->total() : $records->count() }}" x-ref="allSelectableRecordsCount">
         <div class="tb-toolbar">
@@ -36,6 +38,18 @@
                 <img src="{{ asset('admin-redesign/icon-tb-search.svg') }}" alt="" width="16" height="16">
                 <input type="search" placeholder="Search fee…" wire:model.live.debounce.300ms="tableSearch">
             </label>
+            <div class="tb-chip-menu">
+                <button type="button" @class(['tb-chip', 'is-set' => filled($appliesValue)]) x-on:click="openFilter = openFilter === 'applies' ? null : 'applies'">
+                    <img src="{{ asset('admin-redesign/icon-tb-plus.svg') }}" alt="" width="12" height="12">
+                    {{ filled($appliesValue) ? ($appliesOptions[$appliesValue] ?? \App\Support\AdminTableBadgeColors::humanize((string) $appliesValue)) : 'Applies to' }}
+                </button>
+                <select x-cloak x-show="openFilter === 'applies'" wire:model.live="tableFilters.applies_to.value">
+                    <option value="">Any</option>
+                    @foreach ($appliesOptions as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="tb-toolbar-spacer"></div>
             <button type="button" class="tb-icon-btn" aria-label="Delete selected" x-on:click="getSelectedRecordsCount() && $wire.mountTableBulkAction('delete')">
                 <img src="{{ asset('admin-redesign/icon-tb-bulk.svg') }}" alt="" width="16" height="16">

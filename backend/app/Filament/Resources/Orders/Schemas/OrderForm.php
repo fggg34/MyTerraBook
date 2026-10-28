@@ -140,7 +140,7 @@ class OrderForm
                                         ]),
                                     ]),
                                 Section::make('Price breakdown')
-                                    ->description('Amounts in ISK. Stored the same way as today, shown without cents.')
+                                    ->description('Amounts in ISK.')
                                     ->schema([
                                         Grid::make(3)->schema([
                                             self::moneyInput('base_rental_cents', 'Rental cost'),

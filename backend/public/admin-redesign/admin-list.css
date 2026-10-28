@@ -507,6 +507,42 @@ html.tb-redesign .ir-fares-workbench .tb-seg button {
   color: #041e37;
 }
 html.tb-redesign .ir-fares-workbench .tb-seg button.is-active { background: #041e37; color: #fff; border-color: #041e37; }
+.tb-banner span { flex: 1; line-height: 1.45; }
+.tb-raw-toggle {
+  margin-top: 16px;
+  border: 0;
+  background: none;
+  color: #4474a4;
+  font-weight: 600;
+  cursor: pointer;
+}
+html.tb-redesign .ir-daily-fares-page:not(.is-raw-open) .fi-ta,
+html.tb-redesign .ir-daily-fares-page:not(.is-raw-open) .fi-ta-ctn { display: none !important; }
+.tb-fo { display: flex; flex-direction: column; gap: 12px; }
+.tb-fo-top { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 12px; align-items: start; }
+.tb-fo-card { background: #fff; border: 1px solid #e3e8ef; border-radius: 12px; padding: 16px; }
+.tb-fo-label, .tb-fo-card label, .tb-fo-calc h2 { display: block; margin: 0 0 8px; font-size: 13px; font-weight: 600; color: #041e37; }
+.tb-fo-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.tb-fo-chip, .tb-fo-add {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid #d5deea; border-radius: 999px; background: #f3f6fa;
+  padding: 6px 10px; color: #041e37; font-size: 13px;
+}
+.tb-fo-chip { cursor: pointer; }
+.tb-fo-add { position: relative; color: #4474a4; background: #fff; border-style: dashed; }
+.tb-fo-add select { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.tb-fo-dates, .tb-fo-calc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tb-fo input, .tb-fo select { width: 100%; margin-top: 4px; border: 1px solid #d5deea; border-radius: 8px; padding: 8px 10px; background: #fff; color: #041e37; }
+.tb-fo-calc button { margin-top: 12px; border: 0; border-radius: 8px; background: #041e37; color: #fff; padding: 8px 14px; font-weight: 600; cursor: pointer; }
+.tb-fo-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; color: #5c6b7a; font-size: 13px; }
+.tb-fo-total strong { color: #041e37; font-size: 18px; }
+.tb-fo-car header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+.tb-fo-pill { border-radius: 999px; background: #fff6e8; color: #8a4b00; font-size: 12px; font-weight: 600; padding: 4px 8px; }
+.tb-fo-scroll { overflow-x: auto; }
+.tb-fo table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tb-fo th, .tb-fo td { padding: 8px; text-align: center; color: #041e37; white-space: nowrap; }
+.tb-fo tbody th { text-align: left; color: #5c6b7a; font-weight: 500; }
+@media (max-width: 1100px) { .tb-fo-top { grid-template-columns: 1fr; } }
 @media (max-width: 768px) {
   .tb-lead-top { flex-direction: column; align-items: stretch; gap: 12px; }
   .tb-lead-actions { flex-wrap: wrap; margin-bottom: 0; }

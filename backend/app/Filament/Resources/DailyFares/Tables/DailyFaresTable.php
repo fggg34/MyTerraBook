@@ -25,8 +25,8 @@ class DailyFaresTable
                     ->formatStateUsing(fn ($record): string => (string) $record->from_days.'–'.(string) $record->to_days)
                     ->sortable(),
                 TextColumn::make('price_per_day_cents')
-                    ->label('Price (ISK / day)')
-                    ->formatStateUsing(fn ($state): string => number_format(((int) $state) / 100, 2, ',', '.').' ISK')
+                    ->label('Price per day')
+                    ->formatStateUsing(fn ($state): string => \App\Support\AdminMoney::fromCents((int) $state))
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

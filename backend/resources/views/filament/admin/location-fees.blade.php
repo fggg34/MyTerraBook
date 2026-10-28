@@ -4,6 +4,9 @@
 
     $records = $getRecords();
     $pageName = $this->getTablePaginationPageName();
+    $places = \App\Models\Location::query()->orderBy('name')->pluck('name', 'id');
+    $pickupValue = data_get($this->tableFilters, 'pickup_location_id.value');
+    $dropoffValue = data_get($this->tableFilters, 'dropoff_location_id.value');
     $mark = fn (bool $on): string => $on ? '✓' : '—';
     $rateLabel = function ($rate): string {
         if (! $rate) {
@@ -18,7 +21,7 @@
     };
 @endphp
 
-<div class="tb-list">
+<div class="tb-list" x-data="{ openFilter: null }">
     <div class="tb-table-card" x-data="filamentTable({ areGroupsCollapsedByDefault: false, canTrackDeselectedRecords: false, currentSelectionLivewireProperty: @js($getCurrentSelectionLivewireProperty()), maxSelectableRecords: null, selectsCurrentPageOnly: true, $wire })">
         <input type="hidden" value="{{ method_exists($records, 'total') ? $records->total() : $records->count() }}" x-ref="allSelectableRecordsCount">
         <div class="tb-toolbar">
@@ -26,6 +29,30 @@
                 <img src="{{ asset('admin-redesign/icon-tb-search.svg') }}" alt="" width="16" height="16">
                 <input type="search" placeholder="Search route…" wire:model.live.debounce.300ms="tableSearch">
             </label>
+            <div class="tb-chip-menu">
+                <button type="button" @class(['tb-chip', 'is-set' => filled($pickupValue)]) x-on:click="openFilter = openFilter === 'pickup' ? null : 'pickup'">
+                    <img src="{{ asset('admin-redesign/icon-tb-plus.svg') }}" alt="" width="12" height="12">
+                    {{ filled($pickupValue) ? ($places[$pickupValue] ?? 'Pickup') : 'Pickup' }}
+                </button>
+                <select x-cloak x-show="openFilter === 'pickup'" wire:model.live="tableFilters.pickup_location_id.value">
+                    <option value="">Any</option>
+                    @foreach ($places as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="tb-chip-menu">
+                <button type="button" @class(['tb-chip', 'is-set' => filled($dropoffValue)]) x-on:click="openFilter = openFilter === 'dropoff' ? null : 'dropoff'">
+                    <img src="{{ asset('admin-redesign/icon-tb-plus.svg') }}" alt="" width="12" height="12">
+                    {{ filled($dropoffValue) ? ($places[$dropoffValue] ?? 'Drop-off') : 'Drop-off' }}
+                </button>
+                <select x-cloak x-show="openFilter === 'dropoff'" wire:model.live="tableFilters.dropoff_location_id.value">
+                    <option value="">Any</option>
+                    @foreach ($places as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="tb-toolbar-spacer"></div>
             <button type="button" class="tb-icon-btn" aria-label="Delete selected" x-on:click="getSelectedRecordsCount() && $wire.mountTableBulkAction('delete')">
                 <img src="{{ asset('admin-redesign/icon-tb-bulk.svg') }}" alt="" width="16" height="16">

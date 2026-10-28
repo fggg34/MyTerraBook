@@ -14,6 +14,14 @@ class ListOutOfHoursFees extends ListRecords
 
     protected static string $resource = OutOfHoursFeeResource::class;
 
+    public function mount(): void
+    {
+        parent::mount();
+        $this->tableFilters = array_replace_recursive([
+            'applies_to' => ['value' => null],
+        ], $this->tableFilters ?? []);
+    }
+
     public function toggleActive(int $id): void
     {
         $record = OutOfHoursFee::query()->findOrFail($id);
