@@ -45,6 +45,13 @@
   --tb-space-10: 40px;
   --tb-space-page: 64px;
   --tb-space-page-m: 16px;
+  /* Fluid side inset. 4.444vw is 64px at a 1440px window and grows until 96px. */
+  --tb-page-pad: clamp(24px, 4.444vw, 96px);
+  /* 24px at 1440, grows with the viewport. 80px pages use --tb-page-pad-wide. */
+  --tb-page-pad-wide: clamp(32px, 5.556vw, 120px);
+  --tb-col-gap: clamp(16px, 1.667vw, 40px);
+  --tb-search-max: 1312px;
+  --tb-maxw: none;
 
   --tb-radius-btn: 14px;
   --tb-radius-card: 28px;
@@ -60,7 +67,6 @@
   --tb-header-h: 80px;
   --tb-header-h-m: 60px;
   --tb-bp: 768px;
-  --tb-maxw: 1312px;
 
   --navy: var(--tb-navy);
   --ink: var(--tb-ink-strong);
@@ -84,6 +90,7 @@
 @media (max-width: 768px) {
   :root {
     --nav-h: var(--tb-header-h-m);
+    --tb-page-pad: var(--tb-space-page-m);
     --tb-space-page: var(--tb-space-page-m);
   }
 }

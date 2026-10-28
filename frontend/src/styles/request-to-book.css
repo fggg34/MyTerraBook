@@ -11,7 +11,7 @@
   --rtb-blue-soft: var(--blue-soft);
   --rtb-line: var(--line);
   --rtb-bg: var(--bg);
-  --rtb-maxw: 1320px;
+  --rtb-maxw: none;
   --rtb-serif: var(--tb-font-display, 'Bricolage Grotesque', sans-serif);
   --rtb-sans: var(--tb-font-sans, 'Plus Jakarta Sans', sans-serif);
   font-family: var(--rtb-sans);
@@ -33,9 +33,11 @@
 }
 
 .rtb-page .rtb-wrap {
-  max-width: var(--rtb-maxw);
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
-  padding: 0 40px;
+  padding-inline: var(--tb-page-pad, 64px);
+  box-sizing: border-box;
 }
 
 .rtb-page .subbar {
@@ -1984,7 +1986,7 @@
 }
 
 .rtb-checkout-ftr {
-  --rtb-maxw: 1320px;
+  --rtb-maxw: none;
   --rtb-line: var(--line);
   --rtb-slate: var(--slate);
   --rtb-navy: var(--navy);
@@ -1995,9 +1997,10 @@
   margin-top: 30px;
 }
 .rtb-checkout-ftr .rtb-wrap {
-  max-width: var(--rtb-maxw);
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
-  padding: 0 40px;
+  padding-inline: var(--tb-page-pad, 64px);
   display: flex;
   align-items: center;
   justify-content: space-between;

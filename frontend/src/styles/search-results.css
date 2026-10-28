@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Quicksand:wght@700&display=swap');
 
 :root{
-  --maxw: var(--tb-maxw, 1312px);
+  --maxw: none;
 }
 
 /* ===================================================================
@@ -93,7 +93,7 @@ nav.main a.nav-collapsible{
   overflow:hidden;
 }
 .hsearch-inner{
-  width:100%;max-width:var(--maxw);margin:0 auto;padding:18px 40px 20px;
+  width:100%;max-width:none;margin:0 auto;padding:18px var(--tb-page-pad, 64px) 20px;
   display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:10px;
   overflow:hidden;min-height:0;
   transition:padding .36s cubic-bezier(.33,1,.68,1),gap .36s cubic-bezier(.33,1,.68,1);
@@ -192,7 +192,7 @@ nav.main a.nav-collapsible{
 /* ---------- Filter bar (chips + sort) ---------- */
 .filterbar{background:#fff;border-top:none;margin-top:6px;overflow:visible;}
 .filterbar-inner{
-  max-width:var(--maxw);margin:0 auto;padding:16px 40px;
+  max-width:none;margin:0 auto;padding:16px var(--tb-page-pad, 64px);
   display:flex;align-items:center;justify-content:space-between;gap:14px;
   flex-wrap:nowrap;
 }
@@ -736,8 +736,8 @@ body.search-results-active .filterbar{position:relative;min-width:0;overflow:vis
 body.search-results-active .search-results-page .wrap,
 body.search-results-active header.nav .wrap,
 body.search-results-active .chrome .wrap,
-body.search-results-active .ftr .wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px;}
-body.search-results-active .topbar .wrap{max-width:var(--maxw);margin:0 auto;}
+body.search-results-active .ftr .wrap{max-width:none;margin:0 auto;padding-inline:var(--tb-page-pad, 64px);}
+body.search-results-active .topbar .wrap{max-width:none;margin:0 auto;}
 @media(max-width:768px){
   body.search-results-active .search-results-page .wrap,
   body.search-results-active header.nav .wrap,
