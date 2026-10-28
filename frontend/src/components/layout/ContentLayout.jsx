@@ -14,6 +14,8 @@ const BARE_PATHS = new Set([
   '/host/login',
   '/host/register',
   '/host/forgot-password',
+  '/coming-soon',
+  '/newsletter/unsubscribe',
 ])
 
 export default function ContentLayout() {

@@ -1,9 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
 import AboutFigma from '../components/content/AboutFigma'
+import ContactFigma from '../components/content/ContactFigma'
 import ContentPageHero from '../components/content/ContentPageHero'
 import ContentProse from '../components/content/ContentProse'
-import FaqPageContent from '../components/content/FaqPageContent'
-import ContactForm from '../components/content/ContactForm'
+import FaqFigma from '../components/content/FaqFigma'
+import LegalFigma from '../components/content/LegalFigma'
 import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
 import useSitePage from '../hooks/useSitePage'
@@ -34,6 +35,18 @@ export default function SitePagePage({ forcedSlug }) {
     },
   })
 
+  if (slug === 'faq') {
+    return (<><PageHead {...seo} /><FaqFigma /></>)
+  }
+
+  if (slug === 'contact') {
+    return (<><PageHead {...seo} /><ContactFigma /></>)
+  }
+
+  if (['terms', 'privacy', 'refund-policy', 'cookies', 'cardholder-terms'].includes(slug)) {
+    return (<><PageHead {...seo} /><LegalFigma slug={slug} /></>)
+  }
+
   if (loading) {
     return <PageHead {...seo} />
   }
@@ -52,8 +65,6 @@ export default function SitePagePage({ forcedSlug }) {
     )
   }
 
-  const content = page.content || {}
-
   if (slug === 'about') {
     return (
       <>
@@ -63,62 +74,16 @@ export default function SitePagePage({ forcedSlug }) {
     )
   }
 
-  if (slug === 'faq') {
-    return (
-      <>
-        <PageHead {...seo} />
-        <FaqPageContent page={page} />
-      </>
-    )
-  }
-
   return (
     <>
       <PageHead {...seo} />
       <div className="content-page">
       <ContentPageHero title={page.title} lead={page.lead} />
-
-      {slug === 'contact' && (
-        <section className="content-body">
-          <div className="wrap content-contact-grid">
-            <div className="content-contact-cards">
-              {content.phone && (
-                <div className="content-contact-card">
-                  <strong>{content.phoneLabel || 'Phone'}</strong>
-                  <a href={`tel:${content.phone.replace(/\s/g, '')}`}>{content.phone}</a>
-                </div>
-              )}
-              {content.email && (
-                <div className="content-contact-card">
-                  <strong>{content.emailLabel || 'Email'}</strong>
-                  <a href={`mailto:${content.email}`}>{content.email}</a>
-                </div>
-              )}
-              {content.address && (
-                <div className="content-contact-card">
-                  <strong>{content.addressLabel || 'Address'}</strong>
-                  <span style={{ whiteSpace: 'pre-line' }}>{content.address}</span>
-                </div>
-              )}
-              {content.hours && (
-                <div className="content-contact-card">
-                  <strong>{content.hoursLabel || 'Hours'}</strong>
-                  <span>{content.hours}</span>
-                </div>
-              )}
-            </div>
-            {content.show_form !== false && <ContactForm labels={content.formLabels} />}
-          </div>
-        </section>
-      )}
-
-      {slug !== 'contact' && (
-        <section className="content-body">
-          <div className="wrap">
-            <ContentProse html={page.body} />
-          </div>
-        </section>
-      )}
+      <section className="content-body">
+        <div className="wrap">
+          <ContentProse html={page.body} />
+        </div>
+      </section>
       </div>
     </>
   )

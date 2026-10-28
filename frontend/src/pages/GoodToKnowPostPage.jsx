@@ -1,4 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
+import ArticleFrame from '../components/content/ArticleFrame'
+import { GUIDE_ARTICLES } from '../components/content/guidesData'
 import ContentProse from '../components/content/ContentProse'
 import PageHead from '../components/seo/PageHead'
 import useBlogPosts from '../hooks/useBlogPosts'
@@ -56,6 +58,15 @@ export default function GoodToKnowPostPage() {
     skipPageSeo: true,
     source: post || {},
   })
+
+  if (GUIDE_ARTICLES.some((article) => article.slug === slug)) {
+    return (
+      <>
+        <PageHead {...seo} title={GUIDE_ARTICLES.find((article) => article.slug === slug)?.title} />
+        <ArticleFrame slug={slug} />
+      </>
+    )
+  }
 
   if (loading) {
     return <PageHead {...seo} />

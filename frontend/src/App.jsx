@@ -52,6 +52,7 @@ import GuestHouseCheckoutPage from './pages/guest-houses/GuestHouseCheckoutPage'
 import SitePagePage from './pages/SitePagePage'
 import GoodToKnowPage from './pages/GoodToKnowPage'
 import CampsiteMapPage from './pages/CampsiteMapPage'
+import ComingSoonPage from './pages/ComingSoonPage'
 import NewsletterUnsubscribePage from './pages/NewsletterUnsubscribePage'
 import GoodToKnowPostPage from './pages/GoodToKnowPostPage'
 import { ADMIN_CALENDAR_EMBED_PATH } from './utils/routerBasename'
@@ -213,6 +214,7 @@ function AppRoutes() {
         <Route path="/good-to-know/:slug" element={<GoodToKnowPostPage />} />
         <Route path="/campsite-map" element={<CampsiteMapPage />} />
         <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribePage />} />
+        <Route path="/coming-soon" element={<ComingSoonPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/host/login" element={<LoginPage hostIntent />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
