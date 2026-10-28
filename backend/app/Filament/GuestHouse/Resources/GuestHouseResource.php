@@ -29,6 +29,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class GuestHouseResource extends Resource
@@ -63,6 +64,8 @@ class GuestHouseResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->view('filament.admin.guest-house-properties')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['host', 'amenities']))
             ->columns([
                 ImageColumn::make('thumbnail')
                     ->label('')

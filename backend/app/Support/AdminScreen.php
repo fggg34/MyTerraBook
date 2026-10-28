@@ -160,11 +160,11 @@ class AdminScreen
     private static function guestHouseLinks(): array
     {
         return array_values(array_filter([
-            self::item('Properties', GuestHouseResource::class, ['admin/guest-houses/guest-houses', 'admin/guest-houses/guest-houses/*']),
-            self::item('Amenities', GuestHouseAmenityResource::class, ['admin/guest-houses/guest-house-amenities', 'admin/guest-houses/guest-house-amenities/*']),
-            self::item('Bookings', GuestHouseBookingResource::class, ['admin/guest-houses/guest-house-bookings', 'admin/guest-houses/guest-house-bookings/*']),
-            self::item('Calendar', GuestHouseCalendarPage::class, ['admin/guest-houses/calendar', 'admin/guest-houses/calendar/*']),
-            self::item('Reviews', ListingReviewResource::class, ['admin/listing-reviews', 'admin/listing-reviews/*', 'admin/guest-houses/guest-reviews']),
+            self::counted('Properties', GuestHouseResource::class, ['admin/guest-houses/guest-houses', 'admin/guest-houses/guest-houses/*'], self::safeCount(fn (): int => \App\Models\GuestHouse::query()->count()), 'icon-tb-house.svg'),
+            self::counted('Amenities', GuestHouseAmenityResource::class, ['admin/guest-houses/guest-house-amenities', 'admin/guest-houses/guest-house-amenities/*'], self::safeCount(fn (): int => \App\Models\GuestHouseAmenity::query()->count()), 'icon-tb-check.svg'),
+            self::counted('Bookings', GuestHouseBookingResource::class, ['admin/guest-houses/guest-house-bookings', 'admin/guest-houses/guest-house-bookings/*'], self::safeCount(fn (): int => \App\Models\GuestHouseBooking::query()->count()), 'icon-tb-calendar.svg'),
+            self::counted('Calendar', GuestHouseCalendarPage::class, ['admin/guest-houses/calendar', 'admin/guest-houses/calendar/*'], null, 'icon-tb-calendar.svg'),
+            self::counted('Reviews', ListingReviewResource::class, ['admin/listing-reviews', 'admin/listing-reviews/*', 'admin/guest-houses/guest-reviews'], self::safeCount(fn (): int => \App\Models\ListingReview::query()->count()), 'icon-tb-star.svg'),
         ]));
     }
 
@@ -253,6 +253,32 @@ class AdminScreen
      * @param  list<string>  $active
      * @return array{label: string, url: string, active: bool, count: ?int, group: ?string}|null
      */
+    /**
+     * @param  list<string>  $active
+     * @return array{label: string, url: string, active: bool, count: ?int, group: ?string, icon: ?string}|null
+     */
+    private static function counted(string $label, string $class, array $active, ?int $count, ?string $icon): ?array
+    {
+        $item = self::item($label, $class, $active);
+        if ($item === null) {
+            return null;
+        }
+
+        $item['count'] = $count;
+        $item['icon'] = $icon;
+
+        return $item;
+    }
+
+    private static function safeCount(\Closure $query): ?int
+    {
+        try {
+            return $query();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     private static function item(string $label, string $class, array $active, ?string $group = null): ?array
     {
         $url = self::url($class);

@@ -381,6 +381,7 @@
 </script>
 
 
+<link rel="stylesheet" href="{{ asset('admin-redesign/admin-list.css') }}">
 <style>
   html.tb-redesign {
     --tb-navy: #041e37;
