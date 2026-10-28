@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
-import { useOutletContext, useSearchParams } from 'react-router-dom'
+import { Link, useOutletContext, useSearchParams } from 'react-router-dom'
 import '../styles/request-to-book.css'
+import '../styles/checkout-figma.css'
 import useRequestToBook from '../hooks/useRequestToBook'
 import CheckoutEmptyState from '../components/request-to-book/CheckoutEmptyState'
-import RequestToBookSubbar from '../components/request-to-book/RequestToBookSubbar'
-import RequestToBookStepper from '../components/request-to-book/RequestToBookStepper'
+import CheckoutChrome from '../components/request-to-book/CheckoutChrome'
 import BookingSummarySidebar from '../components/request-to-book/BookingSummarySidebar'
 import Step1TripTimes from '../components/request-to-book/Step1TripTimes'
 import Step2ExtrasCover from '../components/request-to-book/Step2ExtrasCover'
@@ -26,9 +26,13 @@ function CheckoutPageBody() {
   const rtb = useRequestToBook()
 
   useEffect(() => {
-    setCheckoutFooterVisible?.(rtb.loadState !== 'loading')
-    return () => setCheckoutFooterVisible?.(false)
-  }, [rtb.loadState, setCheckoutFooterVisible])
+    document.body.classList.add('tb-checkout-on')
+    setCheckoutFooterVisible?.(false)
+    return () => {
+      document.body.classList.remove('tb-checkout-on')
+      setCheckoutFooterVisible?.(false)
+    }
+  }, [setCheckoutFooterVisible])
 
   if (rtb.loadState === 'loading') {
     return <PageHead {...seo} />
@@ -74,9 +78,8 @@ function CheckoutPageBody() {
   return (
     <>
       <PageHead {...seo} />
-      <div className="rtb-page">
-      <RequestToBookSubbar backHref={backHref} />
-      <RequestToBookStepper
+      <div className="rtb-page tb-checkout">
+      <CheckoutChrome
         steps={rtb.config.stepperSteps}
         currentStep={rtb.step}
         onStepClick={rtb.goStep}
@@ -122,6 +125,15 @@ function CheckoutPageBody() {
           </div>
         </div>
       </div>
+      <footer className="tb-check-foot">
+        <Link to={backHref}>Back to listing</Link>
+        <span>·</span>
+        <span>Secure payment</span>
+        <span>·</span>
+        <Link to="/terms">Terms</Link>
+        <span>·</span>
+        <Link to="/privacy">Privacy</Link>
+      </footer>
     </div>
     </>
   )
