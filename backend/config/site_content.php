@@ -202,6 +202,47 @@ $listingSectionDescriptionFields = [
     ['key' => 'location', 'type' => 'textarea', 'label' => 'Location section', 'rows' => 2, 'columnSpanFull' => true],
 ];
 
+$listingFrameFields = [
+    ['key' => 'typeLabel', 'type' => 'text', 'label' => 'Type badge'],
+    ['key' => 'aboutTitle', 'type' => 'text', 'label' => 'About title'],
+    ['key' => 'featuresTitle', 'type' => 'text', 'label' => 'Features title'],
+    ['key' => 'includedTitle', 'type' => 'text', 'label' => 'Included title'],
+    ['key' => 'included', 'type' => 'repeater', 'label' => 'Included items', 'columnSpanFull' => true, 'fields' => [
+        ['key' => 'text', 'type' => 'text', 'label' => 'Item'],
+    ]],
+    ['key' => 'extrasTitle', 'type' => 'text', 'label' => 'Extras title'],
+    ['key' => 'extrasLead', 'type' => 'text', 'label' => 'Extras lead', 'columnSpanFull' => true],
+    ['key' => 'pickupTitle', 'type' => 'text', 'label' => 'Pick-up title'],
+    ['key' => 'knowTitle', 'type' => 'text', 'label' => 'Good to know title'],
+    ['key' => 'know', 'type' => 'repeater', 'label' => 'Good to know cards', 'columnSpanFull' => true, 'fields' => [
+        ['key' => 'icon', 'type' => 'text', 'label' => 'Icon'],
+        ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
+        ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
+    ]],
+    ['key' => 'conditionsLink', 'type' => 'text', 'label' => 'Conditions link'],
+    ['key' => 'reviewsTitle', 'type' => 'text', 'label' => 'Reviews title'],
+    ['key' => 'writeReview', 'type' => 'text', 'label' => 'Write review button'],
+    ['key' => 'emptyReviews', 'type' => 'text', 'label' => 'Empty reviews title'],
+    ['key' => 'emptyReviewsLead', 'type' => 'text', 'label' => 'Empty reviews text', 'columnSpanFull' => true],
+    ['key' => 'hostKicker', 'type' => 'text', 'label' => 'Host kicker'],
+    ['key' => 'hostButton', 'type' => 'text', 'label' => 'Host button'],
+    ['key' => 'bookCta', 'type' => 'text', 'label' => 'Book button'],
+    ['key' => 'processLink', 'type' => 'text', 'label' => 'Booking process link'],
+    ['key' => 'insuranceTitle', 'type' => 'text', 'label' => 'Insurance title'],
+    ['key' => 'stayTitle', 'type' => 'text', 'label' => 'Add stay title'],
+    ['key' => 'stayText', 'type' => 'text', 'label' => 'Add stay text'],
+    ['key' => 'similarTitle', 'type' => 'text', 'label' => 'Similar title'],
+    ['key' => 'similarButton', 'type' => 'text', 'label' => 'Similar button'],
+    ['key' => 'staysEyebrow', 'type' => 'text', 'label' => 'Stays eyebrow'],
+    ['key' => 'staysTitle', 'type' => 'text', 'label' => 'Stays title'],
+    ['key' => 'staysButton', 'type' => 'text', 'label' => 'Stays button'],
+    ['key' => 'winter', 'type' => 'textarea', 'label' => 'Winter note', 'columnSpanFull' => true],
+    ['key' => 'process', 'type' => 'repeater', 'label' => 'Booking process', 'columnSpanFull' => true, 'fields' => [
+        ['key' => 'title', 'type' => 'text', 'label' => 'Title'],
+        ['key' => 'text', 'type' => 'textarea', 'label' => 'Text', 'columnSpanFull' => true],
+    ]],
+];
+
 $listingLabelFields = [
     ['key' => 'id', 'type' => 'text', 'label' => 'Type ID'],
     ['key' => 'categoryNames', 'type' => 'tags', 'label' => 'Category names', 'columnSpanFull' => true],
@@ -1190,6 +1231,7 @@ return [
             'sort_order' => 13,
             'sections' => [
                 'labels' => ['label' => 'Labels & copy', 'isRootSection' => true, 'fields' => $listingLabelFields],
+                'frame' => ['label' => 'Listing page', 'fields' => $listingFrameFields],
                 'tabs' => ['label' => 'Detail tabs', 'fields' => [
                     ['key' => 'tabs', 'type' => 'repeater', 'label' => 'Tabs', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $listingTabFields],
                 ]],
@@ -1209,6 +1251,7 @@ return [
             'sort_order' => 14,
             'sections' => [
                 'labels' => ['label' => 'Labels & copy', 'isRootSection' => true, 'fields' => $listingLabelFields],
+                'frame' => ['label' => 'Listing page', 'fields' => $listingFrameFields],
                 'tabs' => ['label' => 'Detail tabs', 'fields' => [
                     ['key' => 'tabs', 'type' => 'repeater', 'label' => 'Tabs', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $listingTabFields],
                 ]],
@@ -1228,6 +1271,7 @@ return [
             'sort_order' => 15,
             'sections' => [
                 'labels' => ['label' => 'Labels & copy', 'isRootSection' => true, 'fields' => $listingLabelFields],
+                'frame' => ['label' => 'Listing page', 'fields' => $listingFrameFields],
                 'tabs' => ['label' => 'Detail tabs', 'fields' => [
                     ['key' => 'tabs', 'type' => 'repeater', 'label' => 'Tabs', 'isRootList' => true, 'columnSpanFull' => true, 'fields' => $listingTabFields],
                 ]],

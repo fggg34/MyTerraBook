@@ -309,4 +309,92 @@ class FigmaHomepage
             'bundleHref' => '/campervans',
         ]);
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function listingCampervan(): array
+    {
+        return [
+            'typeLabel' => 'Campervan',
+            'aboutTitle' => 'About this campervan',
+            'featuresTitle' => 'Features',
+            'includedTitle' => "What's included",
+            'included' => [
+                ['text' => 'Unlimited kilometres'],
+                ['text' => 'Basic insurance (CDW)'],
+                ['text' => '24/7 roadside assistance'],
+                ['text' => 'Bedding & kitchen kit'],
+                ['text' => 'Airport pick-up and drop-off'],
+            ],
+            'extrasTitle' => 'Optional extras',
+            'extrasLead' => 'Priced per day or one-time — added to the same booking.',
+            'pickupTitle' => 'Pick-up & drop-off',
+            'knowTitle' => 'Good to know',
+            'conditionsLink' => 'Read full rental conditions',
+            'reviewsTitle' => 'Reviews',
+            'writeReview' => 'Write a review',
+            'emptyReviews' => 'No reviews yet',
+            'emptyReviewsLead' => 'Be the first to share how your trip went.',
+            'hostKicker' => 'Meet the host',
+            'hostButton' => 'View profile',
+            'bookCta' => 'Request to book',
+            'processLink' => 'View the booking process',
+            'insuranceTitle' => 'Insurance',
+            'stayTitle' => 'Add a night in a guesthouse',
+            'stayText' => 'Same booking, one payment.',
+            'similarTitle' => 'Similar rentals',
+            'similarButton' => 'See all campervans',
+            'staysEyebrow' => 'Complete your trip',
+            'staysTitle' => 'Stays near the pick-up',
+            'staysButton' => 'See stays',
+            'winter' => 'Winter rental: F-roads closed until June. Winter tyres included.',
+            'know' => [
+                ['icon' => 'calendar', 'title' => 'Cancellation', 'text' => 'Free cancellation up to 14 days before pick-up.'],
+                ['icon' => 'shield', 'title' => 'Deposit', 'text' => 'Held on your card, released after return.'],
+                ['icon' => 'users', 'title' => 'Driver age', 'text' => 'Minimum 20 years, licence held 2+ years.'],
+            ],
+            'process' => [
+                ['title' => 'Request', 'text' => 'You send a request with dates, insurance and extras. Nothing is charged yet.'],
+                ['title' => 'Approval', 'text' => 'The host confirms the vehicle. You pay the prepayment to lock it in.'],
+                ['title' => 'Pick-up', 'text' => 'The balance is due when you collect the vehicle.'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function listingCar(): array
+    {
+        return array_replace(self::listingCampervan(), [
+            'typeLabel' => 'Car',
+            'aboutTitle' => 'About this car',
+            'similarTitle' => 'Similar cars',
+            'similarButton' => 'See all cars',
+            'winter' => 'Winter rental: winter tyres included. Gravel roads need extra care.',
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function listingGuesthouse(): array
+    {
+        return array_replace(self::listingCampervan(), [
+            'typeLabel' => 'Guesthouse',
+            'aboutTitle' => 'About this stay',
+            'featuresTitle' => 'Amenities',
+            'pickupTitle' => 'Where you’ll stay',
+            'conditionsLink' => 'Read the house rules',
+            'emptyReviewsLead' => 'Be the first to share how your stay went.',
+            'similarTitle' => 'Similar stays',
+            'similarButton' => 'See all stays',
+            'insuranceTitle' => '',
+            'stayTitle' => '',
+            'winter' => '',
+            'staysEyebrow' => '',
+            'staysTitle' => '',
+        ]);
+    }
 }

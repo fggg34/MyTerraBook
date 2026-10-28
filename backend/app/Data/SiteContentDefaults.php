@@ -43,6 +43,15 @@ class SiteContentDefaults
             if ($pageKey === 'search-guesthouse') {
                 $page['presentation'] = FigmaHomepage::searchGuesthouse();
             }
+            if ($pageKey === 'listing-campervan') {
+                $page['frame'] = FigmaHomepage::listingCampervan();
+            }
+            if ($pageKey === 'listing-car') {
+                $page['frame'] = FigmaHomepage::listingCar();
+            }
+            if ($pageKey === 'listing-guesthouse') {
+                $page['frame'] = FigmaHomepage::listingGuesthouse();
+            }
 
             return $page;
         }
