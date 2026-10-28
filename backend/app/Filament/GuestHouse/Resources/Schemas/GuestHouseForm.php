@@ -25,7 +25,7 @@ class GuestHouseForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components([
+        return $schema->columns(1)->components([
             Section::make('Photos')
                 ->extraAttributes(['id' => 'tb-gh-photos'])
                 ->description('The cover photo appears on listing cards across the homepage and search results. Gallery photos appear on the stay detail page.')

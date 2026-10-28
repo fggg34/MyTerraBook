@@ -20,6 +20,8 @@ class SubCategoriesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.sub-categories')
+            ->modifyQueryUsing(fn ($query) => $query->with('mainCategory'))
             ->columns([
                 TextColumn::make('mainCategory.name')
                     ->label('Main Category')

@@ -1080,6 +1080,7 @@
     column-gap: 28px;
     align-items: start;
   }
+  html.tb-redesign .fi-page:has(.tb-form-toc) .fi-page-header-main-ctn,
   html.tb-redesign .fi-page:has(.tb-form-toc) .fi-header { display: contents; }
   html.tb-redesign .fi-page:has(.tb-form-toc) .tb-edit-head,
   html.tb-redesign .fi-page:has(.tb-form-toc) .tb-summary { grid-column: 1 / -1; }
@@ -1100,9 +1101,11 @@
     text-decoration: none;
   }
   html.tb-redesign .tb-form-toc a:hover,
-  html.tb-redesign .tb-form-toc a:focus { background: #e8eef6; color: var(--tb-text); }
+  html.tb-redesign .tb-form-toc a:focus,
+  html.tb-redesign .tb-form-toc a.is-active { background: #e8eef6; color: var(--tb-text); }
+  html.tb-redesign .fi-page:has(.tb-form-toc) .fi-page-main,
   html.tb-redesign .fi-page:has(.tb-form-toc) .fi-page-content,
-  html.tb-redesign .fi-page:has(.tb-form-toc) .fi-form { grid-column: 2; }
+  html.tb-redesign .fi-page:has(.tb-form-toc) .fi-form { grid-column: 2; min-width: 0; }
   html.tb-redesign .tb-totals {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));

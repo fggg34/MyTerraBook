@@ -62,11 +62,20 @@ class EditGuestHouse extends EditRecord
             GuestHouseStatus::Inactive => 'Inactive',
             default => 'Draft',
         };
+        $house->loadMissing('host');
+        $meta = array_filter([
+            trim(implode(', ', array_filter([$house->city, $house->country]))),
+            filled($house->host?->name) ? 'Host '.$house->host->name : null,
+            $house->created_at
+                ? ($house->status === GuestHouseStatus::Active ? 'Published ' : 'Added ').$house->created_at->timezone(config('app.timezone'))->format('j M Y')
+                : null,
+        ]);
 
         return view('filament.panel.edit-record-header', [
             'title' => $house->name,
             'backUrl' => GuestHouseResource::getUrl('index'),
             'backLabel' => 'Guest houses',
+            'meta' => $meta === [] ? null : implode(' · ', $meta),
             'pills' => [
                 ['label' => $status, 'tone' => $house->status === GuestHouseStatus::Active ? 'ok' : 'warn'],
             ],

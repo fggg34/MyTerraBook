@@ -32,6 +32,7 @@ class CarsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.vehicles')
             ->modifyQueryUsing(fn ($query) => $query->with(['subCategory.mainCategory', 'host', 'dailyFares']))
             ->searchPlaceholder('Search vehicle or host...')
             ->emptyStateHeading('No vehicles match')

@@ -18,6 +18,8 @@ class SitePageResource extends Resource
 {
     protected static ?string $model = SitePage::class;
 
+    protected static ?string $recordTitleAttribute = 'title';
+
     protected static ?string $navigationLabel = 'Site pages';
 
     protected static ?string $modelLabel = 'site page';

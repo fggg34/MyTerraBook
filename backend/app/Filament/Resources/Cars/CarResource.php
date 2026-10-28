@@ -21,6 +21,8 @@ class CarResource extends Resource
 {
     protected static ?string $model = Car::class;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     protected static ?string $cluster = ImpactRentCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

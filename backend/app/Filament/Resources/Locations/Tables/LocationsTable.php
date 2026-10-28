@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class LocationsTable
@@ -13,6 +14,8 @@ class LocationsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.locations')
+            ->modifyQueryUsing(fn ($query) => $query->with('taxRate'))
             ->columns([
                 TextColumn::make('name')
                     ->label('Location Name')
@@ -54,7 +57,10 @@ class LocationsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('country_code')
+                    ->label('Destination')
+                    ->options(fn () => \App\Models\Location::query()->whereNotNull('country_code')->distinct()->orderBy('country_code')->pluck('country_code', 'country_code')
+                        ->map(fn ($code) => config('destinations.'.$code, $code))),
             ])
             ->recordActions([
                 EditAction::make(),

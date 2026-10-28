@@ -19,6 +19,8 @@ class BlogPostResource extends Resource
 {
     protected static ?string $model = BlogPost::class;
 
+    protected static ?string $recordTitleAttribute = 'title';
+
     protected static ?string $navigationLabel = 'Good to Know';
 
     protected static ?string $modelLabel = 'post';

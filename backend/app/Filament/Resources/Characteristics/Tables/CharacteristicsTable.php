@@ -10,6 +10,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 
@@ -18,6 +19,7 @@ class CharacteristicsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.features')
             ->columns([
                 TextColumn::make('name')
                     ->label('Characteristic Name')
@@ -52,7 +54,9 @@ class CharacteristicsTable
                     ->sortable()
             ])
             ->filters([
-                //
+                SelectFilter::make('group')
+                    ->label('Group')
+                    ->options(fn () => Characteristic::query()->whereNotNull('group')->where('group', '!=', '')->distinct()->orderBy('group')->pluck('group', 'group')),
             ])
             ->recordActions([
                 Action::make('move_up')

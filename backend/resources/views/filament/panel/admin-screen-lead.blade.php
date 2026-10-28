@@ -1,22 +1,22 @@
 @php
     $screen = \App\Support\AdminScreen::current();
-    if ($screen && request()->is('admin/global-configuration')) {
-        $screen['title'] = match (request()->query('tab', 'shop')) {
+    if ($screen && \App\Support\AdminScreen::on('admin/global-configuration')) {
+        $screen['title'] = match (\App\Support\AdminScreen::query('tab', 'shop')) {
             'prices' => 'Prices & payments',
             'views' => 'Views & layout',
             'orders' => 'Orders & company',
             'texts' => 'Conditional texts',
             default => 'Shop & rentals',
         };
-        $screen['description'] = match (request()->query('tab', 'shop')) {
+        $screen['description'] = match (\App\Support\AdminScreen::query('tab', 'shop')) {
             'prices' => 'How money is shown and charged.',
             'views' => 'How lists, maps and the public site look.',
             'orders' => 'Company details printed on bookings and invoices.',
             default => 'How booking works on the website: availability, search and system switches.',
         };
     }
-    if ($screen && request()->is('admin/site-content', 'admin/site-content/*')) {
-        $pageKey = (string) request()->query('tab', 'global');
+    if ($screen && \App\Support\AdminScreen::on('admin/site-content', 'admin/site-content/*')) {
+        $pageKey = (string) \App\Support\AdminScreen::query('tab', 'global');
         $screen['title'] = (string) (config('site_content.pages.'.$pageKey.'.label') ?: 'Site content');
         $screen['crumb'] = 'Website · Site content';
         $screen['description'] = match ($pageKey) {
@@ -29,11 +29,13 @@
     $links = $screen ? \App\Support\AdminScreen::links($screen['nav']) : [];
     $group = null;
     $aside = is_array($screen) && in_array($screen['nav'] ?? null, ['settings', 'pricing'], true);
-    $module = ($screen['nav'] ?? null) === 'guest-houses';
-    $guestHouseIndex = request()->is('admin/guest-houses/guest-houses');
+    $module = in_array($screen['nav'] ?? null, ['guest-houses', 'vehicles'], true);
+    $guestHouseIndex = \App\Support\AdminScreen::on('admin/guest-houses/guest-houses');
+    $vehicleIndex = \App\Support\AdminScreen::on('admin/impact-rent/cars');
+    $headerActions = \App\Support\AdminScreen::headerActions();
 @endphp
 @if ($screen && ($screen['crumb'] !== '' || $screen['title'] || $screen['description'] || $links !== []))
-    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex]) @if ($screen['title']) data-replace-title @endif>
+    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
         <div class="tb-lead-top">
             <div>
         @if ($screen['crumb'] !== '')
@@ -58,6 +60,44 @@
                             New guest house
                         </a>
                     @endif
+                </div>
+            @elseif ($vehicleIndex)
+                <div class="tb-lead-actions">
+                    <a class="tb-btn tb-btn-md" href="{{ \App\Filament\Pages\ListingReviewPage::getUrl() }}">
+                        <img src="{{ asset('admin-redesign/icon-tb-approval.svg') }}" alt="" width="16" height="16">
+                        Approval queue
+                    </a>
+                    <a class="tb-btn tb-btn-md" href="{{ \App\Filament\Resources\DailyFares\DailyFareResource::getUrl('index') }}">
+                        <img src="{{ asset('admin-redesign/icon-tb-pricing.svg') }}" alt="" width="16" height="16">
+                        Pricing
+                    </a>
+                    @if (\App\Filament\Resources\Cars\CarResource::canCreate())
+                        <a class="tb-btn tb-btn-md tb-btn-primary" href="{{ \App\Filament\Resources\Cars\CarResource::getUrl('create') }}">
+                            <img src="{{ asset('admin-redesign/icon-tb-plus-white.svg') }}" alt="" width="16" height="16">
+                            Add vehicle
+                        </a>
+                    @endif
+                </div>
+            @elseif ($headerActions !== [])
+                <div class="tb-lead-actions">
+                    @foreach ($headerActions as $action)
+                        @if ($action['event'] ?? null)
+                            <button type="button" @class(['tb-btn tb-btn-md', 'tb-btn-primary' => $action['primary']]) onclick="Livewire.find(document.getElementById('tb-amenity-board').dataset.wireId).mountAction('create')">
+                                <img src="{{ asset($action['primary'] ? 'admin-redesign/icon-tb-plus-white.svg' : 'admin-redesign/icon-tb-plus.svg') }}" alt="" width="16" height="16">
+                                {{ $action['label'] }}
+                            </button>
+                        @elseif ($action['wire'])
+                            <button type="button" @class(['tb-btn tb-btn-md', 'tb-btn-primary' => $action['primary']]) wire:click="{{ $action['wire'] }}">
+                                <img src="{{ asset($action['primary'] ? 'admin-redesign/icon-tb-plus-white.svg' : 'admin-redesign/icon-tb-plus.svg') }}" alt="" width="16" height="16">
+                                {{ $action['label'] }}
+                            </button>
+                        @else
+                            <a @class(['tb-btn tb-btn-md', 'tb-btn-primary' => $action['primary']]) href="{{ $action['url'] }}">
+                                <img src="{{ asset($action['icon'] ?? ($action['primary'] ? 'admin-redesign/icon-tb-plus-white.svg' : 'admin-redesign/icon-tb-plus.svg')) }}" alt="" width="16" height="16">
+                                {{ $action['label'] }}
+                            </a>
+                        @endif
+                    @endforeach
                 </div>
             @endif
         </div>
