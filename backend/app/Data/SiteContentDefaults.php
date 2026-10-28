@@ -36,6 +36,12 @@ class SiteContentDefaults
             'good-to-know' => FigmaContentPages::guides(),
             'campsite-map' => FigmaContentPages::campsite(),
             'auth-login' => FigmaContentPages::login(),
+            'auth-register' => FigmaContentPages::register(),
+            'host-panel' => FigmaContentPages::hostPanel(),
+            'client-panel' => FigmaContentPages::clientPanel(),
+            'checkout' => FigmaContentPages::checkout(),
+            'article' => FigmaContentPages::article(),
+            'coming-soon' => FigmaContentPages::comingSoon(),
             default => [],
         };
 

@@ -1076,6 +1076,61 @@ class SiteContentService
             }
         }
 
+        if ($pageKey === 'host-panel') {
+            $defaults = FigmaContentPages::hostPanel();
+            foreach (['sidebar', 'topbar', 'onboarding', 'overview', 'calendar', 'upcoming', 'vehicles', 'stays', 'bookings', 'api', 'settings'] as $section) {
+                if (empty($content[$section]) || ! is_array($content[$section])) {
+                    $content[$section] = $defaults[$section];
+                }
+            }
+            if (($content['signOutLabel'] ?? '') === '') {
+                $content['signOutLabel'] = $defaults['signOutLabel'];
+            }
+        }
+
+        if ($pageKey === 'client-panel') {
+            $defaults = FigmaContentPages::clientPanel();
+            foreach (['trips', 'stays', 'history', 'settings', 'actions'] as $section) {
+                if (empty($content[$section]) || ! is_array($content[$section])) {
+                    $content[$section] = $defaults[$section];
+                }
+            }
+            $firstNav = $content['navItems'][0]['label'] ?? '';
+            if (in_array($firstNav, ['', 'My bookings', 'Trip history'], true)) {
+                $content['navItems'] = $defaults['navItems'];
+                $content['sidebarTitle'] = $defaults['sidebarTitle'];
+            }
+        }
+
+        if ($pageKey === 'auth-register') {
+            $defaults = FigmaContentPages::register();
+            if (! isset($content['formHeadingBefore'])) {
+                foreach (['visual', 'formKicker', 'formHeadingBefore', 'formHeadingAccent', 'formHeadingAfter', 'formLead'] as $key) {
+                    $content[$key] = $defaults[$key];
+                }
+            }
+        }
+
+        if ($pageKey === 'checkout') {
+            $defaults = FigmaContentPages::checkout();
+            $labels = is_array($content['labels'] ?? null) ? $content['labels'] : [];
+            if (! isset($labels['tripSubtitle'])) {
+                $replaced = array_replace($defaults['labels'], $labels);
+                $oldTitles = [
+                    'tripTitle' => 'Your trip',
+                    'extrasTitle' => 'Extras & cover',
+                    'detailsTitle' => 'Your details',
+                    'paymentTitle' => 'Payment',
+                ];
+                foreach ($oldTitles as $key => $old) {
+                    if (($replaced[$key] ?? '') === $old) {
+                        $replaced[$key] = $defaults['labels'][$key];
+                    }
+                }
+                $content['labels'] = $replaced;
+            }
+        }
+
         return $content;
     }
 
@@ -1103,6 +1158,9 @@ class SiteContentService
                 'story.paragraphs',
                 'values.items',
                 'products.items',
+            ],
+            'faq' => [
+                'items',
             ],
             'campsite-map' => [
                 'photos',
