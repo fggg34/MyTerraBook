@@ -13,6 +13,7 @@ import './styles/product-card.css'
 import './styles/homepage.css'
 import './styles/content-pages.css'
 import './styles/site-kit.css'
+import './styles/rebuild.css'
 
 applyBootstrapDocumentMeta()
 

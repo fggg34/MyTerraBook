@@ -26,7 +26,28 @@ class SiteContentDefaults
      */
     public static function forPage(string $pageKey): array
     {
-        return self::all()[$pageKey] ?? [];
+        $page = self::all()[$pageKey] ?? [];
+        $extra = match ($pageKey) {
+            'home' => FigmaHomepage::sections(),
+            'global' => FigmaHomepage::chrome(),
+            default => [],
+        };
+
+        if ($extra === []) {
+            return $page;
+        }
+
+        $merged = array_replace_recursive($page, $extra);
+
+        if (isset($extra['header']['navLinks'])) {
+            $merged['header']['navLinks'] = $extra['header']['navLinks'];
+        }
+
+        if (isset($extra['footer']['columns'])) {
+            $merged['footer']['columns'] = $extra['footer']['columns'];
+        }
+
+        return $merged;
     }
 
     /**
