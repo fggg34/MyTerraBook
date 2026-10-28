@@ -8,6 +8,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -43,6 +44,15 @@ class BlogPostForm
                 ->image()
                 ->maxSize(8192),
             TextInput::make('image_alt')->maxLength(255),
+            TextInput::make('author_name')->label('Author name')->maxLength(255)->placeholder('Written by the MyTerraBook team'),
+            TextInput::make('author_role')->label('Author role')->maxLength(255)->placeholder('Local guides from Reykjanesbær'),
+            FileUpload::make('author_photo')
+                ->label('Author photo')
+                ->disk('public')
+                ->directory('blog/authors')
+                ->image()
+                ->maxSize(4096),
+            TagsInput::make('tags')->label('Tags')->columnSpanFull(),
             TextInput::make('read_time')->label('Read time label')->placeholder('12 min read'),
             Toggle::make('is_featured')->label('Featured on the blog page'),
             Toggle::make('aurora')->label('Aurora card style'),

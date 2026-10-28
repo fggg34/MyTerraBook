@@ -3,6 +3,7 @@ import ArticleFrame from '../components/content/ArticleFrame'
 import { GUIDE_ARTICLES } from '../components/content/guidesData'
 import ContentProse from '../components/content/ContentProse'
 import PageHead from '../components/seo/PageHead'
+import { usePageContent } from '../context/SiteContentContext'
 import useBlogPosts from '../hooks/useBlogPosts'
 import usePageSeo from '../hooks/usePageSeo'
 import '../styles/content-pages.css'
@@ -52,6 +53,9 @@ function RelatedCard({ post }) {
 
 export default function GoodToKnowPostPage() {
   const { slug } = useParams()
+  const { page: articlePage } = usePageContent('article')
+  const header = articlePage.header || {}
+  const relatedCopy = articlePage.related || {}
   const { post, loading, error } = useBlogPosts({ slug })
   const { posts: allPosts, loading: listLoading } = useBlogPosts()
   const seo = usePageSeo(null, {
@@ -101,7 +105,7 @@ export default function GoodToKnowPostPage() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
-              All articles
+              {header.backLabel || 'All articles'}
             </Link>
 
             {showCover ? (
@@ -147,10 +151,14 @@ export default function GoodToKnowPostPage() {
                 <div className="gtk-article-content">
                   <ContentProse html={post.body} />
                 </div>
+                <p className="gtk-article-author">
+                  <strong>{post.author_name || 'Written by the MyTerraBook team'}</strong>
+                  {post.author_role ? <span>{post.author_role}</span> : null}
+                </p>
 
                 <footer className="gtk-article-footer">
                   <Link to="/good-to-know" className="gtk-article-more">
-                    <span>More Iceland guides</span>
+                    <span>{relatedCopy.button || 'All guides'}</span>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M5 12h14M13 6l6 6-6 6" />
                     </svg>
@@ -160,7 +168,7 @@ export default function GoodToKnowPostPage() {
 
               {showAside && (
                 <aside className="gtk-article-aside" aria-label="More guides">
-                  <h2 className="gtk-article-aside-title">More guides</h2>
+                  <h2 className="gtk-article-aside-title">{relatedCopy.title || 'Related guides'}</h2>
                   <div className="gtk-article-related">
                     {related.map((item) => (
                       <RelatedCard key={item.slug} post={item} />
