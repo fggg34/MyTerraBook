@@ -237,6 +237,22 @@ class AdminScreen
             return [$link('New campaign', NewsletterCampaignResource::getUrl('create'), true)];
         }
 
+        if (self::on('admin/email-templates')) {
+            $actions = [[
+                'label' => 'Install default templates',
+                'url' => null,
+                'primary' => false,
+                'wire' => null,
+                'mount' => 'installDefaults',
+                'plain' => true,
+            ]];
+            if (EmailTemplateResource::canCreate()) {
+                $actions[] = $link('New email template', EmailTemplateResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
         return [];
     }
 
@@ -303,7 +319,8 @@ class AdminScreen
             ['match' => ['admin/blog-posts/*'], 'crumb' => 'Good to Know', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/newsletter-subscribers', 'admin/newsletter-campaigns'], 'crumb' => 'Marketing', 'title' => 'Newsletter', 'description' => 'People who signed up on the website, and the e-mails sent to them.', 'nav' => 'newsletter', 'settings' => false],
             ['match' => ['admin/newsletter-subscribers/*', 'admin/newsletter-campaigns/*'], 'crumb' => 'Newsletter', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
-            ['match' => ['admin/email-templates', 'admin/email-templates/*', 'admin/email-settings', 'admin/email-testing', 'admin/email-logs', 'admin/email-logs/*'], 'crumb' => 'Marketing', 'title' => 'Email', 'description' => 'Every e-mail the system sends, its sender settings and history.', 'nav' => 'email', 'settings' => false],
+            ['match' => ['admin/email-templates', 'admin/email-settings', 'admin/email-testing', 'admin/email-logs'], 'crumb' => 'Marketing', 'title' => 'Email', 'description' => 'Every e-mail the system sends, its sender settings and history.', 'nav' => 'email', 'settings' => false],
+            ['match' => ['admin/email-templates/*', 'admin/email-logs/*'], 'crumb' => 'Email', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/reports', 'admin/reports/*', 'admin/tracking-statistics', 'admin/tracking-statistics/*', 'admin/impact-rent/reports', 'admin/impact-rent/reports/*', 'admin/impact-rent/tracking-statistics', 'admin/impact-rent/tracking-statistics/*', 'admin/impact-rent/tracking-campaigns', 'admin/impact-rent/tracking-campaigns/*'], 'crumb' => 'Marketing', 'title' => 'Analytics', 'description' => 'Rental reports, website visits and campaign links.', 'nav' => 'analytics', 'settings' => false],
             ['match' => ['admin/global-configuration', 'admin/global-configuration/*'], 'crumb' => 'Settings', 'title' => null, 'description' => null, 'nav' => 'settings', 'settings' => true],
             ['match' => ['admin/payment-methods', 'admin/payment-methods/*'], 'crumb' => 'Settings', 'title' => 'Payment methods', 'description' => null, 'nav' => 'settings', 'settings' => true],

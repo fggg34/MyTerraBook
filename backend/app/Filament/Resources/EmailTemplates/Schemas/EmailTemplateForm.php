@@ -11,6 +11,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 
 class EmailTemplateForm
@@ -96,6 +97,8 @@ class EmailTemplateForm
                         ->rows(2)
                         ->columnSpanFull(),
                 ]),
+            View::make('filament.email.template-preview')
+                ->visible(fn (?EmailTemplate $record): bool => $record !== null),
         ]);
     }
 

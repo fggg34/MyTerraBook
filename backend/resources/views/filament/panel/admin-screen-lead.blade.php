@@ -70,9 +70,15 @@
         'admin/newsletter-subscribers',
         'admin/newsletter-campaigns',
     );
+    $emailList = \App\Support\AdminScreen::on(
+        'admin/email-templates',
+        'admin/email-settings',
+        'admin/email-testing',
+        'admin/email-logs',
+    );
 @endphp
 @if ($screen && ($screen['crumb'] !== '' || $screen['title'] || $screen['description'] || $links !== []))
-    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $pricingList || $peopleList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
+    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $pricingList || $peopleList || $emailList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
         <div class="tb-lead-top">
             <div>
         @if ($screen['crumb'] !== '')
@@ -121,6 +127,10 @@
                         @if ($action['event'] ?? null)
                             <button type="button" @class(['tb-btn tb-btn-md', 'tb-btn-primary' => $action['primary']]) onclick="Livewire.find(document.getElementById('tb-amenity-board').dataset.wireId).mountAction('create')">
                                 <img src="{{ asset($action['primary'] ? 'admin-redesign/icon-tb-plus-white.svg' : 'admin-redesign/icon-tb-plus.svg') }}" alt="" width="16" height="16">
+                                {{ $action['label'] }}
+                            </button>
+                        @elseif ($action['mount'] ?? null)
+                            <button type="button" @class(['tb-btn tb-btn-md', 'tb-btn-primary' => $action['primary']]) onclick="var root=this.closest('[wire\\:id]'); if(root) Livewire.find(root.getAttribute('wire:id')).mountAction(@js($action['mount']))">
                                 {{ $action['label'] }}
                             </button>
                         @elseif ($action['wire'])

@@ -43,6 +43,7 @@ class EmailLogsTable
                         'failed' => 'Failed',
                     ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->view('filament.admin.email-logs');
     }
 }

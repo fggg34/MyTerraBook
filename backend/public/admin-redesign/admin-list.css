@@ -281,6 +281,29 @@ html.tb-redesign .tb-list .tb-pill-muted { background: #eef2f6; color: #5c6b7a; 
 .tb-stat strong { font-size: 28px; color: #041e37; font-weight: 650; }
 .tb-stars { color: #c9841a; letter-spacing: 1px; }
 .tb-empty-card .tb-btn { margin-top: 8px; }
+.tb-email-toolbar { margin-bottom: 12px; }
+.tb-email-group { background: #fff; border: 1px solid #e3e8ef; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+.tb-email-group header { display: flex; gap: 8px; align-items: baseline; padding: 14px 16px; }
+.tb-email-group header strong { color: #041e37; }
+.tb-email-group header span { color: #5c6b7a; font-size: 13px; }
+.tb-email-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 110px 52px 36px; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid #eef2f6; }
+.tb-email-mark { width: 28px; height: 28px; border-radius: 8px; background: #eef4fa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234474A4' stroke-width='1.8'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Cpath d='M3 7l9 7 9-7'/%3E%3C/svg%3E") center / 16px no-repeat; }
+.tb-email-copy strong { display: block; color: #041e37; }
+.tb-email-copy p { margin: 2px 0 0; color: #5c6b7a; font-size: 13px; }
+.tb-test { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.tb-test-card, .tb-mail-preview { background: #fff; border: 1px solid #e3e8ef; border-radius: 12px; }
+.tb-test-card { padding: 16px; }
+.tb-test-card h2 { margin: 0 0 4px; font-size: 16px; color: #041e37; }
+.tb-test-card p, .tb-hint { color: #5c6b7a; font-size: 13px; }
+.tb-test-card label { display: block; margin: 12px 0 6px; font-size: 13px; font-weight: 600; color: #041e37; }
+.tb-test-card input, .tb-test-card select { width: 100%; border: 1px solid #d5dee8; border-radius: 8px; padding: 8px 10px; background: #fff; }
+.tb-test-actions { display: flex; gap: 8px; margin-top: 16px; }
+.tb-mail-preview header { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; color: #5c6b7a; font-size: 13px; }
+.tb-mail-preview header strong { color: #041e37; }
+.tb-mail-preview iframe { width: 100%; height: 520px; border: 0; border-top: 1px solid #eef2f6; background: #fff; }
+.tb-input-warn { border-color: #d92d20 !important; }
+.fi-fo-field-wrp:has(.tb-input-warn) .fi-fo-field-wrp-helper-text { color: #b42318; }
+html.tb-redesign .fi-page:has(.tb-catalog-list) .fi-sc-actions { position: sticky; bottom: 0; top: auto; height: auto; background: #fff; border-top: 1px solid #e3e8ef; z-index: 5; }
 .tb-muted { color: var(--tb-secondary); font-size: 14px; line-height: 20px; }
 .tb-actions { display: flex; gap: 10px; justify-content: flex-end; }
 .tb-row-btn {
