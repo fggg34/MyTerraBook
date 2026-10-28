@@ -33,9 +33,16 @@
     $guestHouseIndex = \App\Support\AdminScreen::on('admin/guest-houses/guest-houses');
     $vehicleIndex = \App\Support\AdminScreen::on('admin/impact-rent/cars');
     $headerActions = \App\Support\AdminScreen::headerActions();
+    $bookingList = \App\Support\AdminScreen::on(
+        'admin/impact-rent/orders',
+        'admin/guest-houses/guest-house-bookings',
+        'admin/booking-change-requests',
+        'admin/impact-rent/orders-calendar',
+        'admin/orders-calendar',
+    );
 @endphp
 @if ($screen && ($screen['crumb'] !== '' || $screen['title'] || $screen['description'] || $links !== []))
-    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
+    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
         <div class="tb-lead-top">
             <div>
         @if ($screen['crumb'] !== '')

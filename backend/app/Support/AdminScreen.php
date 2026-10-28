@@ -7,6 +7,7 @@ use App\Filament\GuestHouse\Resources\GuestHouseAmenityResource;
 use App\Filament\GuestHouse\Resources\GuestHouseBookingResource;
 use App\Filament\GuestHouse\Resources\GuestHouseResource;
 use App\Filament\Pages\EmailSettings;
+use App\Filament\Pages\OrdersCalendar;
 use App\Filament\Pages\EmailTesting;
 use App\Filament\Pages\FaresOverview;
 use App\Filament\Pages\GlobalConfiguration;
@@ -135,6 +136,23 @@ class AdminScreen
 
         if (self::on('admin/impact-rent/rental-conditions') && RentalConditionResource::canCreate()) {
             return [$link('New rental condition', RentalConditionResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/orders')) {
+            $actions = [$link('Calendar view', OrdersCalendar::getUrl(), false, 'admin-redesign/icon-tb-calendar.svg')];
+            if (OrderResource::canCreate()) {
+                $actions[] = $link('New booking', OrderResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
+        if (self::on('admin/guest-houses/guest-house-bookings')) {
+            return [$link('Calendar view', OrdersCalendar::getUrl().'?catalog=stays', false, 'admin-redesign/icon-tb-calendar.svg')];
+        }
+
+        if (self::on('admin/impact-rent/orders-calendar', 'admin/orders-calendar') && OrderResource::canCreate()) {
+            return [$link('New booking', OrderResource::getUrl('create'), true)];
         }
 
         if (self::on('admin/guest-houses/guest-house-amenities') && GuestHouseAmenityResource::canCreate()) {

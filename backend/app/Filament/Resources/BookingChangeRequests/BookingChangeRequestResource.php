@@ -5,6 +5,8 @@ namespace App\Filament\Resources\BookingChangeRequests;
 use App\Filament\Resources\BookingChangeRequests\Pages\ListBookingChangeRequests;
 use App\Filament\Resources\BookingChangeRequests\Pages\ViewBookingChangeRequest;
 use App\Models\BookingChangeRequest;
+use App\Models\GuestHouseBooking;
+use App\Models\Order;
 use App\Services\BookingChangeRequestService;
 use App\Support\Money;
 use BackedEnum;
@@ -19,6 +21,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class BookingChangeRequestResource extends Resource
@@ -63,6 +66,20 @@ class BookingChangeRequestResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->view('filament.admin.change-requests')
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['bookable', 'user']))
+            ->searchable([
+                function (Builder $query, string $search): void {
+                    $like = '%'.$search.'%';
+                    $query->where('customer_message', 'like', $like)
+                        ->orWhereHas('user', fn (Builder $user) => $user->where('name', 'like', $like)->orWhere('email', 'like', $like));
+                    if (ctype_digit($search)) {
+                        $query->orWhere('id', (int) $search)->orWhere('bookable_id', (int) $search);
+                    }
+                    $query->orWhereHasMorph('bookable', [Order::class], fn (Builder $order) => $order->where('reference', 'like', $like)->orWhere('customer_name', 'like', $like))
+                        ->orWhereHasMorph('bookable', [GuestHouseBooking::class], fn (Builder $stay) => $stay->where('booking_reference', 'like', $like)->orWhere('guest_name', 'like', $like));
+                },
+            ])
             ->columns([
                 TextColumn::make('id')->sortable(),
                 TextColumn::make('type')->badge(),

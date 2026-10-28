@@ -3,6 +3,7 @@
 namespace App\Filament\GuestHouse\Pages;
 
 use App\Filament\Clusters\GuestHouseCluster;
+use App\Filament\Pages\OrdersCalendar;
 use App\Support\AdminCalendarEmbed;
 use App\Support\AdminCalendarEmbedAssets;
 use BackedEnum;
@@ -37,10 +38,7 @@ class GuestHouseCalendarPage extends Page
 
     public function mount(): void
     {
-        $user = auth()->user();
-        $this->handoffToken = AdminCalendarEmbed::createHandoffToken($user);
-        [$this->embedJsUrl, $this->embedCssUrl] = AdminCalendarEmbedAssets::resolve();
-        $this->calendarEmbedUrl = AdminCalendarEmbed::embedUrlFor($user, $this->handoffToken);
+        $this->redirect(OrdersCalendar::getUrl().'?catalog=stays');
     }
 
     public function getHeading(): string|Htmlable

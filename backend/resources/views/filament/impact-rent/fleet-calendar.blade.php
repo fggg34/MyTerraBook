@@ -215,7 +215,6 @@
                     <button type="button" class="{{ $this->span === 'week' ? 'is-on' : '' }}" wire:click="setSpan('week')">Week</button>
                     <button type="button" class="{{ $this->span === 'day' ? 'is-on' : '' }}" wire:click="setSpan('day')">Day</button>
                 </div>
-                <a class="ir-fleet-create" href="{{ $this->createBookingUrl() }}">New booking</a>
             </div>
         </div>
 
