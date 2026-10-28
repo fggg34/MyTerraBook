@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePageContent } from '../context/SiteContentContext'
 import './UnderConstructionPage.css'
+import '../styles/content-figma.css'
 
 function CarSilhouetteIcon() {
   return (

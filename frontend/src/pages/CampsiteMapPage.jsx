@@ -4,6 +4,7 @@ import PageHead from '../components/seo/PageHead'
 import { usePageContent } from '../context/SiteContentContext'
 import usePageSeo from '../hooks/usePageSeo'
 import '../styles/content-pages.css'
+import '../styles/content-figma.css'
 
 const PAGE_FALLBACK = {
   header: {

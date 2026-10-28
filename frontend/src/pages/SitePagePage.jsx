@@ -8,6 +8,7 @@ import PageHead from '../components/seo/PageHead'
 import usePageSeo from '../hooks/usePageSeo'
 import useSitePage from '../hooks/useSitePage'
 import '../styles/content-pages.css'
+import '../styles/content-figma.css'
 
 const SLUG_ALIASES = {
   about: 'about',

@@ -1,0 +1,44 @@
+.content-page {
+  background: #f6f2ec;
+  color: #041e37;
+}
+
+.content-page .content-hero,
+.content-page .wrap,
+.content-page .content-wrap {
+  width: min(1400px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.content-hero {
+  background: #f6f2ec;
+  color: #041e37;
+  padding: 56px 0 12px;
+}
+
+.content-hero h1,
+.content-page h1 {
+  font-family: "Bricolage Grotesque", sans-serif;
+  letter-spacing: -0.03em;
+  color: #041e37;
+}
+
+.content-page a {
+  color: #041e37;
+}
+
+.content-page .btn,
+.content-page button[type="submit"] {
+  background: #f4a83c;
+  color: #041e37;
+  border: 0;
+  border-radius: 14px;
+  font-weight: 800;
+}
+
+.auth-page,
+.uc-page {
+  background: #f6f2ec;
+  color: #041e37;
+}

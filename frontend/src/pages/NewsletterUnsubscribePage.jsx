@@ -6,6 +6,7 @@ import PageHead from '../components/seo/PageHead'
 import { usePageContent } from '../context/SiteContentContext'
 import usePageSeo from '../hooks/usePageSeo'
 import '../styles/auth-pages.css'
+import '../styles/content-figma.css'
 
 export default function NewsletterUnsubscribePage() {
   const { page: copy } = usePageContent('newsletter-unsubscribe')
