@@ -18,6 +18,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\GridDirection;
@@ -77,19 +78,23 @@ class CarForm
                 ->description('What this car is, and where it lives in the fleet.')
                 ->schema(self::identityFields())
                 ->columns(self::pairedColumns())
+                ->extraAttributes(['id' => 'tb-identity'])
                 ->columnSpanFull(),
             Section::make('Specs')
                 ->description('How the car drives and what it can carry.')
                 ->schema(self::specsFields())
                 ->columns(self::pairedColumns())
+                ->extraAttributes(['id' => 'tb-specs'])
                 ->columnSpanFull(),
             Section::make('Features')
                 ->description('Comfort and equipment tags for this model.')
                 ->schema(self::featuresFields())
+                ->extraAttributes(['id' => 'tb-features'])
                 ->columnSpanFull(),
             Section::make('Photos')
                 ->description('Set a listing cover, then gallery photos.')
                 ->schema(self::photosFields())
+                ->extraAttributes(['id' => 'tb-photos'])
                 ->columnSpanFull(),
             Section::make('Description')
                 ->description('Guest-facing copy for this model. Shown on the public listing.')
@@ -98,16 +103,19 @@ class CarForm
                         ->label('Description')
                         ->columnSpanFull(),
                 ])
+                ->extraAttributes(['id' => 'tb-description'])
                 ->columnSpanFull(),
             Section::make('SEO')
                 ->description('Search and social sharing for the public vehicle page.')
                 ->schema(self::seoFields())
                 ->columns(1)
+                ->extraAttributes(['id' => 'tb-seo'])
                 ->columnSpanFull(),
-            Section::make('Notes and extras')
+            Section::make('Notes & extras')
                 ->description('Internal only. Not shown to guests.')
                 ->schema(self::notesFields())
                 ->columns(self::pairedColumns())
+                ->extraAttributes(['id' => 'tb-notes'])
                 ->columnSpanFull(),
         ];
     }
@@ -463,6 +471,9 @@ class CarForm
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'])
                 ->dehydrated(false)
                 ->columnSpanFull(),
+            View::make('filament.resources.cars.components.delete-vehicle')
+                ->columnSpanFull()
+                ->visible(fn ($livewire): bool => is_object($livewire) && method_exists($livewire, 'getRecord') && filled($livewire->getRecord()?->getKey())),
         ];
     }
 }

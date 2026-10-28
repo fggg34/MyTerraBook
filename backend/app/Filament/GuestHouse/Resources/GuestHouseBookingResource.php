@@ -73,15 +73,24 @@ class GuestHouseBookingResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('booking_reference')->searchable(),
-                TextColumn::make('guest_name')->searchable(),
-                TextColumn::make('guestHouse.name')->label('Property'),
-                TextColumn::make('check_in')->date(),
-                TextColumn::make('check_out')->date(),
-                TextColumn::make('nights'),
+                TextColumn::make('booking_reference')->label('Reference')->searchable(),
+                TextColumn::make('guest_name')->label('Guest')->searchable(),
+                TextColumn::make('guestHouse.name')
+                    ->label('Property')
+                    ->placeholder('No property linked')
+                    ->description(fn (GuestHouseBooking $record): ?string => $record->guestHouse?->city),
+                TextColumn::make('check_in')
+                    ->label('Stay')
+                    ->formatStateUsing(function ($state, GuestHouseBooking $record): string {
+                        $from = $record->check_in?->format('j M Y');
+                        $to = $record->check_out?->format('j M Y');
+
+                        return trim($from.' → '.$to);
+                    })
+                    ->description(fn (GuestHouseBooking $record): string => ((int) $record->nights).' nights'),
                 TextColumn::make('total_amount')
                     ->label('Total')
-                    ->formatStateUsing(fn ($state) => '€ '.Money::formatDecimalFromCents((int) $state)),
+                    ->formatStateUsing(fn ($state) => $state ? '€ '.Money::formatDecimalFromCents((int) $state) : '-'),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (mixed $state): string => AdminTableBadgeColors::guestHouseBookingStatus($state))
@@ -105,12 +114,14 @@ class GuestHouseBookingResource extends Resource
             ])
             ->recordActions([
                 Action::make('confirm')
+                    ->label('Confirm')
                     ->visible(fn (GuestHouseBooking $record) => $record->status === GuestHouseBookingStatus::Pending)
                     ->action(fn (GuestHouseBooking $record) => $record->update([
                         'status' => GuestHouseBookingStatus::Confirmed,
                         'confirmed_at' => now(),
                     ])),
                 Action::make('cancel')
+                    ->label('Cancel')
                     ->visible(fn (GuestHouseBooking $record) => in_array($record->status, [
                         GuestHouseBookingStatus::Pending,
                         GuestHouseBookingStatus::Confirmed,

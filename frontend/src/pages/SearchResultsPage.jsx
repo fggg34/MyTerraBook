@@ -11,6 +11,7 @@ import useSearchResultsPage from '../hooks/useSearchResultsPage'
 import useGuesthouseSearchPage from '../hooks/useGuesthouseSearchPage'
 import useSearchResultsEffects from '../hooks/useSearchResultsEffects'
 import useSearchResultsIntroEffects from '../hooks/useSearchResultsIntroEffects'
+import { useFormatPrice } from '../hooks/useFormatPrice'
 import { PAGE_SIZE } from '../data/searchResultsConfig'
 import '../styles/search-results.css'
 
@@ -94,9 +95,20 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
   const locationWord = locationShort
   const unitPlural = config.unitPlural || 'results'
 
+  const fmt = useFormatPrice()
   const internationalSearch = !isGuesthouse && query.country_code !== 'IS'
   const titleLead = internationalSearch ? (vehicleType === 'car' ? 'Cars for your next journey' : 'Campervans for your next adventure') : config.titleLead
   const subtitle = internationalSearch ? 'Compare vehicles and rental partners for your chosen destination. Check each listing for included equipment, insurance and rental conditions.' : config.subtitle
+  const perUnit = isGuesthouse ? 'night' : 'day'
+  const priceSpan =
+    !loading && !error && totalCount > 0 && priceBounds?.max > 0
+      ? ` · from ${fmt.format(priceBounds.min)} to ${fmt.format(priceBounds.max)} per ${perUnit}`
+      : ''
+  const resultsLine = loading
+    ? `Finding ${unitPlural} near ${locationWord}…`
+    : error
+      ? `Couldn't load ${unitPlural} right now.`
+      : `${totalCount} ready near ${locationWord}${priceSpan}`
 
   const seo = usePageSeo(searchPageKey, {
     source: {
@@ -153,34 +165,26 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
                   <path d="m9 6 6 6-6 6" />
                 </svg>
                 <span>{config.breadcrumb}</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m9 6 6 6-6 6" />
+                </svg>
+                <span>{locationWord}</span>
               </nav>
               <div className="results-intro-row">
                 <div>
                   <h1 className="reveal-title" data-reveal-now="1">
                     {titleLead}
-                    <br />
-                    {/* Never print a count before the results are in: on a slow
-                        connection "0 ready" reads as an empty fleet. */}
-                    {loading ? (
-                      <span className="ri-status">Finding {unitPlural} near {locationWord}…</span>
-                    ) : error ? (
-                      <span className="ri-status">{`Couldn't load ${unitPlural} right now.`}</span>
-                    ) : (
-                      <>
-                        <span className="ri-count" id="introCount">
-                          {totalCount}
-                        </span>{' '}
-                        ready near {locationWord}.
-                      </>
-                    )}
                   </h1>
-                  <p className="ri-sub reveal-desc" data-reveal-now="1">
-                    {subtitle}
+                  <p className="ri-sub reveal-desc" id="introCount" data-reveal-now="1">
+                    {resultsLine}
                   </p>
+                  {subtitle ? <p className="ri-note">{subtitle}</p> : null}
                 </div>
               </div>
             </section>
           </div>
+
+          <div id="searchFiltersSlot" />
 
           <div className="wrap">
             <section className="results-wrap">

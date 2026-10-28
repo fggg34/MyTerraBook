@@ -1,4 +1,4 @@
-import { Car, Calendar, Home, LayoutDashboard, LogOut, Plug, Settings } from 'lucide-react'
+import { Car, Calendar, Home, LayoutDashboard, LogOut, MoreHorizontal, Plug, Settings } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { usePageContent } from '../../context/SiteContentContext'
@@ -94,6 +94,22 @@ export default function HostLayout() {
           <Outlet />
         </main>
       </div>
+      <nav className="host-tabbar" aria-label="Host">
+        {['/host', '/host/cars', '/host/bookings'].map((to) => {
+          const item = navItems.find((entry) => entry.to === to)
+          if (!item) return null
+          return (
+            <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? 'active' : '')}>
+              <item.icon size={18} />
+              <span>{item.label}</span>
+            </NavLink>
+          )
+        })}
+        <NavLink to="/host/settings" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <MoreHorizontal size={18} />
+          <span>More</span>
+        </NavLink>
+      </nav>
     </div>
     </>
   )

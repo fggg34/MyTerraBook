@@ -6,6 +6,7 @@ use App\Filament\Widgets\DashboardHomeWidget;
 use App\Filament\Widgets\WelcomeHeaderWidget;
 use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard as BaseDashboard;
+use Filament\Support\Enums\Width;
 use Illuminate\Contracts\Support\Htmlable;
 
 class Dashboard extends BaseDashboard
@@ -13,6 +14,8 @@ class Dashboard extends BaseDashboard
     protected static ?string $navigationLabel = 'Home';
 
     protected static ?string $title = 'Dashboard';
+
+    protected Width|string|null $maxContentWidth = Width::Full;
 
     public static function canAccess(): bool
     {

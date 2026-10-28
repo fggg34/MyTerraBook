@@ -10,7 +10,8 @@
   }
 
   body {
-    @apply bg-slate-50 text-brand-900 antialiased;
+    @apply bg-[var(--tb-cream,#f6f2ec)] text-brand-900 antialiased;
+    font-family: var(--tb-font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
     overflow-x: clip;
     max-width: 100%;
   }

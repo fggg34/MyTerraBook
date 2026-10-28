@@ -6,6 +6,7 @@ use App\Enums\DriveType;
 use App\Enums\ListingApprovalStatus;
 use App\Filament\Pages\ListingReviewPage;
 use App\Filament\Resources\Cars\CarResource;
+use App\Filament\Resources\Cars\Pages\ListCars;
 use App\Models\Car;
 use App\Services\CarDuplicationService;
 use App\Support\AdminTableBadgeColors;
@@ -21,6 +22,7 @@ use Filament\Support\Facades\FilamentView;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -30,16 +32,28 @@ class CarsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['subCategory.mainCategory', 'host']))
-            ->searchPlaceholder('Search vehicles or hosts')
+            ->modifyQueryUsing(fn ($query) => $query->with(['subCategory.mainCategory', 'host', 'dailyFares']))
+            ->searchPlaceholder('Search vehicle or host...')
             ->emptyStateHeading('No vehicles match')
             ->emptyStateDescription('Try clearing filters or add a vehicle.')
+            ->contentGrid(function () use ($table): ?array {
+                $livewire = $table->getLivewire();
+
+                return $livewire instanceof ListCars && $livewire->viewMode === 'grid'
+                    ? ['md' => 2, 'xl' => 4]
+                    : null;
+            })
             ->recordUrl(fn (Car $record): string => CarResource::getUrl('edit', ['record' => $record]))
             ->columns([
+                ViewColumn::make('card')
+                    ->label('')
+                    ->view('filament.cars.vehicle-card')
+                    ->visible(fn ($livewire): bool => $livewire instanceof ListCars && $livewire->viewMode === 'grid'),
                 ImageColumn::make('main_image_path')
                     ->label('Photo')
                     ->imageSize(40)
-                    ->square(),
+                    ->square()
+                    ->hidden(fn ($livewire): bool => $livewire instanceof ListCars && $livewire->viewMode === 'grid'),
                 TextColumn::make('name')
                     ->label('Vehicle')
                     ->weight('semibold')
@@ -54,11 +68,13 @@ class CarsTable
                     })
                     ->wrap()
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->hidden(fn ($livewire): bool => $livewire instanceof ListCars && $livewire->viewMode === 'grid'),
                 TextColumn::make('subCategory.name')
                     ->label('Category')
                     ->description(fn ($record) => $record->subCategory?->mainCategory?->name)
-                    ->placeholder('-'),
+                    ->placeholder('-')
+                    ->hidden(fn ($livewire): bool => $livewire instanceof ListCars && $livewire->viewMode === 'grid'),
                 TextColumn::make('drive_type')
                     ->label('Drivetrain')
                     ->formatStateUsing(function (mixed $state): string {
@@ -71,17 +87,20 @@ class CarsTable
 
                         return '-';
                     })
-                    ->placeholder('-'),
+                    ->placeholder('-')
+                    ->hidden(fn ($livewire): bool => $livewire instanceof ListCars && $livewire->viewMode === 'grid'),
                 TextColumn::make('is_active')
                     ->label('Status')
                     ->badge()
                     ->formatStateUsing(fn (mixed $state): string => $state ? 'Active' : 'Inactive')
-                    ->color(fn (mixed $state): string => $state ? 'success' : 'gray'),
+                    ->color(fn (mixed $state): string => $state ? 'success' : 'gray')
+                    ->hidden(fn ($livewire): bool => $livewire instanceof ListCars && $livewire->viewMode === 'grid'),
                 TextColumn::make('listing_status')
                     ->label('Review status')
                     ->badge()
                     ->color(fn (mixed $state): string => AdminTableBadgeColors::listingApprovalStatus($state))
-                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
+                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state))
+                    ->hidden(fn ($livewire): bool => $livewire instanceof ListCars && $livewire->viewMode === 'grid'),
                 TextColumn::make('subCategory.mainCategory.name')
                     ->label('Main Category')
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -101,7 +120,7 @@ class CarsTable
                     ->label('iCal import URL')
                     ->limit(35)
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('host.name')->label('Host / partner')->placeholder('Platform fleet')->searchable()->wrap()->toggleable(),
+                TextColumn::make('host.name')->label('Host / partner')->placeholder('Platform fleet')->searchable()->wrap()->toggleable()->hidden(fn ($livewire): bool => $livewire instanceof ListCars && $livewire->viewMode === 'grid'),
                 TextColumn::make('submitted_at')->label('Submitted')->dateTime()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()

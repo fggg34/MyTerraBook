@@ -12,8 +12,8 @@
   --rtb-line: var(--line);
   --rtb-bg: var(--bg);
   --rtb-maxw: 1320px;
-  --rtb-serif: 'Quicksand', sans-serif;
-  --rtb-sans: 'Open Sans', sans-serif;
+  --rtb-serif: var(--tb-font-display, 'Bricolage Grotesque', sans-serif);
+  --rtb-sans: var(--tb-font-sans, 'Plus Jakarta Sans', sans-serif);
   font-family: var(--rtb-sans);
   color: var(--rtb-ink);
   background: var(--rtb-bg);
@@ -1109,13 +1109,13 @@
 .rtb-page .btn-next {
   border: none;
   cursor: pointer;
-  background: var(--rtb-red);
+  background: var(--navy);
   color: #fff;
   font-weight: 700;
-  font-size: 16.5px;
-  border-radius: 13px;
-  padding: 15px 38px;
-  box-shadow: 0 14px 30px -16px rgba(226, 55, 68, 0.8);
+  font-size: 16px;
+  border-radius: 14px;
+  padding: 15px 28px;
+  box-shadow: none;
 }
 .rtb-page .btn-next:disabled {
   opacity: 0.6;

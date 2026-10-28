@@ -5,23 +5,24 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f0f4f8',
-          100: '#d9e2ec',
-          200: '#bcccdc',
-          300: '#9fb3c8',
-          700: '#334e68',
-          800: '#243b53',
-          900: '#102a43',
-          950: '#0a1929',
+          50: '#e8eff7',
+          100: '#e8eff7',
+          200: '#e0e5ed',
+          300: '#94a1b0',
+          700: '#4474a4',
+          800: '#17334f',
+          900: '#041e37',
+          950: '#041e37',
         },
         accent: {
-          DEFAULT: 'var(--accent, #ea580c)',
-          hover: '#c2410c',
-          light: '#ffedd5',
+          DEFAULT: '#f4a83c',
+          hover: '#e89a2e',
+          light: '#f6f2ec',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Bricolage Grotesque', 'Plus Jakarta Sans', 'sans-serif'],
       },
       boxShadow: {
         card: '0 4px 6px -1px rgb(16 42 67 / 0.08), 0 2px 4px -2px rgb(16 42 67 / 0.06)',

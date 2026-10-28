@@ -18,7 +18,7 @@ function buildImages(car, listingType) {
   const detailPaths = (car.details_image_paths || []).filter(Boolean)
   const urls = detailPaths.map((p) => resolveStorageUrl(p)).filter(Boolean)
   const fallbacks = FALLBACK_IMAGES[listingType] || FALLBACK_IMAGES.car
-  const merged = urls.length > 0 ? urls.slice(0, 5) : [...fallbacks].slice(0, 5)
+  const merged = urls.length > 0 ? urls : [...fallbacks]
 
   return merged.map((url, i) => ({
     url,

@@ -20,25 +20,30 @@ class ListGuestHouses extends ListRecords
         $pendingCount = GuestHouse::query()->where('status', GuestHouseStatus::PendingReview)->count();
 
         return [
+            'all' => Tab::make('All')
+                ->badge(GuestHouse::query()->count() ?: null),
+            'active' => Tab::make('Active')
+                ->badge(GuestHouse::query()->where('status', GuestHouseStatus::Active)->count() ?: null)
+                ->modifyQueryUsing(fn ($query) => $query->where('status', GuestHouseStatus::Active)),
             'pending_review' => Tab::make('Pending review')
                 ->badge($pendingCount ?: null)
                 ->modifyQueryUsing(fn ($query) => $query->where('status', GuestHouseStatus::PendingReview)),
-            'all' => Tab::make('All'),
+            'inactive' => Tab::make('Inactive')
+                ->badge(GuestHouse::query()->where('status', GuestHouseStatus::Inactive)->count() ?: null)
+                ->modifyQueryUsing(fn ($query) => $query->where('status', GuestHouseStatus::Inactive)),
         ];
     }
 
     public function getDefaultActiveTab(): string|int|null
     {
-        return GuestHouse::query()->where('status', GuestHouseStatus::PendingReview)->exists()
-            ? 'pending_review'
-            : 'all';
+        return 'all';
     }
 
     protected function getHeaderActions(): array
     {
         return [
             ListingReviewPage::makeApprovalQueueHeaderAction(),
-            CreateAction::make(),
+            CreateAction::make()->label('New guest house'),
         ];
     }
 }

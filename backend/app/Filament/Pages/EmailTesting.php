@@ -17,7 +17,7 @@ class EmailTesting extends Page
 {
     protected string $view = 'filament.pages.email-testing';
 
-    protected static ?string $title = 'Send test email';
+    protected static ?string $title = 'Send test';
 
     protected static ?string $navigationLabel = 'Send test';
 

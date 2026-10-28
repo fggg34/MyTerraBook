@@ -9,18 +9,18 @@
       "favicon": ""
     },
     "colors": {
-      "navy": "#0f2036",
-      "ink": "#1d2b40",
-      "slate": "#5a6b82",
-      "slateLight": "#8090a4",
-      "green": "#45a06a",
-      "greenDark": "#3a8d5d",
-      "blue": "#34629e",
-      "blueSoft": "#eef2f8",
-      "line": "#e2e7ef",
-      "bg": "#fbfcfe",
+      "navy": "#041e37",
+      "ink": "#041e37",
+      "slate": "#5c6b80",
+      "slateLight": "#8794a3",
+      "green": "#f4a83c",
+      "greenDark": "#e89a2e",
+      "blue": "#4474a4",
+      "blueSoft": "#e8eff7",
+      "line": "#e0e5ed",
+      "bg": "#f6f2ec",
       "red": "#e23744",
-      "accent": "#ea580c"
+      "accent": "#f4a83c"
     },
     "googleMaps": {
       "mapsApiKey": ""
@@ -35,29 +35,41 @@
     "header": {
       "navLinks": [
         {
-          "label": "Campervans",
-          "href": "/campervans"
+          "label": "Plan a trip",
+          "href": "/#search"
         },
         {
-          "label": "Cars",
-          "href": "/cars"
+          "label": "Vehicles",
+          "href": "/campervans"
         },
         {
           "label": "Guesthouses",
           "href": "/guesthouses"
         },
         {
-          "label": "Good to Know",
+          "label": "Destinations",
+          "href": "/destinations"
+        },
+        {
+          "label": "Guides",
           "href": "/good-to-know"
         }
       ],
       "ctaLabel": "Become a host",
       "ctaHref": "/become-a-host",
-      "currencyLabel": "€ EUR",
+      "currencyLabel": "EUR",
       "signInLabel": "Sign in",
       "signInHref": "/login",
       "currencyMenuLabel": "Currency",
-      "hostSignInLabel": "Sign in as a host"
+      "hostSignInLabel": "Sign in as a host",
+      "supportHours": "Local support Mon-Sun 08-22"
+    },
+    "cookieBanner": {
+      "message": "We use cookies for essential booking features and, if you allow, to measure visits.",
+      "acceptLabel": "Accept",
+      "rejectLabel": "Reject",
+      "policyLabel": "Cookie policy",
+      "policyHref": "/cookies"
     },
     "footer": {
       "tagline": "Campervans, cars and guesthouses across Iceland, booked in minutes, hosted with care.",

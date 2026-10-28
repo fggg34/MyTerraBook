@@ -13,11 +13,11 @@ use Illuminate\Validation\Rules\Password;
 
 class EditProfile extends BaseEditProfile
 {
-    protected static ?string $title = 'Profile settings';
+    protected static ?string $title = 'Profile';
 
     public static function getLabel(): string
     {
-        return 'Profile settings';
+        return 'Profile';
     }
 
     public function form(Schema $schema): Schema

@@ -4206,3 +4206,37 @@ a.host-overview-card:hover .host-overview-card-link {
     align-items: flex-start;
   }
 }
+
+/* Host shell matches the navy rail in the host panel frames. Client account stays on the light sidebar. */
+.host-account {
+  background: var(--tb-cream, #f6f2ec);
+}
+.host-account .host-sidebar {
+  background: var(--tb-navy, #041e37);
+  border-right-color: transparent;
+  color: #fff;
+}
+.host-account .host-rail-brand,
+.host-account .host-rail-signout {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #d7e0ea;
+}
+.host-account .host-rail-name,
+.host-account .host-rail-sub,
+.host-account .host-nav a,
+.host-account .host-nav button,
+.host-account .host-rail-signout {
+  color: #d7e0ea;
+}
+.host-account .host-rail-mark {
+  background: #fff;
+  color: var(--tb-navy, #041e37);
+}
+.host-account .host-nav a.active,
+.host-account .host-nav a:hover,
+.host-account .host-nav button:hover,
+.host-account .host-rail-signout:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}

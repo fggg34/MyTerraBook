@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import SiteLogo from '../branding/SiteLogo'
 import UserAvatar from '../account/UserAvatar'
 import { getDashboardLabel, getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
+import { usePageContent } from '../../context/SiteContentContext'
+import { useToast } from '../../context/ToastContext'
+import { api } from '../../api'
 import LangCurrencyMenu from './LangCurrencyMenu'
 import useMediaQuery from '../../hooks/useMediaQuery'
+import { cmsText } from '../../data/searchFormCopy'
 
 function FooterLink({ href, children, className }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
@@ -188,8 +193,40 @@ export default function Footer({
 }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { toast } = useToast()
+  const { page: globalPage } = usePageContent('global')
+  const news = globalPage.newsSection || {}
   const isMobile = useMediaQuery('(max-width: 768px)')
   const [openSections, setOpenSections] = useState({ book: true, company: false })
+  const [newsEmail, setNewsEmail] = useState('')
+  const [newsLoading, setNewsLoading] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState([])
+
+  useEffect(() => {
+    let cancelled = false
+    api.get('/payment-methods').then((res) => {
+      if (cancelled) return
+      const rows = res.data?.data || res.data || []
+      setPaymentMethods(Array.isArray(rows) ? rows : [])
+    }).catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const handleNewsletter = async (event) => {
+    event.preventDefault()
+    setNewsLoading(true)
+    try {
+      await api.post('/newsletter/subscribe', { email: newsEmail, source: 'footer' })
+      setNewsEmail('')
+      toast(cmsText(news.successMessage, 'Takk! Check your inbox to confirm.'), 'success')
+    } catch (err) {
+      toast(err.response?.data?.message || cmsText(news.errorMessage, 'Could not subscribe right now'), 'error')
+    } finally {
+      setNewsLoading(false)
+    }
+  }
 
   const role = normalizeUserRole(user)
   const dashboardPath = user ? getPostLoginPath(user) : null
@@ -363,21 +400,38 @@ export default function Footer({
             )}
           </div>
 
+          <div className="ftr-news">
+            <h3>{cmsText(news.heading, 'Trip ideas, once a month.')}</h3>
+            <form className="ftr-news-form" onSubmit={handleNewsletter}>
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                value={newsEmail}
+                onChange={(event) => setNewsEmail(event.target.value)}
+                placeholder={cmsText(news.placeholder, 'Email address')}
+                aria-label={cmsText(news.placeholder, 'Email address')}
+              />
+              <button type="submit" className="site-btn site-btn--accent site-btn--m" disabled={newsLoading}>
+                <span>{newsLoading ? cmsText(news.buttonLoadingLabel, 'Subscribing...') : cmsText(news.buttonLabel, 'Subscribe')}</span>
+                <ArrowRight size={16} aria-hidden />
+              </button>
+            </form>
+          </div>
+
           <div className="ftr-meta">
+            {paymentMethods.length > 0 && (
             <div className="ftr-pay">
               <span className="pay-label">{paymentsLabel}</span>
               <div className="pay-row">
-                <span className="pay visa">VISA</span>
-                <span className="pay mc">
-                  <i className="c1" />
-                  <i className="c2" />
-                </span>
-                <span className="pay amex">AMEX</span>
-                <span className="pay apay">Pay</span>
-                <span className="pay gpay">G Pay</span>
-                <span className="pay klarna">Klarna.</span>
+                {paymentMethods.map((method) => (
+                  <span key={method.code || method.name} className={`pay ${String(method.code || '').toLowerCase()}`}>
+                    {method.name}
+                  </span>
+                ))}
               </div>
             </div>
+            )}
 
             {!isMobile && <LangCurrencyMenu variant="footer" />}
           </div>

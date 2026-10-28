@@ -1,16 +1,16 @@
 export const DEFAULT_SITE_COLORS = {
-  navy: '#0f2036',
-  ink: '#1d2b40',
-  slate: '#5a6b82',
-  slateLight: '#8090a4',
-  green: '#45a06a',
-  greenDark: '#3a8d5d',
-  blue: '#34629e',
-  blueSoft: '#eef2f8',
-  line: '#e2e7ef',
-  bg: '#fbfcfe',
+  navy: '#041e37',
+  ink: '#041e37',
+  slate: '#5c6b80',
+  slateLight: '#8794a3',
+  green: '#f4a83c',
+  greenDark: '#e89a2e',
+  blue: '#4474a4',
+  blueSoft: '#e8eff7',
+  line: '#e0e5ed',
+  bg: '#f6f2ec',
   red: '#e23744',
-  accent: '#ea580c',
+  accent: '#f4a83c',
 }
 
 export const SITE_COLOR_VARS = {

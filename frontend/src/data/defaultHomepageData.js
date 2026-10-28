@@ -33,10 +33,11 @@ export const defaultHomepageData = {
   },
   header: {
     navLinks: [
-      { label: 'Campervans', href: '/campervans' },
-      { label: 'Cars', href: '/cars' },
+      { label: 'Plan a trip', href: '/#search' },
+      { label: 'Vehicles', href: '/campervans' },
       { label: 'Guesthouses', href: '/guesthouses' },
-      { label: 'Good to Know', href: '/good-to-know' },
+      { label: 'Destinations', href: '/destinations' },
+      { label: 'Guides', href: '/good-to-know' },
     ],
     ctaLabel: 'Become a host',
     ctaHref: '/become-a-host',
@@ -45,7 +46,7 @@ export const defaultHomepageData = {
     signInHref: '/login',
   },
   hero: {
-    heading: "Book with the world's leading roadtrip provider!",
+    heading: 'Your road trip starts here.',
     subtitle:
       'Campervans, 4×4s and warm guesthouses, everything you need for the Ring Road, in one booking.',
     backgroundImage: IMG.hero,

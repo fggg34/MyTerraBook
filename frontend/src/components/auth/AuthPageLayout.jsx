@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import { ChevronLeft } from 'lucide-react'
 import SiteLogo from '../branding/SiteLogo'
 import CmsImage from '../cms/CmsImage'
 
@@ -33,11 +35,7 @@ const DEFAULT_FEATURES = [
   },
 ]
 
-const DEFAULT_HERO_IMAGES = {
-  login: null,
-  register: null,
-  'host-register': null,
-}
+const DEFAULT_HERO_IMAGE = '/images/homepage/hero.jpg'
 
 export default function AuthPageLayout({
   variant = 'login',
@@ -49,7 +47,7 @@ export default function AuthPageLayout({
   children,
   footer,
 }) {
-  const resolvedHeroImage = heroImage ?? DEFAULT_HERO_IMAGES[variant] ?? DEFAULT_HERO_IMAGES.login
+  const resolvedHeroImage = heroImage || DEFAULT_HERO_IMAGE
   const title = heroTitle ?? (variant === 'register'
     ? 'Create your MyTerraBook account'
     : 'Sign in to MyTerraBook')
@@ -62,6 +60,7 @@ export default function AuthPageLayout({
       <aside className="auth-layout__hero" aria-hidden="true">
         <CmsImage className="auth-layout__hero-img" src={resolvedHeroImage} alt="" />
         <div className="auth-layout__hero-overlay" />
+        <SiteLogo variant="header" className="auth-layout__brand" asLink={false} />
         <div className="auth-layout__hero-content">
           <h2 className="auth-layout__hero-title">{title}</h2>
           <p className="auth-layout__hero-text">{text}</p>
@@ -88,7 +87,10 @@ export default function AuthPageLayout({
       <main className="auth-layout__main">
         <div className="auth-layout__panel">
           <header className="auth-layout__header">
-            <SiteLogo variant="auth" className="auth-layout__logo" />
+            <Link to="/" className="auth-layout__back">
+              <ChevronLeft size={16} aria-hidden />
+              Back to MyTerraBook
+            </Link>
           </header>
           <div className="auth-layout__body">{children}</div>
           {footer && <footer className="auth-layout__footer">{footer}</footer>}

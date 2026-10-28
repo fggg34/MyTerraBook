@@ -64,11 +64,6 @@ class EditCar extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('backToList')
-                ->label('Back to fleet')
-                ->icon(Heroicon::OutlinedArrowLeft)
-                ->color('gray')
-                ->url(fn (): string => CarResource::getUrl('index')),
             Action::make('pricingRules')
                 ->label('Pricing rules')
                 ->color('gray')
@@ -79,7 +74,7 @@ class EditCar extends EditRecord
                 ->color('gray')
                 ->url(fn (): string => config('app.frontend_url').'/cars/'.$this->getRecord()->getKey())
                 ->openUrlInNewTab(),
-            DeleteAction::make(),
+            DeleteAction::make()->extraAttributes(['class' => 'tb-hidden-action']),
         ];
     }
 
@@ -96,32 +91,30 @@ class EditCar extends EditRecord
             return null;
         }
 
-        $car->loadMissing(['subCategory.mainCategory', 'locations']);
-        $category = $car->subCategory?->name;
-        $main = $car->subCategory?->mainCategory?->name;
-        if ($main && $category) {
-            $category = $main.' / '.$category;
-        }
-        $locations = $car->locations->pluck('name')->filter()->implode(', ');
+        $review = match ($car->listing_status) {
+            ListingApprovalStatus::PendingReview => 'Pending review',
+            ListingApprovalStatus::Approved => 'Approved',
+            ListingApprovalStatus::Rejected => 'Rejected',
+            default => 'Draft',
+        };
 
-        return view('filament.impact-rent.record-summary', [
-            'heading' => $this->getHeading(),
-            'subheading' => 'Open the vehicle record. The fields below are the same editor.',
+        return view('filament.panel.edit-record-header', [
+            'title' => $car->name,
+            'backUrl' => CarResource::getUrl('index'),
+            'backLabel' => 'Vehicles',
+            'pills' => [
+                ['label' => $car->is_active ? 'Active' : 'Inactive', 'tone' => $car->is_active ? 'ok' : 'neutral'],
+                ['label' => $review, 'tone' => $car->listing_status === ListingApprovalStatus::Approved ? 'ok' : 'warn'],
+            ],
             'actions' => $this->getCachedHeaderActions(),
-            'tab' => 'Vehicle details',
-            'fields' => [
-                ['label' => 'Vehicle', 'value' => $car->name],
-                ['label' => 'Category', 'value' => $category ?: 'Not set'],
-                ['label' => 'Locations', 'value' => $locations !== '' ? $locations : 'Not set'],
-                ['label' => 'Drivetrain', 'value' => $car->drive_type?->label() ?? 'Not set'],
-                ['label' => 'Units', 'value' => (string) max(1, (int) $car->units_available)],
-                ['label' => 'Listed', 'value' => $car->is_active ? 'Active' : 'Hidden'],
-                ['label' => 'Review', 'value' => match ($car->listing_status) {
-                    ListingApprovalStatus::PendingReview => 'Pending review',
-                    ListingApprovalStatus::Approved => 'Approved',
-                    ListingApprovalStatus::Rejected => 'Rejected',
-                    default => 'Draft',
-                }],
+            'sections' => [
+                'tb-identity' => 'Identity',
+                'tb-specs' => 'Specs',
+                'tb-features' => 'Features',
+                'tb-photos' => 'Photos',
+                'tb-description' => 'Description',
+                'tb-seo' => 'SEO',
+                'tb-notes' => 'Notes & extras',
             ],
         ]);
     }

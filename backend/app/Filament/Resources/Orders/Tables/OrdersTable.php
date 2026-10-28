@@ -25,11 +25,10 @@ class OrdersTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['car', 'pickupLocation', 'dropoffLocation', 'payments']))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['car', 'carUnit', 'pickupLocation', 'dropoffLocation', 'payments']))
             ->defaultSort('created_at', 'desc')
-            ->searchPlaceholder('Search bookings…')
-            ->striped()
-            ->stackedOnMobile()
+            ->searchPlaceholder('Search bookings...')
+            ->paginated([25, 50, 100])
             ->columns([
                 TextColumn::make('partner_sync_state')->label('Partner sync')->badge()->toggleable(isToggledHiddenByDefault: true)
                     ->description(fn ($record) => $record->partner_sync_error)
@@ -38,8 +37,6 @@ class OrdersTable
                 TextColumn::make('id')
                     ->label('Reference')
                     ->formatStateUsing(fn ($record): string => $record->reference ?: (string) $record->id)
-                    ->badge()
-                    ->color(fn (): string => AdminTableBadgeColors::neutral())
                     ->sortable()
                     ->searchable()
                     ->wrap()
@@ -55,18 +52,39 @@ class OrdersTable
                 TextColumn::make('customer_name')
                     ->label('Customer')
                     ->searchable()
-                    ->description(fn ($record): string => trim(($record->customer_email ?? '').' '.($record->customer_phone ?? '')) ?: '-')
+                    ->description(fn ($record): string => $record->customer_email ?: ($record->customer_phone ?: '-'))
                     ->wrap()
                     ->verticalAlignment(VerticalAlignment::Start),
                 TextColumn::make('car.name')
                     ->label('Vehicle')
                     ->searchable()
+                    ->description(function ($record): string {
+                        $unit = $record->carUnit;
+
+                        return 'Unit '.max(1, (int) ($unit?->sort_order ?: 1));
+                    })
                     ->wrap()
                     ->verticalAlignment(VerticalAlignment::Start),
                 TextColumn::make('pickup_at')
                     ->label('Pickup → Drop-off')
-                    ->date('d/m/Y')
-                    ->description(fn ($record): string => trim(($record->pickupLocation?->name ?? '').' '.($record->pickup_at?->format('D H:i') ?? '')) ?: '-')
+                    ->state(function ($record): string {
+                        $from = $record->pickup_at;
+                        $to = $record->dropoff_at;
+                        if ($from === null || $to === null) {
+                            return '-';
+                        }
+                        if ($from->year === $to->year) {
+                            return $from->format('j M').' → '.$to->format('j M Y');
+                        }
+
+                        return $from->format('j M Y').' → '.$to->format('j M Y');
+                    })
+                    ->description(function ($record): string {
+                        $pickup = $record->pickupLocation?->name ?: '-';
+                        $dropoff = $record->dropoffLocation?->name ?: $pickup;
+
+                        return $pickup.' → '.$dropoff;
+                    })
                     ->sortable()
                     ->wrap()
                     ->verticalAlignment(VerticalAlignment::Start),
@@ -78,28 +96,42 @@ class OrdersTable
                     ->sortable()
                     ->wrap()
                     ->verticalAlignment(VerticalAlignment::Start),
-                TextColumn::make('rental_days')
-                    ->label('Days')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->state(fn ($record): int => max(1, (int) $record->pickup_at?->diffInDays($record->dropoff_at)))
-                    ->alignCenter()
-                    ->verticalAlignment(VerticalAlignment::Start),
                 TextColumn::make('total_cents')
                     ->label('Total')
                     ->state(fn ($record): string => static::formatMoney((int) $record->total_cents, (string) $record->currency))
                     ->description(function ($record): string {
-                        $paid = (int) $record->payments->sum('amount_cents');
-                        $remaining = max(0, (int) $record->total_cents - $paid);
+                        $days = max(1, (int) $record->pickup_at?->diffInDays($record->dropoff_at));
 
-                        return 'Due '.static::formatMoney($remaining, (string) $record->currency);
+                        return $days.' '.($days === 1 ? 'day' : 'days');
                     })
                     ->wrap()
+                    ->verticalAlignment(VerticalAlignment::Start),
+                TextColumn::make('payment')
+                    ->label('Payment')
+                    ->badge()
+                    ->state(function ($record): string {
+                        $paid = (int) $record->payments->sum('amount_cents');
+                        $total = (int) $record->total_cents;
+                        if ($paid <= 0) {
+                            return 'Unpaid';
+                        }
+                        if ($total > 0 && $paid >= $total) {
+                            return 'Paid';
+                        }
+
+                        return 'Deposit';
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'Paid' => 'success',
+                        'Deposit' => 'info',
+                        default => 'gray',
+                    })
                     ->verticalAlignment(VerticalAlignment::Start),
                 TextColumn::make('order_status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (mixed $state): string => AdminTableBadgeColors::orderStatus($state))
-                    ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state))
+                    ->state(fn ($record): string => static::statusLabel($record))
+                    ->color(fn ($record): string => static::statusColor($record))
                     ->searchable()
                     ->wrap()
                     ->verticalAlignment(VerticalAlignment::Start),
@@ -213,7 +245,7 @@ class OrdersTable
                 'xl' => 4,
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->iconButton()->tooltip('Edit'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -292,6 +324,41 @@ class OrdersTable
 
     private static function formatMoney(int $cents, string $currency): string
     {
-        return $currency.' '.number_format((int) floor($cents / 100), 0, '.', ',');
+        $amount = (int) floor($cents / 100);
+        $grouped = preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', (string) $amount) ?? (string) $amount;
+        $code = strtoupper($currency !== '' ? $currency : 'ISK');
+
+        return $code.' '.$grouped;
+    }
+
+    private static function statusLabel(Order $record): string
+    {
+        return match ($record->rental_status) {
+            RentalStatus::Started => 'On the road',
+            RentalStatus::Terminated => 'Returned',
+            RentalStatus::NoShow => 'No show',
+            default => match ($record->order_status) {
+                OrderStatus::StandBy => 'Stand by',
+                OrderStatus::Pending => 'Pending',
+                OrderStatus::Confirmed => 'Confirmed',
+                OrderStatus::Cancelled => 'Cancelled',
+                default => 'Pending',
+            },
+        };
+    }
+
+    private static function statusColor(Order $record): string
+    {
+        return match ($record->rental_status) {
+            RentalStatus::Started => 'info',
+            RentalStatus::Terminated => 'success',
+            RentalStatus::NoShow => 'danger',
+            default => match ($record->order_status) {
+                OrderStatus::Confirmed => 'success',
+                OrderStatus::StandBy, OrderStatus::Pending => 'warning',
+                OrderStatus::Cancelled => 'gray',
+                default => 'gray',
+            },
+        };
     }
 }

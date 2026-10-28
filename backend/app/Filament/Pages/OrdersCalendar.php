@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Clusters\ImpactRentCluster;
+use App\Filament\GuestHouse\Resources\GuestHouseBookingResource;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Support\ImpactRentFleetCalendar;
 use BackedEnum;
@@ -10,6 +11,7 @@ use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Carbon;
 use UnitEnum;
 
 class OrdersCalendar extends Page
@@ -36,7 +38,17 @@ class OrdersCalendar extends Page
 
     public string $locationId = '';
 
+    public string $span = 'month';
+
+    public string $catalog = 'all';
+
+    public string $statusFilter = '';
+
+    public string $hostId = '';
+
     public ?int $selectedOrderId = null;
+
+    public ?int $selectedStayId = null;
 
     public function mount(): void
     {
@@ -44,38 +56,77 @@ class OrdersCalendar extends Page
         $this->from = is_string($requested) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $requested) === 1
             ? $requested
             : now()->toDateString();
+
+        $catalog = request()->query('catalog');
+        if (is_string($catalog) && in_array($catalog, ['all', 'cars', 'stays'], true)) {
+            $this->catalog = $catalog;
+        }
     }
 
     public function getHeading(): string|Htmlable
     {
-        return 'Calendar';
+        return '';
     }
 
     public function getSubheading(): string|Htmlable|null
     {
-        return 'Every vehicle on its own row. Select a booking to see the reservation.';
+        return null;
+    }
+
+    public function spanDays(): int
+    {
+        return match ($this->span) {
+            'week' => 7,
+            'day' => 1,
+            default => 28,
+        };
+    }
+
+    public function setSpan(string $span): void
+    {
+        $this->span = in_array($span, ['week', 'day'], true) ? $span : 'month';
+        $this->clearOrder();
+    }
+
+    public function setCatalog(string $catalog): void
+    {
+        $this->catalog = in_array($catalog, ['cars', 'stays'], true) ? $catalog : 'all';
+        $this->clearOrder();
     }
 
     public function shift(int $days): void
     {
-        $this->from = \Illuminate\Support\Carbon::parse($this->from)->addDays($days)->toDateString();
-        $this->selectedOrderId = null;
+        $this->from = Carbon::parse($this->from)->addDays($days)->toDateString();
+        $this->clearOrder();
+    }
+
+    public function shiftSpan(int $direction): void
+    {
+        $this->shift($direction * $this->spanDays());
     }
 
     public function jumpToday(): void
     {
         $this->from = now()->toDateString();
-        $this->selectedOrderId = null;
+        $this->clearOrder();
     }
 
     public function selectOrder(int $orderId): void
     {
         $this->selectedOrderId = $orderId;
+        $this->selectedStayId = null;
+    }
+
+    public function selectStay(int $stayId): void
+    {
+        $this->selectedStayId = $stayId;
+        $this->selectedOrderId = null;
     }
 
     public function clearOrder(): void
     {
         $this->selectedOrderId = null;
+        $this->selectedStayId = null;
     }
 
     /**
@@ -87,6 +138,11 @@ class OrdersCalendar extends Page
             $this->from,
             $this->locationId !== '' ? (int) $this->locationId : null,
             $this->selectedOrderId,
+            $this->spanDays(),
+            $this->catalog,
+            $this->statusFilter,
+            $this->hostId !== '' ? (int) $this->hostId : null,
+            $this->selectedStayId,
         );
     }
 
@@ -98,5 +154,10 @@ class OrdersCalendar extends Page
     public function orderEditUrl(int $orderId): string
     {
         return OrderResource::getUrl('edit', ['record' => $orderId]);
+    }
+
+    public function stayEditUrl(int $stayId): string
+    {
+        return GuestHouseBookingResource::getUrl('view', ['record' => $stayId]);
     }
 }

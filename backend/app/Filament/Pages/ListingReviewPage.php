@@ -24,9 +24,9 @@ use UnitEnum;
 
 class ListingReviewPage extends Page
 {
-    protected static ?string $navigationLabel = 'Host listing approvals';
+    protected static ?string $navigationLabel = 'Listing approvals';
 
-    protected static ?string $title = 'Host listing approvals';
+    protected static ?string $title = 'Listing approvals';
 
     protected static ?int $navigationSort = 1;
 
@@ -107,7 +107,7 @@ class ListingReviewPage extends Page
             'key' => "guesthouse-{$house->id}",
             'entity' => 'guesthouse',
             'entity_id' => $house->id,
-            'type_label' => 'Guesthouse',
+            'type_label' => 'Guest house',
             'type_color' => 'purple',
             'name' => $house->name,
             'host_name' => $house->host?->name ?? '-',
@@ -359,7 +359,7 @@ class ListingReviewPage extends Page
     {
         return [
             Action::make('openGuestHouses')
-                ->label('All guesthouses')
+                ->label('All guest houses')
                 ->url(GuestHouseResource::getUrl('index'))
                 ->color('gray'),
             Action::make('openCars')

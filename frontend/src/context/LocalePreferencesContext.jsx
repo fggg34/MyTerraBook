@@ -3,12 +3,17 @@ import {
   CUR_STORAGE_KEY,
   findCurrency,
   readStoredCurrency,
+  writeCurrencyCookie,
 } from '../data/localePreferences'
 
 const LocalePreferencesContext = createContext(null)
 
 export function LocalePreferencesProvider({ currencyLabel = '€ EUR', children }) {
   const [currency, setCurrencyState] = useState(() => readStoredCurrency(currencyLabel))
+
+  useEffect(() => {
+    writeCurrencyCookie(currency.code)
+  }, [currency.code])
 
   useEffect(() => {
     const onStorage = (event) => {
@@ -27,6 +32,7 @@ export function LocalePreferencesProvider({ currencyLabel = '€ EUR', children 
     } catch {
       // ignore storage errors
     }
+    writeCurrencyCookie(item.code)
   }, [])
 
   const value = useMemo(

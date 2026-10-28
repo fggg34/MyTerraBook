@@ -15,12 +15,25 @@ class TaxRatesTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Tax Rate Name')
+                    ->label('Name')
                     ->searchable(),
                 TextColumn::make('basis_points')
-                    ->label('Tax Rate')
-                    ->formatStateUsing(static fn ($state): string => number_format(((int) $state) / 100, 2).'%')
+                    ->label('Rate')
+                    ->formatStateUsing(static fn ($state): string => rtrim(rtrim(number_format(((int) $state) / 100, 2, '.', ''), '0'), '.').'%')
                     ->sortable(),
+                TextColumn::make('used_by')
+                    ->label('Used by')
+                    ->state(function ($record): string {
+                        $parts = [];
+                        if ($record->priceTypes()->exists()) {
+                            $parts[] = 'Price types';
+                        }
+                        if ($record->rentalOptions()->exists()) {
+                            $parts[] = 'Add-ons';
+                        }
+
+                        return $parts !== [] ? implode(', ', $parts) : '-';
+                    }),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

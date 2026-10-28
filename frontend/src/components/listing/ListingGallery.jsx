@@ -10,7 +10,7 @@ function AllPhotosButton({ photoCount, onClick }) {
         <rect x="3" y="14" width="7" height="7" rx="1.5" />
         <rect x="14" y="14" width="7" height="7" rx="1.5" />
       </svg>
-      View all {photoCount} photos
+      Show all {photoCount} photos
     </button>
   )
 }

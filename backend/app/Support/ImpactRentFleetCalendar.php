@@ -2,10 +2,14 @@
 
 namespace App\Support;
 
+use App\Enums\GuestHouseBookingStatus;
 use App\Enums\OrderStatus;
 use App\Enums\RentalStatus;
 use App\Models\AvailabilityBlock;
 use App\Models\Car;
+use App\Models\GuestHouse;
+use App\Models\GuestHouseAvailabilityBlock;
+use App\Models\GuestHouseBooking;
 use App\Models\Location;
 use App\Models\Order;
 use Illuminate\Support\Carbon;
@@ -26,19 +30,30 @@ class ImpactRentFleetCalendar
     /**
      * @return array<string, mixed>
      */
-    public function present(string $from, ?int $locationId = null, ?int $selectedOrderId = null, int $days = 90): array
-    {
-        $days = max(14, min(180, $days));
+    public function present(
+        string $from,
+        ?int $locationId = null,
+        ?int $selectedOrderId = null,
+        int $days = 28,
+        string $catalog = 'all',
+        string $statusFilter = '',
+        ?int $hostId = null,
+        ?int $selectedStayId = null,
+    ): array {
+        $days = max(1, min(180, $days));
         $start = $this->parseDay($from)->startOfDay();
         $end = $start->copy()->addDays($days);
 
-        $cars = Car::query()
-            ->with(['carUnits', 'locations'])
-            ->when($locationId, function ($query) use ($locationId): void {
-                $query->whereHas('locations', fn ($locations) => $locations->whereKey($locationId));
-            })
-            ->orderBy('name')
-            ->get();
+        $cars = $catalog === 'stays'
+            ? Car::query()->whereRaw('0 = 1')->get()
+            : Car::query()
+                ->with(['carUnits', 'locations', 'host'])
+                ->when($locationId, function ($query) use ($locationId): void {
+                    $query->whereHas('locations', fn ($locations) => $locations->whereKey($locationId));
+                })
+                ->when($hostId, fn ($query) => $query->where('user_id', $hostId))
+                ->orderBy('name')
+                ->get();
 
         $carIds = $cars->modelKeys();
         $orders = $carIds === []
@@ -95,13 +110,14 @@ class ImpactRentFleetCalendar
                     : [];
                 $laneCount = max(1, $built['laneCount']);
                 $plateCount++;
+                $hostName = $car->host?->name ?: (filled($car->external_provider) ? ucfirst((string) $car->external_provider) : 'MyTerraBook');
                 $rows[] = [
                     'key' => $unitId === null ? 'car-'.$car->id : 'unit-'.$unitId,
-                    'title' => 'Unit '.($index + 1),
-                    'subtitle' => $car->name.($unit->is_active ? '' : ' · Inactive'),
+                    'title' => $car->name,
+                    'subtitle' => 'Unit '.($index + 1).' · '.$hostName.($unit->is_active ? '' : ' · Inactive'),
                     'active' => (bool) $car->is_active && (bool) $unit->is_active,
                     'height' => $laneCount * (self::LANE_HEIGHT + self::LANE_GAP) + (self::ROW_PAD * 2),
-                    'bars' => $built['bars'],
+                    'bars' => $this->filterBars($built['bars'], $statusFilter),
                     'blocks' => $blockBars,
                 ];
             }
@@ -114,12 +130,73 @@ class ImpactRentFleetCalendar
             ];
         }
 
+        $stayRows = [];
+        $stayCount = 0;
+        $stayBookings = collect();
+        if ($catalog !== 'cars') {
+            $houses = GuestHouse::query()
+                ->with(['host'])
+                ->when($hostId, fn ($query) => $query->where('user_id', $hostId))
+                ->orderBy('name')
+                ->get();
+            $houseIds = $houses->modelKeys();
+            $stayBookings = $houseIds === []
+                ? collect()
+                : GuestHouseBooking::query()
+                    ->with('guestHouse')
+                    ->whereIn('guest_house_id', $houseIds)
+                    ->where('status', '!=', GuestHouseBookingStatus::Cancelled)
+                    ->whereDate('check_in', '<', $end->toDateString())
+                    ->whereDate('check_out', '>', $start->toDateString())
+                    ->orderBy('check_in')
+                    ->get();
+            $staysByHouse = $stayBookings->groupBy('guest_house_id');
+            $houseBlocks = $houseIds === []
+                ? collect()
+                : GuestHouseAvailabilityBlock::query()
+                    ->whereIn('guest_house_id', $houseIds)
+                    ->whereDate('blocked_from', '<', $end->toDateString())
+                    ->whereDate('blocked_to', '>', $start->toDateString())
+                    ->get()
+                    ->groupBy('guest_house_id');
+
+            foreach ($houses as $house) {
+                $built = $this->stayBars($staysByHouse->get($house->id, collect()), $start, $days);
+                $laneCount = max(1, $built['laneCount']);
+                $stayCount++;
+                $stayRows[] = [
+                    'key' => 'stay-'.$house->id,
+                    'title' => $house->name,
+                    'subtitle' => trim(($house->city ?: 'Iceland').' · #1'),
+                    'active' => true,
+                    'height' => $laneCount * (self::LANE_HEIGHT + self::LANE_GAP) + (self::ROW_PAD * 2),
+                    'bars' => $this->filterBars($built['bars'], $statusFilter),
+                    'blocks' => $this->stayBlockBars($houseBlocks->get($house->id, collect()), $start, $days),
+                ];
+            }
+        }
+
+        $carRows = [];
+        foreach ($groups as $group) {
+            foreach ($group['rows'] as $row) {
+                $carRows[] = $row;
+            }
+        }
+
         $selected = null;
+        $selectedKind = 'order';
         if ($selectedOrderId !== null) {
             $selectedOrder = $orders->firstWhere('id', $selectedOrderId)
                 ?? Order::query()->with(['pickupLocation', 'dropoffLocation', 'car'])->find($selectedOrderId);
             if ($selectedOrder instanceof Order) {
                 $selected = $this->detail($selectedOrder);
+            }
+        } elseif ($selectedStayId !== null) {
+            $selectedStay = $stayBookings->firstWhere('id', $selectedStayId)
+                ?? GuestHouseBooking::query()->with('guestHouse')->find($selectedStayId);
+            if ($selectedStay instanceof GuestHouseBooking) {
+                $selected = $this->stayDetail($selectedStay);
+                $selectedKind = 'stay';
             }
         }
 
@@ -143,6 +220,20 @@ class ImpactRentFleetCalendar
             ];
         }
 
+        $hosts = collect()
+            ->merge($cars->map(fn (Car $car) => $car->host)->filter())
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+
+        $sections = [];
+        if ($catalog !== 'stays' && $carRows !== []) {
+            $sections[] = ['key' => 'cars', 'label' => 'CARS', 'rows' => $carRows];
+        }
+        if ($catalog !== 'cars' && $stayRows !== []) {
+            $sections[] = ['key' => 'stays', 'label' => 'GUEST HOUSES', 'rows' => $stayRows];
+        }
+
         return [
             'rangeLabel' => $start->format('j M').' to '.$start->copy()->addDays($days - 1)->format('j M Y'),
             'days' => $dayColumns,
@@ -151,12 +242,16 @@ class ImpactRentFleetCalendar
             'dayWidth' => self::DAY_WIDTH,
             'sidebarWidth' => self::SIDEBAR_WIDTH,
             'plateCount' => $plateCount,
+            'stayCount' => $stayCount,
             'groups' => $groups,
+            'sections' => $sections,
+            'hosts' => $hosts->map(fn ($host): array => ['id' => $host->id, 'name' => $host->name])->all(),
             'locations' => Location::query()->orderBy('name')->get(['id', 'name'])->map(fn (Location $location): array => [
                 'id' => $location->id,
                 'name' => $location->name,
             ])->all(),
             'selected' => $selected,
+            'selectedKind' => $selectedKind,
         ];
     }
 
@@ -215,13 +310,19 @@ class ImpactRentFleetCalendar
                 $laneEnds[] = $order->dropoff_at->getTimestamp();
             }
 
+            $fromCode = $this->locationCode($order->pickupLocation);
+            $toCode = $this->locationCode($order->dropoffLocation);
+            $route = ($fromCode !== '' && $toCode !== '') ? $fromCode.' → '.$toCode : '';
+            $visible = trim(($order->customer_name ?: 'Guest').($route !== '' ? ' · '.$route : ''));
             $bars[] = [
                 'id' => $order->id,
+                'kind' => 'order',
                 'left' => $startIdx * self::DAY_WIDTH,
                 'width' => max(($endIdx - $startIdx) * self::DAY_WIDTH, 18),
                 'top' => self::ROW_PAD + ($lane * (self::LANE_HEIGHT + self::LANE_GAP)),
                 'tone' => $this->tone($order),
-                'label' => trim($order->reference.' · '.$order->customer_name),
+                'label' => $visible,
+                'title' => trim($order->reference.' · '.$visible),
             ];
         }
 
@@ -300,5 +401,169 @@ class ImpactRentFleetCalendar
             'dropoffLocation' => $order->dropoffLocation?->name ?? '',
             'total' => self::money((int) $order->total_cents, (string) ($order->currency ?: 'EUR')),
         ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $bars
+     * @return list<array<string, mixed>>
+     */
+    private function filterBars(array $bars, string $statusFilter): array
+    {
+        if ($statusFilter === '') {
+            return $bars;
+        }
+
+        return array_values(array_filter($bars, fn (array $bar): bool => ($bar['tone'] ?? '') === $statusFilter));
+    }
+
+    /**
+     * @param  Collection<int, GuestHouseBooking>  $bookings
+     * @return array{bars: list<array<string, mixed>>, laneCount: int}
+     */
+    private function stayBars(Collection $bookings, Carbon $start, int $days): array
+    {
+        $rangeStart = $start->getTimestamp();
+        $laneEnds = [];
+        $bars = [];
+
+        foreach ($bookings as $booking) {
+            if ($booking->check_in === null || $booking->check_out === null) {
+                continue;
+            }
+            $from = $booking->check_in->copy()->startOfDay();
+            $to = $booking->check_out->copy()->startOfDay();
+            $startIdx = max(0, ($from->getTimestamp() - $rangeStart) / 86400);
+            $endIdx = min($days, ($to->getTimestamp() - $rangeStart) / 86400);
+            if ($endIdx <= 0 || $startIdx >= $days) {
+                continue;
+            }
+
+            $lane = 0;
+            $placed = false;
+            foreach ($laneEnds as $index => $laneEnd) {
+                if ($laneEnd <= $from->getTimestamp()) {
+                    $lane = $index;
+                    $laneEnds[$index] = $to->getTimestamp();
+                    $placed = true;
+                    break;
+                }
+            }
+            if (! $placed) {
+                $lane = count($laneEnds);
+                $laneEnds[] = $to->getTimestamp();
+            }
+
+            $nights = max(1, (int) ($booking->nights ?: $from->diffInDays($to)));
+            $visible = trim(($booking->guest_name ?: 'Guest').' · '.$nights.' nights');
+            $bars[] = [
+                'id' => $booking->id,
+                'kind' => 'stay',
+                'left' => $startIdx * self::DAY_WIDTH,
+                'width' => max(($endIdx - $startIdx) * self::DAY_WIDTH, 18),
+                'top' => self::ROW_PAD + ($lane * (self::LANE_HEIGHT + self::LANE_GAP)),
+                'tone' => match ($booking->status) {
+                    GuestHouseBookingStatus::Pending => 'quote',
+                    GuestHouseBookingStatus::Completed => 'returned',
+                    default => 'confirmed',
+                },
+                'label' => $visible,
+                'title' => trim($booking->booking_reference.' · '.$visible),
+            ];
+        }
+
+        return [
+            'bars' => $bars,
+            'laneCount' => count($laneEnds),
+        ];
+    }
+
+    /**
+     * @param  Collection<int, GuestHouseAvailabilityBlock>  $blocks
+     * @return list<array<string, mixed>>
+     */
+    private function stayBlockBars(Collection $blocks, Carbon $start, int $days): array
+    {
+        $rangeStart = $start->getTimestamp();
+        $bars = [];
+        foreach ($blocks as $block) {
+            if ($block->blocked_from === null || $block->blocked_to === null) {
+                continue;
+            }
+            $startIdx = max(0, ($block->blocked_from->copy()->startOfDay()->getTimestamp() - $rangeStart) / 86400);
+            $endIdx = min($days, ($block->blocked_to->copy()->startOfDay()->getTimestamp() - $rangeStart) / 86400);
+            if ($endIdx <= 0 || $startIdx >= $days) {
+                continue;
+            }
+            $note = filled($block->note) ? (string) $block->note : '';
+            $bars[] = [
+                'left' => $startIdx * self::DAY_WIDTH,
+                'width' => max(($endIdx - $startIdx) * self::DAY_WIDTH, 18),
+                'label' => $note !== '' ? 'Blocked · '.$note : 'Blocked',
+            ];
+        }
+
+        return $bars;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function stayDetail(GuestHouseBooking $booking): array
+    {
+        $status = match ($booking->status) {
+            GuestHouseBookingStatus::Pending => 'Stand by',
+            GuestHouseBookingStatus::Completed => 'Returned',
+            GuestHouseBookingStatus::Cancelled => 'Cancelled',
+            default => 'Confirmed',
+        };
+
+        return [
+            'id' => $booking->id,
+            'reference' => $booking->booking_reference,
+            'customer' => $booking->guest_name,
+            'email' => $booking->guest_email,
+            'phone' => $booking->guest_phone,
+            'status' => $status,
+            'tone' => match ($booking->status) {
+                GuestHouseBookingStatus::Pending => 'quote',
+                GuestHouseBookingStatus::Completed => 'returned',
+                default => 'confirmed',
+            },
+            'vehicle' => $booking->guestHouse?->name ?? 'Guest house',
+            'pickup' => $booking->check_in?->format('j M Y') ?? '',
+            'pickupLocation' => $booking->guestHouse?->city ?? '',
+            'dropoff' => $booking->check_out?->format('j M Y') ?? '',
+            'dropoffLocation' => '',
+            'total' => self::money((int) $booking->total_amount, 'EUR'),
+        ];
+    }
+
+    private function locationCode(?Location $location): string
+    {
+        if ($location === null) {
+            return '';
+        }
+        $haystack = strtoupper($location->name.' '.$location->slug);
+        foreach (['KEF', 'AEY', 'RKV', 'EGS', 'IFJ', 'VEY'] as $code) {
+            if (str_contains($haystack, $code)) {
+                return $code;
+            }
+        }
+        if (str_contains($haystack, 'KEFLAV')) {
+            return 'KEF';
+        }
+        if (str_contains($haystack, 'AKUREY')) {
+            return 'AEY';
+        }
+        if (str_contains($haystack, 'REYKJAV')) {
+            return 'RKV';
+        }
+        if (str_contains($haystack, 'EGILS')) {
+            return 'EGS';
+        }
+
+        $slug = strtoupper((string) preg_replace('/[^A-Za-z]/', '', $location->slug ?: $location->name));
+
+        return substr($slug, 0, 3);
     }
 }

@@ -360,6 +360,88 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        html.tb-redesign .la-stat,
+        html.tb-redesign .la-panel {
+            border-color: #dbe3ec;
+            border-radius: 12px;
+        }
+        html.tb-redesign .la-stat-label,
+        html.tb-redesign .la-table thead th {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
+            letter-spacing: 0.8px;
+            color: #8a99a9;
+            text-transform: uppercase;
+        }
+        html.tb-redesign .la-stat-value,
+        html.tb-redesign .la-listing-name,
+        html.tb-redesign .la-host-name,
+        html.tb-redesign .la-empty-title {
+            color: #0d1b2a;
+        }
+        html.tb-redesign .la-stat-value--warn { color: #9a5b00; }
+        html.tb-redesign .la-toolbar {
+            background: #f3f6fa;
+            border-color: #dbe3ec;
+        }
+        html.tb-redesign .la-tabs { background: #e8eff7; }
+        html.tb-redesign .la-tab { color: #5b6b7d; }
+        html.tb-redesign .la-tab--active { background: #fff; color: #041e37; }
+        html.tb-redesign .la-tab-badge { background: #fdf1dc; color: #9a5b00; }
+        html.tb-redesign .la-table thead th { background: #f3f6fa; border-color: #dbe3ec; }
+        html.tb-redesign .la-table tbody td { border-color: #dbe3ec; color: #0d1b2a; }
+        html.tb-redesign .la-muted,
+        html.tb-redesign .la-toolbar-note,
+        html.tb-redesign .la-empty-text { color: #5b6b7d; }
+        html.tb-redesign .la-btn--approve { background: #1f7a4d; }
+        html.tb-redesign .la-btn--changes { background: #fdf1dc; border-color: #e8a33a; color: #9a5b00; }
+        html.tb-redesign .la-btn--reject { background: #fde7e5; border-color: #f7c4c0; color: #b42318; }
+        html.tb-redesign .la-btn--edit { background: #fff; border-color: #dbe3ec; color: #0d1b2a; }
+        html.tb-redesign .la-badge--purple { background: #e8eff7; color: #4474a4; }
+        html.tb-redesign .la-badge--blue { background: #e3f3ea; color: #1f7a4d; }
+        html.tb-redesign .la-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 16px;
+        }
+        html.tb-redesign .la-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 16px;
+            border: 1px solid #dbe3ec;
+            border-radius: 12px;
+            background: #fff;
+        }
+        html.tb-redesign .la-card .la-thumb {
+            width: 56px;
+            height: 56px;
+            border-radius: 8px;
+        }
+        html.tb-redesign .la-card-main { flex: 1; min-width: 0; }
+        html.tb-redesign .la-card-title {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+        html.tb-redesign .la-badge--wait { background: #fdf1dc; color: #9a5b00; }
+        html.tb-redesign .la-empty {
+            padding: 3rem 1.5rem;
+        }
+        html.tb-redesign .la-empty-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 12px;
+            border-radius: 999px;
+            background: #e3f3ea;
+            color: #1f7a4d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
     </style>
 
     <div class="la-shell">
@@ -371,7 +453,7 @@
                 </div>
             </div>
             <div class="la-stat">
-                <div class="la-stat-label">Guesthouses</div>
+                <div class="la-stat-label">Guest houses</div>
                 <div class="la-stat-value">{{ $this->pendingGuestHouseCount }}</div>
             </div>
             <div class="la-stat">
@@ -400,7 +482,7 @@
                         class="la-tab {{ $activeTab === 'guesthouses' ? 'la-tab--active' : '' }}"
                         wire:click="setActiveTab('guesthouses')"
                     >
-                        Guesthouses
+                        Guest houses
                         @if ($this->pendingGuestHouseCount > 0)
                             <span class="la-tab-badge">{{ $this->pendingGuestHouseCount }}</span>
                         @endif
@@ -424,86 +506,51 @@
 
             @if ($this->queueItems->isEmpty())
                 <div class="la-empty">
+                    <div class="la-empty-icon" aria-hidden="true">✓</div>
                     <div class="la-empty-title">Queue is clear</div>
                     <p class="la-empty-text">
-                        @if ($activeTab === 'guesthouses')
-                            No guesthouses are waiting for review.
-                        @elseif ($activeTab === 'vehicles')
-                            No vehicles are waiting for review.
-                        @else
-                            No host listings are waiting for review right now.
-                        @endif
+                        No host listings are waiting for review. New submissions appear here with photos, price and a side-by-side view of what changed.
                     </p>
                 </div>
             @else
-                <div class="la-table-wrap">
-                    <table class="la-table">
-                        <thead>
-                            <tr>
-                                <th>Listing</th>
-                                <th>Type</th>
-                                <th>Host</th>
-                                <th>Info</th>
-                                <th>Details</th>
-                                <th>Submitted</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($this->queueItems as $item)
-                                <tr wire:key="{{ $item['key'] }}">
-                                    <td>
-                                        <div class="la-listing">
-                                            @if ($item['image_url'])
-                                                <img src="{{ $item['image_url'] }}" alt="" class="la-thumb" loading="lazy" />
-                                            @else
-                                                <span class="la-thumb la-thumb--empty">No img</span>
-                                            @endif
-                                            <div>
-                                                <div class="la-listing-name">{{ $item['name'] }}</div>
-                                                <div class="la-muted">ID {{ $item['entity_id'] }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="la-badge la-badge--{{ $item['type_color'] }}">
-                                            {{ $item['type_label'] }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="la-host-name">{{ $item['host_name'] }}</div>
-                                        @if ($item['host_email'])
-                                            <div class="la-muted">{{ $item['host_email'] }}</div>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="la-muted">{{ $item['context_label'] }}</div>
-                                        <div>{{ $item['context_value'] }}</div>
-                                    </td>
-                                    <td>
-                                        <div class="la-details">{{ $item['details'] }}</div>
-                                    </td>
-                                    <td class="la-muted" style="white-space: nowrap;">
-                                        {{ $item['submitted_at']?->format('d M Y · H:i') ?? '-' }}
-                                    </td>
-                                    <td>
-                                        <div class="la-actions">
-                                            @if ($item['entity'] === 'guesthouse')
-                                                <button type="button" class="la-btn la-btn--approve" wire:click="approveGuestHouse({{ $item['entity_id'] }})">Approve</button>
-                                                <button type="button" class="la-btn la-btn--changes" wire:click="mountAction('requestGuestHouseChanges', { guestHouseId: {{ $item['entity_id'] }} })">Changes</button>
-                                                <button type="button" class="la-btn la-btn--reject" wire:click="mountAction('rejectGuestHouse', { guestHouseId: {{ $item['entity_id'] }} })">Reject</button>
-                                            @else
-                                                <button type="button" class="la-btn la-btn--approve" wire:click="approveCar({{ $item['entity_id'] }})">Approve</button>
-                                                <button type="button" class="la-btn la-btn--changes" wire:click="mountAction('requestCarChanges', { carId: {{ $item['entity_id'] }} })">Changes</button>
-                                                <button type="button" class="la-btn la-btn--reject" wire:click="mountAction('rejectCar', { carId: {{ $item['entity_id'] }} })">Reject</button>
-                                            @endif
-                                            <a href="{{ $item['edit_url'] }}" class="la-btn la-btn--edit">Edit</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <div class="la-cards">
+                    @foreach ($this->queueItems as $item)
+                        <article class="la-card" wire:key="{{ $item['key'] }}">
+                            @if ($item['image_url'])
+                                <img src="{{ $item['image_url'] }}" alt="" class="la-thumb" loading="lazy" />
+                            @else
+                                <span class="la-thumb la-thumb--empty">No img</span>
+                            @endif
+                            <div class="la-card-main">
+                                <div class="la-card-title">
+                                    <span class="la-listing-name">{{ $item['name'] }}</span>
+                                    <span class="la-badge la-badge--{{ $item['type_color'] }}">{{ $item['type_label'] }}</span>
+                                    <span class="la-badge la-badge--wait">Waiting</span>
+                                </div>
+                                <div class="la-muted">
+                                    Submitted by {{ $item['host_name'] }}
+                                    @if ($item['submitted_at'])
+                                        · {{ $item['submitted_at']->format('j M Y, H:i') }}
+                                    @endif
+                                    @if ($item['details'])
+                                        · {{ $item['details'] }}
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="la-actions">
+                                <a href="{{ $item['edit_url'] }}" class="la-btn la-btn--edit">Preview</a>
+                                @if ($item['entity'] === 'guesthouse')
+                                    <button type="button" class="la-btn la-btn--changes" wire:click="mountAction('requestGuestHouseChanges', { guestHouseId: {{ $item['entity_id'] }} })">Request changes</button>
+                                    <button type="button" class="la-btn la-btn--reject" wire:click="mountAction('rejectGuestHouse', { guestHouseId: {{ $item['entity_id'] }} })">Reject</button>
+                                    <button type="button" class="la-btn la-btn--approve" wire:click="approveGuestHouse({{ $item['entity_id'] }})">Approve</button>
+                                @else
+                                    <button type="button" class="la-btn la-btn--changes" wire:click="mountAction('requestCarChanges', { carId: {{ $item['entity_id'] }} })">Request changes</button>
+                                    <button type="button" class="la-btn la-btn--reject" wire:click="mountAction('rejectCar', { carId: {{ $item['entity_id'] }} })">Reject</button>
+                                    <button type="button" class="la-btn la-btn--approve" wire:click="approveCar({{ $item['entity_id'] }})">Approve</button>
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
                 </div>
             @endif
         </div>

@@ -39,7 +39,6 @@ use App\Filament\Resources\NewsletterSubscribers\NewsletterSubscriberResource;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\OutOfHoursFees\OutOfHoursFeeResource;
 use App\Filament\Resources\PaymentMethods\PaymentMethodResource;
-use App\Filament\Resources\PriceTypes\PriceTypeResource;
 use App\Filament\Resources\RentalConditions\RentalConditionResource;
 use App\Filament\Resources\RentalOptions\RentalOptionResource;
 use App\Filament\Resources\SpecialPrices\SpecialPriceResource;
@@ -56,10 +55,6 @@ class AdminScreen
      */
     public static function current(): ?array
     {
-        if (request()->is('admin/site-content', 'admin/site-content/*', 'admin/homepage-cms', 'admin/footer-settings')) {
-            return null;
-        }
-
         foreach (self::pages() as $page) {
             foreach ($page['match'] as $pattern) {
                 if (request()->is($pattern)) {
@@ -95,11 +90,11 @@ class AdminScreen
     {
         return [
             ['match' => ['admin'], 'crumb' => '', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
-            ['match' => ['admin/orders-calendar', 'admin/orders-calendar/*', 'admin/guest-houses/calendar', 'admin/guest-houses/calendar/*'], 'crumb' => 'Bookings', 'title' => 'Calendar', 'description' => 'Every vehicle unit and guest house on its own row. Click a booking to open it.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/orders-calendar', 'admin/orders-calendar/*', 'admin/impact-rent/orders-calendar', 'admin/impact-rent/orders-calendar/*', 'admin/guest-houses/calendar', 'admin/guest-houses/calendar/*'], 'crumb' => 'Bookings', 'title' => 'Calendar', 'description' => 'Every vehicle unit and guest house on its own row. Click a booking to open it.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/impact-rent/orders'], 'crumb' => 'Bookings', 'title' => 'Car reservations', 'description' => 'Every vehicle booking in one list. Open a row to edit, confirm or resend the e-mail.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/impact-rent/orders/*'], 'crumb' => 'Car reservations', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
-            ['match' => ['admin/guest-houses/guest-house-bookings'], 'crumb' => 'Bookings', 'title' => 'Guest house bookings', 'description' => 'Stays booked in guest houses. Confirm or cancel directly from the list.', 'nav' => 'guest-houses', 'settings' => false],
-            ['match' => ['admin/guest-houses/guest-house-bookings/*'], 'crumb' => 'Guest house bookings', 'title' => null, 'description' => null, 'nav' => 'guest-houses', 'settings' => false],
+            ['match' => ['admin/guest-houses/guest-house-bookings'], 'crumb' => 'Bookings', 'title' => 'Guest house bookings', 'description' => 'Stays booked in guest houses. Confirm or cancel directly from the list.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/guest-houses/guest-house-bookings/*'], 'crumb' => 'Guest house bookings', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/booking-change-requests'], 'crumb' => 'Bookings', 'title' => 'Change requests', 'description' => 'Customers asking to change dates or details of a booking.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/booking-change-requests/*'], 'crumb' => 'Change requests', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/guest-houses/guest-houses'], 'crumb' => 'Catalog', 'title' => 'Guest houses', 'description' => 'Stays listed by hosts and by MyTerraBook.', 'nav' => 'guest-houses', 'settings' => false],
@@ -122,16 +117,17 @@ class AdminScreen
             ['match' => ['admin/impact-rent/location-fees', 'admin/impact-rent/location-fees/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Location fees', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
             ['match' => ['admin/impact-rent/rental-options', 'admin/impact-rent/rental-options/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Add-ons', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
             ['match' => ['admin/impact-rent/coupons', 'admin/impact-rent/coupons/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Discount codes', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/tax-rates', 'admin/impact-rent/tax-rates/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/price-types', 'admin/impact-rent/price-types/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Types of price', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/tax-rates', 'admin/impact-rent/tax-rates/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'VAT used by vehicles, fees and add-ons.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/price-types', 'admin/impact-rent/price-types/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Types of price', 'description' => 'Each price type points to a tax rate.', 'nav' => 'pricing', 'settings' => false],
             ['match' => ['admin/registered-hosts', 'admin/registered-hosts/*'], 'crumb' => 'People', 'title' => 'Hosts', 'description' => 'Manage profiles, partner API and commission.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/registered-clients', 'admin/registered-clients/*'], 'crumb' => 'People', 'title' => 'Clients', 'description' => 'Registered clients and their bookings.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/listing-approvals', 'admin/listing-approvals/*'], 'crumb' => 'Moderation', 'title' => 'Listing approvals', 'description' => 'Newest submissions first. Approve, request changes or reject.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/listing-reviews', 'admin/listing-reviews/*', 'admin/guest-houses/guest-reviews'], 'crumb' => 'Moderation', 'title' => 'Listing reviews', 'description' => 'Guest reviews shown on vehicle and guest house pages.', 'nav' => null, 'settings' => false],
+            ['match' => ['admin/site-content', 'admin/site-content/*', 'admin/homepage-cms', 'admin/footer-settings'], 'crumb' => 'Website · Site content', 'title' => 'Site content', 'description' => 'Copy and media shown on the public website.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/blog-posts', 'admin/blog-posts/*'], 'crumb' => 'Website', 'title' => 'Good to Know', 'description' => 'Travel guides and tips shown on the blog. The page header text is edited under Site content › Good to Know.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/newsletter-subscribers', 'admin/newsletter-subscribers/*', 'admin/newsletter-campaigns', 'admin/newsletter-campaigns/*'], 'crumb' => 'Marketing', 'title' => 'Newsletter', 'description' => 'People who signed up on the website, and the e-mails sent to them.', 'nav' => 'newsletter', 'settings' => false],
             ['match' => ['admin/email-templates', 'admin/email-templates/*', 'admin/email-settings', 'admin/email-testing', 'admin/email-logs', 'admin/email-logs/*'], 'crumb' => 'Marketing', 'title' => 'Email', 'description' => 'Every e-mail the system sends, its sender settings and history.', 'nav' => 'email', 'settings' => false],
-            ['match' => ['admin/reports', 'admin/reports/*', 'admin/tracking-statistics', 'admin/tracking-statistics/*', 'admin/impact-rent/tracking-campaigns', 'admin/impact-rent/tracking-campaigns/*'], 'crumb' => 'Marketing', 'title' => 'Analytics', 'description' => 'Rental reports, website visits and campaign links.', 'nav' => 'analytics', 'settings' => false],
+            ['match' => ['admin/reports', 'admin/reports/*', 'admin/tracking-statistics', 'admin/tracking-statistics/*', 'admin/impact-rent/reports', 'admin/impact-rent/reports/*', 'admin/impact-rent/tracking-statistics', 'admin/impact-rent/tracking-statistics/*', 'admin/impact-rent/tracking-campaigns', 'admin/impact-rent/tracking-campaigns/*'], 'crumb' => 'Marketing', 'title' => 'Analytics', 'description' => 'Rental reports, website visits and campaign links.', 'nav' => 'analytics', 'settings' => false],
             ['match' => ['admin/global-configuration', 'admin/global-configuration/*'], 'crumb' => 'Settings', 'title' => null, 'description' => null, 'nav' => 'settings', 'settings' => true],
             ['match' => ['admin/payment-methods', 'admin/payment-methods/*'], 'crumb' => 'Settings', 'title' => 'Payment methods', 'description' => null, 'nav' => 'settings', 'settings' => true],
             ['match' => ['admin/custom-fields', 'admin/custom-fields/*'], 'crumb' => 'Settings', 'title' => 'Custom fields', 'description' => null, 'nav' => 'settings', 'settings' => true],
@@ -182,14 +178,16 @@ class AdminScreen
             self::item('Pricing rules', SpecialPriceResource::class, ['admin/impact-rent/special-prices', 'admin/impact-rent/special-prices/*'], 'Rates'),
             self::item('Fares overview', FaresOverview::class, ['admin/impact-rent/fares-overview', 'admin/impact-rent/fares-overview/*'], 'Rates'),
             self::item('Booking restrictions', BookingRestrictionResource::class, ['admin/impact-rent/booking-restrictions', 'admin/impact-rent/booking-restrictions/*'], 'Rates'),
-            self::item('Extra hour', ExtraHourFareResource::class, ['admin/impact-rent/extra-hour-fares', 'admin/impact-rent/extra-hour-fares/*'], 'Time based'),
-            self::item('Hourly', HourlyFareResource::class, ['admin/impact-rent/hourly-fares', 'admin/impact-rent/hourly-fares/*'], 'Time based'),
-            self::item('Out-of-hours', OutOfHoursFeeResource::class, ['admin/impact-rent/out-of-hours-fees', 'admin/impact-rent/out-of-hours-fees/*'], 'Time based'),
+            self::item('Extra hour fares', ExtraHourFareResource::class, ['admin/impact-rent/extra-hour-fares', 'admin/impact-rent/extra-hour-fares/*'], 'Time based'),
+            self::item('Hourly fares', HourlyFareResource::class, ['admin/impact-rent/hourly-fares', 'admin/impact-rent/hourly-fares/*'], 'Time based'),
+            self::item('Out-of-hours fees', OutOfHoursFeeResource::class, ['admin/impact-rent/out-of-hours-fees', 'admin/impact-rent/out-of-hours-fees/*'], 'Time based'),
             self::item('Location fees', LocationFeeResource::class, ['admin/impact-rent/location-fees', 'admin/impact-rent/location-fees/*'], 'Extras & fees'),
             self::item('Add-ons', RentalOptionResource::class, ['admin/impact-rent/rental-options', 'admin/impact-rent/rental-options/*'], 'Extras & fees'),
             self::item('Discount codes', CouponResource::class, ['admin/impact-rent/coupons', 'admin/impact-rent/coupons/*'], 'Discounts & tax'),
             self::item('Tax rates', TaxRateResource::class, ['admin/impact-rent/tax-rates', 'admin/impact-rent/tax-rates/*'], 'Discounts & tax'),
-            self::item('Types of price', PriceTypeResource::class, ['admin/impact-rent/price-types', 'admin/impact-rent/price-types/*'], 'Discounts & tax'),
+            ($taxUrl = self::url(TaxRateResource::class))
+                ? self::plain('Types of price', $taxUrl.'#types-of-price', request()->is('admin/impact-rent/price-types', 'admin/impact-rent/price-types/*'), 'Discounts & tax')
+                : null,
         ]));
     }
 
@@ -200,7 +198,7 @@ class AdminScreen
     {
         return array_values(array_filter([
             self::item('Templates', EmailTemplateResource::class, ['admin/email-templates', 'admin/email-templates/*']),
-            self::item('SMTP', EmailSettings::class, ['admin/email-settings']),
+            self::item('SMTP settings', EmailSettings::class, ['admin/email-settings']),
             self::item('Send test', EmailTesting::class, ['admin/email-testing']),
             self::item('Log', EmailLogResource::class, ['admin/email-logs', 'admin/email-logs/*']),
         ]));
@@ -212,8 +210,8 @@ class AdminScreen
     private static function analyticsLinks(): array
     {
         return array_values(array_filter([
-            self::item('Reports', Reports::class, ['admin/reports', 'admin/reports/*']),
-            self::item('Statistics', TrackingStatistics::class, ['admin/tracking-statistics', 'admin/tracking-statistics/*']),
+            self::item('Reports', Reports::class, ['admin/reports', 'admin/reports/*', 'admin/impact-rent/reports', 'admin/impact-rent/reports/*']),
+            self::item('Statistics', TrackingStatistics::class, ['admin/tracking-statistics', 'admin/tracking-statistics/*', 'admin/impact-rent/tracking-statistics', 'admin/impact-rent/tracking-statistics/*']),
             self::item('Tracking campaigns', TrackingCampaignResource::class, ['admin/impact-rent/tracking-campaigns', 'admin/impact-rent/tracking-campaigns/*']),
         ]));
     }

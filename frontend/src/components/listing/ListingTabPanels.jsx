@@ -1,4 +1,4 @@
-import { ChevronRight, MapPin } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api'
 import DateRangePicker, { parseDateOnly } from '../ui/DateRangePicker'
@@ -15,7 +15,6 @@ import ListingSleepingPanel from './ListingSleepingPanel'
 import ListingSection from './ListingSection'
 import ListingWriteReview from './ListingWriteReview'
 import CatalogIcon from '../../utils/CatalogIcon'
-import { partnerInitials } from '../../utils/mapCarToResultCard'
 import { isLivePartner } from '../../utils/livePartner'
 import CarenPricePanel from './CarenPricePanel'
 import FoxieInsurancePlans, { defaultFoxieInsuranceId } from './FoxieInsurancePlans'
@@ -229,40 +228,6 @@ export default function ListingTabPanels({
   return (
     <div className="split">
       <div className="maincol">
-        <header className="listing-header">
-          {listing.partner?.name && (
-            <div className="pcard-partner">
-              {listing.partner.logo ? (
-                <img src={listing.partner.logo} alt={listing.partner.name} />
-              ) : (
-                <span className="pcard-partner__mark" title={listing.partner.name}>
-                  {partnerInitials(listing.partner.name)}
-                </span>
-              )}
-            </div>
-          )}
-          <h1 className="listing-title">{listing.title}</h1>
-          {location?.formattedLine ? (
-            <div className="listing-header__meta">
-              <p className="listing-location-line">
-                <MapPin className="listing-location-icon" aria-hidden />
-                {location.mapsUrl ? (
-                  <a
-                    className="listing-location-link listing-location-link--inline"
-                    href={location.mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {location.formattedLine}
-                  </a>
-                ) : (
-                  <span>{location.formattedLine}</span>
-                )}
-              </p>
-            </div>
-          ) : null}
-        </header>
-
         {owner ? (
           <div className="owner-trust">
             <div className="owner-trust__head">

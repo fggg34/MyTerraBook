@@ -30,6 +30,40 @@ export function convertFromBase(amount, targetCurrency, exchangeRates = {}, base
 }
 
 /** Convert a display-currency major-unit amount into shop base currency major units. */
+function groupInteger(value, separator = '.') {
+  const negative = value < 0
+  let digits = String(Math.round(Math.abs(Number(value) || 0)))
+  let grouped = ''
+  while (digits.length > 3) {
+    grouped = separator + digits.slice(-3) + grouped
+    digits = digits.slice(0, -3)
+  }
+  return `${negative ? '-' : ''}${digits}${grouped}`
+}
+
+function formatMajorUnits(amount, code, currencyMeta = {}) {
+  const decimals = code === 'ISK' ? 0 : Number(currencyMeta.decimals ?? 2)
+  const thousand = currencyMeta.thousand_separator || (code === 'ISK' ? '.' : ',')
+  const decimal = currencyMeta.decimal_separator || (code === 'ISK' ? ',' : '.')
+  const symbol = currencyMeta.symbol || ''
+
+  if (decimals <= 0 || code === 'ISK') {
+    const grouped = groupInteger(amount, thousand)
+    return code === 'ISK' ? `ISK ${grouped}` : `${code} ${grouped}`
+  }
+
+  const factor = 10 ** decimals
+  const rounded = Math.round(Number(amount) * factor) / factor
+  const [wholeRaw, fracRaw = ''] = String(Math.abs(rounded).toFixed(decimals)).split('.')
+  const whole = groupInteger(Number(wholeRaw), thousand)
+  const sign = rounded < 0 ? '-' : ''
+  const body = `${whole}${decimal}${fracRaw}`
+  if (symbol && symbol !== code) {
+    return `${sign}${symbol}${body}`
+  }
+  return `${sign}${code} ${body}`
+}
+
 export function convertToBase(amount, displayCurrency, exchangeRates = {}, baseCurrency = 'EUR') {
   const display = Number(amount)
   if (Number.isNaN(display)) return 0
@@ -48,21 +82,10 @@ export function createPriceFormatter({
 } = {}) {
   const formatConverted = (amountInBase) => {
     const converted = convertFromBase(amountInBase, displayCurrency, exchangeRates, baseCurrency)
-    const maxDecimals = currencyMeta.decimals ?? 2
-    const minDecimals = maxDecimals >= 2 ? 2 : maxDecimals
-    try {
-      return new Intl.NumberFormat('en-GB', {
-        style: 'currency',
-        currency: displayCurrency,
-        minimumFractionDigits: minDecimals,
-        maximumFractionDigits: maxDecimals,
-      }).format(converted)
-    } catch {
-      const rounded = maxDecimals === 0
-        ? Math.round(converted)
-        : Number(converted.toFixed(maxDecimals))
-      return `${displayCurrency} ${rounded.toLocaleString('en-GB')}`
-    }
+    return formatMajorUnits(converted, displayCurrency, {
+      ...currencyMeta,
+      decimals: displayCurrency === 'ISK' ? 0 : currencyMeta.decimals,
+    })
   }
 
   return {

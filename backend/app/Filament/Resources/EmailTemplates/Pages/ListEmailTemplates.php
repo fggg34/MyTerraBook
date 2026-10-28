@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\EmailTemplates\Pages;
 
 use App\Filament\Resources\EmailTemplates\EmailTemplateResource;
+use App\Models\EmailTemplate;
 use Database\Seeders\EmailTemplateSeeder;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Contracts\View\View;
 
 class ListEmailTemplates extends ListRecords
 {
@@ -63,5 +65,24 @@ class ListEmailTemplates extends ListRecords
                     ->success()
                     ->send();
             });
+    }
+
+    public function toggleTemplate(int $id): void
+    {
+        $template = EmailTemplate::query()->findOrFail($id);
+        $template->update(['is_enabled' => ! $template->is_enabled]);
+    }
+
+    public function getFooter(): ?View
+    {
+        $groups = EmailTemplate::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->groupBy(fn (EmailTemplate $template): string => (string) ($template->category ?: 'general'));
+
+        return view('filament.email.templates-board', [
+            'groups' => $groups,
+        ]);
     }
 }

@@ -95,7 +95,7 @@ class SiteContentHubSaveTest extends TestCase
 
         $this->assertSame('#112233', $colors['navy'] ?? null);
         $this->assertSame('#00aa55', $colors['green'] ?? null);
-        $this->assertSame('#0f2036', SiteContentDefaults::forPage('global')['colors']['navy']);
+        $this->assertSame('#041e37', SiteContentDefaults::forPage('global')['colors']['navy']);
     }
 
     public function test_google_reviews_toggle_reveals_place_id_field(): void

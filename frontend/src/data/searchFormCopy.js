@@ -1,9 +1,9 @@
 /** Shared search-form and filter labels. Admin edits live in Global chrome → Search form. */
 export const SEARCH_FORM_COPY = {
-  pickupLabel: 'Pick-up location',
-  dropoffLabel: 'Drop-off location',
+  pickupLabel: 'Where',
+  dropoffLabel: 'Drop-off',
   locationPlaceholder: 'Select location',
-  vehicleDatesLabel: 'Pick-up → Drop-off',
+  vehicleDatesLabel: 'When',
   pickupDateLabel: 'Pick-up',
   dropoffDateLabel: 'Drop-off',
   cityLabel: 'City or area',
@@ -12,7 +12,7 @@ export const SEARCH_FORM_COPY = {
   stayDatesLabel: 'Check-in → Check-out',
   checkInLabel: 'Check-in',
   checkOutLabel: 'Check-out',
-  guestsLabel: 'Guests',
+  guestsLabel: 'Who',
   guestSingular: 'guest',
   guestPlural: 'guests',
   guestsAria: 'Number of guests',

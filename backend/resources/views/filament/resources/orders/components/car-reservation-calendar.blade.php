@@ -100,20 +100,85 @@
         background: #fbfcfe;
     }
 
-    .orc-day--blocked {
-        background: #eda74f;
+    .orc-day--selected,
+    .orc-day--this {
+        background: #041e37;
         color: #fff;
+        font-weight: 700;
+        box-shadow: none;
+        border-radius: 4px;
+    }
+
+    .orc-day--other {
+        background: #d7e6f7;
+        color: #1d4f86;
         font-weight: 700;
     }
 
-    .orc-day--selected {
-        box-shadow: inset 0 0 0 2px #0164a3;
-        font-weight: 700;
+    .orc-day--blocked {
+        background: #edf1f6;
+        color: #5b6b7d;
+        font-weight: 600;
+    }
+
+    .orc-shell.is-compact .orc-cal-grid,
+    .orc-cal-grid.is-one {
+        grid-template-columns: 1fr;
+    }
+
+    .orc-shell.is-compact .orc-month {
+        border: 0;
+        border-radius: 0;
+    }
+
+    .orc-shell.is-compact .orc-month-name {
+        display: none;
+    }
+
+    .orc-compact-label {
+        text-align: right;
+        font-size: 12px;
+        font-weight: 600;
+        color: #5b6b7d;
+        margin-bottom: 8px;
+    }
+
+    .orc-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 10px;
+        font-size: 12px;
+        color: #5b6b7d;
+    }
+
+    .orc-legend i {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+
+    .orc-legend .is-this i { background: #041e37; }
+    .orc-legend .is-blocked i { background: #c5d0dc; }
+    .orc-legend .is-other i { background: #4474a4; }
+
+    .orc-ical-note {
+        margin: 8px 0 0;
+        font-size: 12px;
+        line-height: 16px;
+        color: #8a99a9;
     }
 
     @media (max-width: 1200px) {
         .orc-cal-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .orc-shell.is-compact .orc-cal-grid,
+        .orc-cal-grid.is-one {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -124,17 +189,21 @@
     }
 </style>
 
-<div class="orc-shell">
+<div class="orc-shell {{ ($compact ?? false) ? 'is-compact' : '' }}">
+    @unless ($compact ?? false)
     <div class="orc-top">
         <div class="orc-title">{{ $carName }}</div>
         <span class="orc-meta">{{ $calendarLabel }}</span>
     </div>
+    @else
+        <div class="orc-compact-label">{{ $calendarLabel }}</div>
+    @endunless
 
     @if ($carImageUrl)
         <img src="{{ $carImageUrl }}" alt="{{ $carName }}" class="orc-image" />
     @endif
 
-    <div class="orc-cal-grid">
+    <div class="orc-cal-grid {{ ($compact ?? false) ? 'is-one' : '' }}">
         @foreach ($months as $month)
             <div class="orc-month">
                 <div class="orc-month-name">{{ $month['label'] }}</div>
@@ -152,7 +221,7 @@
                     <div class="orc-week">
                         @foreach ($week as $day)
                             <div
-                                class="orc-day {{ $day['inMonth'] ? '' : 'orc-day--out' }} {{ $day['blocked'] ? 'orc-day--blocked' : '' }} {{ $day['selected'] ? 'orc-day--selected' : '' }}"
+                                class="orc-day {{ $day['inMonth'] ? '' : 'orc-day--out' }} {{ ! empty($day['kind']) ? 'orc-day--'.$day['kind'] : '' }}"
                                 title="{{ $day['date'] }}"
                             >
                                 {{ $day['day'] }}
@@ -163,4 +232,12 @@
             </div>
         @endforeach
     </div>
+    @if ($compact ?? false)
+        <div class="orc-legend">
+            <span class="is-this"><i></i>This booking</span>
+            <span class="is-blocked"><i></i>Blocked</span>
+            <span class="is-other"><i></i>Other booking</span>
+        </div>
+        <p class="orc-ical-note">iCal sync and the 6-month view stay available under Open full calendar.</p>
+    @endif
 </div>

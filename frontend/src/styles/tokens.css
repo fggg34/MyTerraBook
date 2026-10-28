@@ -1,0 +1,89 @@
+/* MyTerraBook public tokens, from Figma file HjqfE4nbHKhJLGEKIQgyQT (05 Frontend / 06 Mobile).
+   Components use these variables. Admin Site content > Global chrome colors can override --navy, --accent, etc. */
+
+:root {
+  --tb-navy: #041e37;
+  --tb-navy-2: #17334f;
+  --tb-navy-3: #123354;
+  --tb-navy-line: #334a61;
+  --tb-steel: #4474a4;
+  --tb-steel-50: #e8eff7;
+  --tb-cream: #f6f2ec;
+  --tb-gold: #f4a83c;
+  --tb-gold-hover: #e89a2e;
+  --tb-white: #ffffff;
+  --tb-muted: #94a1b0;
+  --tb-muted-2: #8794a3;
+  --tb-slate: #5c6b80;
+  --tb-ink: #404a57;
+  --tb-ink-strong: #041e37;
+  --tb-border: #e0e5ed;
+  --tb-border-2: #e3e5eb;
+  --tb-red: #e23744;
+  --tb-overlay: rgba(4, 30, 55, 0.55);
+
+  --tb-font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --tb-font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif;
+
+  --tb-text-xs: 12px;
+  --tb-text-sm: 13px;
+  --tb-text-md: 14px;
+  --tb-text-base: 15px;
+  --tb-text-lg: 16px;
+  --tb-text-xl: 18px;
+  --tb-text-2xl: 22px;
+  --tb-text-3xl: 28px;
+  --tb-text-4xl: 40px;
+  --tb-text-5xl: 56px;
+
+  --tb-space-2: 8px;
+  --tb-space-3: 12px;
+  --tb-space-4: 16px;
+  --tb-space-5: 20px;
+  --tb-space-6: 24px;
+  --tb-space-8: 32px;
+  --tb-space-10: 40px;
+  --tb-space-page: 64px;
+  --tb-space-page-m: 16px;
+
+  --tb-radius-btn: 14px;
+  --tb-radius-card: 28px;
+  --tb-radius-photo: 20px;
+  --tb-radius-input: 14px;
+  --tb-radius-pill: 999px;
+  --tb-radius-sheet: 24px;
+
+  --tb-shadow-card: 0 12px 32px rgba(4, 30, 55, 0.08);
+  --tb-shadow-menu: 0 16px 40px rgba(4, 30, 55, 0.16);
+  --tb-shadow-drawer: -8px 0 32px rgba(0, 0, 0, 0.3);
+
+  --tb-header-h: 80px;
+  --tb-header-h-m: 60px;
+  --tb-bp: 768px;
+  --tb-maxw: 1312px;
+
+  --navy: var(--tb-navy);
+  --ink: var(--tb-ink-strong);
+  --slate: var(--tb-slate);
+  --slate-light: var(--tb-muted-2);
+  --green: var(--tb-gold);
+  --green-dark: var(--tb-gold-hover);
+  --blue: var(--tb-steel);
+  --blue-soft: var(--tb-steel-50);
+  --line: var(--tb-border);
+  --bg: var(--tb-cream);
+  --red: var(--tb-red);
+  --accent: var(--tb-gold);
+  --card-radius: var(--tb-radius-card);
+  --maxw: var(--tb-maxw);
+  --serif: var(--tb-font-display);
+  --sans: var(--tb-font-sans);
+  --nav-h: var(--tb-header-h);
+}
+
+@media (max-width: 768px) {
+  :root {
+    --nav-h: var(--tb-header-h-m);
+    --tb-space-page: var(--tb-space-page-m);
+  }
+}

@@ -57,10 +57,10 @@ class GuestHouseAmenityResource extends Resource
                 TextColumn::make('name')->searchable(),
                 TextColumn::make('icon')
                     ->label('Icon')
-                    ->placeholder('—')
+                    ->placeholder('-')
                     ->formatStateUsing(function (?string $state): HtmlString|string {
                         if (! $state) {
-                            return '—';
+                            return '-';
                         }
 
                         $html = IconCatalog::tableIconHtml($state);

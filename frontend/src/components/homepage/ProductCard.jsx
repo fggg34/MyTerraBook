@@ -3,6 +3,7 @@ import { usePageContent } from '../../context/SiteContentContext'
 import { cmsText } from '../../data/searchFormCopy'
 import { normalizeSpec, renderProductCardSpec } from '../../utils/listingSpecIcons'
 import { partnerInitials } from '../../utils/mapCarToResultCard'
+import SitePhoto from '../site/SitePhoto'
 
 function BookButton({ label }) {
   return (
@@ -37,7 +38,7 @@ export default function ProductCard({
       )}
       <div className="pcard-media">
         {badge && <span className="pbadge">{badge}</span>}
-        <img src={image} alt={imageAlt || name} draggable={false} />
+        <SitePhoto src={image} alt={imageAlt || name} />
       </div>
       <div className="pcard-foot">
         {partner?.name && (

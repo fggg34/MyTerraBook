@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { ArrowRight, ChevronDown, ChevronRight, Clock, Mail, Menu, Phone, Search, X } from 'lucide-react'
 import SiteLogo from '../branding/SiteLogo'
 import UserAvatar from '../account/UserAvatar'
 import { getDashboardLabel, getPostLoginPath, normalizeUserRole, useAuth } from '../../context/AuthContext'
+import { usePageContent } from '../../context/SiteContentContext'
 import useScrollLock from '../../hooks/useScrollLock'
 import LangCurrencyMenu from './LangCurrencyMenu'
 import useDestinations from '../../hooks/useDestinations'
 import CountryFlag from '../ui/CountryFlag'
 import { destinationLandingPath } from '../../utils/destination'
+import { cmsText } from '../../data/searchFormCopy'
 
 function NavLink({ href, children, onClick, className = '' }) {
   if (href?.startsWith('/') && !href.startsWith('//')) {
@@ -30,6 +33,19 @@ function navLinkClass(href) {
   return 'nav-collapsible'
 }
 
+function isDestinationsLink(link) {
+  return /destination/i.test(link?.label || '')
+}
+
+function isVehiclesLink(link) {
+  return /^vehicles$/i.test(link?.label || '')
+}
+
+const VEHICLE_LINKS = [
+  { label: 'Campervans', href: '/campervans' },
+  { label: 'Cars & 4x4', href: '/cars' },
+]
+
 export default function Header({
   navLinks = [],
   ctaLabel,
@@ -39,12 +55,17 @@ export default function Header({
 }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { page: globalPage } = usePageContent('global')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [destinationsOpen, setDestinationsOpen] = useState(false)
+  const [vehiclesOpen, setVehiclesOpen] = useState(false)
+  const [mobileDestinationsOpen, setMobileDestinationsOpen] = useState(false)
   const { destinations, isPending: destinationsLoading } = useDestinations('campervan')
   const userMenuRef = useRef(null)
   const destinationsRef = useRef(null)
+  const vehiclesRef = useRef(null)
   const headerRef = useRef(null)
   const hamburgerRef = useRef(null)
   const mobileMenuScrollRef = useRef(null)
@@ -53,11 +74,36 @@ export default function Header({
   const dashboardPath = user ? getPostLoginPath(user) : null
   const dashboardLabel = getDashboardLabel(role)
   const showHostCta = !user || (role !== 'host' && role !== 'admin')
-  const nonDestinationLinks = navLinks.filter((link) => link.label !== 'Destinations')
-  const mobileNavLinks = nonDestinationLinks
+  const desktopLinks = navLinks
+  const hasDestinationsItem = desktopLinks.some(isDestinationsLink)
+  const phone = cmsText(globalPage.header?.supportPhone, globalPage.faqSection?.phone || '')
+  const email = cmsText(globalPage.header?.supportEmail, globalPage.faqSection?.email || '')
+  const hours = cmsText(globalPage.header?.supportHours, '')
+
+  const mobileNavLinks = (() => {
+    if (!navLinks.length) {
+      return [
+        { label: 'Plan a trip', href: '/#search' },
+        ...VEHICLE_LINKS,
+        { label: 'Guesthouses', href: '/guesthouses' },
+        { label: 'Destinations', href: '/destinations' },
+        { label: 'Guides', href: '/good-to-know' },
+      ]
+    }
+    const expanded = []
+    navLinks.forEach((link) => {
+      if (isVehiclesLink(link)) {
+        expanded.push(...VEHICLE_LINKS)
+        return
+      }
+      expanded.push(link)
+    })
+    return expanded
+  })()
 
   const closeMobile = () => {
     setMobileOpen(false)
+    setMobileDestinationsOpen(false)
     hamburgerRef.current?.blur()
   }
 
@@ -102,6 +148,22 @@ export default function Header({
   }, [destinationsOpen])
 
   useEffect(() => {
+    if (!vehiclesOpen) return undefined
+    const onPointerDown = (event) => {
+      if (!vehiclesRef.current?.contains(event.target)) setVehiclesOpen(false)
+    }
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setVehiclesOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [vehiclesOpen])
+
+  useEffect(() => {
     if (!userMenuOpen) return undefined
     const onPointerDown = (event) => {
       if (!userMenuRef.current?.contains(event.target)) {
@@ -119,6 +181,40 @@ export default function Header({
     navigate('/')
   }
 
+  const openSearch = () => {
+    if (location.pathname === '/') {
+      document.getElementById('search')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+    navigate('/campervans')
+  }
+
+  const hostCta = showHostCta && ctaLabel ? (
+    ctaHref?.startsWith('/') ? (
+      <Link className="host" to={ctaHref} onClick={closeMobile}>
+        {ctaLabel}
+        <ArrowRight size={16} aria-hidden />
+      </Link>
+    ) : (
+      <a className="host" href={ctaHref || '#host'} onClick={closeMobile}>
+        {ctaLabel}
+        <ArrowRight size={16} aria-hidden />
+      </a>
+    )
+  ) : null
+
+  const signInControl = !user && signInLabel ? (
+    signInHref?.startsWith('/') ? (
+      <Link className="signin" to={signInHref || '/login'}>
+        {signInLabel}
+      </Link>
+    ) : (
+      <a className="signin" href={signInHref || '/login'}>
+        {signInLabel}
+      </a>
+    )
+  ) : null
+
   const mobileMenuLayer = (
     <>
       <button
@@ -135,37 +231,62 @@ export default function Header({
         aria-modal="true"
         aria-label="Navigation menu"
       >
+        <div className="mobile-menu-toolbar">
+          <SiteLogo variant="header" className="logo logo--on-dark" />
+          <button type="button" className="mobile-menu-close" aria-label="Close menu" onClick={closeMobile}>
+            <X size={20} />
+          </button>
+        </div>
         <div className="mobile-menu-scroll" ref={mobileMenuScrollRef}>
           <div className="mobile-menu-main">
-            <div className="mobile-destinations">
-              <Link className="mobile-menu-link mobile-menu-link--destinations" to="/destinations" onClick={closeMobile}>
-                Destinations
-              </Link>
-              <div className="mobile-destination-list" aria-label="Available destinations">
-                {destinationsLoading ? (
-                  <span className="mobile-destination-status">Loading destinations…</span>
-                ) : destinations.map(({ code, name }) => (
-                  <Link
-                    key={code}
-                    className="mobile-destination-link"
-                    to={destinationLandingPath({ name })}
-                    onClick={closeMobile}
-                  >
-                    <CountryFlag code={code} decorative />
-                    {name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            {mobileNavLinks.map((link) => (
-              <NavLink key={link.label} href={link.href} onClick={closeMobile} className="mobile-menu-link">
-                {link.label}
-              </NavLink>
-            ))}
+            {mobileNavLinks.map((link) => {
+              if (isDestinationsLink(link)) {
+                return (
+                  <div className="mobile-destinations" key="destinations">
+                    <button
+                      type="button"
+                      className="mobile-menu-link"
+                      onClick={() => setMobileDestinationsOpen((open) => !open)}
+                      aria-expanded={mobileDestinationsOpen}
+                    >
+                      {link.label}
+                      <ChevronRight size={18} aria-hidden />
+                    </button>
+                    {mobileDestinationsOpen && (
+                      <div className="mobile-destination-list" aria-label="Available destinations">
+                        {destinationsLoading ? (
+                          <span className="mobile-destination-status">Loading destinations...</span>
+                        ) : destinations.map(({ code, name }) => (
+                          <Link
+                            key={code}
+                            className="mobile-destination-link"
+                            to={destinationLandingPath({ name })}
+                            onClick={closeMobile}
+                          >
+                            <CountryFlag code={code} decorative />
+                            {name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+              return (
+                <NavLink key={link.label} href={link.href} onClick={closeMobile} className="mobile-menu-link">
+                  {link.label}
+                  <ChevronRight size={18} aria-hidden />
+                </NavLink>
+              )
+            })}
           </div>
         </div>
 
         <div className="mobile-menu-bottom">
+          <div className="mobile-menu-currency">
+            <LangCurrencyMenu variant="mobile" />
+          </div>
+
           {user ? (
             <>
               <div className="mobile-menu-account-head">
@@ -190,35 +311,55 @@ export default function Header({
             </>
           ) : (
             <div className="mobile-menu-bottom-actions">
-              {(signInHref?.startsWith('/') ? (
+              {showHostCta && ctaLabel && (
+                ctaHref?.startsWith('/') ? (
+                  <Link className="mobile-menu-action mobile-menu-action--host mobile-menu-action--full" to={ctaHref} onClick={closeMobile}>
+                    {ctaLabel}
+                    <ArrowRight size={16} aria-hidden />
+                  </Link>
+                ) : (
+                  <a className="mobile-menu-action mobile-menu-action--host mobile-menu-action--full" href={ctaHref || '#host'} onClick={closeMobile}>
+                    {ctaLabel}
+                    <ArrowRight size={16} aria-hidden />
+                  </a>
+                )
+              )}
+              {signInHref?.startsWith('/') ? (
                 <Link className="mobile-menu-action mobile-menu-action--signin" to={signInHref || '/login'} onClick={closeMobile}>
                   {signInLabel || 'Sign in'}
+                  <ArrowRight size={16} aria-hidden />
                 </Link>
               ) : (
                 <a className="mobile-menu-action mobile-menu-action--signin" href={signInHref || '/login'} onClick={closeMobile}>
                   {signInLabel || 'Sign in'}
+                  <ArrowRight size={16} aria-hidden />
                 </a>
-              ))}
-              <Link className="mobile-menu-action mobile-menu-action--solid" to="/register" onClick={closeMobile}>
-                Create account
-              </Link>
+              )}
             </div>
           )}
 
-          {showHostCta && ctaLabel &&
-            (ctaHref?.startsWith('/') ? (
-              <Link className="mobile-menu-action mobile-menu-action--host mobile-menu-action--full" to={ctaHref} onClick={closeMobile}>
-                {ctaLabel}
-              </Link>
-            ) : (
-              <a className="mobile-menu-action mobile-menu-action--host mobile-menu-action--full" href={ctaHref || '#host'} onClick={closeMobile}>
-                {ctaLabel}
-              </a>
-            ))}
-
-          <div className="mobile-menu-currency">
-            <LangCurrencyMenu variant="mobile" />
-          </div>
+          {(phone || email || hours) && (
+            <div className="mobile-menu-contact">
+              {phone && (
+                <a href={`tel:${phone.replace(/\s/g, '')}`}>
+                  <Phone size={15} aria-hidden />
+                  {phone}
+                </a>
+              )}
+              {email && (
+                <a href={`mailto:${email}`}>
+                  <Mail size={15} aria-hidden />
+                  {email}
+                </a>
+              )}
+              {hours && (
+                <span className="hours">
+                  <Clock size={14} aria-hidden />
+                  {hours}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -227,98 +368,110 @@ export default function Header({
   return (
     <header ref={headerRef} className={`nav${mobileOpen ? ' menu-open' : ''}`}>
       <div className="wrap nav-chrome">
-        <div className="nav-mobile-left">
-          <button
-            ref={hamburgerRef}
-            className="hamburger"
-            type="button"
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={mobileOpen}
-            aria-controls="mobileMenu"
-            onClick={() => setMobileOpen((v) => !v)}
-          >
-            {mobileOpen ? (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <path d="M6 6l12 12M18 6 6 18" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-            )}
-          </button>
-        </div>
-
         <SiteLogo variant="header" className="logo" />
 
         <nav className="main" aria-label="Main">
-          <div className="destinations-menu" ref={destinationsRef}>
-            <button
-              type="button"
-              className={destinationsOpen ? 'destinations-menu-toggle open' : 'destinations-menu-toggle'}
-              aria-haspopup="menu"
-              aria-expanded={destinationsOpen}
-              onClick={() => setDestinationsOpen((open) => !open)}
-            >
-              Destinations
-              <svg viewBox="0 0 24 24" aria-hidden focusable="false">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-            {destinationsOpen && (
-              <div className="destinations-menu-panel" role="menu" aria-label="Destinations">
-                <div className="destinations-menu-heading">
-                  <strong>Choose where your road trip begins</strong>
-                </div>
-                <div className="destinations-menu-list">
-                  {destinationsLoading ? (
-                    <span className="destinations-menu-status">Loading destinations…</span>
-                  ) : destinations.length ? (
-                    destinations.map(({ code, name }) => (
-                      <Link
-                        key={code}
-                        className="destinations-menu-item"
-                        to={destinationLandingPath({ name })}
-                        role="menuitem"
-                        onClick={() => setDestinationsOpen(false)}
-                      >
-                        <span className="destinations-menu-flag"><CountryFlag code={code} decorative /></span>
-                        <span className="destinations-menu-country">
-                          <strong>{name}</strong>
-                          <small>Campervan rental</small>
-                        </span>
-                        <svg className="destinations-menu-arrow" viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M5 12h13M13 6l6 6-6 6" />
-                        </svg>
-                      </Link>
-                    ))
-                  ) : (
-                    <span className="destinations-menu-status">No destinations available yet.</span>
+          {desktopLinks.map((link) => {
+            if (isVehiclesLink(link)) {
+              return (
+                <div className="vehicles-menu destinations-menu" ref={vehiclesRef} key="vehicles">
+                  <button
+                    type="button"
+                    className={vehiclesOpen ? 'vehicles-menu-toggle open' : 'vehicles-menu-toggle'}
+                    aria-haspopup="menu"
+                    aria-expanded={vehiclesOpen}
+                    onClick={() => setVehiclesOpen((open) => !open)}
+                  >
+                    {link.label}
+                    <ChevronDown size={14} aria-hidden />
+                  </button>
+                  {vehiclesOpen && (
+                    <div className="destinations-menu-panel vehicles-menu-panel" role="menu" aria-label={link.label}>
+                      {VEHICLE_LINKS.map((item) => (
+                        <Link
+                          key={item.href}
+                          className="destinations-menu-item"
+                          to={item.href}
+                          role="menuitem"
+                          onClick={() => setVehiclesOpen(false)}
+                        >
+                          <span className="destinations-menu-country">
+                            <strong>{item.label}</strong>
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
-          </div>
-          {nonDestinationLinks.map((link) => (
-            <NavLink key={link.label} href={link.href} className={navLinkClass(link.href)}>
-              {link.label}
-            </NavLink>
-          ))}
+              )
+            }
+            if (isDestinationsLink(link)) {
+              return (
+                <div className="destinations-menu" ref={destinationsRef} key="destinations">
+                  <button
+                    type="button"
+                    className={destinationsOpen ? 'destinations-menu-toggle open' : 'destinations-menu-toggle'}
+                    aria-haspopup="menu"
+                    aria-expanded={destinationsOpen}
+                    onClick={() => setDestinationsOpen((open) => !open)}
+                  >
+                    {link.label}
+                    <ChevronDown size={14} aria-hidden />
+                  </button>
+                  {destinationsOpen && (
+                    <div className="destinations-menu-panel" role="menu" aria-label={link.label}>
+                      <div className="destinations-menu-list">
+                        {destinationsLoading ? (
+                          <span className="destinations-menu-status">Loading destinations...</span>
+                        ) : destinations.length ? (
+                          destinations.map(({ code, name }) => (
+                            <Link
+                              key={code}
+                              className="destinations-menu-item"
+                              to={destinationLandingPath({ name })}
+                              role="menuitem"
+                              onClick={() => setDestinationsOpen(false)}
+                            >
+                              <span className="destinations-menu-flag"><CountryFlag code={code} decorative /></span>
+                              <span className="destinations-menu-country">
+                                <strong>{name}</strong>
+                              </span>
+                            </Link>
+                          ))
+                        ) : (
+                          <span className="destinations-menu-status">No destinations available yet.</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            }
+            return (
+              <NavLink key={link.label} href={link.href} className={navLinkClass(link.href)}>
+                {link.label}
+              </NavLink>
+            )
+          })}
+          {!hasDestinationsItem && (
+            <div className="destinations-menu" ref={destinationsRef}>
+              <button
+                type="button"
+                className={destinationsOpen ? 'destinations-menu-toggle open' : 'destinations-menu-toggle'}
+                aria-haspopup="menu"
+                aria-expanded={destinationsOpen}
+                onClick={() => setDestinationsOpen((open) => !open)}
+              >
+                Destinations
+                <ChevronDown size={14} aria-hidden />
+              </button>
+            </div>
+          )}
           <span id="headerSearchSlot" />
         </nav>
 
         <div className="nav-right">
-          <LangCurrencyMenu />
-          {showHostCta && ctaLabel &&
-            (ctaHref?.startsWith('/') ? (
-              <Link className="host" to={ctaHref}>
-                {ctaLabel}
-              </Link>
-            ) : (
-              <button className="host" type="button" onClick={() => (window.location.href = ctaHref || '#host')}>
-                {ctaLabel}
-              </button>
-            ))}
+          {hostCta}
           {user ? (
             <div className="user-menu-wrap" ref={userMenuRef}>
               <button
@@ -331,9 +484,7 @@ export default function Header({
               >
                 <UserAvatar user={user} />
                 <span className="user-name">{user.name}</span>
-                <svg className="user-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
+                <ChevronDown className="user-caret" size={16} aria-hidden />
               </button>
               <div className={`user-menu-panel${userMenuOpen ? ' show' : ''}`} role="menu">
                 <Link
@@ -350,42 +501,28 @@ export default function Header({
               </div>
             </div>
           ) : (
-            <>
-              {signInLabel &&
-                (signInHref?.startsWith('/') ? (
-                  <Link className="signin" to={signInHref}>
-                    {signInLabel}
-                  </Link>
-                ) : (
-                  <button className="signin" type="button" onClick={() => (window.location.href = signInHref || '/login')}>
-                    {signInLabel}
-                  </button>
-                ))}
-              {signInHref?.startsWith('/') ? (
-                <Link
-                  className="nav-mobile-account-btn"
-                  to={signInHref || '/login'}
-                  aria-label={signInLabel || 'Sign in'}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M20 21a8 8 0 0 0-16 0" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                </Link>
-              ) : (
-                <a
-                  className="nav-mobile-account-btn"
-                  href={signInHref || '/login'}
-                  aria-label={signInLabel || 'Sign in'}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M20 21a8 8 0 0 0-16 0" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                </a>
-              )}
-            </>
+            signInControl
           )}
+          <LangCurrencyMenu />
+          <button
+            type="button"
+            className="nav-search"
+            aria-label="Search"
+            onClick={openSearch}
+          >
+            <Search size={22} />
+          </button>
+          <button
+            ref={hamburgerRef}
+            className="hamburger"
+            type="button"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+            aria-controls="mobileMenu"
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </div>
 

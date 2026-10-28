@@ -22,7 +22,7 @@
   max-width: 100%;
   scroll-snap-align: start;
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: var(--tb-radius-card, 28px);
   overflow: hidden;
   background: #fff;
   display: flex;

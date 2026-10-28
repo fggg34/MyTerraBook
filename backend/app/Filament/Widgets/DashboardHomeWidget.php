@@ -164,9 +164,9 @@ class DashboardHomeWidget extends Widget
             'type' => 'cars',
             'url' => OrderResource::getUrl('edit', ['record' => $order]),
             'reference' => $order->reference ?: (string) $order->id,
-            'customer' => $order->customer_name ?: '—',
+            'customer' => $order->customer_name ?: '-',
             'email' => $order->customer_email ?: '',
-            'item' => $order->car?->name ?: '—',
+            'item' => $order->car?->name ?: '-',
             'dates' => $this->range($order->pickup_at, $order->dropoff_at),
             'status' => AdminTableBadgeColors::humanize($order->order_status),
             'tone' => $order->order_status === OrderStatus::Confirmed ? 'ok' : ($order->order_status === OrderStatus::Cancelled ? 'bad' : 'warn'),
@@ -177,9 +177,9 @@ class DashboardHomeWidget extends Widget
             'type' => 'stays',
             'url' => GuestHouseBookingResource::getUrl('view', ['record' => $booking]),
             'reference' => $booking->booking_reference ?: (string) $booking->id,
-            'customer' => $booking->guest_name ?: '—',
+            'customer' => $booking->guest_name ?: '-',
             'email' => $booking->guest_email ?? '',
-            'item' => $booking->guestHouse?->name ?: '—',
+            'item' => $booking->guestHouse?->name ?: '-',
             'dates' => $this->range($booking->check_in, $booking->check_out),
             'status' => AdminTableBadgeColors::humanize($booking->status),
             'tone' => $booking->status === GuestHouseBookingStatus::Confirmed ? 'ok' : 'warn',
@@ -300,7 +300,7 @@ class DashboardHomeWidget extends Widget
     private function range(mixed $start, mixed $end): string
     {
         if ($start === null) {
-            return '—';
+            return '-';
         }
         $from = \Illuminate\Support\Carbon::parse($start);
         $to = $end ? \Illuminate\Support\Carbon::parse($end) : null;
@@ -311,9 +311,9 @@ class DashboardHomeWidget extends Widget
             return $from->format('j M Y');
         }
         if ($from->year === $to->year) {
-            return $from->format('j M').' – '.$to->format('j M Y');
+            return $from->format('j M').' to '.$to->format('j M Y');
         }
 
-        return $from->format('j M Y').' – '.$to->format('j M Y');
+        return $from->format('j M Y').' to '.$to->format('j M Y');
     }
 }

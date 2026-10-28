@@ -13,8 +13,8 @@
   --auth-bg: var(--bg);
   --auth-red: var(--red);
   --auth-red-soft: #fef2f2;
-  --auth-serif: 'Quicksand', sans-serif;
-  --auth-sans: 'Open Sans', sans-serif;
+  --auth-serif: var(--tb-font-display, 'Bricolage Grotesque', sans-serif);
+  --auth-sans: var(--tb-font-sans, 'Plus Jakarta Sans', sans-serif);
 }
 
 /* ── Split auth layout ─────────────────────────────────────────── */
@@ -22,8 +22,8 @@
 .auth-layout {
   display: grid;
   grid-template-columns: minmax(320px, 1.05fr) minmax(380px, 0.95fr);
-  min-height: calc(100vh - 116px);
-  background: var(--auth-bg);
+  min-height: 100vh;
+  background: #fff;
   font-family: var(--auth-sans);
   color: var(--auth-ink);
 }
@@ -49,7 +49,28 @@
 .auth-layout__hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 32, 54, 0.52);
+  background: linear-gradient(180deg, rgba(4, 30, 55, 0.28) 0%, rgba(4, 30, 55, 0.62) 100%);
+}
+
+.auth-layout__brand {
+  position: absolute;
+  top: 28px;
+  left: 36px;
+  z-index: 2;
+  color: #fff;
+  font-weight: 800;
+}
+.auth-layout__brand,
+.auth-layout__brand .terra {
+  color: #fff;
+}
+.auth-layout__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--navy, #041e37);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .auth-layout__hero-content {
@@ -455,21 +476,22 @@
 .auth-submit {
   width: 100%;
   border: 0;
-  border-radius: 999px;
+  border-radius: 14px;
   padding: 15px 22px;
   font-family: var(--auth-sans);
   font-size: 0.98rem;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, var(--auth-green) 0%, var(--auth-green-dark) 100%);
+  background: var(--navy, #041e37);
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(69, 160, 106, 0.28);
-  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  box-shadow: none;
+  transition: background 0.15s, transform 0.15s, opacity 0.15s;
 }
 
 .auth-submit:hover:not(:disabled) {
+  background: var(--navy-2, #17334f);
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(69, 160, 106, 0.34);
+  box-shadow: none;
 }
 
 .auth-submit:active:not(:disabled) {

@@ -223,7 +223,7 @@
         }
     </style>
 
-    <div class="fo-title">Fares Overview</div>
+    <div class="fo-title">Fares overview</div>
 
     <section class="fo-card">
         <div class="fo-top-grid">

@@ -2,10 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Quicksand:wght@700&display=swap');
 
 :root{
-  --navy:#0f2036;--ink:#1d2b40;--slate:#5a6b82;--slate-light:#8090a4;
-  --green:#45a06a;--red:#e23744;--green-dark:#3a8d5d;--blue:#34629e;
-  --blue-soft:#eef2f8;--line:#e2e7ef;--bg:#fbfcfe;--card-radius:22px;
-  --maxw:1440px;--serif:'Quicksand',sans-serif;--sans:'Open Sans',sans-serif;
+  --maxw: var(--tb-maxw, 1312px);
 }
 
 /* ===================================================================
@@ -17,7 +14,7 @@
 /* ---------- Sticky "command bar": nav + search + filters in one pinned stack ---------- */
 .chrome{
   position:sticky;top:0;z-index:50;
-  background:#fff;
+  background:var(--tb-cream, #f6f2ec);
   position:-webkit-sticky;
   border-bottom:1px solid var(--line);
   box-shadow:0 1px 0 rgba(15,32,54,0);

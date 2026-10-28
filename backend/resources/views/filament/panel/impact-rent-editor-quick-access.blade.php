@@ -99,7 +99,7 @@
                 ['label' => 'Discount codes',    'icon' => $icons['ticket'],    'url' => url('/admin/impact-rent/coupons'),            'active' => request()->is('admin/impact-rent/coupons*')],
                 ['label' => 'Tax Rates',         'icon' => $icons['receipt'],   'url' => url('/admin/impact-rent/tax-rates'),          'active' => request()->is('admin/impact-rent/tax-rates*')],
                 ['label' => 'Types of Price',    'icon' => $icons['list'],      'url' => url('/admin/impact-rent/price-types'),        'active' => request()->is('admin/impact-rent/price-types*')],
-                ['label' => 'Fares Overview',    'icon' => $icons['chart'],     'url' => url('/admin/impact-rent/fares-overview'),     'active' => request()->is('admin/impact-rent/fares-overview*')],
+                ['label' => 'Fares overview',    'icon' => $icons['chart'],     'url' => url('/admin/impact-rent/fares-overview'),     'active' => request()->is('admin/impact-rent/fares-overview*')],
             ],
         ],
         [
@@ -125,7 +125,7 @@
                 || request()->is('admin/impact-rent/tracking-campaigns*'),
             'items'  => [
                 ['label' => 'Reports',              'icon' => $icons['pie'],       'url' => url('/admin/impact-rent/reports'),              'active' => request()->is('admin/impact-rent/reports*')],
-                ['label' => 'Statistics Tracking',  'icon' => $icons['chart'],     'url' => url('/admin/impact-rent/tracking-statistics'),  'active' => request()->is('admin/impact-rent/tracking-statistics*')],
+                ['label' => 'Statistics',  'icon' => $icons['chart'],     'url' => url('/admin/impact-rent/tracking-statistics'),  'active' => request()->is('admin/impact-rent/tracking-statistics*')],
                 ['label' => 'Tracking campaigns',   'icon' => $icons['megaphone'], 'url' => url('/admin/impact-rent/tracking-campaigns'),   'active' => request()->is('admin/impact-rent/tracking-campaigns*')],
             ],
         ],
@@ -520,9 +520,11 @@
             font-size: 0.875rem;
         }
 
-        html.ir-shell .fi-main.fi-width-7xl,
-        html.ir-shell .fi-page-content {
-            max-width: 90rem;
+        html.tb-redesign.ir-shell .fi-main,
+        html.tb-redesign.ir-shell .fi-main.fi-width-7xl,
+        html.tb-redesign.ir-shell .fi-page-content {
+            max-width: none;
+            width: 100%;
         }
 
         html.ir-shell .fi-section,

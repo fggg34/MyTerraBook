@@ -43,6 +43,20 @@ export const CURRENCIES = SUPPORTED_CURRENCY_CODES.map((code) => {
 })
 
 export const CUR_STORAGE_KEY = 'terrabook_currency'
+export const CUR_COOKIE_KEY = 'terrabook_currency'
+const CUR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
+
+export function writeCurrencyCookie(code) {
+  if (typeof document === 'undefined' || !code) return
+  document.cookie = `${CUR_COOKIE_KEY}=${encodeURIComponent(code)};path=/;max-age=${CUR_COOKIE_MAX_AGE};SameSite=Lax`
+}
+
+export function readCurrencyCookie() {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.split('; ').find((row) => row.startsWith(`${CUR_COOKIE_KEY}=`))
+  if (!match) return null
+  return decodeURIComponent(match.split('=').slice(1).join('='))
+}
 
 export function findCurrency(value) {
   if (!value) return CURRENCIES[0]
@@ -64,6 +78,8 @@ export function findCurrency(value) {
 }
 
 export function readStoredCurrency(defaultLabel = '€ EUR') {
+  const fromCookie = readCurrencyCookie()
+  if (fromCookie) return findCurrency(fromCookie)
   try {
     const stored = localStorage.getItem(CUR_STORAGE_KEY)
     if (stored) return findCurrency(stored)

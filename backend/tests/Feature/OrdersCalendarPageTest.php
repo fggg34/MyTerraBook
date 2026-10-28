@@ -51,9 +51,9 @@ class OrdersCalendarPageTest extends TestCase
             ->assertSee('150.00 EUR');
 
         Livewire::test(EditOrder::class, ['record' => $order->getRouteKey()])
-            ->assertSee('Reservation')
+            ->assertSee('Car reservations')
             ->assertSee('ORD-CALTEST01')
             ->assertSee('Anna Sigurdardottir')
-            ->assertSee('150.00 EUR');
+            ->assertSee('EUR 150');
     }
 }

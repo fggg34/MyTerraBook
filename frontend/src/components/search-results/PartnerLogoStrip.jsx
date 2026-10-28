@@ -38,11 +38,8 @@ export default function PartnerLogoStrip({
                 aria-pressed={active}
                 onClick={() => onSelect(String(partner.id))}
               >
-                {partner.logo ? (
-                  <img src={partner.logo} alt={partner.name} />
-                ) : (
-                  <span className="partner-tile__name">{partner.name}</span>
-                )}
+                {partner.logo ? <img src={partner.logo} alt="" /> : null}
+                <span className="partner-tile__name">{partner.name}</span>
                 <span className="partner-tile__count">{partner.count}</span>
               </button>
             )

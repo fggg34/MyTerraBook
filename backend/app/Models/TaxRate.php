@@ -31,4 +31,14 @@ class TaxRate extends Model
     {
         return $this->hasMany(RentalOption::class);
     }
+
+    public function locationFees(): HasMany
+    {
+        return $this->hasMany(LocationFee::class);
+    }
+
+    public function outOfHoursFees(): HasMany
+    {
+        return $this->hasMany(OutOfHoursFee::class);
+    }
 }

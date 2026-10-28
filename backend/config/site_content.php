@@ -275,6 +275,19 @@ return [
                         ['key' => 'signInLabel', 'type' => 'text', 'label' => 'Sign in label'],
                         ['key' => 'signInHref', 'type' => 'text', 'label' => 'Sign in link'],
                         ['key' => 'hostSignInLabel', 'type' => 'text', 'label' => 'Host sign-in link', 'helperText' => 'Shown under the login form.'],
+                        ['key' => 'supportPhone', 'type' => 'text', 'label' => 'Support phone'],
+                        ['key' => 'supportEmail', 'type' => 'text', 'label' => 'Support email'],
+                        ['key' => 'supportHours', 'type' => 'text', 'label' => 'Support hours', 'columnSpanFull' => true],
+                    ],
+                ],
+                'cookieBanner' => [
+                    'label' => 'Cookie banner',
+                    'fields' => [
+                        ['key' => 'message', 'type' => 'textarea', 'label' => 'Message', 'columnSpanFull' => true],
+                        ['key' => 'acceptLabel', 'type' => 'text', 'label' => 'Accept label'],
+                        ['key' => 'rejectLabel', 'type' => 'text', 'label' => 'Reject label'],
+                        ['key' => 'policyLabel', 'type' => 'text', 'label' => 'Policy link label'],
+                        ['key' => 'policyHref', 'type' => 'text', 'label' => 'Policy URL'],
                     ],
                 ],
                 'searchForm' => [

@@ -19,7 +19,7 @@ class TrackingStatistics extends Page
 
     protected string $view = 'filament.pages.tracking-statistics';
 
-    protected static ?string $title = 'Statistics Tracking';
+    protected static ?string $title = 'Statistics';
 
     protected static string|UnitEnum|null $navigationGroup = 'Advanced';
 

@@ -8,9 +8,11 @@ import { applyBootstrapDocumentMeta } from './utils/siteBootstrap'
 import { ensureClientSiteCache } from './utils/ensureClientSiteCache'
 import './i18n'
 import './index.css'
+import './styles/tokens.css'
 import './styles/product-card.css'
 import './styles/homepage.css'
 import './styles/content-pages.css'
+import './styles/site-kit.css'
 
 applyBootstrapDocumentMeta()
 

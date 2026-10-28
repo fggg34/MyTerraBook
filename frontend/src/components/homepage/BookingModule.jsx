@@ -364,7 +364,7 @@ export default function BookingModule({
   )
 
   return (
-    <div className="booking">
+    <div className="booking" id="search">
       <div className="booking-card">
         <div className="tabs">
           {tabList.map((tab) => (

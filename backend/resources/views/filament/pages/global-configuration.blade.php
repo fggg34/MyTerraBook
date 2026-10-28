@@ -126,7 +126,7 @@
         }
     </style>
 
-    <div x-data="{ tab: new URLSearchParams(window.location.search).get('tab') || 'shop' }">
+    <div x-data="{ tab: new URLSearchParams(window.location.search).get('tab') || 'shop', q: '' }">
         <nav class="ir-global-tabs" aria-label="Global configuration tabs">
             <button type="button" class="ir-global-tab" :data-active="tab === 'shop'" @click="tab = 'shop'">Shop and Rentals</button>
             <button type="button" class="ir-global-tab" :data-active="tab === 'prices'" @click="tab = 'prices'">Prices and Payments</button>
@@ -135,186 +135,203 @@
             <button type="button" class="ir-global-tab" :data-active="tab === 'texts'" @click="tab = 'texts'">Conditional Texts</button>
         </nav>
 
-        <section x-show="tab === 'shop'" x-cloak>
-            <div class="ir-global-grid">
-                <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">Booking</h2>
+        <section x-show="tab === 'shop'" x-cloak class="tb-settings">
+            <div class="tb-settings-toolbar">
+                <input class="ir-global-input tb-settings-search" type="search" x-model="q" placeholder="Find a setting..." aria-label="Find a setting" />
+            </div>
+            <div class="ir-global-grid tb-settings-stack">
+                <article class="ir-global-card" x-show="!q || $el.innerText.toLowerCase().includes(q.toLowerCase())">
+                    <h2 class="ir-global-card__title">Website status</h2>
                     <div class="ir-global-fields">
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.rentals_enabled"> Rentals Enabled</label>
+                        <label class="ir-global-toggle tb-toggle-row">
+                            <span>
+                                Coming soon mode
+                                <small>Public visitors see the Under construction page. Admins and designers still see the full site when logged in.</small>
+                            </span>
+                            <input type="checkbox" wire:model.live="state.coming_soon">
+                        </label>
+                        <label class="ir-global-toggle tb-toggle-row">
+                            <span>
+                                Rentals enabled
+                                <small>When off, the booking form is hidden and the message below is shown instead.</small>
+                            </span>
+                            <input type="checkbox" wire:model.live="state.rentals_enabled">
+                        </label>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Rentals Disabled Message</label>
-                            <textarea class="ir-global-textarea" wire:model.live="state.rentals_disabled_message"></textarea>
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Admin e-Mail</label>
-                            <input class="ir-global-input" type="email" wire:model.live="state.admin_email" />
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Sender e-Mail</label>
-                            <input class="ir-global-input" type="email" wire:model.live="state.sender_email" />
-                        </div>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.always_open"> Always Open</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.force_pickup_dropoff_time"> Force Pickup/Drop Off Time</label>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Pickup/Drop Off Date Format</label>
-                            <select class="ir-global-select" wire:model.live="state.pickup_dropoff_date_format">
-                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                            </select>
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Time Format</label>
-                            <select class="ir-global-select" wire:model.live="state.time_format">
-                                <option value="24">24 Hours</option>
-                                <option value="12">12 Hours</option>
-                            </select>
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Hours of Extended Gratuity Period</label>
-                            <input class="ir-global-input" type="number" min="0" wire:model.live="state.extended_gratuity_period" />
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Apply Extra Hours Charges</label>
-                            <select class="ir-global-select" wire:model.live="state.apply_extra_hours_charges">
-                                <option value="before_special_prices">Before the Special Prices</option>
-                                <option value="after_special_prices">After the Special Prices</option>
-                            </select>
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Car Damages in Check-in PDF</label>
-                            <select class="ir-global-select" wire:model.live="state.car_damages_checkin_pdf">
-                                <option value="damage_marks_and_explanations">Damage Marks and Explanations</option>
-                                <option value="damage_marks_only">Damage Marks Only</option>
-                                <option value="none">None</option>
-                            </select>
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Dropped Off car is available after (hours)</label>
-                            <input class="ir-global-input" type="number" min="0" wire:model.live="state.dropoff_available_after" />
-                        </div>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.allow_pickups_on_dropoffs"> Allow Pick Ups on Drop Offs</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.rentals_for_today_any_time"> Rentals for today at any time</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.auto_assign_car_unit"> Auto-Assign Car Unit</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.enable_coupons"> Enable Coupons</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.enable_customers_pin_code"> Enable Customers PIN Code</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.token_form_order_submit"> Token Form Order Submit</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.require_login"> Require Login</label>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">iCal Secret Key</label>
-                            <input class="ir-global-input" type="text" wire:model.live="state.ical_secret_key" />
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Minutes of Waiting for the Payment</label>
-                            <input class="ir-global-input" type="number" min="1" wire:model.live="state.payment_lock_minutes" />
+                            <label class="ir-global-label">Rentals disabled message</label>
+                            <textarea class="ir-global-textarea" wire:model.live="state.rentals_disabled_message" placeholder="e.g. Bookings open again on 1 March."></textarea>
                         </div>
                     </div>
                 </article>
 
-                <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">Search/Rental Parameters</h2>
+                <article class="ir-global-card" x-show="!q || $el.innerText.toLowerCase().includes(q.toLowerCase())">
+                    <h2 class="ir-global-card__title">Booking rules</h2>
                     <div class="ir-global-fields">
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Minimum # Days of Rental</label>
-                            <input class="ir-global-input" type="number" min="1" wire:model.live="state.minimum_rental_days" />
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Days in Advance for bookings</label>
-                            <input class="ir-global-input" type="number" min="0" wire:model.live="state.days_in_advance_for_bookings" />
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Maximum Date in the Future from today</label>
-                            <div class="ir-global-grid" style="grid-template-columns: 2fr 1fr; gap: 0.5rem;">
-                                <input class="ir-global-input" type="number" min="1" wire:model.live="state.max_date_future_value" />
-                                <select class="ir-global-select" wire:model.live="state.max_date_future_unit">
-                                    <option value="days">Days</option>
-                                    <option value="months">Months</option>
-                                    <option value="years">Years</option>
+                        <div class="ir-global-grid" style="grid-template-columns: 1fr 1fr; gap: 0.7rem;">
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Admin e-mail</label>
+                                <input class="ir-global-input" type="email" wire:model.live="state.admin_email" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Sender e-mail</label>
+                                <input class="ir-global-input" type="email" wire:model.live="state.sender_email" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Pickup / drop-off date format</label>
+                                <select class="ir-global-select" wire:model.live="state.pickup_dropoff_date_format">
+                                    <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                </select>
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Time format</label>
+                                <select class="ir-global-select" wire:model.live="state.time_format">
+                                    <option value="24">24 hours</option>
+                                    <option value="12">12 hours</option>
+                                </select>
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Minutes to wait for payment</label>
+                                <input class="ir-global-input" type="number" min="1" wire:model.live="state.payment_lock_minutes" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Extended gratuity period (hours)</label>
+                                <input class="ir-global-input" type="number" min="0" wire:model.live="state.extended_gratuity_period" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Car available after drop-off (hours)</label>
+                                <input class="ir-global-input" type="number" min="0" wire:model.live="state.dropoff_available_after" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Car damages in check-in PDF</label>
+                                <select class="ir-global-select" wire:model.live="state.car_damages_checkin_pdf">
+                                    <option value="damage_marks_and_explanations">Damage marks and explanations</option>
+                                    <option value="damage_marks_only">Damage marks only</option>
+                                    <option value="none">No</option>
+                                </select>
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">iCal secret key</label>
+                                <input class="ir-global-input" type="text" wire:model.live="state.ical_secret_key" placeholder="Not set" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Apply extra hours charges</label>
+                                <select class="ir-global-select" wire:model.live="state.apply_extra_hours_charges">
+                                    <option value="before_special_prices">Before the special prices</option>
+                                    <option value="after_special_prices">After the special prices</option>
                                 </select>
                             </div>
                         </div>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.choose_pickup_location"> Choose Pickup Location</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.cars_category_filter"> Cars Category Filter</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.filter_by_characteristics"> Filter by Characteristics</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.suggest_solutions_no_availability"> Suggest solutions when no availability</label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Always open<small>Accept pickups and drop-offs outside opening hours.</small></span><input type="checkbox" wire:model.live="state.always_open"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Auto-assign car unit<small>Pick a free unit automatically for each booking.</small></span><input type="checkbox" wire:model.live="state.auto_assign_car_unit"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Force pickup / drop-off time<small>Customers cannot choose the time.</small></span><input type="checkbox" wire:model.live="state.force_pickup_dropoff_time"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Enable coupons<small>Show the discount code field at checkout.</small></span><input type="checkbox" wire:model.live="state.enable_coupons"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Allow pickups on drop-off days<small>A car can go out the same day it comes back.</small></span><input type="checkbox" wire:model.live="state.allow_pickups_on_dropoffs"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Customer PIN code<small>Returning customers can use a PIN.</small></span><input type="checkbox" wire:model.live="state.enable_customers_pin_code"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Rentals for today at any time<small>Same-day bookings ignore the advance limit.</small></span><input type="checkbox" wire:model.live="state.rentals_for_today_any_time"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Token on order submit<small>Extra token against duplicate submits.</small></span><input type="checkbox" wire:model.live="state.token_form_order_submit"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Require login<small>Customers must sign in before booking.</small></span><input type="checkbox" wire:model.live="state.require_login"></label>
+                    </div>
+                </article>
+
+                <article class="ir-global-card" x-show="!q || $el.innerText.toLowerCase().includes(q.toLowerCase())">
+                    <h2 class="ir-global-card__title">Search & availability</h2>
+                    <div class="ir-global-fields">
+                        <div class="ir-global-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 0.7rem;">
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Minimum rental days</label>
+                                <input class="ir-global-input" type="number" min="1" wire:model.live="state.minimum_rental_days" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Days in advance for bookings</label>
+                                <input class="ir-global-input" type="number" min="0" wire:model.live="state.days_in_advance_for_bookings" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Bookable up to</label>
+                                <div class="ir-global-grid" style="grid-template-columns: 2fr 1fr; gap: 0.5rem;">
+                                    <input class="ir-global-input" type="number" min="1" wire:model.live="state.max_date_future_value" />
+                                    <select class="ir-global-select" wire:model.live="state.max_date_future_unit">
+                                        <option value="days">Days</option>
+                                        <option value="months">Months</option>
+                                        <option value="years">Years</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Choose pickup location<small>Show the location picker in search.</small></span><input type="checkbox" wire:model.live="state.choose_pickup_location"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Filter by features<small>Filter results by vehicle features.</small></span><input type="checkbox" wire:model.live="state.filter_by_characteristics"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Category filter<small>Filter results by car category.</small></span><input type="checkbox" wire:model.live="state.cars_category_filter"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Suggest alternatives<small>Offer other dates or cars when nothing is free.</small></span><input type="checkbox" wire:model.live="state.suggest_solutions_no_availability"></label>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Preferred Countries Ordering</label>
+                            <label class="ir-global-label">Preferred countries order</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.preferred_countries_ordering" />
                         </div>
                     </div>
                 </article>
 
-                <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">System</h2>
+                <article class="ir-global-card" x-show="!q || $el.innerText.toLowerCase().includes(q.toLowerCase())">
+                    <h2 class="ir-global-card__title">Advanced</h2>
                     <div class="ir-global-fields">
-                        <label class="ir-global-toggle">
-                            <input type="checkbox" wire:model.live="state.coming_soon"> Coming Soon Mode
-                        </label>
-                        <p class="ir-global-hint">
-                            When enabled, public visitors see the Coming Soon page. Admins and designers can still preview the full site when logged in.
-                        </p>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Appearance</label>
-                            <select class="ir-global-select" wire:model.live="state.appearance">
-                                <option value="light">Light</option>
-                                <option value="dark">Dark</option>
-                                <option value="auto">Auto</option>
-                            </select>
+                        <div class="ir-global-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 0.7rem;">
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Admin appearance</label>
+                                <select class="ir-global-select" wire:model.live="state.appearance">
+                                    <option value="light">Light</option>
+                                    <option value="dark">Dark</option>
+                                    <option value="auto">Auto</option>
+                                </select>
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Front-end appearance</label>
+                                <select class="ir-global-select" wire:model.live="state.frontend_appearance">
+                                    <option value="disabled">Disabled</option>
+                                    <option value="light">Light</option>
+                                    <option value="dark">Dark</option>
+                                </select>
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Cron jobs secret key</label>
+                                <input class="ir-global-input" type="text" wire:model.live="state.cron_jobs_secret_key" placeholder="Not set" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Backup export type</label>
+                                <select class="ir-global-select" wire:model.live="state.backup_export_type">
+                                    <option value="full">Full</option>
+                                    <option value="database">Database</option>
+                                </select>
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Backup folder</label>
+                                <input class="ir-global-input" type="text" wire:model.live="state.backup_folder_path" />
+                            </div>
+                            <div class="ir-global-field">
+                                <label class="ir-global-label">Calendar type</label>
+                                <select class="ir-global-select" wire:model.live="state.calendar_type">
+                                    <option value="jquery_ui">jQuery UI</option>
+                                    <option value="flatpickr">Flatpickr</option>
+                                </select>
+                            </div>
                         </div>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Multi-language<small>Translate site content per language.</small></span><input type="checkbox" wire:model.live="state.enable_multilanguage"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Load Font Awesome</span><input type="checkbox" wire:model.live="state.load_font_awesome"></label>
+                        <label class="ir-global-toggle tb-toggle-row"><span>Bootstrap CSS/JS</span><input type="checkbox" wire:model.live="state.bootstrap_css_js"></label>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Appearance (front-end)</label>
-                            <select class="ir-global-select" wire:model.live="state.frontend_appearance">
-                                <option value="disabled">Disabled</option>
-                                <option value="light">Light</option>
-                                <option value="dark">Dark</option>
-                            </select>
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Cron Jobs Secret Key</label>
-                            <input class="ir-global-input" type="text" wire:model.live="state.cron_jobs_secret_key" />
-                        </div>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.enable_multilanguage"> Enable Multi-Language</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.load_font_awesome"> Load Font Awesome</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.bootstrap_css_js"> Bootstrap CSS/JS</label>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Calendar Type</label>
-                            <select class="ir-global-select" wire:model.live="state.calendar_type">
-                                <option value="jquery_ui">jQuery UI</option>
-                                <option value="flatpickr">Flatpickr</option>
-                            </select>
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Google Maps API Key</label>
+                            <label class="ir-global-label">Google Maps API key</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.google_maps_api_key" />
-                            <p class="ir-global-hint">Used for Google Reviews, host address autocomplete (Places API + Maps JavaScript API), and listing map previews. Restrict the key to your site referrers in Google Cloud.</p>
+                            <p class="ir-global-hint">Used for Google Reviews, host address autocomplete, and listing map previews. Restrict the key to your site referrers in Google Cloud.</p>
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Ipinfo.io API Token</label>
+                            <label class="ir-global-label">Ipinfo.io API token</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.ipinfo_api_token" />
-                        </div>
-                    </div>
-                </article>
-
-                <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">Backup</h2>
-                    <div class="ir-global-fields">
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Export Type</label>
-                            <select class="ir-global-select" wire:model.live="state.backup_export_type">
-                                <option value="full">Full</option>
-                                <option value="database">Database</option>
-                            </select>
-                        </div>
-                        <div class="ir-global-field">
-                            <label class="ir-global-label">Folder Path</label>
-                            <input class="ir-global-input" type="text" wire:model.live="state.backup_folder_path" />
                         </div>
                     </div>
                 </article>
             </div>
 
             <div class="ir-global-actions">
-                <button class="ir-global-save" type="button" wire:click="save">Save configuration</button>
+                <button class="tb-btn-ghost" type="button" wire:click="discard">Discard</button>
+                <button class="ir-global-save" type="button" wire:click="save">Save settings</button>
             </div>
         </section>
 
@@ -324,39 +341,39 @@
                     <h2 class="ir-global-card__title">Currency</h2>
                     <div class="ir-global-fields">
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Currency Name</label>
+                            <label class="ir-global-label">Currency name</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.currency_name" />
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Currency Symbol</label>
+                            <label class="ir-global-label">Currency symbol</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.currency_symbol" />
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Transactions Currency Code</label>
+                            <label class="ir-global-label">Transactions currency code</label>
                             <input class="ir-global-input" type="text" maxlength="3" wire:model.live="state.currency_code" />
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Number of Decimals</label>
+                            <label class="ir-global-label">Number of decimals</label>
                             <input class="ir-global-input" type="number" min="0" max="4" wire:model.live="state.currency_decimals" />
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Decimal Separator</label>
+                            <label class="ir-global-label">Decimal separator</label>
                             <input class="ir-global-input" type="text" maxlength="2" wire:model.live="state.currency_decimal_separator" />
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Thousand Separator</label>
+                            <label class="ir-global-label">Thousand separator</label>
                             <input class="ir-global-input" type="text" maxlength="2" wire:model.live="state.currency_thousand_separator" />
                         </div>
                     </div>
                 </article>
 
                 <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">Taxes and Payments</h2>
+                    <h2 class="ir-global-card__title">Taxes and payments</h2>
                     <div class="ir-global-fields">
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.prices_tax_included"> Prices Tax Included</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.show_tax_summary_only"> Show Tax in Summary Only</label>
+                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.prices_tax_included"> Prices tax included</label>
+                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.show_tax_summary_only"> Show tax in summary only</label>
                         <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.allow_multiple_payments_same_order"> Allow multiple payments for the same order</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.pay_entire_amount"> Pay Entire Amount</label>
+                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.pay_entire_amount"> Pay entire amount</label>
                         <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.allow_deposit"> Let customers choose to leave a deposit</label>
                         <div class="ir-global-field">
                             <label class="ir-global-label">Leave a deposit of</label>
@@ -369,7 +386,7 @@
                             </div>
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Payment Transaction Name</label>
+                            <label class="ir-global-label">Payment transaction name</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.payment_transaction_name" />
                         </div>
                     </div>
@@ -377,17 +394,18 @@
             </div>
 
             <div class="ir-global-actions">
-                <button class="ir-global-save" type="button" wire:click="save">Save configuration</button>
+                <button class="tb-btn-ghost" type="button" wire:click="discard">Discard</button>
+                <button class="ir-global-save" type="button" wire:click="save">Save settings</button>
             </div>
         </section>
 
         <section x-show="tab === 'views'" x-cloak>
             <div class="ir-global-grid">
                 <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">Appearance and Texts</h2>
+                    <h2 class="ir-global-card__title">Appearance and texts</h2>
                     <div class="ir-global-fields">
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Calendars First Day of the Week</label>
+                            <label class="ir-global-label">Calendars first day of the week</label>
                             <select class="ir-global-select" wire:model.live="state.calendar_first_day_of_week">
                                 <option value="monday">Monday</option>
                                 <option value="tuesday">Tuesday</option>
@@ -399,24 +417,24 @@
                             </select>
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Number of Months to Show</label>
+                            <label class="ir-global-label">Number of months to show</label>
                             <input class="ir-global-input" type="number" min="0" wire:model.live="state.number_of_months_to_show" />
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Thumbnails Size (px)</label>
+                            <label class="ir-global-label">Thumbnails size (px)</label>
                             <input class="ir-global-input" type="number" min="1" wire:model.live="state.thumbnails_size_px" />
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Search Results Style</label>
+                            <label class="ir-global-label">Search results style</label>
                             <select class="ir-global-select" wire:model.live="state.search_results_style">
                                 <option value="list">List</option>
                                 <option value="grid">Grid</option>
                             </select>
                         </div>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.show_partly_reserved_days"> Show Partly Reserved Days</label>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.show_vikrentcar_footer"> Show VikRentCar Footer</label>
+                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.show_partly_reserved_days"> Show partly reserved days</label>
+                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.show_vikrentcar_footer"> Show VikRentCar footer</label>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Customer Email</label>
+                            <label class="ir-global-label">Customer e-mail</label>
                             <textarea class="ir-global-textarea" wire:model.live="state.customer_email_template"></textarea>
                         </div>
                         <div class="ir-global-field">
@@ -432,7 +450,7 @@
                             <textarea class="ir-global-textarea" wire:model.live="state.pdf_invoice_template"></textarea>
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Custom CSS Overrides</label>
+                            <label class="ir-global-label">Custom CSS overrides</label>
                             <textarea class="ir-global-textarea" wire:model.live="state.custom_css_overrides"></textarea>
                         </div>
                         <div class="ir-global-field">
@@ -443,18 +461,18 @@
                             </select>
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Opening Page Text</label>
+                            <label class="ir-global-label">Opening page text</label>
                             <textarea class="ir-global-textarea" wire:model.live="state.opening_page_text"></textarea>
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Closing Page Text</label>
+                            <label class="ir-global-label">Closing page text</label>
                             <textarea class="ir-global-textarea" wire:model.live="state.closing_page_text"></textarea>
                         </div>
                     </div>
                 </article>
 
                 <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">Preferred Colors</h2>
+                    <h2 class="ir-global-card__title">Preferred colors</h2>
                     <div class="ir-global-fields">
                         <div class="ir-global-field">
                             <label class="ir-global-label">Titles and Headings</label>
@@ -481,30 +499,31 @@
             </div>
 
             <div class="ir-global-actions">
-                <button class="ir-global-save" type="button" wire:click="save">Save configuration</button>
+                <button class="tb-btn-ghost" type="button" wire:click="discard">Discard</button>
+                <button class="ir-global-save" type="button" wire:click="save">Save settings</button>
             </div>
         </section>
 
         <section x-show="tab === 'orders'" x-cloak>
             <div class="ir-global-grid">
                 <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">Orders and Company</h2>
+                    <h2 class="ir-global-card__title">Orders and company</h2>
                     <div class="ir-global-fields">
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Company Name</label>
+                            <label class="ir-global-label">Company name</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.company_name" />
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Company Logo (path or URL)</label>
+                            <label class="ir-global-label">Company logo (path or URL)</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.company_logo" />
                         </div>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Back-end Logo (180px path or URL)</label>
+                            <label class="ir-global-label">Back-end logo (180px path or URL)</label>
                             <input class="ir-global-input" type="text" wire:model.live="state.backend_logo_180" />
                         </div>
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.attach_pdf_to_order_email"> Attach PDF to the order eMail</label>
+                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.attach_pdf_to_order_email"> Attach PDF to the order e-mail</label>
                         <div class="ir-global-field">
-                            <label class="ir-global-label">Send Emails When</label>
+                            <label class="ir-global-label">Send e-mails when</label>
                             <select class="ir-global-select" wire:model.live="state.send_emails_when">
                                 <option value="pending_or_confirmed">Order is Pending or Confirmed</option>
                                 <option value="confirmed_only">Order is Confirmed</option>
@@ -551,9 +570,9 @@
                 </article>
 
                 <article class="ir-global-card">
-                    <h2 class="ir-global-card__title">Customer Documents</h2>
+                    <h2 class="ir-global-card__title">Customer documents</h2>
                     <div class="ir-global-fields">
-                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.allow_documents_upload"> Allow Documents Upload</label>
+                        <label class="ir-global-toggle"><input type="checkbox" wire:model.live="state.allow_documents_upload"> Allow documents upload</label>
                         <div class="ir-global-field">
                             <label class="ir-global-label">Upload instructions</label>
                             <textarea class="ir-global-textarea" wire:model.live="state.upload_instructions"></textarea>
@@ -563,7 +582,8 @@
             </div>
 
             <div class="ir-global-actions">
-                <button class="ir-global-save" type="button" wire:click="save">Save configuration</button>
+                <button class="tb-btn-ghost" type="button" wire:click="discard">Discard</button>
+                <button class="ir-global-save" type="button" wire:click="save">Save settings</button>
             </div>
         </section>
 

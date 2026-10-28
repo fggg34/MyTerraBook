@@ -22,7 +22,7 @@ class FaresOverview extends Page
 
     protected string $view = 'filament.pages.fares-overview';
 
-    protected static ?string $title = 'Fares Overview';
+    protected static ?string $title = 'Fares overview';
 
     protected static string|UnitEnum|null $navigationGroup = 'Pricing';
 

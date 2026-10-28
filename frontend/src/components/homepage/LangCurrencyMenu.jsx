@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { ChevronDown, Globe } from 'lucide-react'
 import { CURRENCIES } from '../../data/localePreferences'
 import { useLocalePreferences } from '../../context/LocalePreferencesContext'
 import { usePageContent } from '../../context/SiteContentContext'
@@ -67,7 +68,10 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
         >
-          <span>{currency.label}</span>
+          <Globe size={18} aria-hidden />
+          <span>Currency</span>
+          <span className="lc-current">{currency.code} {currency.symbol || ''}</span>
+          <ChevronDown size={14} aria-hidden />
         </button>
 
         <div className={`lang-cur-panel lang-cur-panel--mobile ${open ? 'show' : ''}`} role="dialog" aria-label={currencyHeading}>
@@ -96,7 +100,8 @@ export default function LangCurrencyMenu({ variant = 'header' }) {
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        <span>{currency.label}</span>
+        <span>{currency.code}</span>
+        <ChevronDown size={14} className="lang-cur-caret" aria-hidden />
       </button>
 
       <div className={`lang-cur-panel ${open ? 'show' : ''}`} role="dialog" aria-label={currencyHeading}>

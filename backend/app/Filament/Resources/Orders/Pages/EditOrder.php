@@ -5,11 +5,13 @@ namespace App\Filament\Resources\Orders\Pages;
 use App\Enums\OrderStatus;
 use App\Enums\RentalStatus;
 use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Resources\Orders\Schemas\OrderForm;
 use App\Models\Order;
 use App\Services\Email\OrderEmailNotifier;
+use App\Support\AdminMoney;
 use App\Support\BookingConfirmationUrl;
-use App\Support\ImpactRentFleetCalendar;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -48,6 +50,26 @@ class EditOrder extends EditRecord
         }
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        return OrderForm::splitSchedule($data);
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $data = OrderForm::applySchedule($data);
+        $data['total_cents'] = max(
+            0,
+            (int) ($data['base_rental_cents'] ?? 0)
+            + (int) ($data['extras_cents'] ?? 0)
+            + (int) ($data['fees_cents'] ?? 0)
+            - (int) ($data['discount_cents'] ?? 0)
+            + (int) ($data['tax_cents'] ?? 0),
+        );
+
+        return $data;
+    }
+
     public function getHeader(): ?View
     {
         $order = $this->getRecord();
@@ -55,7 +77,7 @@ class EditOrder extends EditRecord
             return null;
         }
 
-        $order->loadMissing(['car', 'pickupLocation', 'dropoffLocation']);
+        $order->loadMissing(['car', 'carUnit', 'pickupLocation', 'dropoffLocation', 'payments']);
         $status = match ($order->rental_status) {
             RentalStatus::Started => 'On the road',
             RentalStatus::Terminated => 'Returned',
@@ -69,20 +91,33 @@ class EditOrder extends EditRecord
             },
         };
 
-        return view('filament.impact-rent.record-summary', [
-            'heading' => $this->getHeading(),
-            'subheading' => 'Reservation details stay on this record. The form below is the editor.',
-            'actions' => $this->getCachedHeaderActions(),
-            'tab' => 'Reservation',
-            'fields' => [
-                ['label' => 'Reference', 'value' => (string) $order->reference],
-                ['label' => 'Status', 'value' => $status],
-                ['label' => 'Driver', 'value' => $order->customer_name ?: 'Not set'],
-                ['label' => 'Vehicle', 'value' => $order->car?->name ?? 'Not set'],
-                ['label' => 'Pickup', 'value' => trim(($order->pickup_at?->format('j M Y H:i') ?? '').($order->pickupLocation ? ' · '.$order->pickupLocation->name : ''))],
-                ['label' => 'Drop off', 'value' => trim(($order->dropoff_at?->format('j M Y H:i') ?? '').($order->dropoffLocation ? ' · '.$order->dropoffLocation->name : ''))],
-                ['label' => 'Total', 'value' => ImpactRentFleetCalendar::money((int) $order->total_cents, (string) ($order->currency ?: 'EUR'))],
+        $paid = (int) $order->payments()->sum('amount_cents');
+        $currency = (string) ($order->currency ?: 'ISK');
+        $lock = $order->payment_lock_expires_at;
+        $lockText = $lock
+            ? ($lock->isPast() ? 'Payment lock expired' : 'Payment lock until '.$lock->format('j M Y, H:i'))
+            : null;
+        $source = $order->external_provider ?: 'Website';
+        $meta = trim('Booked '.($order->created_at?->format('j M Y, H:i') ?? '').($lockText ? ' · '.$lockText : '').' · Source: '.$source, ' ·');
+
+        return view('filament.panel.edit-record-header', [
+            'title' => (string) $order->reference,
+            'backUrl' => OrderResource::getUrl('index'),
+            'backLabel' => 'Car reservations',
+            'meta' => $meta,
+            'pills' => array_values(array_filter([
+                ['label' => $status, 'tone' => $order->order_status === OrderStatus::Pending ? 'warn' : 'ok'],
+                ['label' => $paid > 0 ? 'Paid' : 'Unpaid', 'tone' => $paid > 0 ? 'ok' : 'neutral'],
+            ])),
+            'summary' => [
+                ['label' => 'Vehicle', 'value' => $order->car?->name ?? 'Not set', 'hint' => $order->carUnit?->name ?? null],
+                ['label' => 'Pickup', 'value' => $order->pickup_at?->format('j M Y, H:i') ?? 'Not set', 'hint' => $order->pickupLocation?->name],
+                ['label' => 'Drop-off', 'value' => $order->dropoff_at?->format('j M Y, H:i') ?? 'Not set', 'hint' => $order->dropoffLocation?->name],
+                ['label' => 'Driver', 'value' => $order->customer_name ?: 'Not set', 'hint' => trim(($order->customer_email ?? '').' · '.($order->customer_phone ?? ''), ' ·')],
+                ['label' => 'Total', 'value' => AdminMoney::fromCents((int) $order->total_cents, $currency), 'hint' => 'Balance due '.AdminMoney::fromCents(max(0, (int) $order->total_cents - $paid), $currency)],
             ],
+            'actions' => $this->getCachedHeaderActions(),
+            'sections' => [],
         ]);
     }
 
@@ -102,7 +137,7 @@ class EditOrder extends EditRecord
                     }
                 }),
             Action::make('viewFrontSite')
-                ->label('View confirmation page')
+                ->label('Confirmation page')
                 ->url(function (): string {
                     if ($this->record->confirmation_url) {
                         return $this->record->confirmation_url;
@@ -118,8 +153,8 @@ class EditOrder extends EditRecord
                 }, shouldOpenInNewTab: true)
                 ->visible(fn () => filled($this->record->confirmation_token) || filled($this->record->confirmation_url)),
             Action::make('resendEmail')
-                ->label('Re-send eMail')
-                ->color('success')
+                ->label('Resend e-mail')
+                ->color('gray')
                 ->action(function (OrderEmailNotifier $orderEmails): void {
                     $sent = $orderEmails->resendCustomerEmail($this->record->fresh(), false);
 
@@ -135,35 +170,6 @@ class EditOrder extends EditRecord
                         $notification->warning()->send();
                     }
                 }),
-            Action::make('resendEmailPdf')
-                ->label('Re-send Order eMail + PDF')
-                ->color('success')
-                ->visible(fn () => $this->record->order_status === OrderStatus::Confirmed)
-                ->action(function (OrderEmailNotifier $orderEmails): void {
-                    $sent = $orderEmails->resendCustomerEmail($this->record->fresh(), true);
-
-                    $notification = Notification::make()
-                        ->title($sent ? 'Email + PDF sent' : 'Could not send email')
-                        ->body($sent
-                            ? 'The customer notification with contract PDF has been sent.'
-                            : 'Confirmed orders with a customer email are required for PDF delivery, and the template must be enabled.');
-
-                    if ($sent) {
-                        $notification->success()->send();
-                    } else {
-                        $notification->warning()->send();
-                    }
-                }),
-            Action::make('downloadContractPdf')
-                ->label('Download PDF')
-                ->color('gray')
-                ->url(fn (): string => route('admin.orders.contract-pdf', ['order' => $this->record->id]), shouldOpenInNewTab: true)
-                ->visible(fn () => $this->record->order_status === OrderStatus::Confirmed),
-            Action::make('customerCheckinPdf')
-                ->label('Customer Check-in')
-                ->color('info')
-                ->url(fn (): string => route('admin.orders.checkin-pdf', ['order' => $this->record->id]), shouldOpenInNewTab: true)
-                ->visible(fn () => $this->record->order_status === OrderStatus::Confirmed),
             Action::make('confirm')
                 ->label('Confirm order')
                 ->color('success')
@@ -174,7 +180,41 @@ class EditOrder extends EditRecord
                     $this->record->transitionOrderStatus(OrderStatus::Confirmed);
                     $this->refreshFormData(['order_status']);
                 }),
-            DeleteAction::make()->visible(fn () => $this->record->external_provider !== 'caren'),
+            ActionGroup::make([
+                Action::make('resendEmailPdf')
+                    ->label('Re-send order e-mail + PDF')
+                    ->visible(fn () => $this->record->order_status === OrderStatus::Confirmed)
+                    ->action(function (OrderEmailNotifier $orderEmails): void {
+                        $sent = $orderEmails->resendCustomerEmail($this->record->fresh(), true);
+
+                        $notification = Notification::make()
+                            ->title($sent ? 'Email + PDF sent' : 'Could not send email')
+                            ->body($sent
+                                ? 'The customer notification with contract PDF has been sent.'
+                                : 'Confirmed orders with a customer email are required for PDF delivery, and the template must be enabled.');
+
+                        if ($sent) {
+                            $notification->success()->send();
+                        } else {
+                            $notification->warning()->send();
+                        }
+                    }),
+                Action::make('downloadContractPdf')
+                    ->label('Download PDF')
+                    ->url(fn (): string => route('admin.orders.contract-pdf', ['order' => $this->record->id]), shouldOpenInNewTab: true)
+                    ->visible(fn () => $this->record->order_status === OrderStatus::Confirmed),
+                Action::make('customerCheckinPdf')
+                    ->label('Customer check-in')
+                    ->url(fn (): string => route('admin.orders.checkin-pdf', ['order' => $this->record->id]), shouldOpenInNewTab: true)
+                    ->visible(fn () => $this->record->order_status === OrderStatus::Confirmed),
+            ])
+                ->label('More')
+                ->icon('heroicon-m-ellipsis-horizontal')
+                ->color('gray')
+                ->button(),
+            DeleteAction::make()
+                ->extraAttributes(['class' => 'tb-hidden-action'])
+                ->visible(fn () => $this->record->external_provider !== 'caren'),
         ];
     }
 }

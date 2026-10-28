@@ -45,9 +45,14 @@ class GlobalConfiguration extends Page
         $service->save($this->state);
 
         Notification::make()
-            ->title('Configuration saved')
+            ->title('Settings saved')
             ->success()
             ->send();
+    }
+
+    public function discard(GlobalConfigurationService $service): void
+    {
+        $this->state = $service->load();
     }
 
     public function updatedGreenlightLogo(): void

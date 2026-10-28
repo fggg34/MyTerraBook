@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import DateRangePicker from '../ui/DateRangePicker'
 import DestinationSelect from '../ui/DestinationSelect'
 import FieldSelect from '../ui/FieldSelect'
@@ -77,6 +79,8 @@ export default function SearchResultsChrome({
   transmissionOptions = ['automatic', 'manual'],
 }) {
   const { page: globalPage } = usePageContent('global')
+  const { page: homePage } = usePageContent('home')
+  const [filterHost, setFilterHost] = useState(null)
   const searchCopy = { ...SEARCH_FORM_COPY, ...(globalPage.searchForm || {}) }
   const label = (key) => cmsText(searchCopy[key], SEARCH_FORM_COPY[key])
   const [sortOpen, setSortOpen] = useState(false)
@@ -234,6 +238,23 @@ export default function SearchResultsChrome({
 
   const closeAllFilters = () => setOpenPop(null)
 
+  useEffect(() => {
+    setFilterHost(document.getElementById('searchFiltersSlot'))
+  }, [])
+
+  const typeTabs = (homePage.hero?.tabs?.length
+    ? homePage.hero.tabs
+    : [
+        { id: 'campervan', label: 'Campervans' },
+        { id: 'cars', label: 'Cars' },
+        { id: 'guesthouses', label: 'Guesthouses' },
+      ]
+  ).map((tab) => {
+    const id = tab.id === 'cars' ? 'car' : tab.id === 'guesthouses' ? 'guesthouse' : 'campervan'
+    const href = id === 'car' ? '/cars' : id === 'guesthouse' ? '/guesthouses' : '/campervans'
+    return { ...tab, href, active: vehicleType === id }
+  })
+
   const allFiltersFooter = (
     <>
       {hasActiveFilters && (
@@ -247,10 +268,16 @@ export default function SearchResultsChrome({
     </>
   )
 
-  return (
-    <>
+  const searchStrip = (
       <div className="hsearch" id="hsearch">
         <div className="hsearch-inner">
+          <div className="search-type-switch" role="tablist" aria-label="What to book">
+            {typeTabs.map((tab) => (
+              <Link key={tab.id} to={tab.href} className={tab.active ? 'is-active' : ''} aria-current={tab.active ? 'page' : undefined}>
+                {tab.label}
+              </Link>
+            ))}
+          </div>
           {!isGuesthouse && pickupEmpty && showMobileDetails && (
             <p className="location-empty-hint" role="status">
               {label('emptyLocationsHintShort')}
@@ -385,7 +412,9 @@ export default function SearchResultsChrome({
           </div>
         </div>
       </div>
+  )
 
+  const filterBar = (
       <div className="filterbar" id="filterbar">
         <div className="filterbar-inner">
           <div className="chips-scroll">
@@ -670,6 +699,12 @@ export default function SearchResultsChrome({
           )}
         </div>
       </div>
+  )
+
+  return (
+    <>
+      {searchStrip}
+      {filterHost ? createPortal(filterBar, filterHost) : filterBar}
     </>
   )
 }

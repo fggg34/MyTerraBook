@@ -16,6 +16,7 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -37,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->profile(EditProfile::class, isSimple: false)
             ->userMenuItems([
                 'profile' => fn (Action $action): Action => $action
-                    ->label('Profile settings')
+                    ->label('Profile')
                     ->icon(Heroicon::OutlinedCog6Tooth),
             ])
             ->brandName('')
@@ -49,6 +50,7 @@ class AdminPanelProvider extends PanelProvider
                 url: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap',
             )
             ->sidebarCollapsibleOnDesktop()
+            ->maxContentWidth(Width::Full)
             ->colors([
                 'primary' => Color::hex('#041e37'),
             ])

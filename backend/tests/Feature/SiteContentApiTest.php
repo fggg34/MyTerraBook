@@ -198,8 +198,8 @@ class SiteContentApiTest extends TestCase
         $this->assertArrayHasKey('seo', $data['global']);
         $this->assertArrayHasKey('colors', $data['global']);
         $this->assertArrayNotHasKey('mapsApiKey', $data['global']['googleMaps'] ?? []);
-        $this->assertSame('#0f2036', $data['global']['colors']['navy']);
-        $this->assertSame('#45a06a', $data['global']['colors']['green']);
+        $this->assertSame('#041e37', $data['global']['colors']['navy']);
+        $this->assertSame('#f4a83c', $data['global']['colors']['green']);
         $this->assertSame('MyTerraBook', $data['global']['seo']['siteName']);
         $this->assertArrayHasKey('seo', $data['home']);
         $this->assertArrayHasKey('title', $data['home']['seo']);

@@ -40,7 +40,9 @@ class OrdersAdminListTest extends TestCase
 
         $this->get('/admin/impact-rent/orders')
             ->assertOk()
-            ->assertSee('Vehicle Rental')
+            ->assertSee('Car reservations')
+            ->assertSee('New booking')
+            ->assertSee('Calendar view')
             ->assertSee('Booking status')
             ->assertSee('Pickup location')
             ->assertSee('Part paid');

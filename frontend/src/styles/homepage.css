@@ -1,45 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Quicksand:wght@700&display=swap');
 
 :root {
-  --navy: #0f2036;
-  --ink: #1d2b40;
-  --slate: #5a6b82;
-  --slate-light: #8090a4;
-  --green: #45a06a;
-  --green-dark: #3a8d5d;
-  --blue: #34629e;
-  --blue-soft: #eef2f8;
-  --line: #e2e7ef;
-  --bg: #fbfcfe;
-  --red: #e23744;
-  --accent: #ea580c;
-  --card-radius: 22px;
-  --maxw: 1280px;
-  --serif: 'Quicksand', sans-serif;
-  --sans: 'Open Sans', sans-serif;
-  --nav-h: 74px;
+  --nav-h: var(--tb-header-h, 80px);
 }
 
 body.homepage-active { margin: 0; overflow-x: clip; }
 
 
   :root{
-    --navy:#0f2036;
-    --ink:#1d2b40;
-    --slate:#5a6b82;
-    --slate-light:#8090a4;
-    --green:#45a06a;
-    --red:#e23744;
-    --green-dark:#3a8d5d;
-    --blue:#34629e;
-    --blue-soft:#eef2f8;
-    --line:#e2e7ef;
-    --bg:#fbfcfe;
-    --accent:#ea580c;
-    --card-radius:22px;
-    --maxw:1280px;
-    --serif:'Quicksand',sans-serif;
-    --sans:'Open Sans',sans-serif;
+    --nav-h: var(--tb-header-h, 80px);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}

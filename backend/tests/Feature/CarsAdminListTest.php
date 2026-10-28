@@ -45,11 +45,10 @@ class CarsAdminListTest extends TestCase
 
         $this->get('/admin/impact-rent/cars')
             ->assertOk()
-            ->assertSee('Fleet')
-            ->assertSee('Reykjavik Compact')
-            ->assertSee('Category')
-            ->assertSee('Drivetrain')
             ->assertSee('Vehicles')
+            ->assertSee('Reykjavik Compact')
+            ->assertSee('Add vehicle')
+            ->assertSee('Approval queue')
             ->assertSee('Pricing')
             ->assertSee('Bookings')
             ->assertSee('Finance')
@@ -60,7 +59,6 @@ class CarsAdminListTest extends TestCase
         $this->get('/admin/impact-rent/cars/'.$car->id.'/edit')
             ->assertOk()
             ->assertSee('Reykjavik Compact')
-            ->assertSee('Vehicle details')
             ->assertSee('Identity')
             ->assertSee('Specs');
 

@@ -65,31 +65,42 @@ class GuestHouseResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('thumbnail')
-                    ->label('Cover')
+                    ->label('')
                     ->disk('public')
                     ->square(),
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('city')->searchable()->sortable(),
-                TextColumn::make('max_guests')->label('Sleeps')->sortable(),
-                TextColumn::make('bedrooms')->sortable(),
+                TextColumn::make('name')
+                    ->label('Property')
+                    ->description(fn (GuestHouse $record): ?string => $record->slug ? '/guesthouses/'.$record->slug : ($record->city ?: null))
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('type')
                     ->badge()
                     ->color(fn (): string => AdminTableBadgeColors::neutral())
                     ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
+                TextColumn::make('max_guests')
+                    ->label('Capacity')
+                    ->formatStateUsing(fn ($state): string => ((int) $state).' guests')
+                    ->description(fn (GuestHouse $record): string => ((int) $record->bedrooms).' bedroom'.(((int) $record->bedrooms) === 1 ? '' : 's').' · '.((int) $record->bathrooms).' bath')
+                    ->sortable(),
                 TextColumn::make('base_price_per_night')
-                    ->label('Price/night')
-                    ->formatStateUsing(fn ($state) => '€ '.number_format($state / 100, 2)),
+                    ->label('Price / night')
+                    ->formatStateUsing(fn ($state) => '€ '.number_format($state / 100, 0))
+                    ->description('min. 1 night'),
+                TextColumn::make('host.name')->label('Host')->searchable(),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (mixed $state): string => AdminTableBadgeColors::guestHouseStatus($state))
                     ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
-                TextColumn::make('host.name')->label('Host')->toggleable(),
-                TextColumn::make('submitted_at')->dateTime()->toggleable(),
+                TextColumn::make('updated_at')->label('Updated')->date('d M Y')->sortable(),
             ])
             ->filters([
                 SelectFilter::make('type')->options(collect(GuestHouseType::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)])),
-                SelectFilter::make('status')->options(collect(GuestHouseStatus::cases())->mapWithKeys(fn ($c) => [$c->value => str_replace('_', ' ', ucfirst($c->value))])),
                 SelectFilter::make('city')->options(fn () => GuestHouse::query()->whereNotNull('city')->distinct()->pluck('city', 'city')),
+                SelectFilter::make('user_id')
+                    ->label('Host')
+                    ->relationship('host', 'name')
+                    ->searchable()
+                    ->preload(),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -171,7 +182,8 @@ class GuestHouseResource extends Resource
                     }),
                 DeleteAction::make(),
             ])
-            ->defaultSort('submitted_at', 'desc')
+            ->searchPlaceholder('Search name or city...')
+            ->defaultSort('updated_at', 'desc')
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

@@ -18,6 +18,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 
 class GuestHouseForm
@@ -26,6 +27,7 @@ class GuestHouseForm
     {
         return $schema->components([
             Section::make('Photos')
+                ->extraAttributes(['id' => 'tb-gh-photos'])
                 ->description('The cover photo appears on listing cards across the homepage and search results. Gallery photos appear on the stay detail page.')
                 ->schema([
                     FileUpload::make('thumbnail')
@@ -47,7 +49,8 @@ class GuestHouseForm
                         ->helperText('Select multiple photos at once. Drag thumbnails to reorder, first image is used as cover when none is set above.'),
                 ]),
 
-            Section::make('Product card')
+            Section::make('Listing card')
+                ->extraAttributes(['id' => 'tb-gh-listing'])
                 ->description('These fields populate the listing card visitors see in Hand-picked stays, guesthouse search, and the homepage stay section.')
                 ->schema([
                     Placeholder::make('product_card_specs_hint')
@@ -59,6 +62,7 @@ class GuestHouseForm
                             ->maxLength(255)
                             ->columnSpan(2),
                         TextInput::make('slug')
+                            ->label('URL slug')
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->helperText('Leave blank to generate from the name. Used in the URL: /guesthouses/your-slug'),
@@ -112,6 +116,7 @@ class GuestHouseForm
                 ]),
 
             Section::make('Stay details')
+                ->extraAttributes(['id' => 'tb-gh-stay'])
                 ->schema([
                     Textarea::make('description')
                         ->label('Full description')
@@ -138,6 +143,7 @@ class GuestHouseForm
                 ]),
 
             Section::make('Pricing & fees')
+                ->extraAttributes(['id' => 'tb-gh-pricing'])
                 ->schema([
                     Grid::make(2)->schema([
                         TextInput::make('cleaning_fee_euros')
@@ -180,6 +186,7 @@ class GuestHouseForm
                 ]),
 
             Section::make('House rules & check-in')
+                ->extraAttributes(['id' => 'tb-gh-rules'])
                 ->schema([
                     Grid::make(3)->schema([
                         TimePicker::make('check_in_time')->default('15:00'),
@@ -189,7 +196,8 @@ class GuestHouseForm
                     ]),
                 ]),
 
-            Section::make('Address')
+            Section::make('Address & map')
+                ->extraAttributes(['id' => 'tb-gh-address'])
                 ->description('Hosts normally add this via Google Places autocomplete in the host panel. Admins can edit the stored fields here.')
                 ->schema([
                     Grid::make(2)->schema([
@@ -220,6 +228,7 @@ class GuestHouseForm
                 ]),
 
             Section::make('Amenities')
+                ->extraAttributes(['id' => 'tb-gh-amenities'])
                 ->schema([
                     CheckboxList::make('amenities')
                         ->relationship('amenities', 'name')
@@ -229,6 +238,7 @@ class GuestHouseForm
                 ]),
 
             Section::make('SEO')
+                ->extraAttributes(['id' => 'tb-gh-seo'])
                 ->schema([
                     TextInput::make('meta_title')
                         ->label('Meta title')
@@ -247,6 +257,9 @@ class GuestHouseForm
                         ->helperText('Leave empty to use the cover photo.'),
                 ])
                 ->collapsible(),
+
+            View::make('filament.guest-houses.delete-house')
+                ->visible(fn ($livewire): bool => is_object($livewire) && method_exists($livewire, 'getRecord') && filled($livewire->getRecord()?->getKey())),
         ]);
     }
 }

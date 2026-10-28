@@ -24,7 +24,7 @@ class EmailSettings extends Page
 {
     protected string $view = 'filament.pages.email-settings';
 
-    protected static ?string $title = 'Email settings';
+    protected static ?string $title = 'SMTP settings';
 
     protected static ?string $navigationLabel = 'SMTP settings';
 

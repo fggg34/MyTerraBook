@@ -12,12 +12,12 @@ test('mergeSiteColors keeps defaults when a CMS value is empty', () => {
   const merged = mergeSiteColors({ navy: '#112233', green: '' })
 
   assert.equal(merged.navy, '#112233')
-  assert.equal(merged.green, '#45a06a')
+  assert.equal(merged.green, '#f4a83c')
 })
 
 test('siteColorCss writes the shared storefront tokens', () => {
   const css = siteColorCss({ navy: '#112233' })
 
   assert.match(css, /--navy: #112233 !important/)
-  assert.match(css, /--green: #45a06a !important/)
+  assert.match(css, /--green: #f4a83c !important/)
 })
