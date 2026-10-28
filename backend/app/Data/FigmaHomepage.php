@@ -211,4 +211,58 @@ class FigmaHomepage
             ],
         ];
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function searchCampervan(): array
+    {
+        return [
+            'title' => 'Campervans for your next adventure',
+            'insuranceNote' => 'basic insurance included',
+            'breadcrumbHome' => 'Home',
+            'breadcrumbSection' => 'Campervans',
+            'breadcrumbPlace' => 'All destinations',
+            'pickupLabel' => 'Pick-up',
+            'datesLabel' => 'Dates',
+            'dropoffLabel' => 'Drop-off',
+            'dropoffSame' => 'Same as pick-up',
+            'datesEmpty' => 'Add dates',
+            'updateLabel' => 'Update',
+            'filtersLabel' => 'All filters',
+            'filtersTitle' => 'Filters',
+            'sortLabel' => 'Sort',
+            'sortTitle' => 'Sort by',
+            'sortPrefix' => 'Sort:',
+            'partnerLabel' => 'Rental partner',
+            'showAllLabel' => 'Show all',
+            'bundleTitle' => 'Not sleeping in the van every night?',
+            'bundleText' => 'Add a guesthouse along your route — one booking, one payment.',
+            'bundleButton' => 'See guesthouses',
+            'bundleHref' => '/guesthouses',
+            'showingLabel' => 'Showing {shown} of {total} campervans',
+            'loadMoreLabel' => 'Show more',
+            'onBoardLabel' => 'On board',
+            'fromLabel' => 'from',
+            'perLabel' => '/ day',
+            'bookLabel' => 'Book',
+            'typeLabel' => 'Campervan',
+            'clearLabel' => 'Clear all',
+            'showLabel' => 'Show {count} vans',
+            'matchLabel' => '{count} campervans match',
+            'featuresLabel' => 'Features',
+            'selectedLabel' => '{count} selected',
+            'vehicleTypeLabel' => 'Vehicle type',
+            'transmissionLabel' => 'Transmission',
+            'seatsLabel' => 'Minimum seats',
+            'sleepsLabel' => 'Minimum sleeps',
+            'priceLabel' => 'Price per day',
+            'anyLabel' => 'Any',
+            'sortHints' => [
+                ['id' => 'rec', 'hint' => 'Best match for your dates and route'],
+                ['id' => 'price-asc', 'hint' => 'Cheapest per day first'],
+                ['id' => 'price-desc', 'hint' => 'Most premium first'],
+            ],
+        ];
+    }
 }

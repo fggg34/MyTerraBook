@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import ProductCard from '../components/homepage/ProductCard'
+import CampervanSearch from '../components/search/CampervanSearch'
 import { SearchResultsChromeProvider } from '../context/SearchResultsChromeContext'
 import SearchResultsChrome, { SearchResultsHeaderPill } from '../components/search-results/SearchResultsChrome'
 import PartnerLogoStrip from '../components/search-results/PartnerLogoStrip'
@@ -59,6 +60,7 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
     partnerTotal = 0,
     selectedPartnerId = '',
     selectPartner,
+    locations = [],
   } = state
 
   const pillText = useMemo(() => {
@@ -116,6 +118,41 @@ export default function SearchResultsPage({ vehicleType = 'campervan' }) {
       subtitle,
     },
   })
+
+  if (vehicleType === 'campervan') {
+    return (
+      <CampervanSearch
+        seo={seo}
+        config={config}
+        loading={loading}
+        error={error}
+        retry={retry}
+        visibleCards={visibleCards}
+        visibleCount={visibleCount}
+        setVisibleCount={setVisibleCount}
+        totalCount={totalCount}
+        pickupLabel={pickupLabel}
+        dropoffLabel={dropoffLabel}
+        query={query}
+        updateSearch={updateSearch}
+        sort={sort}
+        setSort={setSort}
+        sortOptions={sortOptions}
+        quickFilters={quickFilters}
+        toggleQuick={toggleQuick}
+        clearFilters={clearFilters}
+        filters={filters}
+        setFilters={setFilters}
+        priceBounds={priceBounds}
+        categoryFilterOptions={categoryFilterOptions}
+        partners={partners}
+        partnerTotal={partnerTotal}
+        selectedPartnerId={selectedPartnerId}
+        selectPartner={selectPartner}
+        locations={locations}
+      />
+    )
+  }
 
   return (
     <SearchResultsChromeProvider pillText={pillText}>

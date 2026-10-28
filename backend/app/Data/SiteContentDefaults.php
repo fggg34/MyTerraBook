@@ -34,6 +34,10 @@ class SiteContentDefaults
         };
 
         if ($extra === []) {
+            if ($pageKey === 'search-campervan') {
+                $page['presentation'] = FigmaHomepage::searchCampervan();
+            }
+
             return $page;
         }
 
@@ -45,6 +49,10 @@ class SiteContentDefaults
 
         if (isset($extra['footer']['columns'])) {
             $merged['footer']['columns'] = $extra['footer']['columns'];
+        }
+
+        if ($pageKey === 'search-campervan') {
+            $merged['presentation'] = FigmaHomepage::searchCampervan();
         }
 
         return $merged;
