@@ -14,6 +14,7 @@ class CouponsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.discount-codes')
             ->columns([
                 TextColumn::make('code')
                     ->searchable(),

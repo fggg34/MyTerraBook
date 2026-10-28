@@ -14,6 +14,8 @@ class LocationFeesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['pickupLocation', 'dropoffLocation', 'taxRate']))
+            ->view('filament.admin.location-fees')
             ->columns([
                 TextColumn::make('pickupLocation.name')
                     ->searchable(),

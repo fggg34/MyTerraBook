@@ -36,14 +36,12 @@
                         @endforelse
                     </select>
 
-                    <label class="ir-fares-label" for="bench-price-type-select">{{ __('Price type') }}</label>
-                    <select id="bench-price-type-select" wire:model.live="benchPriceTypeId" class="ir-fares-select">
-                        @forelse ($priceTypes as $pt)
-                            <option value="{{ $pt->id }}">{{ $pt->name }}</option>
-                        @empty
-                            <option value="">{{ __('No price types') }}</option>
-                        @endforelse
-                    </select>
+                    <span class="ir-fares-label">{{ __('Price type') }}</span>
+                    <div class="tb-seg" role="tablist" aria-label="{{ __('Price type') }}">
+                        @foreach ($priceTypes as $pt)
+                            <button type="button" wire:click="$set('benchPriceTypeId', {{ (int) $pt->id }})" @class(['is-active' => (int) $fares->benchPriceTypeId === (int) $pt->id])>{{ $pt->name }}</button>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 
@@ -67,8 +65,23 @@
                             <span class="ir-fares-currency">ISK</span>
                         </div>
                     </div>
-                    <button type="submit" class="ir-fares-primary-btn">{{ __('Insert') }}</button>
+                    <button type="submit" class="ir-fares-primary-btn">{{ __('Add range') }}</button>
                 </form>
+                @php
+                    $bands = \App\Models\DailyFare::query()
+                        ->where('car_id', $fares->benchCarId)
+                        ->where('price_type_id', $fares->benchPriceTypeId)
+                        ->orderBy('from_days')
+                        ->get();
+                @endphp
+                <div class="ir-fares-editor">
+                    <h3 class="ir-fares-editor-title">{{ __('Price per day by rental length') }}</h3>
+                    @forelse ($bands as $band)
+                        <p>{{ $band->from_days }}–{{ $band->to_days }} {{ __('days') }} · {{ \App\Support\AdminMoney::fromCents((int) $band->price_per_day_cents) }}</p>
+                    @empty
+                        <p class="ir-fares-help">{{ __('No base price for this vehicle and price type yet.') }}</p>
+                    @endforelse
+                </div>
             @else
                 <form wire:submit="saveExtraHourFare" class="ir-fares-editor">
                     <h3 class="ir-fares-editor-title">{{ __('Extra hours charge') }}</h3>
@@ -114,7 +127,7 @@
                                 <tr wire:key="fare-day-{{ $row['day'] }}">
                                     <td><input type="checkbox" wire:model.live="selectedBenchDays" value="{{ $row['day'] }}" /></td>
                                     <td>{{ $row['day'] }}</td>
-                                    <td class="text-right">{{ number_format($row['total_cents'] / 100, 2, ',', '.') }} ISK</td>
+                                    <td class="text-right">{{ \App\Support\AdminMoney::fromCents((int) $row['total_cents']) }}</td>
                                 </tr>
                             @empty
                                 <tr><td colspan="3" class="text-center">{{ __('Select a vehicle and price type.') }}</td></tr>
@@ -131,7 +144,7 @@
                             @forelse ($fares->benchExtraHourRows as $row)
                                 <tr wire:key="fare-ex-{{ $row['extra_hours'] }}">
                                     <td>{{ $row['extra_hours'] }}</td>
-                                    <td class="text-right">{{ number_format($row['total_cents'] / 100, 2, ',', '.') }} ISK</td>
+                                    <td class="text-right">{{ \App\Support\AdminMoney::fromCents((int) $row['total_cents']) }}</td>
                                 </tr>
                             @empty
                                 <tr><td colspan="2" class="text-center">{{ __('Select a vehicle and price type.') }}</td></tr>

@@ -14,6 +14,7 @@ class BookingRestrictionsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->view('filament.admin.booking-restrictions')
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),

@@ -14,6 +14,8 @@ class OutOfHoursFeesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('taxRate'))
+            ->view('filament.admin.out-of-hours-fees')
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),

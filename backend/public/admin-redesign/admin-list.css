@@ -228,7 +228,11 @@ html.tb-redesign .tb-list .tb-more-row select {
 .tb-entity { display: flex; gap: 10px; align-items: center; min-width: 0; }
 .tb-entity > span { min-width: 0; flex: 1; }
 html.tb-redesign .fi-page:has(.tb-module) .cluster-subnav-outer,
-html.tb-redesign .fi-page:has(.tb-module) .cluster-subnav-mobile { display: none !important; }
+html.tb-redesign .fi-page:has(.tb-module) .cluster-subnav-mobile,
+html.tb-redesign .fi-page:has(.tb-catalog-list) .cluster-subnav-outer,
+html.tb-redesign .fi-page:has(.tb-catalog-list) .cluster-subnav-mobile,
+html.tb-redesign .fi-page:has(.tb-edit-head) .cluster-subnav-outer,
+html.tb-redesign .fi-page:has(.tb-edit-head) .cluster-subnav-mobile { display: none !important; }
 .tb-cover {
   width: 56px;
   height: 40px;
@@ -444,6 +448,65 @@ html.tb-redesign .fi-page:has(.tb-edit-head) .fi-sc-actions .fi-ac {
   .tb-cards, .tb-amenity-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 700px) { .tb-cards { grid-template-columns: 1fr; } }
+.tb-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 24px;
+  padding: 48px 24px;
+  border: 1px solid #e3e8ef;
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+}
+.tb-empty-card strong { font-size: 16px; color: #041e37; }
+.tb-empty-card p { max-width: 420px; color: #5c6b7a; font-size: 14px; }
+.tb-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff6e8;
+  color: #8a4b00;
+  font-size: 14px;
+}
+.tb-banner button { color: #041e37; font-weight: 600; background: none; border: 0; cursor: pointer; }
+.tb-cal-card, .tb-card-title { margin: 0 0 12px; }
+.tb-cal-card {
+  padding: 16px;
+  border: 1px solid #e3e8ef;
+  border-radius: 12px;
+  background: #fff;
+}
+.tb-cal-card h2, .tb-card-title { font-size: 15px; font-weight: 600; color: #041e37; }
+.tb-card-title { padding: 14px 14px 0; }
+.tb-cal-legend, .tb-cal-months, .tb-cal-row { display: flex; gap: 8px; align-items: center; }
+.tb-cal-legend { margin: 8px 0; font-size: 12px; color: #5c6b7a; }
+.tb-cal-legend span, .tb-cal-row i { display: inline-block; height: 8px; border-radius: 99px; }
+.tb-cal-legend span { width: 18px; }
+.tb-cal-legend .is-charge, .tb-cal-row i.is-charge { background: #041e37; }
+.tb-cal-legend .is-discount, .tb-cal-row i.is-discount { background: #1f8a4c; }
+.tb-cal-months { margin-bottom: 8px; font-size: 12px; color: #5c6b7a; }
+.tb-cal-months span { flex: 1; }
+.tb-cal-row { margin-top: 6px; }
+.tb-cal-row > span { width: 140px; flex: none; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-cal-row > div { position: relative; flex: 1; height: 10px; background: #f3f6fa; border-radius: 99px; }
+.tb-cal-row i { position: absolute; top: 1px; min-width: 4px; }
+.tb-mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+html.tb-redesign .ir-fares-workbench .tb-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+html.tb-redesign .ir-fares-workbench .tb-seg button {
+  border: 1px solid #d5deea;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #041e37;
+}
+html.tb-redesign .ir-fares-workbench .tb-seg button.is-active { background: #041e37; color: #fff; border-color: #041e37; }
 @media (max-width: 768px) {
   .tb-lead-top { flex-direction: column; align-items: stretch; gap: 12px; }
   .tb-lead-actions { flex-wrap: wrap; margin-bottom: 0; }

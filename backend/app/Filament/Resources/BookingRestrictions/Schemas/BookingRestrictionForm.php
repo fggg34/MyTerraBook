@@ -24,6 +24,7 @@ class BookingRestrictionForm
                     ->columnSpanFull()
                     ->schema([
                     Section::make('Details')
+                        ->extraAttributes(['id' => 'tb-restrict-details'])
                         ->columnSpan([
                             'default' => 1,
                             'xl' => 6,
@@ -67,6 +68,7 @@ class BookingRestrictionForm
                         ]),
 
                     Section::make('Settings')
+                        ->extraAttributes(['id' => 'tb-restrict-settings'])
                         ->columnSpan([
                             'default' => 1,
                             'xl' => 6,

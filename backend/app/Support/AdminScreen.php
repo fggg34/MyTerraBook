@@ -165,6 +165,55 @@ class AdminScreen
             ]];
         }
 
+        if (self::on('admin/impact-rent/special-prices')) {
+            $actions = [$link('Rates calculator', FaresOverview::getUrl(), false, 'admin-redesign/icon-tb-pricing.svg')];
+            if (SpecialPriceResource::canCreate()) {
+                $actions[] = $link('New pricing rule', SpecialPriceResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
+        if (self::on('admin/impact-rent/hourly-fares') && HourlyFareResource::canCreate()) {
+            return [$link('New hourly fare', HourlyFareResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/extra-hour-fares') && ExtraHourFareResource::canCreate()) {
+            return [$link('New extra hour fare', ExtraHourFareResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/out-of-hours-fees') && OutOfHoursFeeResource::canCreate()) {
+            return [$link('New out-of-hours fee', OutOfHoursFeeResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/location-fees') && LocationFeeResource::canCreate()) {
+            return [$link('New location fee', LocationFeeResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/rental-options') && RentalOptionResource::canCreate()) {
+            return [$link('New add-on', RentalOptionResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/coupons') && CouponResource::canCreate()) {
+            return [$link('New discount code', CouponResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/booking-restrictions') && BookingRestrictionResource::canCreate()) {
+            return [$link('New restriction', BookingRestrictionResource::getUrl('create'), true)];
+        }
+
+        if (self::on('admin/impact-rent/tax-rates', 'admin/impact-rent/price-types')) {
+            $actions = [];
+            if (class_exists(\App\Filament\Resources\PriceTypes\PriceTypeResource::class) && \App\Filament\Resources\PriceTypes\PriceTypeResource::canCreate()) {
+                $actions[] = $link('New price type', \App\Filament\Resources\PriceTypes\PriceTypeResource::getUrl('create'));
+            }
+            if (TaxRateResource::canCreate()) {
+                $actions[] = $link('New tax rate', TaxRateResource::getUrl('create'), true);
+            }
+
+            return $actions;
+        }
+
         return [];
     }
 
@@ -206,18 +255,19 @@ class AdminScreen
             ['match' => ['admin/impact-rent/characteristics', 'admin/impact-rent/characteristics/*'], 'crumb' => 'Catalog · Vehicles', 'title' => 'Features', 'description' => 'Icons and labels shown on vehicle cards and listings.', 'nav' => 'vehicles', 'settings' => false],
             ['match' => ['admin/impact-rent/locations', 'admin/impact-rent/locations/*'], 'crumb' => 'Catalog · Vehicles', 'title' => 'Locations', 'description' => 'Pickup and drop-off places. Opening hours decide when out-of-hours fees apply.', 'nav' => 'vehicles', 'settings' => false],
             ['match' => ['admin/impact-rent/rental-conditions', 'admin/impact-rent/rental-conditions/*'], 'crumb' => 'Catalog · Vehicles', 'title' => 'Rental conditions', 'description' => 'Short rules shown on each vehicle listing.', 'nav' => 'vehicles', 'settings' => false],
-            ['match' => ['admin/impact-rent/special-prices', 'admin/impact-rent/special-prices/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Pricing rules', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/daily-fares', 'admin/impact-rent/daily-fares/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Base prices', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/fares-overview', 'admin/impact-rent/fares-overview/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Fares overview', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/booking-restrictions', 'admin/impact-rent/booking-restrictions/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Booking restrictions', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/extra-hour-fares', 'admin/impact-rent/extra-hour-fares/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Extra hour fares', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/hourly-fares', 'admin/impact-rent/hourly-fares/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Hourly fares', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/out-of-hours-fees', 'admin/impact-rent/out-of-hours-fees/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Out-of-hours fees', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/location-fees', 'admin/impact-rent/location-fees/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Location fees', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/rental-options', 'admin/impact-rent/rental-options/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Add-ons', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/coupons', 'admin/impact-rent/coupons/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Discount codes', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/tax-rates', 'admin/impact-rent/tax-rates/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'VAT used by vehicles, fees and add-ons.', 'nav' => 'pricing', 'settings' => false],
-            ['match' => ['admin/impact-rent/price-types', 'admin/impact-rent/price-types/*'], 'crumb' => 'Catalog · Pricing', 'title' => 'Types of price', 'description' => 'Each price type points to a tax rate.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/special-prices'], 'crumb' => 'Catalog · Pricing', 'title' => 'Pricing', 'description' => 'Every price setting for vehicles in one place. Amounts are in ISK.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/daily-fares'], 'crumb' => 'Catalog · Pricing', 'title' => 'Base prices', 'description' => 'Daily price by rental length, per vehicle and price type. (Same data as “Daily Fares / Insert Fares”.)', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/fares-overview'], 'crumb' => 'Catalog · Pricing', 'title' => 'Fares overview', 'description' => 'Final price per day after rules, and how many units are free.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/booking-restrictions'], 'crumb' => 'Catalog · Pricing', 'title' => 'Booking restrictions', 'description' => 'Minimum or maximum rental length for specific dates, e.g. at least 3 days in July.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/extra-hour-fares'], 'crumb' => 'Catalog · Pricing', 'title' => 'Extra hour fares', 'description' => 'What a late return costs per extra hour, per vehicle and price type.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/hourly-fares'], 'crumb' => 'Catalog · Pricing', 'title' => 'Hourly fares', 'description' => 'Price for short rentals measured in minutes, e.g. 3 hours.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/out-of-hours-fees'], 'crumb' => 'Catalog · Pricing', 'title' => 'Out-of-hours fees', 'description' => 'Extra charge when pickup or drop-off is outside opening hours.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/location-fees'], 'crumb' => 'Catalog · Pricing', 'title' => 'Location fees', 'description' => 'Fee for picking up in one place and returning in another.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/rental-options'], 'crumb' => 'Catalog · Pricing', 'title' => 'Add-ons', 'description' => 'Extras customers can add at checkout. (Same data as “Rental Options”.)', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/coupons'], 'crumb' => 'Catalog · Pricing', 'title' => 'Discount codes', 'description' => 'Codes customers type at checkout. (Same data as “Coupons”.)', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/tax-rates'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'VAT used by vehicles, fees and add-ons.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/price-types'], 'crumb' => 'Catalog · Pricing', 'title' => 'Tax rates', 'description' => 'VAT used by vehicles, fees and add-ons.', 'nav' => 'pricing', 'settings' => false],
+            ['match' => ['admin/impact-rent/special-prices/*', 'admin/impact-rent/daily-fares/*', 'admin/impact-rent/booking-restrictions/*', 'admin/impact-rent/extra-hour-fares/*', 'admin/impact-rent/hourly-fares/*', 'admin/impact-rent/out-of-hours-fees/*', 'admin/impact-rent/location-fees/*', 'admin/impact-rent/rental-options/*', 'admin/impact-rent/coupons/*', 'admin/impact-rent/tax-rates/*', 'admin/impact-rent/price-types/*'], 'crumb' => '', 'title' => null, 'description' => null, 'nav' => null, 'settings' => false],
             ['match' => ['admin/registered-hosts', 'admin/registered-hosts/*'], 'crumb' => 'People', 'title' => 'Hosts', 'description' => 'Manage profiles, partner API and commission.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/registered-clients', 'admin/registered-clients/*'], 'crumb' => 'People', 'title' => 'Clients', 'description' => 'Registered clients and their bookings.', 'nav' => null, 'settings' => false],
             ['match' => ['admin/listing-approvals', 'admin/listing-approvals/*'], 'crumb' => 'Moderation', 'title' => 'Listing approvals', 'description' => 'Newest submissions first. Approve, request changes or reject.', 'nav' => null, 'settings' => false],
@@ -272,21 +322,27 @@ class AdminScreen
      */
     private static function pricingLinks(): array
     {
+        $taxUrl = self::url(TaxRateResource::class);
+            $types = $taxUrl
+            ? self::plain('Types of price', $taxUrl.'#types-of-price', self::matches(['admin/impact-rent/price-types', 'admin/impact-rent/price-types/*']), 'Discounts & tax')
+            : null;
+        if ($types) {
+            $types['count'] = self::safeCount(fn (): int => \App\Models\PriceType::query()->count());
+        }
+
         return array_values(array_filter([
-            self::item('Base prices', DailyFareResource::class, ['admin/impact-rent/daily-fares', 'admin/impact-rent/daily-fares/*'], 'Rates'),
-            self::item('Pricing rules', SpecialPriceResource::class, ['admin/impact-rent/special-prices', 'admin/impact-rent/special-prices/*'], 'Rates'),
-            self::item('Fares overview', FaresOverview::class, ['admin/impact-rent/fares-overview', 'admin/impact-rent/fares-overview/*'], 'Rates'),
-            self::item('Booking restrictions', BookingRestrictionResource::class, ['admin/impact-rent/booking-restrictions', 'admin/impact-rent/booking-restrictions/*'], 'Rates'),
-            self::item('Extra hour fares', ExtraHourFareResource::class, ['admin/impact-rent/extra-hour-fares', 'admin/impact-rent/extra-hour-fares/*'], 'Time based'),
-            self::item('Hourly fares', HourlyFareResource::class, ['admin/impact-rent/hourly-fares', 'admin/impact-rent/hourly-fares/*'], 'Time based'),
-            self::item('Out-of-hours fees', OutOfHoursFeeResource::class, ['admin/impact-rent/out-of-hours-fees', 'admin/impact-rent/out-of-hours-fees/*'], 'Time based'),
-            self::item('Location fees', LocationFeeResource::class, ['admin/impact-rent/location-fees', 'admin/impact-rent/location-fees/*'], 'Extras & fees'),
-            self::item('Add-ons', RentalOptionResource::class, ['admin/impact-rent/rental-options', 'admin/impact-rent/rental-options/*'], 'Extras & fees'),
-            self::item('Discount codes', CouponResource::class, ['admin/impact-rent/coupons', 'admin/impact-rent/coupons/*'], 'Discounts & tax'),
-            self::item('Tax rates', TaxRateResource::class, ['admin/impact-rent/tax-rates', 'admin/impact-rent/tax-rates/*'], 'Discounts & tax'),
-            ($taxUrl = self::url(TaxRateResource::class))
-                ? self::plain('Types of price', $taxUrl.'#types-of-price', self::matches(['admin/impact-rent/price-types', 'admin/impact-rent/price-types/*']), 'Discounts & tax')
-                : null,
+            self::counted('Base prices', DailyFareResource::class, ['admin/impact-rent/daily-fares', 'admin/impact-rent/daily-fares/*'], self::safeCount(fn (): int => \App\Models\DailyFare::query()->count()), null, 'Rates'),
+            self::counted('Pricing rules', SpecialPriceResource::class, ['admin/impact-rent/special-prices', 'admin/impact-rent/special-prices/*'], self::safeCount(fn (): int => \App\Models\SpecialPrice::query()->count()), null, 'Rates'),
+            self::counted('Fares overview', FaresOverview::class, ['admin/impact-rent/fares-overview', 'admin/impact-rent/fares-overview/*'], null, null, 'Rates'),
+            self::counted('Booking restrictions', BookingRestrictionResource::class, ['admin/impact-rent/booking-restrictions', 'admin/impact-rent/booking-restrictions/*'], self::safeCount(fn (): int => \App\Models\BookingRestriction::query()->count()), null, 'Rates'),
+            self::counted('Extra hour fares', ExtraHourFareResource::class, ['admin/impact-rent/extra-hour-fares', 'admin/impact-rent/extra-hour-fares/*'], self::safeCount(fn (): int => \App\Models\ExtraHourFare::query()->count()), null, 'Time based'),
+            self::counted('Hourly fares', HourlyFareResource::class, ['admin/impact-rent/hourly-fares', 'admin/impact-rent/hourly-fares/*'], self::safeCount(fn (): int => \App\Models\HourlyFare::query()->count()), null, 'Time based'),
+            self::counted('Out-of-hours fees', OutOfHoursFeeResource::class, ['admin/impact-rent/out-of-hours-fees', 'admin/impact-rent/out-of-hours-fees/*'], self::safeCount(fn (): int => \App\Models\OutOfHoursFee::query()->count()), null, 'Time based'),
+            self::counted('Location fees', LocationFeeResource::class, ['admin/impact-rent/location-fees', 'admin/impact-rent/location-fees/*'], self::safeCount(fn (): int => \App\Models\LocationFee::query()->count()), null, 'Extras & fees'),
+            self::counted('Add-ons', RentalOptionResource::class, ['admin/impact-rent/rental-options', 'admin/impact-rent/rental-options/*'], self::safeCount(fn (): int => \App\Models\RentalOption::query()->count()), null, 'Extras & fees'),
+            self::counted('Discount codes', CouponResource::class, ['admin/impact-rent/coupons', 'admin/impact-rent/coupons/*'], self::safeCount(fn (): int => \App\Models\Coupon::query()->count()), null, 'Discounts & tax'),
+            self::counted('Tax rates', TaxRateResource::class, ['admin/impact-rent/tax-rates', 'admin/impact-rent/tax-rates/*'], self::safeCount(fn (): int => \App\Models\TaxRate::query()->count()), null, 'Discounts & tax'),
+            $types,
         ]));
     }
 
@@ -356,9 +412,9 @@ class AdminScreen
      * @param  list<string>  $active
      * @return array{label: string, url: string, active: bool, count: ?int, group: ?string, icon: ?string}|null
      */
-    private static function counted(string $label, string $class, array $active, ?int $count, ?string $icon): ?array
+    private static function counted(string $label, string $class, array $active, ?int $count, ?string $icon, ?string $group = null): ?array
     {
-        $item = self::item($label, $class, $active);
+        $item = self::item($label, $class, $active, $group);
         if ($item === null) {
             return null;
         }

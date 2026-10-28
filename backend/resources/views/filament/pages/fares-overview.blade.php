@@ -1,5 +1,6 @@
 <x-filament-panels::page>
     <style>
+        html.tb-redesign .fo-title { display: none; }
         .fo-card {
             border: 1px solid #d9dee7;
             border-radius: 6px;

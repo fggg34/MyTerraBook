@@ -40,9 +40,23 @@
         'admin/impact-rent/orders-calendar',
         'admin/orders-calendar',
     );
+    $pricingList = \App\Support\AdminScreen::on(
+        'admin/impact-rent/special-prices',
+        'admin/impact-rent/daily-fares',
+        'admin/impact-rent/fares-overview',
+        'admin/impact-rent/booking-restrictions',
+        'admin/impact-rent/extra-hour-fares',
+        'admin/impact-rent/hourly-fares',
+        'admin/impact-rent/out-of-hours-fees',
+        'admin/impact-rent/location-fees',
+        'admin/impact-rent/rental-options',
+        'admin/impact-rent/coupons',
+        'admin/impact-rent/tax-rates',
+        'admin/impact-rent/price-types',
+    );
 @endphp
 @if ($screen && ($screen['crumb'] !== '' || $screen['title'] || $screen['description'] || $links !== []))
-    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
+    <div @class(['tb-lead', 'tb-lead-settings' => $screen['settings'], 'tb-lead-aside' => $aside, 'tb-module' => $module, 'tb-gh-list' => $guestHouseIndex, 'tb-catalog-list' => $guestHouseIndex || $vehicleIndex || $bookingList || $pricingList || $headerActions !== []]) @if ($screen['title']) data-replace-title @endif>
         <div class="tb-lead-top">
             <div>
         @if ($screen['crumb'] !== '')

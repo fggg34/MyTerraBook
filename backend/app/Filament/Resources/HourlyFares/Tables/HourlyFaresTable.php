@@ -13,6 +13,8 @@ class HourlyFaresTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['car', 'priceType']))
+            ->view('filament.admin.hourly-fares')
             ->columns([
                 TextColumn::make('car.name')
                     ->searchable(),

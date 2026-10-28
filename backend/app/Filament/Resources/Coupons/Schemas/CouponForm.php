@@ -7,6 +7,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class CouponForm
@@ -14,7 +15,11 @@ class CouponForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
+                Section::make('Code')
+                    ->extraAttributes(['id' => 'tb-coupon-code'])
+                    ->schema([
                 TextInput::make('code')
                     ->required(),
                 TextInput::make('type')
@@ -32,6 +37,10 @@ class CouponForm
                     ->searchable()
                     ->preload()
                     ->columnSpanFull(),
+                    ]),
+                Section::make('Validity')
+                    ->extraAttributes(['id' => 'tb-coupon-validity'])
+                    ->schema([
                 DatePicker::make('valid_from'),
                 DatePicker::make('valid_to'),
                 TextInput::make('min_order_total_cents')
@@ -39,6 +48,7 @@ class CouponForm
                 Toggle::make('is_active')
                     ->default(true)
                     ->required(),
+                    ]),
             ]);
     }
 }

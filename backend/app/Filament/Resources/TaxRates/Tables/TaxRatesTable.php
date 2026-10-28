@@ -13,6 +13,9 @@ class TaxRatesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->withCount(['priceTypes', 'rentalOptions', 'locationFees', 'outOfHoursFees']))
+            ->paginated(false)
+            ->view('filament.admin.tax-rates')
             ->columns([
                 TextColumn::make('name')
                     ->label('Name')
