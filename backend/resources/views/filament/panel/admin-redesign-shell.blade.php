@@ -467,7 +467,7 @@
 </script>
 
 
-<link rel="stylesheet" href="{{ asset('admin-redesign/admin-list.css') }}">
+<link rel="stylesheet" href="{{ asset('admin-redesign/admin-list.css') }}?v={{ @filemtime(public_path('admin-redesign/admin-list.css')) }}">
 <style>
   html.tb-redesign {
     --tb-navy: #041e37;

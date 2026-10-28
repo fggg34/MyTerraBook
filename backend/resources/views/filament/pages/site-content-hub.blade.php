@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-  <link rel="stylesheet" href="{{ asset('admin-redesign/site-content.css') }}">
+  <link rel="stylesheet" href="{{ asset('admin-redesign/site-content.css') }}?v={{ @filemtime(public_path('admin-redesign/site-content.css')) }}">
 
   <div @class(['site-content-editor', 'has-preview' => filled($this->previewUrl()), 'site-content-pattern-'.$this->editorPattern()]) data-device="desktop" wire:key="site-content-editor-{{ $activePageKey }}">
     <aside class="site-content-picker" aria-label="Pages">

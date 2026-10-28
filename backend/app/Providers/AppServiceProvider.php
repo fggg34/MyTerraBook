@@ -69,6 +69,8 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
+        $this->forgetStaleAdminViews();
+
         $appUrl = (string) config('app.url');
         if ($appUrl === '') {
             return;
@@ -112,5 +114,41 @@ class AppServiceProvider extends ServiceProvider
         // Always set root URL for web (not only when Host matches APP_URL): behind proxies or
         // mismatched www, request()->root() can omit /backend and url()/redirects 404 at the domain root.
         URL::forceRootUrl($effectiveRoot);
+    }
+
+    /**
+     * Production PHP can keep the previous compiled admin templates after a pull.
+     * Drop them once when the shell view changes so the next response matches this code.
+     */
+    private function forgetStaleAdminViews(): void
+    {
+        $blade = resource_path('views/filament/panel/admin-redesign-shell.blade.php');
+        $mtime = @filemtime($blade);
+        if (! is_int($mtime)) {
+            return;
+        }
+
+        $flag = storage_path('framework/cache/admin-shell-mtime');
+        $seen = is_file($flag) ? trim((string) @file_get_contents($flag)) : '';
+        if ($seen === (string) $mtime) {
+            return;
+        }
+
+        $views = storage_path('framework/views');
+        foreach (glob($views.DIRECTORY_SEPARATOR.'*') ?: [] as $file) {
+            if (! is_file($file)) {
+                continue;
+            }
+            if (function_exists('opcache_invalidate')) {
+                @opcache_invalidate($file, true);
+            }
+            @unlink($file);
+        }
+
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+
+        @file_put_contents($flag, (string) $mtime);
     }
 }
