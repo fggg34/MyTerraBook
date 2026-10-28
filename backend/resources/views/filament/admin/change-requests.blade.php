@@ -6,6 +6,7 @@
     use App\Models\GuestHouseBooking;
     use App\Models\Order;
     use App\Support\AdminMoney;
+    use App\Support\AdminTableBadgeColors;
 
     $records = $getRecords();
     $pageName = $this->getTablePaginationPageName();
@@ -23,12 +24,12 @@
             <div class="tb-chip-menu">
                 <button type="button" @class(['tb-chip', 'is-set' => filled($typeValue)]) x-on:click="openFilter = openFilter === 'type' ? null : 'type'">
                     <img src="{{ asset('admin-redesign/icon-tb-plus.svg') }}" alt="" width="12" height="12">
-                    {{ filled($typeValue) ? ucfirst($typeValue) : 'Type' }}
+                    {{ filled($typeValue) ? AdminTableBadgeColors::humanize($typeValue) : 'Type' }}
                 </button>
                 <select x-cloak x-show="openFilter === 'type'" wire:model.live="tableFilters.type.value">
                     <option value="">Any</option>
                     @foreach (BookingChangeRequestType::cases() as $case)
-                        <option value="{{ $case->value }}">{{ ucfirst($case->value) }}</option>
+                        <option value="{{ $case->value }}">{{ AdminTableBadgeColors::humanize($case) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -74,7 +75,7 @@
                         <small><a href="{{ $bookingUrl }}">Open booking</a></small>
                     @endif
                 </span>
-                <span><x-admin.status-pill tone="info">{{ ucfirst($record->type?->value ?? 'modification') }}</x-admin.status-pill></span>
+                <span><x-admin.status-pill tone="info">{{ AdminTableBadgeColors::humanize($record->type ?? 'modification') }}</x-admin.status-pill></span>
                 <span>{{ filled($record->customer_message) ? '“'.$record->customer_message.'”' : '—' }}</span>
                 <span @class(['tb-warn-text' => is_int($delta) && $delta > 0])>
                     @if ($delta === null)
@@ -83,7 +84,7 @@
                         {{ $delta > 0 ? '+' : '' }}{{ AdminMoney::fromCents((int) $delta) }}
                     @endif
                 </span>
-                <span><x-admin.status-pill :tone="$tone">{{ ucfirst($record->status?->value ?? 'pending') }}</x-admin.status-pill></span>
+                <span><x-admin.status-pill :tone="$tone">{{ AdminTableBadgeColors::humanize($record->status ?? 'pending') }}</x-admin.status-pill></span>
                 <span>{{ $record->created_at?->format('j M Y') }}</span>
                 <x-admin.row-menu :edit-url="BookingChangeRequestResource::getUrl('view', ['record' => $record])" icon="icon-tb-eye.svg" :items="$menu" />
             </div>

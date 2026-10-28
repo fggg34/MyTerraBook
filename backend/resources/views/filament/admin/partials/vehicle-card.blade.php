@@ -17,12 +17,12 @@
         : (string) ($car->drive_type ?? '');
     $specs = implode(' · ', array_filter([
         $drive,
-        filled($car->transmission) ? ucfirst((string) $car->transmission) : null,
-        filled($car->fuel_type) ? ucfirst((string) $car->fuel_type) : null,
+        filled($car->transmission) ? \App\Support\AdminTableBadgeColors::humanize($car->transmission) : null,
+        filled($car->fuel_type) ? \App\Support\AdminTableBadgeColors::humanize($car->fuel_type) : null,
     ]));
     $units = max(1, (int) ($car->units_available ?? 1));
     $host = $car->host?->name
-        ?: (filled($car->external_provider) ? ucfirst((string) $car->external_provider) : 'MyTerraBook');
+        ?: (filled($car->external_provider) ? \App\Support\AdminTableBadgeColors::humanize($car->external_provider) : 'MyTerraBook');
     $fare = $car->dailyFares
         ->sortBy('from_days')
         ->first(fn ($row) => (int) $row->from_days <= 1 && (int) $row->to_days >= 1)

@@ -41,7 +41,8 @@
                 <menu x-cloak x-show="colsOpen"><li><label><input type="checkbox" x-model="cols.order"> Order</label></li></menu>
             </div>
         </div>
-        <div class="tb-head tb-grid" :style="`grid-template-columns:20px 36px minmax(140px,1fr) minmax(140px,1fr) minmax(140px,1fr) ${cols.order ? '72px ' : ''}56px`">
+        <div class="tb-head tb-grid" :style="`grid-template-columns:20px 20px 36px minmax(140px,1fr) minmax(140px,1fr) minmax(140px,1fr) ${cols.order ? '72px ' : ''}56px`">
+            <span></span>
             <span><input class="tb-check fi-ta-page-checkbox" type="checkbox" aria-label="Select page" x-on:click="toggleSelectRecordsOnPage"></span>
             <span>Icon</span>
             <span>Feature name</span>
@@ -50,6 +51,7 @@
             <template x-if="cols.order"><span>Order</span></template>
             <span></span>
         </div>
+        <div x-sortable x-on:end.stop="$wire.reorderVisible($event.target.sortable.toArray())">
         @forelse ($records as $record)
             @php
                 $key = $getRecordKey($record);
@@ -59,7 +61,8 @@
                     ['label' => 'Move down', 'wire' => "mountTableAction('move_down', '{$key}')"],
                 ];
             @endphp
-            <div class="tb-row tb-grid" wire:key="feature-{{ $key }}" :style="`grid-template-columns:20px 36px minmax(140px,1fr) minmax(140px,1fr) minmax(140px,1fr) ${cols.order ? '72px ' : ''}56px`">
+            <div class="tb-row tb-grid" wire:key="feature-{{ $key }}" x-sortable-item="{{ $key }}" :style="`grid-template-columns:20px 20px 36px minmax(140px,1fr) minmax(140px,1fr) minmax(140px,1fr) ${cols.order ? '72px ' : ''}56px`">
+                <button type="button" class="tb-grip" x-sortable-handle aria-label="Drag to reorder"></button>
                 <span><input class="tb-check fi-ta-record-checkbox" type="checkbox" value="{{ $key }}" x-on:click="toggleSelectedRecord(@js($key))" x-bind:checked="isRecordSelected(@js($key)) ? 'checked' : null"></span>
                 <span class="tb-amenity-icon">{!! $icon !== '' ? $icon : '' !!}</span>
                 <span>{{ $record->name }}</span>
@@ -79,6 +82,7 @@
         @empty
             <p class="tb-empty">No features match these filters.</p>
         @endforelse
+        </div>
         <x-admin.table-footer :records="$records" :page-name="$pageName" />
     </div>
 </div>

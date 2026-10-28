@@ -99,7 +99,7 @@ class GuestHouseResource extends Resource
                 TextColumn::make('updated_at')->label('Updated')->date('d M Y')->sortable(),
             ])
             ->filters([
-                SelectFilter::make('type')->options(collect(GuestHouseType::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)])),
+                SelectFilter::make('type')->options(collect(GuestHouseType::cases())->mapWithKeys(fn ($c) => [$c->value => AdminTableBadgeColors::humanize($c)])),
                 SelectFilter::make('city')->options(fn () => GuestHouse::query()->whereNotNull('city')->distinct()->pluck('city', 'city')),
                 SelectFilter::make('user_id')
                     ->label('Host')

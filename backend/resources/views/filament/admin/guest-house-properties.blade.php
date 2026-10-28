@@ -4,11 +4,12 @@
     use App\Filament\GuestHouse\Resources\GuestHouseResource;
     use App\Models\GuestHouse;
     use App\Models\User;
+    use App\Support\AdminTableBadgeColors;
     use Illuminate\Support\Facades\Storage;
 
     $records = $getRecords();
     $pageName = $this->getTablePaginationPageName();
-    $types = collect(GuestHouseType::cases())->mapWithKeys(fn (GuestHouseType $type): array => [$type->value => ucfirst($type->value)]);
+    $types = collect(GuestHouseType::cases())->mapWithKeys(fn (GuestHouseType $type): array => [$type->value => AdminTableBadgeColors::humanize($type)]);
     $cities = GuestHouse::query()->whereNotNull('city')->where('city', '!=', '')->distinct()->orderBy('city')->pluck('city', 'city');
     $hosts = User::query()
         ->whereIn('id', GuestHouse::query()->whereNotNull('user_id')->distinct()->pluck('user_id'))
@@ -128,7 +129,7 @@
                 :subtitle="$subline"
                 :image="filled($thumbPath) ? Storage::disk('public')->url($thumbPath) : null"
             />
-            <span :style="cols.type ? '' : 'visibility:hidden'"><x-admin.status-pill tone="info">{{ $types[$record->type?->value ?? $record->type] ?? ucfirst((string) ($record->type?->value ?? $record->type)) }}</x-admin.status-pill></span>
+            <span :style="cols.type ? '' : 'visibility:hidden'"><x-admin.status-pill tone="info">{{ $types[$record->type?->value ?? $record->type] ?? AdminTableBadgeColors::humanize($record->type) }}</x-admin.status-pill></span>
             <span class="tb-stack" :style="cols.capacity ? '' : 'visibility:hidden'">
                 <strong>{{ (int) $record->max_guests }} guest{{ (int) $record->max_guests === 1 ? '' : 's' }}</strong>
                 <small>{{ $bedrooms }} bedroom{{ $bedrooms === 1 ? '' : 's' }} · {{ $bathrooms }} bath{{ $bathrooms === 1 ? '' : 's' }}</small>

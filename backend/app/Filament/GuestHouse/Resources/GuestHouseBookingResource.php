@@ -101,7 +101,7 @@ class GuestHouseBookingResource extends Resource
                     ->formatStateUsing(fn (mixed $state): string => AdminTableBadgeColors::humanize($state)),
             ])
             ->filters([
-                SelectFilter::make('status')->options(collect(GuestHouseBookingStatus::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)])),
+                SelectFilter::make('status')->options(collect(GuestHouseBookingStatus::cases())->mapWithKeys(fn ($c) => [$c->value => AdminTableBadgeColors::humanize($c)])),
                 SelectFilter::make('guest_house_id')
                     ->relationship('guestHouse', 'name')
                     ->label('Property'),

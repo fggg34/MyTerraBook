@@ -127,6 +127,17 @@ html.tb-redesign .tb-list .tb-seg button.is-active span,
   font: 500 14px/20px "IBM Plex Sans", sans-serif;
 }
 .tb-toolbar-spacer { flex: 1; }
+.tb-grip {
+  width: 16px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  background-image: radial-gradient(rgb(120 138 158) 1.15px, transparent 1.25px);
+  background-size: 5px 5px;
+  background-position: center;
+}
 .tb-per-page {
   margin-left: 8px;
   border: 0;

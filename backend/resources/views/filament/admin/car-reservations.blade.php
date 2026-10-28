@@ -5,6 +5,7 @@
     use App\Models\Car;
     use App\Models\Location;
     use App\Support\AdminMoney;
+    use App\Support\AdminTableBadgeColors;
 
     $records = $getRecords();
     $pageName = $this->getTablePaginationPageName();
@@ -106,13 +107,13 @@
             <select wire:model.live="tableFilters.order_status.value" aria-label="Booking status">
                 <option value="">Booking status</option>
                 @foreach (OrderStatus::cases() as $case)
-                    <option value="{{ $case->value }}">{{ str_replace('_', ' ', ucfirst($case->value)) }}</option>
+                    <option value="{{ $case->value }}">{{ AdminTableBadgeColors::humanize($case) }}</option>
                 @endforeach
             </select>
             <select wire:model.live="tableFilters.rental_status.value" aria-label="Rental progress">
                 <option value="">Rental progress</option>
                 @foreach (RentalStatus::cases() as $case)
-                    <option value="{{ $case->value }}">{{ str_replace('_', ' ', ucfirst($case->value)) }}</option>
+                    <option value="{{ $case->value }}">{{ AdminTableBadgeColors::humanize($case) }}</option>
                 @endforeach
             </select>
             <select wire:model.live="tableFilters.dropoff_location.value" aria-label="Drop-off location">

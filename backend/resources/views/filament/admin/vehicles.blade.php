@@ -192,9 +192,9 @@
                     <template x-if="cols.drive"><span>{{ $driveLabel ?: '–' }}</span></template>
                     <template x-if="cols.status"><span><x-admin.status-pill :tone="$record->is_active ? 'ok' : 'bad'">{{ $record->is_active ? 'Active' : 'Inactive' }}</x-admin.status-pill></span></template>
                     <template x-if="cols.review"><span><x-admin.status-pill :tone="$reviewTone">{{ AdminTableBadgeColors::humanize($review) }}</x-admin.status-pill></span></template>
-                    <template x-if="cols.host"><span>{{ $record->host?->name ?: (filled($record->external_provider) ? ucfirst((string) $record->external_provider) : 'Platform fleet') }}</span></template>
-                    <template x-if="cols.transmission"><span>{{ filled($record->transmission) ? ucfirst((string) $record->transmission) : '–' }}</span></template>
-                    <template x-if="cols.fuel"><span>{{ filled($record->fuel_type) ? ucfirst((string) $record->fuel_type) : '–' }}</span></template>
+                    <template x-if="cols.host"><span>{{ $record->host?->name ?: (filled($record->external_provider) ? AdminTableBadgeColors::humanize($record->external_provider) : 'Platform fleet') }}</span></template>
+                    <template x-if="cols.transmission"><span>{{ filled($record->transmission) ? AdminTableBadgeColors::humanize($record->transmission) : '–' }}</span></template>
+                    <template x-if="cols.fuel"><span>{{ filled($record->fuel_type) ? AdminTableBadgeColors::humanize($record->fuel_type) : '–' }}</span></template>
                     <template x-if="cols.slug"><span>{{ $record->slug }}</span></template>
                     <template x-if="cols.fleet"><span>{{ $units }}</span></template>
                     <template x-if="cols.ical"><span>{{ \Illuminate\Support\Str::limit((string) $record->ical_import_url, 35) }}</span></template>

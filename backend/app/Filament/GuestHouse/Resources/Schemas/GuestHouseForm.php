@@ -6,6 +6,7 @@ use App\Enums\GuestHouseCancellationPolicy;
 use App\Enums\GuestHouseStatus;
 use App\Enums\GuestHouseType;
 use App\Models\GuestHouseAmenity;
+use App\Support\AdminTableBadgeColors;
 use App\Models\TaxRate;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
@@ -67,12 +68,12 @@ class GuestHouseForm
                             ->unique(ignoreRecord: true)
                             ->helperText('Leave blank to generate from the name. Used in the URL: /guesthouses/your-slug'),
                         Select::make('status')
-                            ->options(collect(GuestHouseStatus::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)]))
+                            ->options(collect(GuestHouseStatus::cases())->mapWithKeys(fn ($c) => [$c->value => AdminTableBadgeColors::humanize($c)]))
                             ->required()
                             ->default(GuestHouseStatus::Draft->value),
                         Select::make('type')
                             ->label('Property type')
-                            ->options(collect(GuestHouseType::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)]))
+                            ->options(collect(GuestHouseType::cases())->mapWithKeys(fn ($c) => [$c->value => AdminTableBadgeColors::humanize($c)]))
                             ->required(),
                         Textarea::make('short_description')
                             ->label('Short description')
@@ -192,7 +193,7 @@ class GuestHouseForm
                         TimePicker::make('check_in_time')->default('15:00'),
                         TimePicker::make('check_out_time')->default('11:00'),
                         Select::make('cancellation_policy')
-                            ->options(collect(GuestHouseCancellationPolicy::cases())->mapWithKeys(fn ($c) => [$c->value => ucfirst($c->value)])),
+                            ->options(collect(GuestHouseCancellationPolicy::cases())->mapWithKeys(fn ($c) => [$c->value => AdminTableBadgeColors::humanize($c)])),
                     ]),
                 ]),
 

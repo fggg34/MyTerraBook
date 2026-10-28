@@ -19,6 +19,7 @@ class CharacteristicsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->reorderable('sort_order')
             ->view('filament.admin.features')
             ->columns([
                 TextColumn::make('name')

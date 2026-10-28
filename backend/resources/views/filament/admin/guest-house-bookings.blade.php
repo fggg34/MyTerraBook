@@ -3,6 +3,7 @@
     use App\Filament\GuestHouse\Resources\GuestHouseBookingResource;
     use App\Models\GuestHouse;
     use App\Support\AdminMoney;
+    use App\Support\AdminTableBadgeColors;
     use App\Support\BookingConfirmationUrl;
 
     $records = $getRecords();
@@ -44,12 +45,12 @@
             <div class="tb-chip-menu">
                 <button type="button" @class(['tb-chip', 'is-set' => filled($statusValue)]) x-on:click="openFilter = openFilter === 'status' ? null : 'status'">
                     <img src="{{ asset('admin-redesign/icon-tb-plus.svg') }}" alt="" width="12" height="12">
-                    {{ filled($statusValue) ? ucfirst($statusValue) : 'Status' }}
+                    {{ filled($statusValue) ? AdminTableBadgeColors::humanize($statusValue) : 'Status' }}
                 </button>
                 <select x-cloak x-show="openFilter === 'status'" wire:model.live="tableFilters.status.value">
                     <option value="">Any</option>
                     @foreach (GuestHouseBookingStatus::cases() as $case)
-                        <option value="{{ $case->value }}">{{ ucfirst($case->value) }}</option>
+                        <option value="{{ $case->value }}">{{ AdminTableBadgeColors::humanize($case) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -95,7 +96,7 @@
                     <small>{{ (int) $record->nights }} {{ (int) $record->nights === 1 ? 'night' : 'nights' }}</small>
                 </span>
                 <span>{{ $record->total_amount ? '€ '.AdminMoney::group(intdiv((int) $record->total_amount, 100)) : '—' }}</span>
-                <span><x-admin.status-pill :tone="$tone">{{ ucfirst($record->status?->value ?? 'pending') }}</x-admin.status-pill></span>
+                <span><x-admin.status-pill :tone="$tone">{{ AdminTableBadgeColors::humanize($record->status ?? 'pending') }}</x-admin.status-pill></span>
                 <span class="tb-actions tb-keep">
                     @if ($pending)
                         <button type="button" class="tb-btn tb-btn-sm tb-btn-primary" wire:click="mountTableAction('confirm', '{{ $key }}')">Confirm</button>
